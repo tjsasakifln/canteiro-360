@@ -1,0 +1,692 @@
+[
+  {
+    "id": "ORC01",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; p.4",
+    "rule": "Há perfis distintos para cadastrar orçamentos, consultar relatórios e atuar como empresa orçamentista.",
+    "private_rule": "Separar edição, revisão, aprovação e leitura por organização e orçamento; o perfil externo não recebe permissões gerais de funcionário.",
+    "issue": 8,
+    "acceptance": "Um usuário de leitura consulta o orçamento autorizado, mas qualquer tentativa de criar, editar, importar ou aprovar é recusada também pela API."
+  },
+  {
+    "id": "ORC02",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.5-8",
+    "rule": "Natureza, orçamento e versão são selecionados como contexto de trabalho e mantidos entre telas.",
+    "private_rule": "Exibir sempre empresa, obra, orçamento e versão ativos; persistir a seleção por usuário, sem substituir autorização por estado da interface.",
+    "issue": 18,
+    "acceptance": "Ao alternar entre dois orçamentos, os cabeçalhos, itens, cálculos e destino de gravação acompanham a seleção; uma aba antiga não grava no orçamento recém-selecionado."
+  },
+  {
+    "id": "ORC03",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; p.9",
+    "rule": "A consulta mostra somente os orçamentos de órgãos vinculados ao usuário.",
+    "private_rule": "Restringir busca, listagem, exportação e acesso direto por organização e concessão sobre o orçamento.",
+    "issue": 7,
+    "acceptance": "Um usuário da empresa A não consegue obter orçamento, existência, contagem ou arquivo da empresa B alterando o identificador na requisição."
+  },
+  {
+    "id": "ORC04",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.11-14",
+    "rule": "Orçamentos de edificações e rodoviários têm campos específicos; o segundo inclui municípios e rodovias.",
+    "private_rule": "Oferecer obras prediais e lineares privadas; localização, trechos, subtrechos e municípios são condicionais à natureza e não exigem um órgão público.",
+    "issue": 12,
+    "acceptance": "Uma edificação pode ser cadastrada sem rodovia; uma obra linear registra dois municípios e trechos sem duplicar o orçamento."
+  },
+  {
+    "id": "ORC05",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.15-16",
+    "rule": "Gestores de orçamento precisam do perfil apropriado e podem ser associados ou inativados.",
+    "private_rule": "Permitir vincular e inativar gestores autorizados, preservar autoria histórica e revogar imediatamente o poder de editar.",
+    "issue": 8,
+    "acceptance": "Após inativação, o antigo gestor mantém seu nome nos registros assinados, mas uma sessão aberta não consegue salvar novas alterações."
+  },
+  {
+    "id": "ORC06",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Modulo_de_Orcamento_Orientacao_de_preenchimento.pdf",
+    "locator": "SIC-012; pp.2-3",
+    "rule": "O orçamento precisa de ao menos uma variação; variações demandam obras no contrato, enquanto etapas da mesma obra devem ser grupos de serviços.",
+    "private_rule": "Separar variação de escopo, vinculada a uma obra ou intervenção, de revisão temporal da mesma variação; organizar disciplinas e etapas dentro da estrutura de serviços.",
+    "issue": 18,
+    "acceptance": "Revisar o orçamento de uma obra não cria uma segunda obra; reforma e ampliação tratadas como intervenções distintas podem ter variações próprias."
+  },
+  {
+    "id": "ORC07",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.17-22 e 52-53",
+    "rule": "Copiar uma versão atualiza seus preços pela tabela de origem vigente; duplicar preserva os valores.",
+    "private_rule": "Oferecer duas ações com nomes, prévia e resultado distintos. Registrar tabela, competência, revisão de origem e diferenças monetárias antes da confirmação.",
+    "issue": 20,
+    "acceptance": "Com preço original 10,00 e nova tabela 11,00, duplicar mantém 10,00 e copiar com atualização usa 11,00; nenhuma ação muda a versão de origem."
+  },
+  {
+    "id": "ORC08",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.18-19 e 53-55",
+    "rule": "Conferência admite edição; Finalizado corresponde à conferência concluída; Aprovado sucede conferência e finalização.",
+    "private_rule": "Manter transições explícitas; qualquer alteração em versão ainda revisável invalida a conferência anterior e exige novo cálculo antes de aprovar.",
+    "issue": 21,
+    "acceptance": "Uma versão editada após a conferência não pode ser aprovada com o resultado antigo; a API informa os itens que exigem nova conferência."
+  },
+  {
+    "id": "ORC09",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.54-55",
+    "rule": "A aprovação exige conferência e cálculo; somente orçamento não vinculado a contrato pode ser desaprovado.",
+    "private_rule": "Bloquear desaprovação ou edição da revisão contratada; alterações posteriores seguem revisão e aditivo próprios.",
+    "issue": 21,
+    "acceptance": "Uma revisão vinculada a contrato recusa desaprovação e gravação direta. Uma revisão aprovada ainda não vinculada pode voltar à conferência mediante justificativa e permissão."
+  },
+  {
+    "id": "ORC10",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.22-23",
+    "rule": "Documentos com descrição e arquivo ficam vinculados ao orçamento.",
+    "private_rule": "Vincular cada anexo a orçamento e revisão identificados, com autoria, data e versão imutável; permitir substituição por nova versão.",
+    "issue": 10,
+    "acceptance": "Trocar um memorial gera nova versão e preserva o arquivo anteriormente associado à aprovação; seu acesso obedece à permissão do orçamento."
+  },
+  {
+    "id": "ORC11",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/PACOTE_DE_ALTERACAO_SICOP_04_2020_ALTERACOES_NA_PLANILHA_DO_ORCAMENTO.pdf",
+    "locator": "SIC-027; pp.1-3",
+    "rule": "A planilha abre somente para consulta; a edição exige ação explícita e alocação ao usuário.",
+    "private_rule": "Exigir reserva de edição por versão, com expiração segura e liberação auditada; a perda de reserva impede gravação silenciosa.",
+    "issue": 18,
+    "acceptance": "Dois usuários tentam editar a mesma versão: apenas um recebe a reserva; o segundo vê responsável e opção de atualização, sem sobrescrever dados."
+  },
+  {
+    "id": "ORC12",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.25 e 31",
+    "rule": "A estrutura da planilha inclui grupo, etapa e subetapa; grupo exige grupo de serviço.",
+    "private_rule": "Modelar hierarquia ordenada sem ciclos, com identidade estável por nó e item. Preservar relações ao mover ou renumerar linhas.",
+    "issue": 18,
+    "acceptance": "Mover uma etapa entre grupos recalcula os totais uma única vez e preserva seus itens; mover um grupo para dentro de si mesmo é recusado."
+  },
+  {
+    "id": "ORC13",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.26-29",
+    "rule": "Itens podem ser incluídos por código ou copiados de tabelas e outros orçamentos.",
+    "private_rule": "Permitir inclusão e cópia com origem, unidade, competência e composição identificadas, sem vinculação mutável à tabela externa.",
+    "issue": 18,
+    "acceptance": "Copiar um serviço para orçamento autorizado conserva sua procedência; atualização posterior no catálogo não altera o preço copiado sem uma ação de revisão."
+  },
+  {
+    "id": "ORC14",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.32-33",
+    "rule": "Itens possuem serviço, utilização, documentos, composição e equipe mecânica; fórmula só se aplica quando Custo Informado não está selecionado.",
+    "private_rule": "Separar custo informado de custo calculado; composições têm componentes, coeficientes e unidades, sem referências circulares ou dupla incidência. Incidência percentual deve declarar sua base e não pode incluir a própria linha ou um subtotal que a contenha.",
+    "issue": 17,
+    "acceptance": "Um serviço com custo informado não executa também sua fórmula; uma composição que referencia a si mesma, direta ou indiretamente, é rejeitada com o caminho do ciclo. Base direta de 100,00 com serviço percentual de 10% gera 10,00; usar como base um total que inclua esse mesmo serviço é recusado."
+  },
+  {
+    "id": "ORC15",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.34-37",
+    "rule": "Planilha permite excluir, copiar, recortar, colar e localizar itens enquanto alocada ao usuário.",
+    "private_rule": "Executar operações sobre a seleção visível com prévia de impacto e desfazer em rascunhos; impedir alteração de revisões contratadas.",
+    "issue": 18,
+    "acceptance": "Recortar uma etapa e colá-la em outro grupo não duplica quantidades; desfazer restaura hierarquia e valores; exclusão em revisão contratada é bloqueada."
+  },
+  {
+    "id": "ORC16",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.38-39",
+    "rule": "Distância de transporte depende de itens cadastrados; há tratamento por fórmula legado e por serviço para NOVO SICRO.",
+    "private_rule": "Suportar transporte por fórmula ou composição de serviço, com distância, unidade, origem e parâmetros explícitos; não atribuir fórmulas privadas à tabela oficial.",
+    "issue": 17,
+    "acceptance": "Alterar a distância de um transporte recalcula somente composições dependentes; informar quilômetros em campo de metros exige conversão explícita e conserva o valor físico."
+  },
+  {
+    "id": "ORC17",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.40-49",
+    "rule": "O orçamento contém combustíveis, materiais, mão de obra, equipamentos, serviços, incidências e transportes, editáveis em conferência.",
+    "private_rule": "Manter categorias e relações de composição, com consulta de utilização e impedimento de excluir componente já referenciado em versão aprovada.",
+    "issue": 17,
+    "acceptance": "Excluir um material usado em composição aprovada é recusado e mostra os usos; alterar seu preço em nova revisão não muda o histórico."
+  },
+  {
+    "id": "ORC18",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; p.20, formulário de parâmetros",
+    "rule": "O formulário apresenta tabela/data-base, salário, horas por mês, encargos, BDI, juros de equipamento e modo de aplicação do BDI.",
+    "private_rule": "Tratar os parâmetros como dados versionados do orçamento. Nenhum percentual ou salário do exemplo da fonte vira padrão obrigatório ou alíquota fiscal nacional.",
+    "issue": 17,
+    "acceptance": "Dois orçamentos podem usar encargos e BDI distintos; alterar um parâmetro produz prévia de diferenças e memória de cálculo, sem atingir o outro."
+  },
+  {
+    "id": "ORC19",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; pp.50-51",
+    "rule": "Cronograma orçamentário tem início, prazo em dias, grupos, períodos de 30 dias e percentuais que somam 100%; pode linearizar ou zerar.",
+    "private_rule": "Entregar em #18 o cronograma da versão de orçamento, com períodos de 30 dias como padrão documental. A opção de calendário civil deve ser declarada e registrada como adaptação. O cronograma de execução de #26 mantém sua própria política. Linearização e rateio seguem maiores restos, com desempate por posição estável crescente e depois identificador, conforme calculos.md.",
+    "issue": 18,
+    "acceptance": "Para 90 dias e três períodos iguais com posições estáveis 1, 2 e 3, exibir 33,34%, 33,33% e 33,33%, somando exatamente 100%. Mudar a ordem de retorno da consulta não muda o destinatário do residual. Uma distribuição que some 99,99% impede a aprovação."
+  },
+  {
+    "id": "ORC20",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; p.54",
+    "rule": "Conferência apresenta ações consistentes e pendentes e permite ir à tela para corrigir cada pendência.",
+    "private_rule": "Apresentar cada bloqueio com item, motivo e ação corretiva, distinguindo erro impeditivo de aviso.",
+    "issue": 21,
+    "acceptance": "Um orçamento sem quantidade em um item não é aprovado; selecionar o bloqueio leva à linha exata e o resultado da conferência atualiza após a correção."
+  },
+  {
+    "id": "ORC21",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; p.54",
+    "rule": "Reajuste do orçamento exige versão não aprovada e índices associados aos itens; pode haver fator adotado.",
+    "private_rule": "Aplicar atualização na revisão em preparação, identificando índice ou fator informado, competência e justificativa; separar de reajuste de medição contratual.",
+    "issue": 20,
+    "acceptance": "Aplicar fator 1,10 a item de 100,00 produz 110,00 na revisão em preparação; a mesma operação é recusada na revisão aprovada e vinculada."
+  },
+  {
+    "id": "ORC22",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/PACOTE_DE_ALTERACAO_SICOP_04_2020_ALTERACOES_NA_PLANILHA_DO_ORCAMENTO.pdf",
+    "locator": "SIC-027; pp.3-5",
+    "rule": "Um índice pode ser aplicado aos serviços selecionados ou a todos por opção específica.",
+    "private_rule": "Exibir quantidade de linhas e alcance da alteração antes de confirmar; todos os serviços exige escolha explícita.",
+    "issue": 20,
+    "acceptance": "Selecionar dois entre dez serviços aplica o índice somente aos dois; a ação em todos exige nova confirmação e registra dez linhas atingidas."
+  },
+  {
+    "id": "ORC23",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Guia_Orcamento_Consulta_e_Cadastro.pdf",
+    "locator": "SIC-001; p.20",
+    "rule": "O relatório para propostas deriva dos serviços da versão do orçamento.",
+    "private_rule": "Gerar solicitação privada de cotação vinculada à revisão, com itens e critérios comparáveis; ocultar preços internos quando o comprador assim definir.",
+    "issue": 22,
+    "acceptance": "Duas propostas para a mesma solicitação mantêm os mesmos identificadores de itens; a exportação sem preços internos não os contém em células ocultas ou metadados."
+  },
+  {
+    "id": "ORC24",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Modulo_de_Orcamento_Orientacao_de_preenchimento.pdf",
+    "locator": "SIC-012; pp.1-2",
+    "rule": "Elaborador é o responsável técnico pelo orçamento, não o digitador; o cadastro identifica cargo, ART/RRT e empresa.",
+    "private_rule": "Manter elaborador técnico e autor da digitação como relações separadas e apresentá-las corretamente nos relatórios.",
+    "issue": 14,
+    "acceptance": "O assistente que digita o orçamento não aparece como responsável técnico; o relatório identifica o profissional, sua empresa e o registro aplicável."
+  },
+  {
+    "id": "ORC25",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Evolucao_01_2016.pdf",
+    "locator": "SIC-048; p.4 física, exigência na aprovação; classificação de tipos em SIC-012 pp.1-2 físicas",
+    "rule": "O pacote de 2016 exige ART/RRT aplicável somente ao passar o orçamento a Aprovado, não na finalização anterior. A orientação de preenchimento distingue tipos que exigem o campo e tipos Projetos, Manutenção e Serviços que o dispensam na interface histórica.",
+    "private_rule": "Avaliar responsabilidade técnica pela atividade e pela obrigação aplicável, com matriz de exigibilidade por transição. Finalizar a conferência exige elaborador e responsabilidades identificados; ART/RRT aplicável pode estar pendente nessa etapa, mas impede a aprovação. A dispensa do formulário histórico não constitui dispensa legal.",
+    "issue": 14,
+    "acceptance": "Orçamento conferido com elaborador identificado e ART aplicável ainda pendente pode ficar Finalizado, mas não Aprovado. O documento válido habilita aprovação. Selecionar Projetos não elimina automaticamente a obrigação cadastrada para a atividade; não aplicabilidade exige fundamento registrado."
+  },
+  {
+    "id": "ORC26",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Modulo_de_Orcamento_Orientacao_de_preenchimento.pdf",
+    "locator": "SIC-012; pp.3-5",
+    "rule": "Empresa orçamentista precisa de autorização por contrato e período, orçamento vinculado e usuário entre gestores.",
+    "private_rule": "Acesso externo é concedido por orçamento, contrato, finalidade e prazo, revogável pelo contratante; cada organização mantém seus próprios dados.",
+    "issue": 8,
+    "acceptance": "O externo edita somente o orçamento concedido durante a validade; após expiração, nem a API nem um link antigo de exportação permitem novo acesso."
+  },
+  {
+    "id": "ORC27",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Manual%20SICOP%20Empreitadas.pdf",
+    "locator": "SIC-016; p.5, figura da planilha",
+    "rule": "A figura mostra Importar do Excel, mas não especifica formato, campos e validações.",
+    "private_rule": "Definir importador próprio de XLSX e CSV, com mapa de colunas, prévia, validação completa e confirmação transacional; não prometer compatibilidade universal com arquivos SICOP.",
+    "issue": 19,
+    "acceptance": "Um arquivo com 999 linhas válidas e uma unidade inválida importa zero linhas até correção ou exclusão explícita da linha; a prévia identifica número e motivo, sem executar fórmulas do arquivo."
+  },
+  {
+    "id": "MED01",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.34-35 impressas, PDF pp.35-36",
+    "rule": "A capa é cadastrada antes dos quantitativos por serviços ou grupos.",
+    "private_rule": "Criar medição com identidade, contrato, período e regime antes de qualquer detalhe; impedir itens órfãos ou de outro contrato.",
+    "issue": 31,
+    "acceptance": "Uma requisição de quantitativos sem capa válida ou com item de contrato diferente é recusada, sem gravação parcial."
+  },
+  {
+    "id": "MED02",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.35-36 impressas, PDF pp.36-37",
+    "rule": "A capa guarda identificação, intervalo, percentuais físico/financeiro, tipo parcial/final, cronograma, atraso, ritmo e referência do diário.",
+    "private_rule": "Solicitar apenas os campos relevantes ao estado e tipo de medição, mantendo dados obrigatórios explícitos e vinculados ao histórico.",
+    "issue": 31,
+    "acceptance": "Data final anterior à inicial é recusada; indicar cronograma atrasado solicita motivo; dados de medição financeira permanecem distintos do registro mensal sem avanço."
+  },
+  {
+    "id": "MED03",
+    "origin": "Decisão",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.35 impressa, PDF p.36; confronto com SIC-039 p.1",
+    "rule": "A apostila recomenda medição mensal zerada sem serviços; a atualização de 2019 exige total positivo mesmo sem supressões.",
+    "private_rule": "Resolver a divergência com registro de competência sem avanço, valor zero e sem título financeiro. Medição financeira ordinária exige total do período estritamente positivo. Correções financeiras seguem fluxo próprio auditado.",
+    "issue": 31,
+    "acceptance": "Registrar competência sem avanço preserva o acumulado e não gera fatura. Tentar concluir medição financeira ordinária de valor zero ou negativo é recusado com indicação do fluxo adequado."
+  },
+  {
+    "id": "MED04",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.35 impressa, PDF p.36",
+    "rule": "Implantação permite valores históricos informados, inclusive reajuste, porque o SICOP trunca e pode divergir dos cálculos anteriores.",
+    "private_rule": "Migrar saldos de abertura com origem, data de corte, memória, responsável e conciliação; usar esses saldos como referência sem fabricar medições recalculadas.",
+    "issue": 60,
+    "acceptance": "Importar acumulado histórico de 10,01, diferente do cálculo atual, exige aprovação da diferença; a primeira medição nova parte de 10,01 e não reescreve o histórico."
+  },
+  {
+    "id": "MED05",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.35-36 impressas, PDF pp.36-37",
+    "rule": "Medição soma quantidades executadas multiplicadas por preços; data final é comparada à referência e periodicidade do reajuste.",
+    "private_rule": "Calcular o período por diferença dos valores acumulados, conforme OMDEC01 e calculos.md; preservar separação entre valor base, reajuste e deduções.",
+    "issue": 32,
+    "acceptance": "Com preço 10,00 e acumulados de 20 e 35 unidades, a segunda medição mostra 15 unidades do período e 150,00; não mostra 350,00 como valor devido no período."
+  },
+  {
+    "id": "MED06",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Evolucao_01_2016.pdf",
+    "locator": "SIC-048; p.4 física, atualização do percentual físico; antecedente SIC-003 p.36 impressa",
+    "rule": "O pacote de 2016 retira a validação de percentual físico inferior ao anterior quando existe aditivo de valor ou quantidade, corrigindo a regra do guia de 2010.",
+    "private_rule": "Permitir redução do percentual físico quando decorrer de nova base de escopo formalmente aprovada. Preservar quantidades, valores e percentuais históricos com a versão do denominador usado. Redução de execução efetivamente reconhecida segue correção própria; aditivo não autoriza apagar execução. Mostrar a causa da mudança do percentual e não o equiparar automaticamente ao financeiro.",
+    "issue": 31,
+    "acceptance": "Com 40 unidades executadas sobre 100, o avanço é 40%; aditivo válido que eleva o escopo a 200 permite exibir 20% sobre a nova base, mantendo as 40 unidades e os valores reconhecidos. Sem alteração formal de base, informar 39% após 40% continua bloqueado no fluxo ordinário."
+  },
+  {
+    "id": "MED07",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.36 impressa, PDF p.37",
+    "rule": "Reajuste pode ser informado ou calculado, com valores provisório, definitivo e complementar e competências por periodicidade.",
+    "private_rule": "Registrar separadamente modos e valores; fator manual exige origem e justificativa, não substitui valores já aprovados.",
+    "issue": 35,
+    "acceptance": "Definitivo de 1.200,00 e provisório já reconhecido de 1.000,00 geram complemento de 200,00, sem cobrar novamente o provisório."
+  },
+  {
+    "id": "MED08",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.37 impressa, PDF p.38",
+    "rule": "Conferência admite edição; cálculo definitivo bloqueia; análise/aprovação posterior permite encaminhar ao pagamento.",
+    "private_rule": "Separar conferência, cálculo definitivo, aprovação e liberação financeira. Correção posterior preserva versão, autor e decisão; aprovação não é registro de pagamento.",
+    "issue": 36,
+    "acceptance": "Após cálculo definitivo, editar um quantitativo é recusado; após aprovação, o relatório ainda mostra valor não pago até registro financeiro efetivo."
+  },
+  {
+    "id": "MED09",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.38 e 44 impressas, PDF pp.39 e 45",
+    "rule": "Há quantidade exigida de profissionais, com padrão de dois, um de cada parte, validada no cálculo definitivo.",
+    "private_rule": "Usar composição de comissão definida no contrato, com representantes de contratante e contratado e regra de substituição; qualquer exceção exige alçada e justificativa.",
+    "issue": 34,
+    "acceptance": "Com comissão de dois representantes, apenas um vínculo válido impede a conclusão; adicionar o representante habilitado da outra parte permite nova conferência."
+  },
+  {
+    "id": "MED10",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.38-39 impressas, PDF pp.39-40",
+    "rule": "A comissão é vinculada à obra e seus profissionais precisam de atuação e ART válidas no período da medição.",
+    "private_rule": "Validar atuação, vínculo e documento técnico aplicável à atividade e ao intervalo; documentos substitutos preservam a cadeia de responsabilidade.",
+    "issue": 34,
+    "acceptance": "Um profissional com atuação encerrada antes da medição não pode assinar sua conferência; substituto válido entra com vigência explícita sem apagar o anterior."
+  },
+  {
+    "id": "MED11",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.39-40 impressas, PDF pp.40-41",
+    "rule": "Fotos associadas pertencem ao período da medição; o guia prevê seleção e associação automática de JPG.",
+    "private_rule": "Aceitar formatos documentados pelo produto, preservando original, data de captura declarada e data de envio; associar automaticamente apenas evidências compatíveis com obra e período.",
+    "issue": 34,
+    "acceptance": "Uma foto de outra obra ou fora do período não entra por associação automática; eventual evidência complementar exige vínculo justificado e aparece identificada como tal."
+  },
+  {
+    "id": "MED12",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.41 impressa, PDF p.42",
+    "rule": "Medição por grupo recebe percentual acumulado aplicado aos serviços do grupo.",
+    "private_rule": "A ação de percentual do grupo exibe previamente os itens atingidos e não soma novamente percentuais já acumulados.",
+    "issue": 33,
+    "acceptance": "Aplicar 40% ao grupo com dois itens de 100,00 e 200,00 resulta em acumulados de 40,00 e 80,00; repetir 40% não gera novo valor devido."
+  },
+  {
+    "id": "MED13",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.42-43 impressas, PDF pp.43-44",
+    "rule": "Medição por serviço recebe quantidade ou percentual executado acumulado.",
+    "private_rule": "Usar acumulado como entrada principal e mostrar diferença do período. Quantidade e percentual são representações da mesma execução, nunca valores a somar.",
+    "issue": 32,
+    "acceptance": "Ao informar 50 unidades em item contratado com 100, o percentual exibe 50%; informar também 50% não duplica a execução. Unidades incompatíveis impedem salvar."
+  },
+  {
+    "id": "MED14",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.43-44 impressas, PDF pp.44-45",
+    "rule": "O cálculo atua na última medição ainda não definitiva, consolida por obra/grupo e valida comissão e contratado versus executado.",
+    "private_rule": "Finalizar em transação única sobre uma revisão identificada, impedindo execução acima do contratado vigente e encerramento duplicado.",
+    "issue": 36,
+    "acceptance": "Duas tentativas simultâneas de finalizar a mesma revisão produzem uma conclusão e um mesmo resultado consultável; nenhuma ultrapassa quantidade contratada."
+  },
+  {
+    "id": "MED15",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_02_2017_MedicaoFinalERecebimentoProvisorio.pdf",
+    "locator": "SIC-042; pp.1-2 físicas; prevalece sobre SIC-003 pp.36 e 44 impressas",
+    "rule": "O cálculo definitivo final conclui o contrato, mas a medição fica Aguardando Recebimento Provisório.",
+    "private_rule": "Registrar conclusão física/contratual sem confundi-la com liberação financeira ou recebimento definitivo; manter pendências de encerramento visíveis.",
+    "issue": 48,
+    "acceptance": "Calcular definitivamente a medição final muda o estado contratual previsto, mas continua bloqueando sua liberação financeira enquanto faltar recebimento provisório."
+  },
+  {
+    "id": "MED16",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_02_2017_MedicaoFinalERecebimentoProvisorio.pdf",
+    "locator": "SIC-042; pp.2-5 físicas",
+    "rule": "Termo provisório assinado entra nos documentos do contrato como Recebimento; o fiscal depois libera a medição final para Concluída.",
+    "private_rule": "Exigir termo assinado, vínculo ao contrato e decisão de liberação por responsável autorizado; guardar evidência e versão exatas.",
+    "issue": 48,
+    "acceptance": "Um arquivo sem assinatura ou vinculado a outro contrato não libera a medição; o termo correto permite a ação e gera registro imutável da decisão."
+  },
+  {
+    "id": "MED17",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_02_2017_MedicaoFinalERecebimentoProvisorio.pdf",
+    "locator": "SIC-042; p.5 física",
+    "rule": "Solicitação de pagamento final depende de medição concluída; somente concluídas seguem para liquidação no SIGEF.",
+    "private_rule": "Liberar cobrança ou título financeiro somente após conclusão da medição. Cada valor liberado mantém origem faturável única e saldo transacional, permitindo várias faturas e títulos parciais vinculados à mesma origem. Substituir a integração pública por contas a pagar/receber privadas, sem confundir liberação, faturamento e pagamento.",
+    "issue": 48,
+    "acceptance": "Medição final aguardando termo não gera valor faturável. Após liberação de 1.000,00, faturar 400,00 e depois 600,00 é permitido; faturar mais 0,01 é recusado. Repetir o comando de liberação não cria nova origem ou saldo, e nenhum desses atos registra pagamento automático."
+  },
+  {
+    "id": "MED18",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_02_2017_MedicaoFinalERecebimentoProvisorio.pdf",
+    "locator": "SIC-042; p.1 física",
+    "rule": "O termo provisório distingue obra com saldo a medir da obra com todos quantitativos medidos.",
+    "private_rule": "Permitir final com saldo remanescente identificado, motivo e destinação; não forçar 100% executado para encerrar.",
+    "issue": 48,
+    "acceptance": "Contrato de 100 unidades pode encerrar com 95 executadas e saldo de 5 formalmente tratado; relatório não apresenta as 5 como executadas ou pagas."
+  },
+  {
+    "id": "MED19",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.32-33 impressas, PDF pp.33-34",
+    "rule": "Recebimento definitivo tem data não anterior ao provisório e registra pagamento final, habite-se, as built, manutenção e representantes.",
+    "private_rule": "Controlar recebimento definitivo e obrigações aplicáveis com justificativas de não aplicabilidade; preservar situação financeira real independentemente do aceite técnico.",
+    "issue": 49,
+    "acceptance": "Recebimento definitivo anterior ao provisório é recusado; aceitar tecnicamente uma obra não muda um pagamento pendente para pago nem inventa habite-se."
+  },
+  {
+    "id": "SUP01",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_2019_1.pdf",
+    "locator": "SIC-039; p.1 física",
+    "rule": "Fiscal propõe supressão de serviço medido durante Conferência, com confirmação ao salvar.",
+    "private_rule": "Representante técnico propõe correção negativa de acumulado, identificando item, medição de origem, motivo e impacto, sem alterar a origem.",
+    "issue": 41,
+    "acceptance": "Reduzir acumulado de 20 para 15 unidades cria proposta de supressão de 5, com prévia financeira; a medição anterior permanece com seu valor histórico."
+  },
+  {
+    "id": "SUP02",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_2019_1.pdf",
+    "locator": "SIC-039; pp.1-2 físicas",
+    "rule": "Itens suprimidos são conferidos e justificados e enviados ao ordenador escolhido, ficando Aguardando Aprovação.",
+    "private_rule": "Submeter conjunto imutável ao aprovador privado competente; qualquer alteração no conteúdo invalida a solicitação anterior.",
+    "issue": 41,
+    "acceptance": "Depois do envio, alterar quantidade de um item exige nova revisão e nova aprovação; um aceite da revisão anterior não vale para a revisão alterada."
+  },
+  {
+    "id": "SUP03",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_2019_1.pdf",
+    "locator": "SIC-039; pp.2-3 físicas",
+    "rule": "Aprovação ou rejeição vale para toda a lista; não há decisão por item isolado.",
+    "private_rule": "Manter decisão atômica sobre a lista apresentada com seu resumo e memória de impacto.",
+    "issue": 41,
+    "acceptance": "A API recusa aprovar apenas um item de uma lista de três; uma aprovação integral aplica os três efeitos juntos ou nenhum."
+  },
+  {
+    "id": "SUP04",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_2019_1.pdf",
+    "locator": "SIC-039; p.3 física",
+    "rule": "A aprovação permite continuar com a supressão; a rejeição permite continuar sem ela.",
+    "private_rule": "Aplicar deltas negativos somente depois do aceite; a rejeição preserva proposta e motivo, mas exclui seu efeito da medição.",
+    "issue": 41,
+    "acceptance": "Rejeitar supressão de 50,00 mantém o valor devido sem essa redução e registra a decisão; nenhum relatório posterior trata a proposta rejeitada como executada."
+  },
+  {
+    "id": "SUP05",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_2019_1.pdf",
+    "locator": "SIC-039; pp.3-4 físicas",
+    "rule": "Anulação exige justificativa e nova decisão do ordenador; quando aceita, o estado é Anulado; podem existir documentos de suporte.",
+    "private_rule": "Separar anulação de proposta ainda não aplicada de reversão de efeito já consolidado; a segunda usa correção vinculada e não apaga medição ou pagamento histórico.",
+    "issue": 41,
+    "acceptance": "Anular uma supressão já incorporada a medição definitiva não edita essa medição; gera correção de efeito oposto, vinculada e sujeita à alçada."
+  },
+  {
+    "id": "SUP06",
+    "origin": "Decisão",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracoes_2019_1.pdf",
+    "locator": "SIC-039; p.1 física; conflito com SIC-003 p.35 impressa",
+    "rule": "A atualização exige total positivo independentemente da existência de supressões.",
+    "private_rule": "Exigir saldo base do período positivo na medição financeira ordinária com supressões. Para saldo zero usar registro sem movimento; para saldo negativo usar correção/estorno controlado, nunca forçar um item fictício.",
+    "issue": 41,
+    "acceptance": "Supressão de 50,00 e execução positiva de 100,00 deixam base de 50,00; supressão de 100,00 sem nova execução é encaminhada a correção controlada e não vira medição ordinária negativa."
+  },
+  {
+    "id": "EPG01",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Manual%20SICOP%20Empreitadas.pdf",
+    "locator": "SIC-016; pp.4 e 6 impressas, PDF pp.5 e 7",
+    "rule": "O regime Empreitada por Preço Global habilita medição por etapas.",
+    "private_rule": "Definir regime na contratação e vedar troca silenciosa após execução; a mudança formal exige análise de impactos e preservação do histórico.",
+    "issue": 25,
+    "acceptance": "Contrato global oferece configuração de etapas; trocar para unitário após medição não é uma edição simples de cadastro."
+  },
+  {
+    "id": "EPG02",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Manual%20SICOP%20Empreitadas.pdf",
+    "locator": "SIC-016; p.5 impressa, PDF p.6",
+    "rule": "Cada grupo do orçamento precisa de etapa e cada etapa precisa de itens para permitir a medição.",
+    "private_rule": "Validar a estrutura no orçamento e novamente na formação da referência contratual global.",
+    "issue": 25,
+    "acceptance": "Um grupo sem etapa ou uma etapa vazia impedem habilitar a execução global, com indicação da estrutura a corrigir."
+  },
+  {
+    "id": "EPG03",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Manual%20SICOP%20Empreitadas.pdf",
+    "locator": "SIC-016; p.7 impressa, PDF p.8",
+    "rule": "O percentual executado da etapa alimenta cálculo automático progressivo que considera medições anteriores.",
+    "private_rule": "Medir percentual acumulado da etapa e calcular diferença monetária conforme calculos.md; mudanças em etapas já medidas seguem aditivo e não recalculam retroativamente.",
+    "issue": 33,
+    "acceptance": "Para etapa de 100.000,00 com acumulados 20% e 45%, a segunda medição deve 25.000,00. Repetir 45% não gera novo valor e 101% é recusado."
+  },
+  {
+    "id": "ATA01",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracao_04_2021_atas_manutencao_sinapi%20.pdf",
+    "locator": "SIC-021; p.1 física",
+    "rule": "Ata sem quantidades usa tabela SINAPI e valida o valor total informado na capa do contrato.",
+    "private_rule": "Representar acordo privado por catálogo e limite financeiro. A reserva é assumida na submissão da OS; a confirmação técnica de execução da issue 54 converte somente o valor aceito em consumido, reduzindo a reserva remanescente pelo mesmo valor. Disponível = limite vigente - consumido - reserva remanescente. Divergência conserva a reserva protegida até decisão. Cancelamento libera somente reserva não consumida; medição e fatura usam o consumo existente, sem consumi-lo novamente.",
+    "issue": 51,
+    "acceptance": "Limite 100,00 e OS 80,00 deixam 20,00 disponíveis. Confirmar tecnicamente execução de 50,00 deixa consumido 50,00 e reserva 30,00. Cancelar os 30,00 restantes deixa disponível 50,00; nova OS de 60,00 é recusada. Repetir confirmação, medição ou cancelamento não muda o resultado. Na issue 51 testar o domínio de saldos; integrar as transições reais nas issues 53, 54 e 70."
+  },
+  {
+    "id": "ATA02",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracao_04_2021_atas_manutencao_sinapi%20.pdf",
+    "locator": "SIC-021; pp.1-2 físicas",
+    "rule": "Manutenção em ata sem quantidades exige BDI e desconto; alterações são permitidas somente em A iniciar.",
+    "private_rule": "Validar percentuais e regime antes de iniciar; mudanças posteriores exigem revisão formal com vigência e não afetam ordens já aprovadas.",
+    "issue": 51,
+    "acceptance": "Sem BDI ou desconto explicitamente informado, mesmo que zero, o acordo não inicia; alteração direta após a primeira ordem aprovada é recusada."
+  },
+  {
+    "id": "ATA03",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracao_04_2021_atas_manutencao_sinapi%20.pdf",
+    "locator": "SIC-021; pp.2-4 físicas",
+    "rule": "Importar SINAPI cria a base dos pedidos; alterar BDI/desconto após importar remove a tabela, apenas em A iniciar.",
+    "private_rule": "Antes do início, invalidar a versão importada e exigir nova geração com prévia ao alterar BDI/desconto, preservando versões anteriores para auditoria.",
+    "issue": 51,
+    "acceptance": "Alterar BDI antes do início deixa o catálogo anterior indisponível para novas ordens até recomposição; a tabela antiga continua consultável no histórico."
+  },
+  {
+    "id": "ATA04",
+    "origin": "Decisão",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracao_04_2021_atas_manutencao_sinapi%20.pdf",
+    "locator": "SIC-021; p.4 física; fórmula completa não publicada",
+    "rule": "Serviços do contrato refletem o desconto sobre os dados importados; a fonte não detalha ordem de BDI/desconto nem truncagens.",
+    "private_rule": "Aplicar a fórmula e a precisão explicitadas em calculos.md, com custo-base, BDI, desconto e preço final discriminados; congelar a política na versão do acordo.",
+    "issue": 51,
+    "acceptance": "O mesmo item e os mesmos parâmetros produzem valor idêntico na prévia e no servidor; a memória permite reconstruir o preço e identificar a versão da política."
+  },
+  {
+    "id": "ATA05",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Pacote_de_alteracao_05_2021_Novos_servicos_em_Atas.pdf",
+    "locator": "SIC-020; p.1 física",
+    "rule": "Atualizar Ata adiciona serviços à ata já vinculada, apenas em Elaboração O.S.; os serviços não entram automaticamente no pedido.",
+    "private_rule": "Atualizar catálogo do acordo de forma explícita; a inclusão em ordem em preparação exige seleção separada e novo cálculo de reserva.",
+    "issue": 53,
+    "acceptance": "Após atualizar o catálogo com um serviço novo, o valor e a seleção da ordem permanecem iguais; só a inclusão confirmada do serviço modifica sua reserva."
+  },
+  {
+    "id": "REL01",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.45-46 impressas, PDF pp.46-47",
+    "rule": "A lista de consistência distingue registro correto, ausência opcional, inconsistência e falta obrigatória, com acesso à origem.",
+    "private_rule": "Oferecer painel de conferência de contrato com estado, fundamento, entidade atingida e ação corretiva.",
+    "issue": 59,
+    "acceptance": "Um anexo opcional ausente não bloqueia encerramento; uma assinatura obrigatória ausente aparece como bloqueio e leva ao documento correspondente."
+  },
+  {
+    "id": "REL02",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.47 impressa, PDF p.48",
+    "rule": "O histórico apresenta eventos do contrato em ordem cronológica e gera relatório.",
+    "private_rule": "Manter trilha cronológica com instante do evento, instante do registro, autor, versão e origem; eventos retroativos não ocultam a ordem real de registro.",
+    "issue": 9,
+    "acceptance": "Cadastrar hoje evento ocorrido na semana anterior conserva as duas datas e não altera registros existentes; o relatório permite identificar a inclusão tardia."
+  },
+  {
+    "id": "REL03",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.48-49 impressas, PDF pp.49-50",
+    "rule": "Relatórios gerenciais mostram contratos e valores distribuídos por município, em PDF, tela e gráficos.",
+    "private_rule": "Oferecer carteira privada por empresa, empreendimento, localização e responsável, com filtros e total reconciliado ao conjunto autorizado.",
+    "issue": 59,
+    "acceptance": "Filtrar duas obras autorizadas produz o mesmo total em tabela, gráfico e PDF; valores de uma obra não autorizada não entram nem no total agregado."
+  },
+  {
+    "id": "REL04",
+    "origin": "Adaptada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.49-53 impressas, PDF pp.50-54",
+    "rule": "Relatórios cobrem advertências, conclusão, cronograma, diário, ficha, orçamento, paralisação, pré-aditivo, serviços e recebimentos.",
+    "private_rule": "Gerar documentos privados completos com filtros, referência, revisão, período, assinaturas aplicáveis e identificação do estado do documento.",
+    "issue": 59,
+    "acceptance": "O relatório de paralisação mostra a ordem e as fotos escolhidas; orçamento e cronograma exibem a revisão usada; rascunhos não parecem documentos aprovados."
+  },
+  {
+    "id": "REL05",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.54-55 impressas, PDF pp.55-56",
+    "rule": "Caderno da medição inclui solicitação de pagamento, capa/fotos, resumo por grupo, quantidades e comparativo contratado versus executado.",
+    "private_rule": "Emitir o caderno a partir da mesma revisão imutável usada no cálculo, com anteriores, período, acumulados, reajustes e saldos identificados.",
+    "issue": 37,
+    "acceptance": "Somar itens, grupos e obras no caderno reconcilia com a capa e o cálculo aprovado; uma reimpressão conserva os valores históricos mesmo após aditivo posterior."
+  },
+  {
+    "id": "REL06",
+    "origin": "Documentada",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.52-55 impressas, PDF pp.53-56",
+    "rule": "Orçamento básico, serviços contratados e quantidades executadas têm saída Excel; relatórios citados têm PDF.",
+    "private_rule": "Exportar XLSX e PDF consistentes com a consulta autorizada, usando números reais, unidades e fórmulas próprias seguras quando aplicável.",
+    "issue": 37,
+    "acceptance": "O XLSX exportado abre com quantidades numéricas e totais iguais ao PDF; descrições iniciadas por sinal de fórmula permanecem texto e não executam conteúdo."
+  },
+  {
+    "id": "OMDEC01",
+    "origin": "Decisão",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; p.35 impressa, PDF p.36; truncagem citada sem escala ou ordem completas",
+    "rule": "A fonte informa truncagem, mas não define o algoritmo monetário completo.",
+    "private_rule": "Adotar valor do período por item igual a trunc 2 do valor acumulado atual menos o valor acumulado anterior reconhecido, conforme calculos.md. Os dados de entrada e resultados são decimais exatos compartilhados em Rust; o servidor decide o resultado definitivo.",
+    "issue": 5,
+    "acceptance": "Para preço 0,335 e quantidades acumuladas 1, 2 e 3, os valores de período são 0,33, 0,34 e 0,33, totalizando 1,00; cliente e servidor concordam em todos os vetores."
+  },
+  {
+    "id": "OMDEC02",
+    "origin": "Decisão",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/Manual%20SICOP%20Empreitadas.pdf",
+    "locator": "SIC-016; p.7 impressa, PDF p.8; distribuição de alteração de etapa não especificada",
+    "rule": "A fonte descreve progressividade, mas não resolve integralmente mudanças de preço ou escopo depois de medições anteriores.",
+    "private_rule": "Congelar segmentos de preço e escopo na referência contratual. Novo aditivo define vigência e saldo afetado; não recalcular o acumulado anterior pelo preço novo. Estornos referenciam o valor originalmente reconhecido.",
+    "issue": 40,
+    "acceptance": "Após 10 unidades reconhecidas a 10,00, um aditivo que fixe 12,00 para cinco unidades futuras gera 60,00 nessas cinco, sem reavaliar os 100,00 anteriores."
+  },
+  {
+    "id": "OMDEC03",
+    "origin": "Decisão",
+    "source": "https://www.sicop.sc.gov.br/download/sicop/AT-SICOP-ModuloMedicao.2010.0002.pdf",
+    "locator": "SIC-003; pp.41-44 impressas, PDF pp.42-45; interface moderna definida pelo produto",
+    "rule": "As fontes usam entradas acumuladas e cálculo definitivo, sem especificar a experiência de interface do Canteiro 360.",
+    "private_rule": "Na tabela de medição, exibir Contratado, Anterior acumulado, Atual acumulado, Diferença do período, Valor do período e Saldo. Prévia monetária deve responder à edição; erros indicam campo, limite e ação, sem esconder dados.",
+    "issue": 4,
+    "acceptance": "Em teste de uso, o usuário altera o acumulado sem confundi-lo com o período, encontra a diferença antes de confirmar e corrige excesso de quantidade pelo erro que informa o saldo permitido."
+  }
+]

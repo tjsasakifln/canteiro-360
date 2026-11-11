@@ -1,0 +1,1396 @@
+{
+  "schema_version": 1,
+  "product": "canteiro-360",
+  "repository": "tjsasakifln/canteiro-360",
+  "specification_date": "2026-11-10",
+  "implementation_status": "not_started",
+  "total_issues": 72,
+  "last_issue": 72,
+  "phases": [
+    {
+      "start": 1,
+      "end": 15,
+      "id": "F1",
+      "name": "Fundação, experiência e cadastros"
+    },
+    {
+      "start": 16,
+      "end": 22,
+      "id": "F2",
+      "name": "Custos, orçamento e contratação privada"
+    },
+    {
+      "start": 23,
+      "end": 30,
+      "id": "F3",
+      "name": "Contratos e execução"
+    },
+    {
+      "start": 31,
+      "end": 43,
+      "id": "F4",
+      "name": "Medições e alterações contratuais"
+    },
+    {
+      "start": 44,
+      "end": 50,
+      "id": "F5",
+      "name": "Financeiro e encerramento"
+    },
+    {
+      "start": 51,
+      "end": 62,
+      "id": "F6",
+      "name": "Manutenção, projetos e integração"
+    },
+    {
+      "start": 63,
+      "end": 67,
+      "id": "F7",
+      "name": "Qualidade e operação"
+    },
+    {
+      "start": 68,
+      "end": 72,
+      "id": "F8",
+      "name": "Venda, pilotos e liberação comercial"
+    }
+  ],
+  "issues": [
+    {
+      "sequence": 1,
+      "title": "01. Fundação Rust, arquitetura e integração contínua",
+      "name": "Fundação Rust, arquitetura e integração contínua",
+      "phase": "F1",
+      "dependencies": [],
+      "file": "docs/issues/001.md",
+      "goal": "Criar a base compilável do produto com Rust no servidor e na interface.",
+      "rule_ids": [
+        "UX13"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 2,
+      "title": "02. Persistência, migrações e transações de domínio",
+      "name": "Persistência, migrações e transações de domínio",
+      "phase": "F1",
+      "dependencies": [
+        1
+      ],
+      "file": "docs/issues/002.md",
+      "goal": "Estabelecer persistência transacional e contratos de erro que suportem os módulos seguintes.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 3,
+      "title": "03. Sistema visual, navegação e componentes acessíveis",
+      "name": "Sistema visual, navegação e componentes acessíveis",
+      "phase": "F1",
+      "dependencies": [
+        2
+      ],
+      "file": "docs/issues/003.md",
+      "goal": "Definir uma interface própria, consistente e orientada à rotina da obra.",
+      "rule_ids": [
+        "OP06",
+        "UX01",
+        "UX15"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 4,
+      "title": "04. Formulários e tabelas de alto desempenho",
+      "name": "Formulários e tabelas de alto desempenho",
+      "phase": "F1",
+      "dependencies": [
+        3
+      ],
+      "file": "docs/issues/004.md",
+      "goal": "Entregar formulários e tabelas reutilizáveis que evitem erros e mantenham fluidez.",
+      "rule_ids": [
+        "OMDEC03",
+        "UX03",
+        "UX06",
+        "UX08",
+        "UX11"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 5,
+      "title": "05. Precisão decimal, unidades e calendários",
+      "name": "Precisão decimal, unidades e calendários",
+      "phase": "F1",
+      "dependencies": [
+        4
+      ],
+      "file": "docs/issues/005.md",
+      "goal": "Fixar e verificar o motor decimal e as políticas de calendário antes de usá-los em valores reais.",
+      "rule_ids": [
+        "CR-02",
+        "OMDEC01",
+        "BR03",
+        "BR04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 6,
+      "title": "06. Autenticação, sessões e recuperação de acesso",
+      "name": "Autenticação, sessões e recuperação de acesso",
+      "phase": "F1",
+      "dependencies": [
+        5
+      ],
+      "file": "docs/issues/006.md",
+      "goal": "Permitir acesso seguro e recuperação de conta sem fragilidade herdada do sistema antigo.",
+      "rule_ids": [
+        "OP04",
+        "BR21"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 7,
+      "title": "07. Organizações, convites e isolamento de dados",
+      "name": "Organizações, convites e isolamento de dados",
+      "phase": "F1",
+      "dependencies": [
+        6
+      ],
+      "file": "docs/issues/007.md",
+      "goal": "Separar completamente os dados das organizações e permitir convites controlados.",
+      "rule_ids": [
+        "OP03",
+        "ORC03",
+        "BR05",
+        "UX02"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 8,
+      "title": "08. Papéis, vínculos, alçadas e substituições",
+      "name": "Papéis, vínculos, alçadas e substituições",
+      "phase": "F1",
+      "dependencies": [
+        7
+      ],
+      "file": "docs/issues/008.md",
+      "goal": "Aplicar permissões por tarefa, obra e contrato com alçadas rastreáveis.",
+      "rule_ids": [
+        "OP05",
+        "ORC01",
+        "ORC05",
+        "ORC26",
+        "BR06",
+        "BR07"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 9,
+      "title": "09. Auditoria, concorrência e execução idempotente",
+      "name": "Auditoria, concorrência e execução idempotente",
+      "phase": "F1",
+      "dependencies": [
+        8
+      ],
+      "file": "docs/issues/009.md",
+      "goal": "Preservar história e impedir efeitos duplicados ou perdidos por concorrência.",
+      "rule_ids": [
+        "REL02",
+        "BR09",
+        "BR18",
+        "UX04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 10,
+      "title": "10. Documentos, anexos e versões imutáveis",
+      "name": "Documentos, anexos e versões imutáveis",
+      "phase": "F1",
+      "dependencies": [
+        9
+      ],
+      "file": "docs/issues/010.md",
+      "goal": "Guardar documentos confiáveis e vinculados ao fato correto.",
+      "rule_ids": [
+        "ORC10",
+        "BR10",
+        "BR20"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 11,
+      "title": "11. Clientes, fornecedores e profissionais",
+      "name": "Clientes, fornecedores e profissionais",
+      "phase": "F1",
+      "dependencies": [
+        10
+      ],
+      "file": "docs/issues/011.md",
+      "goal": "Cadastrar as partes e os profissionais usados em todos os fluxos.",
+      "rule_ids": [
+        "OP01",
+        "BR01",
+        "BR02"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 12,
+      "title": "12. Carteira de empreendimentos, obras e ativos",
+      "name": "Carteira de empreendimentos, obras e ativos",
+      "phase": "F1",
+      "dependencies": [
+        11
+      ],
+      "file": "docs/issues/012.md",
+      "goal": "Organizar carteira, obras, contratos futuros e ativos sem ambiguidade.",
+      "rule_ids": [
+        "OP02",
+        "ORC04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 13,
+      "title": "13. Escopo de projetos, entregas e responsáveis",
+      "name": "Escopo de projetos, entregas e responsáveis",
+      "phase": "F1",
+      "dependencies": [
+        12
+      ],
+      "file": "docs/issues/013.md",
+      "goal": "Permitir controlar um projeto antes e durante a execução da obra.",
+      "rule_ids": [
+        "OP23"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 14,
+      "title": "14. ART, RRT, licenças e obrigações técnicas",
+      "name": "ART, RRT, licenças e obrigações técnicas",
+      "phase": "F1",
+      "dependencies": [
+        13
+      ],
+      "file": "docs/issues/014.md",
+      "goal": "Controlar responsabilidades e documentos técnicos segundo sua natureza.",
+      "rule_ids": [
+        "RT-04",
+        "ORC24",
+        "ORC25",
+        "BR11",
+        "BR12",
+        "BR13"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 15,
+      "title": "15. Notificações, pendências e prazos",
+      "name": "Notificações, pendências e prazos",
+      "phase": "F1",
+      "dependencies": [
+        14
+      ],
+      "file": "docs/issues/015.md",
+      "goal": "Tornar pendências acionáveis sem excesso de avisos.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 16,
+      "title": "16. Catálogos de custos e preços de referência",
+      "name": "Catálogos de custos e preços de referência",
+      "phase": "F2",
+      "dependencies": [
+        15
+      ],
+      "file": "docs/issues/016.md",
+      "goal": "Criar uma base de custos com origem e vigência confiáveis.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 17,
+      "title": "17. Composições, insumos, BDI e incidências",
+      "name": "Composições, insumos, BDI e incidências",
+      "phase": "F2",
+      "dependencies": [
+        16
+      ],
+      "file": "docs/issues/017.md",
+      "goal": "Calcular serviços e composições com parâmetros rastreáveis.",
+      "rule_ids": [
+        "ORC14",
+        "ORC16",
+        "ORC17",
+        "ORC18"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 18,
+      "title": "18. Orçamentos, variações e estrutura de serviços",
+      "name": "Orçamentos, variações e estrutura de serviços",
+      "phase": "F2",
+      "dependencies": [
+        17
+      ],
+      "file": "docs/issues/018.md",
+      "goal": "Montar orçamentos completos e seu planejamento inicial.",
+      "rule_ids": [
+        "ORC02",
+        "ORC06",
+        "ORC11",
+        "ORC12",
+        "ORC13",
+        "ORC15",
+        "ORC19"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 19,
+      "title": "19. Importação e exportação de planilhas orçamentárias",
+      "name": "Importação e exportação de planilhas orçamentárias",
+      "phase": "F2",
+      "dependencies": [
+        18
+      ],
+      "file": "docs/issues/019.md",
+      "goal": "Trazer e devolver planilhas sem corrupção de valores ou aplicação parcial.",
+      "rule_ids": [
+        "ORC27",
+        "UX07"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 20,
+      "title": "20. Revisões, cópia, duplicação e atualização de preços",
+      "name": "Revisões, cópia, duplicação e atualização de preços",
+      "phase": "F2",
+      "dependencies": [
+        19
+      ],
+      "file": "docs/issues/020.md",
+      "goal": "Revisar orçamento preservando a diferença entre copiar, duplicar e atualizar.",
+      "rule_ids": [
+        "ORC07",
+        "ORC21",
+        "ORC22"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 21,
+      "title": "21. Conferência e aprovação de orçamentos",
+      "name": "Conferência e aprovação de orçamentos",
+      "phase": "F2",
+      "dependencies": [
+        20
+      ],
+      "file": "docs/issues/021.md",
+      "goal": "Aprovar uma versão de orçamento somente após conferência integral.",
+      "rule_ids": [
+        "ORC08",
+        "ORC09",
+        "ORC20",
+        "UX05"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 22,
+      "title": "22. Cotações privadas e seleção de fornecedores",
+      "name": "Cotações privadas e seleção de fornecedores",
+      "phase": "F2",
+      "dependencies": [
+        21
+      ],
+      "file": "docs/issues/022.md",
+      "goal": "Conduzir seleção privada de fornecedor com base de comparação comum.",
+      "rule_ids": [
+        "ORC23"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 23,
+      "title": "23. Contratos, partes, regime e vigência",
+      "name": "Contratos, partes, regime e vigência",
+      "phase": "F3",
+      "dependencies": [
+        22
+      ],
+      "file": "docs/issues/023.md",
+      "goal": "Cadastrar o instrumento privado e seus limites de operação.",
+      "rule_ids": [
+        "CT-01",
+        "CT-02",
+        "CT-03",
+        "CT-06",
+        "BR14"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 24,
+      "title": "24. Serviços contratados e orçamento de referência",
+      "name": "Serviços contratados e orçamento de referência",
+      "phase": "F3",
+      "dependencies": [
+        23
+      ],
+      "file": "docs/issues/024.md",
+      "goal": "Congelar o escopo econômico contratado com origem verificável.",
+      "rule_ids": [
+        "CT-07",
+        "CT-08",
+        "CT-09"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 25,
+      "title": "25. Empreitada global por etapas",
+      "name": "Empreitada global por etapas",
+      "phase": "F3",
+      "dependencies": [
+        24
+      ],
+      "file": "docs/issues/025.md",
+      "goal": "Modelar contratos globais por etapas conforme a estrutura funcional documentada.",
+      "rule_ids": [
+        "EPG01",
+        "EPG02"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 26,
+      "title": "26. Cronograma inicial e versões de planejamento",
+      "name": "Cronograma inicial e versões de planejamento",
+      "phase": "F3",
+      "dependencies": [
+        25
+      ],
+      "file": "docs/issues/026.md",
+      "goal": "Fixar o cronograma contratado e conservar as reprogramações.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 27,
+      "title": "27. Autorização de início e ordem de serviço",
+      "name": "Autorização de início e ordem de serviço",
+      "phase": "F3",
+      "dependencies": [
+        26
+      ],
+      "file": "docs/issues/027.md",
+      "goal": "Autorizar o início apenas com escopo e responsabilidades definidos.",
+      "rule_ids": [
+        "CT-05"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 28,
+      "title": "28. Diário de obra, fotos e registros de campo",
+      "name": "Diário de obra, fotos e registros de campo",
+      "phase": "F3",
+      "dependencies": [
+        27
+      ],
+      "file": "docs/issues/028.md",
+      "goal": "Registrar execução e evidências diariamente com revisão confiável.",
+      "rule_ids": [
+        "OP16"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 29,
+      "title": "29. Qualidade, advertências e ações corretivas",
+      "name": "Qualidade, advertências e ações corretivas",
+      "phase": "F3",
+      "dependencies": [
+        28
+      ],
+      "file": "docs/issues/029.md",
+      "goal": "Controlar qualidade e comunicações formais sem perder o histórico.",
+      "rule_ids": [
+        "OP15"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 30,
+      "title": "30. Paralisação, retomada e cálculo de prazo",
+      "name": "Paralisação, retomada e cálculo de prazo",
+      "phase": "F3",
+      "dependencies": [
+        29
+      ],
+      "file": "docs/issues/030.md",
+      "goal": "Representar paralisação e retomada com prazo corretamente calculado.",
+      "rule_ids": [
+        "PA-01",
+        "PA-02"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 31,
+      "title": "31. Medições, competências e sequência cronológica",
+      "name": "Medições, competências e sequência cronológica",
+      "phase": "F4",
+      "dependencies": [
+        30
+      ],
+      "file": "docs/issues/031.md",
+      "goal": "Criar a capa e a cronologia das medições sem confundir zero com cobrança.",
+      "rule_ids": [
+        "MED01",
+        "MED02",
+        "MED03",
+        "MED06"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 32,
+      "title": "32. Medição unitária por acumulados",
+      "name": "Medição unitária por acumulados",
+      "phase": "F4",
+      "dependencies": [
+        31
+      ],
+      "file": "docs/issues/032.md",
+      "goal": "Calcular a execução e o valor do período a partir dos acumulados.",
+      "rule_ids": [
+        "MED05",
+        "MED13"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 33,
+      "title": "33. Medição global e serviços percentuais",
+      "name": "Medição global e serviços percentuais",
+      "phase": "F4",
+      "dependencies": [
+        32
+      ],
+      "file": "docs/issues/033.md",
+      "goal": "Calcular progresso global e incidências sem duplicar execução.",
+      "rule_ids": [
+        "AD-08",
+        "MED12",
+        "EPG03"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 34,
+      "title": "34. Comissões, evidências e conferência técnica",
+      "name": "Comissões, evidências e conferência técnica",
+      "phase": "F4",
+      "dependencies": [
+        33
+      ],
+      "file": "docs/issues/034.md",
+      "goal": "Conferir medição com equipe válida e evidência suficiente.",
+      "rule_ids": [
+        "CT-10",
+        "RT-01",
+        "RT-02",
+        "OP18",
+        "MED09",
+        "MED10",
+        "MED11"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 35,
+      "title": "35. Reajustes por obra e por serviço",
+      "name": "Reajustes por obra e por serviço",
+      "phase": "F4",
+      "dependencies": [
+        34
+      ],
+      "file": "docs/issues/035.md",
+      "goal": "Calcular reajuste respeitando fonte, competência e data do preço.",
+      "rule_ids": [
+        "RJ-01",
+        "RJ-03",
+        "RJ-05",
+        "MED07"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 36,
+      "title": "36. Cálculo definitivo e aprovação de medições",
+      "name": "Cálculo definitivo e aprovação de medições",
+      "phase": "F4",
+      "dependencies": [
+        35
+      ],
+      "file": "docs/issues/036.md",
+      "goal": "Consolidar e aprovar valores somente após todas as validações.",
+      "rule_ids": [
+        "MED08",
+        "MED14"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 37,
+      "title": "37. Caderno de medição e memória de cálculo",
+      "name": "Caderno de medição e memória de cálculo",
+      "phase": "F4",
+      "dependencies": [
+        36
+      ],
+      "file": "docs/issues/037.md",
+      "goal": "Produzir documentação de medição completa e reconciliável.",
+      "rule_ids": [
+        "REL05",
+        "REL06",
+        "UX14"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 38,
+      "title": "38. Pré-aditivos e propostas de alteração",
+      "name": "Pré-aditivos e propostas de alteração",
+      "phase": "F4",
+      "dependencies": [
+        37
+      ],
+      "file": "docs/issues/038.md",
+      "goal": "Preparar alterações de escopo, valor e prazo com justificativa completa.",
+      "rule_ids": [
+        "AD-01",
+        "AD-02",
+        "AD-03"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 39,
+      "title": "39. Alçadas e liberação de pré-aditivos",
+      "name": "Alçadas e liberação de pré-aditivos",
+      "phase": "F4",
+      "dependencies": [
+        38
+      ],
+      "file": "docs/issues/039.md",
+      "goal": "Liberar proposta de alteração pela autoridade correta.",
+      "rule_ids": [
+        "RT-03",
+        "AD-04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 40,
+      "title": "40. Formalização e aplicação de aditivos",
+      "name": "Formalização e aplicação de aditivos",
+      "phase": "F4",
+      "dependencies": [
+        39
+      ],
+      "file": "docs/issues/040.md",
+      "goal": "Aplicar o instrumento de alteração uma única vez e na data permitida.",
+      "rule_ids": [
+        "AD-05",
+        "AD-06",
+        "AD-07",
+        "OMDEC02",
+        "BR19"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 41,
+      "title": "41. Supressão de serviços já medidos",
+      "name": "Supressão de serviços já medidos",
+      "phase": "F4",
+      "dependencies": [
+        40
+      ],
+      "file": "docs/issues/041.md",
+      "goal": "Corrigir quantidade já medida por decisão integral e rastreável.",
+      "rule_ids": [
+        "MF-03",
+        "SUP01",
+        "SUP02",
+        "SUP03",
+        "SUP04",
+        "SUP05",
+        "SUP06"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 42,
+      "title": "42. Reprogramação com execução e alterações",
+      "name": "Reprogramação com execução e alterações",
+      "phase": "F4",
+      "dependencies": [
+        41
+      ],
+      "file": "docs/issues/042.md",
+      "goal": "Reprogramar a obra com execução reconhecida e alterações válidas.",
+      "rule_ids": [
+        "CR-01"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 43,
+      "title": "43. Reajustes complementares e correções controladas",
+      "name": "Reajustes complementares e correções controladas",
+      "phase": "F4",
+      "dependencies": [
+        42
+      ],
+      "file": "docs/issues/043.md",
+      "goal": "Concluir reajustes provisórios e tratar correções sem duplicar valores.",
+      "rule_ids": [
+        "RJ-02",
+        "RJ-04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 44,
+      "title": "44. Faturas e títulos a pagar e a receber",
+      "name": "Faturas e títulos a pagar e a receber",
+      "phase": "F5",
+      "dependencies": [
+        43
+      ],
+      "file": "docs/issues/044.md",
+      "goal": "Controlar faturamento e obrigações sem confundi-los com execução ou caixa.",
+      "rule_ids": [
+        "OP26",
+        "BR15",
+        "BR17"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 45,
+      "title": "45. Adiantamentos, retenções e garantias financeiras",
+      "name": "Adiantamentos, retenções e garantias financeiras",
+      "phase": "F5",
+      "dependencies": [
+        44
+      ],
+      "file": "docs/issues/045.md",
+      "goal": "Controlar retenções e adiantamentos com saldos próprios.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 46,
+      "title": "46. Pagamentos, recebimentos e conciliação",
+      "name": "Pagamentos, recebimentos e conciliação",
+      "phase": "F5",
+      "dependencies": [
+        45
+      ],
+      "file": "docs/issues/046.md",
+      "goal": "Registrar e conciliar dinheiro efetivamente pago ou recebido.",
+      "rule_ids": [
+        "BR16"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 47,
+      "title": "47. Previsão de caixa e custo por obra",
+      "name": "Previsão de caixa e custo por obra",
+      "phase": "F5",
+      "dependencies": [
+        46
+      ],
+      "file": "docs/issues/047.md",
+      "goal": "Dar visão econômica da obra sem somar etapas da mesma despesa.",
+      "rule_ids": [
+        "OP28"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 48,
+      "title": "48. Medição final e recebimento provisório",
+      "name": "Medição final e recebimento provisório",
+      "phase": "F5",
+      "dependencies": [
+        47
+      ],
+      "file": "docs/issues/048.md",
+      "goal": "Encerrar execução e liberar a medição final com termo apropriado.",
+      "rule_ids": [
+        "CT-04",
+        "MF-01",
+        "MF-02",
+        "RC-01",
+        "OP27",
+        "MED15",
+        "MED16",
+        "MED17",
+        "MED18"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 49,
+      "title": "49. Recebimento definitivo e garantias da obra",
+      "name": "Recebimento definitivo e garantias da obra",
+      "phase": "F5",
+      "dependencies": [
+        48
+      ],
+      "file": "docs/issues/049.md",
+      "goal": "Concluir recebimento definitivo e organizar garantias e documentos da entrega.",
+      "rule_ids": [
+        "RC-02",
+        "RC-03",
+        "MED19",
+        "BR37"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 50,
+      "title": "50. Rescisão, cancelamento e encerramento",
+      "name": "Rescisão, cancelamento e encerramento",
+      "phase": "F5",
+      "dependencies": [
+        49
+      ],
+      "file": "docs/issues/050.md",
+      "goal": "Registrar encerramento antecipado sem apagar direitos e obrigações.",
+      "rule_ids": [
+        "EN-01",
+        "RC-04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 51,
+      "title": "51. Acordos de manutenção, lotes e catálogos",
+      "name": "Acordos de manutenção, lotes e catálogos",
+      "phase": "F6",
+      "dependencies": [
+        50
+      ],
+      "file": "docs/issues/051.md",
+      "goal": "Modelar acordos privados de manutenção com catálogo e limite financeiro.",
+      "rule_ids": [
+        "ATA01",
+        "ATA02",
+        "ATA03",
+        "ATA04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 52,
+      "title": "52. Pedidos de manutenção e aprovação da demanda",
+      "name": "Pedidos de manutenção e aprovação da demanda",
+      "phase": "F6",
+      "dependencies": [
+        51
+      ],
+      "file": "docs/issues/052.md",
+      "goal": "Receber e analisar solicitações de manutenção do ativo correto.",
+      "rule_ids": [
+        "OP07",
+        "OP08",
+        "OP09"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 53,
+      "title": "53. Ordens de manutenção e reserva de saldo",
+      "name": "Ordens de manutenção e reserva de saldo",
+      "phase": "F6",
+      "dependencies": [
+        52
+      ],
+      "file": "docs/issues/053.md",
+      "goal": "Autorizar ordem de manutenção com preço, quantidade e saldo protegidos.",
+      "rule_ids": [
+        "OP10",
+        "OP11",
+        "ATA05"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 54,
+      "title": "54. Fiscalização, aceite e medição da manutenção",
+      "name": "Fiscalização, aceite e medição da manutenção",
+      "phase": "F6",
+      "dependencies": [
+        53
+      ],
+      "file": "docs/issues/054.md",
+      "goal": "Fiscalizar e medir manutenção sem duplicar a execução da ordem.",
+      "rule_ids": [
+        "OP12",
+        "OP13"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 55,
+      "title": "55. Revisões de projeto, solicitações e distribuição",
+      "name": "Revisões de projeto, solicitações e distribuição",
+      "phase": "F6",
+      "dependencies": [
+        54
+      ],
+      "file": "docs/issues/055.md",
+      "goal": "Controlar revisão e distribuição de projetos usados na obra.",
+      "rule_ids": [
+        "OP24"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 56,
+      "title": "56. Dependências, cronograma e recursos de projetos",
+      "name": "Dependências, cronograma e recursos de projetos",
+      "phase": "F6",
+      "dependencies": [
+        55
+      ],
+      "file": "docs/issues/056.md",
+      "goal": "Planejar projetos com dependências e previsão verificável.",
+      "rule_ids": [
+        "OP25"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 57,
+      "title": "57. Riscos, problemas e mudanças de projeto",
+      "name": "Riscos, problemas e mudanças de projeto",
+      "phase": "F6",
+      "dependencies": [
+        56
+      ],
+      "file": "docs/issues/057.md",
+      "goal": "Tratar riscos, problemas e mudanças de projeto com efeito rastreável.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 58,
+      "title": "58. Portal do cliente e de fornecedores",
+      "name": "Portal do cliente e de fornecedores",
+      "phase": "F6",
+      "dependencies": [
+        57
+      ],
+      "file": "docs/issues/058.md",
+      "goal": "Oferecer colaboração privada ao cliente e ao fornecedor.",
+      "rule_ids": [
+        "BR08"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 59,
+      "title": "59. Busca, favoritos, mapas e relatórios gerenciais",
+      "name": "Busca, favoritos, mapas e relatórios gerenciais",
+      "phase": "F6",
+      "dependencies": [
+        58
+      ],
+      "file": "docs/issues/059.md",
+      "goal": "Consolidar busca e relatórios que correspondam aos fatos da obra.",
+      "rule_ids": [
+        "OP14",
+        "OP20",
+        "REL01",
+        "REL03",
+        "REL04"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 60,
+      "title": "60. Migração assistida de obras e contratos existentes",
+      "name": "Migração assistida de obras e contratos existentes",
+      "phase": "F6",
+      "dependencies": [
+        59
+      ],
+      "file": "docs/issues/060.md",
+      "goal": "Implantar clientes com histórico existente sem recalculá-lo indevidamente.",
+      "rule_ids": [
+        "MED04",
+        "BR27"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 61,
+      "title": "61. API e integrações externas controladas",
+      "name": "API e integrações externas controladas",
+      "phase": "F6",
+      "dependencies": [
+        60
+      ],
+      "file": "docs/issues/061.md",
+      "goal": "Integrar serviços externos com autorização e contratos de dados claros.",
+      "rule_ids": [
+        "OP22"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 62,
+      "title": "62. Uso em campo e sincronização de rascunhos",
+      "name": "Uso em campo e sincronização de rascunhos",
+      "phase": "F6",
+      "dependencies": [
+        61
+      ],
+      "file": "docs/issues/062.md",
+      "goal": "Permitir trabalho de campo com conexão instável e sincronização segura.",
+      "rule_ids": [
+        "OP17",
+        "OP19",
+        "BR26",
+        "UX09"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 63,
+      "title": "63. Validação integral de interface e acessibilidade",
+      "name": "Validação integral de interface e acessibilidade",
+      "phase": "F7",
+      "dependencies": [
+        62
+      ],
+      "file": "docs/issues/063.md",
+      "goal": "Demonstrar que o produto é intuitivo, acessível e consistente em suas jornadas completas.",
+      "rule_ids": [
+        "BR25",
+        "UX10",
+        "UX16",
+        "UX18"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 64,
+      "title": "64. Desempenho do servidor e do front-end Rust",
+      "name": "Desempenho do servidor e do front-end Rust",
+      "phase": "F7",
+      "dependencies": [
+        63
+      ],
+      "file": "docs/issues/064.md",
+      "goal": "Cumprir metas de desempenho com a aplicação Rust e volume profissional.",
+      "rule_ids": [
+        "UX12"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 65,
+      "title": "65. Revisão de segurança e testes adversariais",
+      "name": "Revisão de segurança e testes adversariais",
+      "phase": "F7",
+      "dependencies": [
+        64
+      ],
+      "file": "docs/issues/065.md",
+      "goal": "Procurar e corrigir falhas de segurança na versão integrada.",
+      "rule_ids": [
+        "BR28"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 66,
+      "title": "66. Privacidade, retenção e direitos dos titulares",
+      "name": "Privacidade, retenção e direitos dos titulares",
+      "phase": "F7",
+      "dependencies": [
+        65
+      ],
+      "file": "docs/issues/066.md",
+      "goal": "Operar os dados pessoais com finalidade, direitos e retenção definidos.",
+      "rule_ids": [
+        "BR22",
+        "BR24"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 67,
+      "title": "67. Operação, monitoramento e restauração de backup",
+      "name": "Operação, monitoramento e restauração de backup",
+      "phase": "F7",
+      "dependencies": [
+        66
+      ],
+      "file": "docs/issues/067.md",
+      "goal": "Manter o serviço recuperável e observável em produção.",
+      "rule_ids": [
+        "BR23",
+        "BR29",
+        "BR30"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 68,
+      "title": "68. Planos, assinatura e cobrança do serviço",
+      "name": "Planos, assinatura e cobrança do serviço",
+      "phase": "F8",
+      "dependencies": [
+        67
+      ],
+      "file": "docs/issues/068.md",
+      "goal": "Cobrar pelo serviço com planos claros e estados conciliados.",
+      "rule_ids": [
+        "BR31",
+        "BR32",
+        "BR33",
+        "BR35"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 69,
+      "title": "69. Contratação, atendimento e implantação do cliente",
+      "name": "Contratação, atendimento e implantação do cliente",
+      "phase": "F8",
+      "dependencies": [
+        68
+      ],
+      "file": "docs/issues/069.md",
+      "goal": "Entregar contratação e implantação utilizáveis por um cliente real.",
+      "rule_ids": [
+        "OP21",
+        "BR34",
+        "UX17"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 70,
+      "title": "70. Homologação integrada e reconciliação financeira",
+      "name": "Homologação integrada e reconciliação financeira",
+      "phase": "F8",
+      "dependencies": [
+        69
+      ],
+      "file": "docs/issues/070.md",
+      "goal": "Validar os módulos construídos até a etapa 70 e seus cenários integrados, antes dos pilotos e da liberação.",
+      "rule_ids": [],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 71,
+      "title": "71. Pilotos profissionais e correção de falhas",
+      "name": "Pilotos profissionais e correção de falhas",
+      "phase": "F8",
+      "dependencies": [
+        70
+      ],
+      "file": "docs/issues/071.md",
+      "goal": "Comprovar utilidade e confiabilidade com duas organizações independentes.",
+      "rule_ids": [
+        "BR36"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    },
+    {
+      "sequence": 72,
+      "title": "72. Liberação comercial da versão 1.0",
+      "name": "Liberação comercial da versão 1.0",
+      "phase": "F8",
+      "dependencies": [
+        71
+      ],
+      "file": "docs/issues/072.md",
+      "goal": "Liberar a versão 1.0 apenas com comprovação profissional e comercial da versão publicada.",
+      "rule_ids": [
+        "BR38"
+      ],
+      "state": "planned",
+      "github_number": null,
+      "github_url": null
+    }
+  ]
+}

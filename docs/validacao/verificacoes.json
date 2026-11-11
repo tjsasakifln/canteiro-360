@@ -1,0 +1,68 @@
+{
+  "specification_date": "2026-11-11",
+  "scope": "Especificação e plano; não teste ou liberação de aplicativo implementado.",
+  "review": {
+    "independent_review_tracks": 3,
+    "initial_observations_with_overlaps": 32,
+    "observed_unresolved_findings": 0,
+    "retests": "Aprovados nos três escopos após correção; normalização editorial posterior preserva conteúdo, IDs, URLs e valores."
+  },
+  "traceability": {
+    "issues": 72,
+    "rules": 192,
+    "origins": {
+      "Adaptada": 79,
+      "Documentada": 52,
+      "Decisão": 61
+    },
+    "matrix_matches_rule_records": true
+  },
+  "sources": {
+    "inventory": 50,
+    "retrieved_and_sha256_verified": 48,
+    "known_http_404": 2
+  },
+  "reference_vectors": {
+    "status": "PASS",
+    "scope": "Recálculo independente dos exemplos numéricos da especificação; não executa nem aprova o futuro motor Rust.",
+    "reference_vectors": 30,
+    "recalculated": 25,
+    "recalculated_ids": [
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05",
+      "V06",
+      "V07",
+      "V08",
+      "V09",
+      "V10",
+      "V13",
+      "V14",
+      "V15",
+      "V16",
+      "V18",
+      "V21",
+      "V22",
+      "V23",
+      "V24",
+      "V25",
+      "V26",
+      "V27",
+      "V28",
+      "V29",
+      "V30"
+    ],
+    "non_numerical_specification_cases": [
+      "V11",
+      "V12",
+      "V17",
+      "V19",
+      "V20"
+    ]
+  },
+  "publication": {
+    "status": "A verificar após criação das issues nativas e leitura da versão remota."
+  }
+}

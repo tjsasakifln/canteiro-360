@@ -1,0 +1,435 @@
+{
+  "policy": "C360-DECIMAL-1",
+  "note": "Casos de referencia de especificacao; executar contra o motor Rust na implementacao.",
+  "vectors": [
+    {
+      "id": "V01",
+      "case": "delta_unitario",
+      "inputs": {
+        "previous": "20",
+        "current": "35",
+        "unit_price": "10"
+      },
+      "expected": {
+        "quantity": "15",
+        "amount": "150.00"
+      }
+    },
+    {
+      "id": "V02",
+      "case": "telescopico",
+      "inputs": {
+        "accumulated": [
+          "1",
+          "2",
+          "3"
+        ],
+        "unit_price": "0.335"
+      },
+      "expected": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33"
+        ],
+        "total": "1.00"
+      }
+    },
+    {
+      "id": "V03",
+      "case": "global",
+      "inputs": {
+        "stage": "100000.00",
+        "previous_percent": "20",
+        "current_percent": "45"
+      },
+      "expected": {
+        "amount": "25000.00"
+      }
+    },
+    {
+      "id": "V04",
+      "case": "bdi_desconto",
+      "inputs": {
+        "direct_cost": "100",
+        "bdi_percent": "20",
+        "discount_percent": "10"
+      },
+      "expected": {
+        "unit_price": "108.000000"
+      }
+    },
+    {
+      "id": "V05",
+      "case": "reajuste",
+      "inputs": {
+        "eligible": "10000",
+        "index_base": "100",
+        "index_current": "105"
+      },
+      "expected": {
+        "adjustment": "500.00"
+      }
+    },
+    {
+      "id": "V06",
+      "case": "complemento",
+      "inputs": {
+        "recognized": "800",
+        "definitive": "950"
+      },
+      "expected": {
+        "delta": "150.00"
+      }
+    },
+    {
+      "id": "V07",
+      "case": "supressao",
+      "inputs": {
+        "A_delta": "-5",
+        "A_price": "10",
+        "B_delta": "10",
+        "B_price": "20",
+        "approved": true
+      },
+      "expected": {
+        "amount": "150.00"
+      }
+    },
+    {
+      "id": "V08",
+      "case": "supressao_rejeitada",
+      "inputs": {
+        "A_previous": "20",
+        "A_proposed": "15",
+        "A_price": "10",
+        "B_delta": "10",
+        "B_price": "20",
+        "approved": false
+      },
+      "expected": {
+        "A_final": "20",
+        "amount": "200.00"
+      }
+    },
+    {
+      "id": "V09",
+      "case": "financeiro",
+      "inputs": {
+        "gross": "1000",
+        "withheld": "50",
+        "advance_offset": "100",
+        "cash_now": "600"
+      },
+      "expected": {
+        "net": "850.00",
+        "open": "250.00",
+        "withheld_open": "50.00"
+      }
+    },
+    {
+      "id": "V10",
+      "case": "rateio",
+      "inputs": {
+        "total": "100.00",
+        "parts": 3
+      },
+      "expected": {
+        "parts": [
+          "33.34",
+          "33.33",
+          "33.33"
+        ],
+        "total": "100.00"
+      }
+    },
+    {
+      "id": "V11",
+      "case": "limite",
+      "inputs": {
+        "contracted": "100",
+        "proposed": "101"
+      },
+      "expected": {
+        "error": "SALDO_INSUFICIENTE"
+      }
+    },
+    {
+      "id": "V12",
+      "case": "indice_ausente",
+      "inputs": {
+        "index_base": "100",
+        "index_current": null,
+        "mode": "definitivo"
+      },
+      "expected": {
+        "error": "INDICE_AUSENTE"
+      }
+    },
+    {
+      "id": "V13",
+      "case": "calendario_civil",
+      "inputs": {
+        "anchor": "2027-01-31",
+        "months": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-31"
+        ]
+      }
+    },
+    {
+      "id": "V14",
+      "case": "calendario_bissexto",
+      "inputs": {
+        "anchor": "2028-01-31",
+        "months": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2028-02-29",
+          "2028-03-31"
+        ]
+      }
+    },
+    {
+      "id": "V15",
+      "case": "paralisacao",
+      "inputs": {
+        "start": "2027-03-10",
+        "restart": "2027-03-13"
+      },
+      "expected": {
+        "days": 3
+      }
+    },
+    {
+      "id": "V16",
+      "case": "fim_execucao",
+      "inputs": {
+        "start": "2027-03-01",
+        "days": 10
+      },
+      "expected": {
+        "end": "2027-03-11"
+      }
+    },
+    {
+      "id": "V17",
+      "case": "reserva_concorrente",
+      "inputs": {
+        "available": "30000",
+        "requests": [
+          "20000",
+          "15000"
+        ]
+      },
+      "expected": {
+        "both_accepted": false,
+        "max_total": "30000.00"
+      }
+    },
+    {
+      "id": "V18",
+      "case": "misto_alcada",
+      "inputs": {
+        "addition": "100",
+        "suppression": "-100"
+      },
+      "expected": {
+        "net": "0.00",
+        "route": "acrescimo_ou_misto"
+      }
+    },
+    {
+      "id": "V19",
+      "case": "cnpj",
+      "inputs": {
+        "format": "alfanumerico_e_numerico"
+      },
+      "expected": {
+        "store_as": "text",
+        "official_vectors_required": true
+      }
+    },
+    {
+      "id": "V20",
+      "case": "encerramento_zero",
+      "inputs": {
+        "remaining_to_measure": "0.00",
+        "financial_open": "500.00"
+      },
+      "expected": {
+        "technical_close_allowed": true,
+        "new_invoice": "0.00",
+        "financial_open": "500.00"
+      }
+    },
+    {
+      "id": "V21",
+      "case": "cadeia_acumulada",
+      "inputs": {
+        "cumulative": [
+          "20",
+          "35"
+        ],
+        "unit_price": "10",
+        "reopen_first": true
+      },
+      "expected": {
+        "recognized_total": "350.00",
+        "reopen_allowed": false
+      }
+    },
+    {
+      "id": "V22",
+      "case": "indice_ciclo_fixo",
+      "inputs": {
+        "base_competence": "2024-12",
+        "reference_date": "2025-01-01",
+        "execution_date": "2026-02-15",
+        "period_years": 1,
+        "indices": {
+          "2024-12": "100",
+          "2025-12": "104",
+          "2026-01": "105",
+          "2026-02": "106"
+        },
+        "eligible": "10000"
+      },
+      "expected": {
+        "selected_competence": "2026-01",
+        "selected_index": "105",
+        "adjustment": "500.00"
+      }
+    },
+    {
+      "id": "V23",
+      "case": "supressao_ciclo_original",
+      "inputs": {
+        "suppressed_base": "100",
+        "original_rate": "5",
+        "new_base": "1000",
+        "current_rate": "10"
+      },
+      "expected": {
+        "services": "900.00",
+        "adjustment": "95.00",
+        "gross": "995.00"
+      }
+    },
+    {
+      "id": "V24",
+      "case": "incidencia_acumulada",
+      "inputs": {
+        "contracted_base": "10000",
+        "previous_base": "2000",
+        "current_base": "4000",
+        "rate": "20"
+      },
+      "expected": {
+        "previous": "400.00",
+        "current": "800.00",
+        "period": "400.00"
+      }
+    },
+    {
+      "id": "V25",
+      "case": "manutencao_parcial",
+      "inputs": {
+        "limit": "100",
+        "order": "80",
+        "confirmed": "50",
+        "cancel_remaining": "30"
+      },
+      "expected": {
+        "consumed": "50.00",
+        "reserved": "0.00",
+        "available": "50.00"
+      }
+    },
+    {
+      "id": "V26",
+      "case": "deducoes_limitadas",
+      "inputs": {
+        "gross": "80",
+        "retention": "10",
+        "advance_credit": "100"
+      },
+      "expected": {
+        "offset": "70.00",
+        "credit_left": "30.00",
+        "net": "0.00",
+        "new_cash": "0.00"
+      }
+    },
+    {
+      "id": "V27",
+      "case": "linearizacao",
+      "inputs": {
+        "total_percent": "100",
+        "stable_positions": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "percentages": [
+          "33.34",
+          "33.33",
+          "33.33"
+        ],
+        "total": "100.00"
+      }
+    },
+    {
+      "id": "V28",
+      "case": "prazo_meses_convertido",
+      "inputs": {
+        "start": "2027-01-31",
+        "end": "2027-02-28",
+        "original_months": 1
+      },
+      "expected": {
+        "calendar_days": 28
+      }
+    },
+    {
+      "id": "V29",
+      "case": "execucao_contida",
+      "inputs": {
+        "valid_from": "2027-03-01",
+        "valid_to": "2027-05-31",
+        "start": "2027-05-30",
+        "days": 10
+      },
+      "expected": {
+        "end": "2027-06-09",
+        "allowed": false
+      }
+    },
+    {
+      "id": "V30",
+      "case": "percentual_novo_denominador",
+      "inputs": {
+        "executed": "40",
+        "old_scope": "100",
+        "new_scope": "200"
+      },
+      "expected": {
+        "previous_percent": "40",
+        "current_percent": "20",
+        "executed_unchanged": "40"
+      }
+    }
+  ]
+}
