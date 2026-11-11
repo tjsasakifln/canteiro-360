@@ -1,4 +1,4 @@
-name: Fundação Rust
+name: Rust e PostgreSQL
 
 on:
   push:
@@ -18,9 +18,24 @@ env:
 
 jobs:
   foundation:
-    name: Formatação, regras, testes, SSR e WASM
+    name: Formatação, regras, PostgreSQL, SSR e WASM
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17.7-bookworm
+        env:
+          POSTGRES_USER: canteiro_test_admin
+          POSTGRES_DB: canteiro_test
+          # Sem dados reais; a porta não é publicada fora da interface local do executor.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U canteiro_test_admin -d canteiro_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - name: Obter a revisão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -38,6 +53,35 @@ jobs:
         run: cargo clippy --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown -- -D warnings
       - name: Executar testes positivos e negativos
         run: cargo test --locked --workspace
+      - name: Executar cenários com PostgreSQL real
+        env:
+          # Conexão fictícia sem senha, disponível somente neste passo.
+          CANTEIRO_FIXTURE_BOOTSTRAP: postgres://canteiro_test_admin@127.0.0.1:5432/canteiro_test
+        run: |
+          set -euo pipefail
+          export CANTEIRO_TEST_DATABASE_URL="${CANTEIRO_FIXTURE_BOOTSTRAP}"
+          unset CANTEIRO_FIXTURE_BOOTSTRAP
+          mkdir -p target/evidence
+          cargo test --locked -p canteiro-persistence -- --ignored --nocapture 2>&1 | tee target/evidence/persistence.log
+      - name: Provisionar identidades distintas para a aplicação de teste
+        run: |
+          docker exec --interactive "${{ job.services.postgres.id }}" psql --username canteiro_test_admin --dbname canteiro_test --set ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE canteiro_development_migrator LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+          CREATE ROLE canteiro_development_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+          CREATE DATABASE canteiro_development OWNER canteiro_development_migrator;
+          REVOKE ALL ON DATABASE canteiro_development FROM PUBLIC;
+          SQL
+      - name: Aplicar migrações e validar a identidade de execução
+        env:
+          CANTEIRO_ENV: development
+          CANTEIRO_FIXTURE_MIGRATOR: postgres://canteiro_development_migrator@127.0.0.1:5432/canteiro_development
+          CANTEIRO_FIXTURE_RUNTIME: postgres://canteiro_development_runtime@127.0.0.1:5432/canteiro_development
+        run: |
+          set -euo pipefail
+          export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+          export CANTEIRO_MIGRATION_DATABASE_URL="${CANTEIRO_FIXTURE_MIGRATOR}"
+          unset CANTEIRO_FIXTURE_RUNTIME CANTEIRO_FIXTURE_MIGRATOR
+          cargo run --locked -p canteiro-persistence --bin canteiro-db -- migrate 2>&1 | tee target/evidence/migrations.log
       - name: Instalar ferramentas nas versões fixadas
         run: cargo xtask setup
       - name: Auditar dependências, origens e licenças
@@ -56,7 +100,13 @@ jobs:
           echo "CANTEIRO_BROWSER_BIN=${RUNNER_TEMP}/canteiro-browser/chrome-linux64/chrome" >> "${GITHUB_ENV}"
           echo "CANTEIRO_WEBDRIVER_BIN=${RUNNER_TEMP}/canteiro-browser/chromedriver-linux64/chromedriver" >> "${GITHUB_ENV}"
       - name: Verificar SSR, hidratação, falha e teclado em navegador real
-        run: cargo test --locked -p canteiro-e2e -- --ignored --nocapture
+        env:
+          CANTEIRO_ENV: development
+          CANTEIRO_FIXTURE_RUNTIME: postgres://canteiro_development_runtime@127.0.0.1:5432/canteiro_development
+        run: |
+          export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+          unset CANTEIRO_FIXTURE_RUNTIME
+          cargo test --locked -p canteiro-e2e -- --ignored --nocapture
       - name: Preservar medidas da revisão
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

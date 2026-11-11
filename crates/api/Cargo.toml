@@ -7,6 +7,7 @@ publish.workspace = true
 license.workspace = true
 
 [dependencies]
+canteiro-domain = { path = "../domain" }
 canteiro-application = { path = "../application" }
 canteiro-contracts = { path = "../contracts" }
 canteiro-persistence = { path = "../persistence" }

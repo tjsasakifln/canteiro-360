@@ -10,6 +10,13 @@ license.workspace = true
 canteiro-domain = { path = "../domain" }
 sqlx.workspace = true
 thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+tracing-subscriber = { workspace = true, features = ["fmt"] }
 
 [lints]
 workspace = true

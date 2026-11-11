@@ -1,0 +1,177 @@
+    Finished `test` profile [unoptimized] target(s) in 3.12s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_api-efd9cfbe7584bb2e)
+
+running 5 tests
+test error::tests::only_a_known_stale_version_marks_the_version_field ... ok
+test config::tests::environments_are_explicit_and_unknown_values_fail_closed ... ok
+test config::tests::configuration_does_not_read_external_credentials ... ok
+test error::tests::field_error_preserves_the_protocol_without_private_details ... ok
+test error::tests::public_errors_have_stable_status_and_matching_operation_reference ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/canteiro_api-853e9ba11070c201)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/http.rs (target/debug/deps/http-cbe57fbdfe3c2165)
+
+running 5 tests
+test liveness_does_not_claim_business_or_database_readiness ... ok
+test initial_document_has_useful_content_before_wasm ... ok
+test html_is_actually_transferred_with_brotli_when_requested ... ok
+test unknown_routes_and_private_files_never_receive_a_success_page ... ok
+test static_asset_serves_the_measured_brotli_without_recompression ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/debug/deps/canteiro_application-f9ef99efef47bbfc)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/canteiro_contracts-bc10b0ba5ae007c0)
+
+running 2 tests
+test error::tests::public_shape_and_stable_codes_are_explicit ... ok
+test error::tests::every_error_has_a_safe_recovery_without_false_success ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/canteiro_domain-332c78c748c54473)
+
+running 4 tests
+test values::tests::entity_versions_preserve_large_values_and_never_wrap ... ok
+test values::tests::identifiers_have_distinct_types_and_validate_deserialization ... ok
+test values::tests::instants_normalize_offsets_without_losing_microseconds ... ok
+test values::tests::civil_dates_keep_calendar_meaning_and_reject_impossible_or_ambiguous_dates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/canteiro_e2e-30d7308dc318200f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/browser.rs (target/debug/deps/browser-2f39d807efb837ca)
+
+running 2 tests
+test initial_route_performance_desktop_and_mobile ... ignored, Runs 80 measured navigations under CPU/network throttling
+test rendered_page_hydrates_and_recovers_with_keyboard ... ignored, Requires cargo xtask build, Chromium and matching ChromeDriver
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/canteiro_jobs-9a947344e3c5454e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/canteiro_persistence-e5870f2ef2294960)
+
+running 18 tests
+test database_tests::actual_database_error_is_redacted_in_diagnostics_and_public_persistence_error ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::cancelled_borrowed_write_cannot_later_be_committed ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::cancelled_task_rolls_back_pending_transaction_and_releases_clean_connection ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::concurrent_expected_version_updates_have_one_winner_and_never_overflow ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::cross_tenant_foreign_keys_reject_insert_and_update_even_for_superuser ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::edited_or_future_migration_history_is_rejected_without_erasing_existing_data ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::environment_owner_and_inherited_privilege_mismatches_fail_closed ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::failure_delayed_until_commit_is_never_reported_as_confirmed_or_safe_to_retry ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::ignored_second_write_and_raw_sql_errors_cannot_commit_partial_work ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::lock_pool_and_global_transaction_deadlines_abort_without_partial_writes ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::migration_advisory_lock_has_a_bounded_wait_and_rolls_back_bootstrap ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::one_connection_pool_clears_context_after_commit_rollback_failure_timeout_and_drop ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::runtime_rls_blocks_unscoped_reads_writes_and_wrong_tenant_mutations ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test database_tests::version_one_data_survives_upgrade_with_composite_and_date_constraints ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+test migration::tests::administrative_identifiers_are_quoted ... ok
+test settings::tests::limits_and_environments_reject_ambiguous_settings ... ok
+test settings::tests::database_configuration_never_prints_its_input ... ok
+
+test result: ok. 3 passed; 0 failed; 15 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/canteiro-db.rs (target/debug/deps/canteiro_db-4bde818f3a54b6e4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/canteiro_web-17cf6f1442dfb193)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/xtask-31e5b32d270a630f)
+
+running 20 tests
+test assets::tests::exact_limit_passes_but_one_byte_over_fails_for_each_kind ... ok
+test assets::tests::stale_or_missing_brotli_is_rejected ... ok
+test plan::tests::same_count_with_orphan_or_reassigned_rule_is_rejected ... ok
+test plan::tests::same_count_with_cyclic_dependency_is_rejected ... ok
+test plan::tests::changed_acceptance_cannot_silently_diverge_from_source ... ok
+test plan::tests::unknown_primary_source_is_rejected ... ok
+test assets::tests::local_stylesheet_import_is_validated_and_counted ... ok
+test plan::tests::approved_documents_cross_reference_each_other ... ok
+test policy::tests::dotenv_file_is_rejected_even_when_empty ... ok
+test assets::tests::inline_bootstrap_is_counted ... ok
+test assets::tests::extra_files_are_aggregated_instead_of_looking_only_at_main_wasm ... ok
+test policy::tests::example_password_is_not_an_exception ... ok
+test policy::tests::hardcoded_rust_secret_and_connection_password_are_rejected ... ok
+test assets::tests::remote_stylesheets_and_imports_cannot_escape_the_budget ... ok
+test policy::tests::inline_script_cannot_hide_in_html_or_rust ... ok
+test policy::tests::external_environment_reference_and_parser_are_allowed ... ok
+test policy::tests::secrets_in_nested_maps_and_inline_toml_are_rejected ... ok
+test policy::tests::prefixed_database_url_and_comment_like_password_are_rejected ... ok
+test policy::tests::every_javascript_module_extension_is_rejected ... ok
+test assets::tests::additional_large_javascript_file_breaks_real_compressed_budget ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s
+
+   Doc-tests canteiro_api
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_contracts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_domain
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_e2e
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_persistence
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_web
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

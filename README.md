@@ -2,7 +2,7 @@
 
 Gestão de obras e projetos privados no Brasil, com a disciplina operacional documentada nos manuais públicos do SICOP/SC e uma experiência de uso própria, rápida e intuitiva.
 
-**Situação atual:** fundação Rust da issue 1 implementada, com servidor, página inicial SSR/WASM e verificações automatizadas. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
+**Situação atual:** fundação Rust e persistência PostgreSQL das issues 1 e 2 implementadas, com página inicial SSR/WASM, migrações, isolamento de dados por empresa, transações e erros públicos seguros. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
 
 ## Compilar e executar
 
@@ -12,10 +12,18 @@ Com Rustup e as ferramentas de compilação disponíveis:
 rustup show
 cargo xtask setup
 cargo xtask build
-target/release/canteiro-api
 ```
 
-O comando `cargo xtask ci` executa a conferência completa e exige Chrome e ChromeDriver nos caminhos configurados. O [guia de desenvolvimento](docs/desenvolvimento.md) detalha a instalação, os comandos separados, os ambientes e as evidências. Abrir `http://127.0.0.1:3000` após a compilação. O executável de processamento oferece apenas `--check` nesta etapa.
+Para executar o servidor, provisione PostgreSQL e as duas identidades descritas no [guia de persistência](docs/persistencia.md). Injete a configuração de desenvolvimento e as conexões externas no processo de migração; depois inicie a API apenas com a conexão de execução:
+
+```sh
+target/release/canteiro-db migrate
+env -u CANTEIRO_MIGRATION_DATABASE_URL target/release/canteiro-api
+```
+
+A API recusa inicialização sem banco migrado, com ambiente divergente ou com identidade privilegiada. Abrir `http://127.0.0.1:3000` após iniciar. A página inicial permanece informativa; cadastro, autenticação e operações de obras serão entregues nas etapas seguintes. O executável de processamento oferece apenas `--check` nesta etapa.
+
+O [guia de desenvolvimento](docs/desenvolvimento.md) detalha compilação, verificações, ensaios do navegador e testes explícitos com banco real. A integração contínua executa esses cenários em PostgreSQL `17.7`, com identidades e dados fictícios descartáveis.
 
 ## Comece aqui
 
@@ -23,6 +31,7 @@ O comando `cargo xtask ci` executa a conferência completa e exige Chrome e Chro
 |---|---|
 | [LEIAME](LEIAME.md) | Objetivo, escopo, decisões e orientação de execução |
 | [Desenvolvimento](docs/desenvolvimento.md) | Compilação reproduzível, execução e validação |
+| [Persistência](docs/persistencia.md) | PostgreSQL, migrações, identidades, limites e recuperação |
 | [Aceite da issue 1](docs/validacao/ISSUE-001.md) | Versões compiladas, medidas, revisão e evidências |
 | [PRD](PRD.md) | Requisitos do produto e critérios de sucesso |
 | [Plano de implementação](docs/BACKLOG.md) | Issues 01 a 72, dependências e fases |

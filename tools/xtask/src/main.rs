@@ -69,6 +69,19 @@ fn run() -> Result<()> {
                 &root,
                 "cargo",
                 &[
+                    "test",
+                    "--locked",
+                    "-p",
+                    "canteiro-persistence",
+                    "--",
+                    "--ignored",
+                    "--nocapture",
+                ],
+            )?;
+            command(
+                &root,
+                "cargo",
+                &[
                     "clippy",
                     "--locked",
                     "-p",
@@ -231,6 +244,8 @@ fn build(root: &Path) -> Result<()> {
             "canteiro-api",
             "-p",
             "canteiro-jobs",
+            "-p",
+            "canteiro-persistence",
             "--release",
         ],
     )?;

@@ -1,0 +1,4 @@
+    Checking canteiro-persistence v0.1.0 ($CHECKOUT/crates/persistence)
+    Checking canteiro-api v0.1.0 ($CHECKOUT/crates/api)
+    Checking canteiro-jobs v0.1.0 ($CHECKOUT/crates/jobs)
+    Finished `dev` profile [unoptimized] target(s) in 1.66s
