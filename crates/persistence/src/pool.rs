@@ -97,11 +97,14 @@ async fn validate_runtime(
             OR r.rolname IN ('pg_read_all_data', 'pg_write_all_data', 'pg_execute_server_program', 'pg_read_server_files', 'pg_write_server_files'))) \
          AND NOT has_schema_privilege(current_user, 'canteiro', 'CREATE') \
          AND NOT has_schema_privilege(current_user, 'canteiro_meta', 'CREATE') \
+         AND NOT has_schema_privilege(current_user, 'public', 'CREATE') \
          AND NOT has_table_privilege(current_user, 'canteiro.organizations', 'TRUNCATE') \
          AND NOT has_table_privilege(current_user, 'canteiro.organization_units', 'TRUNCATE') \
          AND NOT has_table_privilege(current_user, 'canteiro_meta.environment', 'UPDATE') \
          AND NOT has_table_privilege(current_user, 'canteiro_meta.environment', 'INSERT,DELETE,TRUNCATE') \
+         AND NOT has_any_column_privilege(current_user, 'canteiro_meta.environment', 'INSERT,UPDATE') \
          AND NOT has_table_privilege(current_user, 'public._sqlx_migrations', 'INSERT,UPDATE,DELETE,TRUNCATE') \
+         AND NOT has_any_column_privilege(current_user, 'public._sqlx_migrations', 'INSERT,UPDATE') \
          AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro'::regnamespace \
              AND relkind = 'r' AND (NOT relrowsecurity OR NOT relforcerowsecurity))")
         .fetch_one(&mut *connection).await?;

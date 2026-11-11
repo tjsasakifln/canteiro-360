@@ -28,7 +28,8 @@ pub async fn migrate(
     .await
     .map_err(|_| PersistenceError::new(PersistenceErrorKind::Timeout, operation))?
     .map_err(|e| PersistenceError::from_sql(&e, operation))?;
-    sqlx::raw_sql("SET search_path = public, pg_catalog; SET lock_timeout = '5s'; SET statement_timeout = '60s'; SET idle_in_transaction_session_timeout = '20s'")
+    // pg_catalog implícito é pesquisado antes de public, sem mudar o schema de criação.
+    sqlx::raw_sql("SET search_path = public; SET lock_timeout = '5s'; SET statement_timeout = '60s'; SET idle_in_transaction_session_timeout = '20s'")
         .execute(&mut connection).await.map_err(|e| PersistenceError::from_sql(&e, operation))?;
     // Identificar primeiro o ambiente, em transação. Nunca relabelar um banco existente.
     initialize_environment(&mut connection, environment)

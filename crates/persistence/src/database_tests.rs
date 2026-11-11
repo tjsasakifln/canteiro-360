@@ -1022,19 +1022,84 @@ async fn environment_owner_and_inherited_privilege_mismatches_fail_closed() {
             .await
             .unwrap();
     }
-    let grant = format!(
-        "GRANT CREATE ON SCHEMA canteiro_meta TO {}",
-        quoted_identifier(&fixture.runtime_role)
-    );
-    sqlx::raw_sql(sqlx::AssertSqlSafe(grant))
-        .execute(&fixture.admin)
+    // Privilégios por coluna não aparecem em has_table_privilege. Provar essa
+    // diferença evita que o teste passe apenas pela proteção de tabela existente.
+    for (relation, permission, columns) in [
+        ("canteiro_meta.environment", "UPDATE", "name"),
+        ("canteiro_meta.environment", "INSERT", "singleton, name"),
+        ("public._sqlx_migrations", "UPDATE", "checksum"),
+        (
+            "public._sqlx_migrations",
+            "INSERT",
+            "version, description, success, checksum, execution_time",
+        ),
+    ] {
+        let grant = format!(
+            "GRANT {permission} ({columns}) ON {relation} TO {}",
+            quoted_identifier(&fixture.runtime_role)
+        );
+        sqlx::raw_sql(sqlx::AssertSqlSafe(grant))
+            .execute(&fixture.admin)
+            .await
+            .unwrap();
+        let privileges: (bool, bool) = sqlx::query_as(
+            "SELECT has_table_privilege($1::text, $2::text, $3::text), \
+             has_any_column_privilege($1::text, $2::text, $3::text)",
+        )
+        .bind(&fixture.runtime_role)
+        .bind(relation)
+        .bind(permission)
+        .fetch_one(&fixture.admin)
         .await
         .unwrap();
-    assert!(
-        Database::connect(&fixture.runtime, DatabaseEnvironment::Test, short)
+        assert_eq!(
+            privileges,
+            (false, true),
+            "probe exige concessão somente por coluna"
+        );
+        assert!(
+            Database::connect(&fixture.runtime, DatabaseEnvironment::Test, short)
+                .await
+                .is_err()
+        );
+        let revoke = format!(
+            "REVOKE {permission} ({columns}) ON {relation} FROM {}",
+            quoted_identifier(&fixture.runtime_role)
+        );
+        sqlx::raw_sql(sqlx::AssertSqlSafe(revoke))
+            .execute(&fixture.admin)
             .await
-            .is_err()
-    );
+            .unwrap();
+        let restored = fixture.database(short).await;
+        assert_clean_pool(&restored).await;
+        restored.close().await;
+    }
+    for schema in ["canteiro_meta", "public"] {
+        let grant = format!(
+            "GRANT CREATE ON SCHEMA {schema} TO {}",
+            quoted_identifier(&fixture.runtime_role)
+        );
+        sqlx::raw_sql(sqlx::AssertSqlSafe(grant))
+            .execute(&fixture.admin)
+            .await
+            .unwrap();
+        assert!(
+            Database::connect(&fixture.runtime, DatabaseEnvironment::Test, short)
+                .await
+                .is_err()
+        );
+        let revoke = format!(
+            "REVOKE CREATE ON SCHEMA {schema} FROM {}",
+            quoted_identifier(&fixture.runtime_role)
+        );
+        sqlx::raw_sql(sqlx::AssertSqlSafe(revoke))
+            .execute(&fixture.admin)
+            .await
+            .unwrap();
+        let restored = fixture.database(short).await;
+        assert_clean_pool(&restored).await;
+        restored.close().await;
+    }
     let different_database = settings(fixture.runtime.options().database("another_test_database"));
     assert_eq!(
         migrate(

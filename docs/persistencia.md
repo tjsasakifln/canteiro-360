@@ -24,7 +24,7 @@ CREATE DATABASE canteiro_development OWNER canteiro_development_migrator;
 REVOKE ALL ON DATABASE canteiro_development FROM PUBLIC;
 ```
 
-Configure a autenticação dessas identidades na infraestrutura e mantenha os segredos fora do repositório. As instruções SQL acima não criam senhas nem habilitam acesso de rede. Em homologação, use outro banco, outros papéis e autenticação própria. Não conceda ao papel de execução associação ao migrador, privilégios administrativos, `TRUNCATE` ou criação de objetos no esquema da aplicação.
+Configure a autenticação dessas identidades na infraestrutura e mantenha os segredos fora do repositório. As instruções SQL acima não criam senhas nem habilitam acesso de rede. Em homologação, use outro banco, outros papéis e autenticação própria. Não conceda ao papel de execução associação ao migrador, privilégios administrativos, `TRUNCATE`, criação de objetos nos esquemas da aplicação ou em `public`, nem escrita nos metadados, inclusive por coluna.
 
 O isolamento por linhas não substitui autorização de usuário. Quem chama `Database::begin` deve obter empresa e ator de contexto autorizado no servidor. Até as etapas de autenticação e vínculos, a biblioteca permanece sem rotas de mutação acessíveis pelo navegador.
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "base_commit": "3d18ec8ae4a86f0dbf9b919895b841068c016ee2",
-  "implementation_sha256": "caa6344a372ae2e02f18e8805f1d826758666153ad7c8b3897e44bf7d7bcca87",
+  "implementation_sha256": "791e35be41ada58d6d749d00ab650e6e28fa47a6154d6a7a1348957d87321c1d",
   "files": [
     {
       "path": ".cargo/config.toml",
@@ -121,7 +121,7 @@
     },
     {
       "path": "crates/persistence/src/database_tests.rs",
-      "sha256": "49044e937143a0fc6524b33ca958804d2ccecb7f7a0e78589bf9cdabbb004f9d"
+      "sha256": "a0fd541bd80c4efcb438f26f1a9b642e26ca9f5929223be04d9f5145c1784a73"
     },
     {
       "path": "crates/persistence/src/error.rs",
@@ -133,11 +133,11 @@
     },
     {
       "path": "crates/persistence/src/migration.rs",
-      "sha256": "4a6ee662cd17c3c77dec249720bac8ea7e41515aba2fdacea1c41b68335fb571"
+      "sha256": "364bc25ef95d964ee9258f1df9c2997ec04441c5eb6106007f32e3a88afffdcb"
     },
     {
       "path": "crates/persistence/src/pool.rs",
-      "sha256": "e0faa22f9b03c7cb8a7ce6f6d7b14d1cd8ef47ace882cc72ad517e3f09adcae6"
+      "sha256": "5578f0edb3d034524afabc58d50867d89b4161ec0cc89d3ce918161ae620ca76"
     },
     {
       "path": "crates/persistence/src/settings.rs",
@@ -236,7 +236,7 @@
     "postgresql_passed": 15,
     "postgresql_failed": 0,
     "postgresql_ignored": 0,
-    "postgresql_seconds": 5.8,
+    "postgresql_seconds": 5.91,
     "missing_database_exit_code": 101,
     "clippy": "passed",
     "format": "passed",

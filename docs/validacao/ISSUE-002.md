@@ -25,7 +25,7 @@ Ambiente: Rust/Cargo 1.99.1, Linux x86_64 e PostgreSQL 17.7 real em instância d
 | Formatação | Aprovada | `cargo fmt --all -- --check` |
 | Clippy, workspace e todos os alvos nativos, avisos como erro | Aprovado | [Registro](issue-002/clippy.log) |
 | Testes unitários e HTTP do workspace | 39 aprovados, zero falhas | [Registro](issue-002/native-tests.log) |
-| PostgreSQL real, execução explícita | 15 aprovados, zero falhas, zero ignorados; 5,80 s | [Registro](issue-002/postgresql-tests.log) |
+| PostgreSQL real, execução explícita | 15 aprovados, zero falhas, zero ignorados; 5,91 s | [Registro](issue-002/postgresql-tests.log) |
 | Configuração de banco ausente | Recusada com código 101, antes de conectar | [Prova negativa](issue-002/missing-database-probe.log) |
 | Plano e política de código/segredos | 72 issues e 192 regras coerentes; política aprovada | [Registro](issue-002/policy.log) |
 
@@ -51,7 +51,7 @@ Um revisor independente examinou código, requisitos, testes e resultados. Os ac
 |---|---|
 | Cancelar apenas o futuro de uma chamada deixava a unidade apta a confirmar depois | Indicador de operação em andamento antes do `await`; nova chamada aborta a unidade interrompida. Probes com bloqueio real cobrem leitura e escrita canceladas mantendo a unidade viva. |
 | Migração podia aguardar um bloqueio indefinidamente | Limites administrativos de bloqueio, consulta e ociosidade. Bloqueio consultivo real encerrou no prazo e não deixou bootstrap parcial. |
-| Proteção do marcador de ambiente não cobria todos os privilégios perigosos | Runtime recusa inserção, alteração, exclusão, truncagem e criação de objetos pertinentes. Probes de concessão e associação de papéis passaram. |
+| Proteção do marcador e do histórico não cobria todos os privilégios perigosos | Runtime recusa inserção, alteração, exclusão, truncagem e criação de objetos pertinentes. Probes incluem concessão por coluna sem privilégio de tabela, associação de papéis, criação em `public` e recuperação após revogação. O migrador preserva a prioridade implícita de `pg_catalog` na busca de funções. |
 | SQLx pode registrar automaticamente erros de callbacks | Todos os callbacks recebem mensagem fixa sanitizada. Conferência estática e captura de diagnóstico real sem entrada sensível. |
 | Inicialização não conferia a versão exata do banco | Comparação integral de versão, quantidade, ordem, checksum e conclusão das migrações. Probes V1, histórico alterado e versão futura passaram. |
 | Variáveis fictícias administrativas da CI eram herdadas por outros passos | Escopo por passo e remoção das variáveis auxiliares; o navegador recebe somente a conexão operacional. |
