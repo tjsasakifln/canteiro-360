@@ -63,6 +63,25 @@
     ]
   },
   "publication": {
-    "status": "A verificar após criação das issues nativas e leitura da versão remota."
+    "status": "Issues nativas conferidas; conferência final dos arquivos em andamento.",
+    "repository": "tjsasakifln/canteiro-360",
+    "visibility": "private",
+    "native_issues": 72,
+    "native_numbers": "1..72",
+    "all_issues_open": true,
+    "titles_and_bodies_match": true,
+    "method": "Leitura independente da API GitHub após criação; quatro páginas, 18 issues por página."
+  },
+  "structural_checks": {
+    "status": "PASS",
+    "scope": "Especificacao e referencias; nao teste da aplicacao futura",
+    "checks": {
+      "issues_sequenciais": 72,
+      "regras_com_rastreabilidade": 192,
+      "arquivos_markdown": 91,
+      "vetores_referencia": 30,
+      "vetores_numericos_recalculados": 25
+    },
+    "errors": []
   }
 }

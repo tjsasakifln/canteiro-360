@@ -69,8 +69,8 @@
         "UX13"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 1,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/1"
     },
     {
       "sequence": 2,
@@ -84,8 +84,8 @@
       "goal": "Estabelecer persistência transacional e contratos de erro que suportem os módulos seguintes.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 2,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/2"
     },
     {
       "sequence": 3,
@@ -103,8 +103,8 @@
         "UX15"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 3,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/3"
     },
     {
       "sequence": 4,
@@ -124,8 +124,8 @@
         "UX11"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 4,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/4"
     },
     {
       "sequence": 5,
@@ -144,8 +144,8 @@
         "BR04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 5,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/5"
     },
     {
       "sequence": 6,
@@ -162,8 +162,8 @@
         "BR21"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 6,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/6"
     },
     {
       "sequence": 7,
@@ -182,8 +182,8 @@
         "UX02"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 7,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/7"
     },
     {
       "sequence": 8,
@@ -204,8 +204,8 @@
         "BR07"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 8,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/8"
     },
     {
       "sequence": 9,
@@ -224,8 +224,8 @@
         "UX04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 9,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/9"
     },
     {
       "sequence": 10,
@@ -243,8 +243,8 @@
         "BR20"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 10,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/10"
     },
     {
       "sequence": 11,
@@ -262,8 +262,8 @@
         "BR02"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 11,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/11"
     },
     {
       "sequence": 12,
@@ -280,8 +280,8 @@
         "ORC04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 12,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/12"
     },
     {
       "sequence": 13,
@@ -297,8 +297,8 @@
         "OP23"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 13,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/13"
     },
     {
       "sequence": 14,
@@ -319,8 +319,8 @@
         "BR13"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 14,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/14"
     },
     {
       "sequence": 15,
@@ -334,8 +334,8 @@
       "goal": "Tornar pendências acionáveis sem excesso de avisos.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 15,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/15"
     },
     {
       "sequence": 16,
@@ -349,8 +349,8 @@
       "goal": "Criar uma base de custos com origem e vigência confiáveis.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 16,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/16"
     },
     {
       "sequence": 17,
@@ -369,8 +369,8 @@
         "ORC18"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 17,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/17"
     },
     {
       "sequence": 18,
@@ -392,8 +392,8 @@
         "ORC19"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 18,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/18"
     },
     {
       "sequence": 19,
@@ -410,8 +410,8 @@
         "UX07"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 19,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/19"
     },
     {
       "sequence": 20,
@@ -429,8 +429,8 @@
         "ORC22"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 20,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/20"
     },
     {
       "sequence": 21,
@@ -449,8 +449,8 @@
         "UX05"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 21,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/21"
     },
     {
       "sequence": 22,
@@ -466,8 +466,8 @@
         "ORC23"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 22,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/22"
     },
     {
       "sequence": 23,
@@ -487,8 +487,8 @@
         "BR14"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 23,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/23"
     },
     {
       "sequence": 24,
@@ -506,8 +506,8 @@
         "CT-09"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 24,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/24"
     },
     {
       "sequence": 25,
@@ -524,8 +524,8 @@
         "EPG02"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 25,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/25"
     },
     {
       "sequence": 26,
@@ -539,8 +539,8 @@
       "goal": "Fixar o cronograma contratado e conservar as reprogramações.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 26,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/26"
     },
     {
       "sequence": 27,
@@ -556,8 +556,8 @@
         "CT-05"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 27,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/27"
     },
     {
       "sequence": 28,
@@ -573,8 +573,8 @@
         "OP16"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 28,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/28"
     },
     {
       "sequence": 29,
@@ -590,8 +590,8 @@
         "OP15"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 29,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/29"
     },
     {
       "sequence": 30,
@@ -608,8 +608,8 @@
         "PA-02"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 30,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/30"
     },
     {
       "sequence": 31,
@@ -628,8 +628,8 @@
         "MED06"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 31,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/31"
     },
     {
       "sequence": 32,
@@ -646,8 +646,8 @@
         "MED13"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 32,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/32"
     },
     {
       "sequence": 33,
@@ -665,8 +665,8 @@
         "EPG03"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 33,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/33"
     },
     {
       "sequence": 34,
@@ -688,8 +688,8 @@
         "MED11"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 34,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/34"
     },
     {
       "sequence": 35,
@@ -708,8 +708,8 @@
         "MED07"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 35,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/35"
     },
     {
       "sequence": 36,
@@ -726,8 +726,8 @@
         "MED14"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 36,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/36"
     },
     {
       "sequence": 37,
@@ -745,8 +745,8 @@
         "UX14"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 37,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/37"
     },
     {
       "sequence": 38,
@@ -764,8 +764,8 @@
         "AD-03"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 38,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/38"
     },
     {
       "sequence": 39,
@@ -782,8 +782,8 @@
         "AD-04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 39,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/39"
     },
     {
       "sequence": 40,
@@ -803,8 +803,8 @@
         "BR19"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 40,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/40"
     },
     {
       "sequence": 41,
@@ -826,8 +826,8 @@
         "SUP06"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 41,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/41"
     },
     {
       "sequence": 42,
@@ -843,8 +843,8 @@
         "CR-01"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 42,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/42"
     },
     {
       "sequence": 43,
@@ -861,8 +861,8 @@
         "RJ-04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 43,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/43"
     },
     {
       "sequence": 44,
@@ -880,8 +880,8 @@
         "BR17"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 44,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/44"
     },
     {
       "sequence": 45,
@@ -895,8 +895,8 @@
       "goal": "Controlar retenções e adiantamentos com saldos próprios.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 45,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/45"
     },
     {
       "sequence": 46,
@@ -912,8 +912,8 @@
         "BR16"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 46,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/46"
     },
     {
       "sequence": 47,
@@ -929,8 +929,8 @@
         "OP28"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 47,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/47"
     },
     {
       "sequence": 48,
@@ -954,8 +954,8 @@
         "MED18"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 48,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/48"
     },
     {
       "sequence": 49,
@@ -974,8 +974,8 @@
         "BR37"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 49,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/49"
     },
     {
       "sequence": 50,
@@ -992,8 +992,8 @@
         "RC-04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 50,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/50"
     },
     {
       "sequence": 51,
@@ -1012,8 +1012,8 @@
         "ATA04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 51,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/51"
     },
     {
       "sequence": 52,
@@ -1031,8 +1031,8 @@
         "OP09"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 52,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/52"
     },
     {
       "sequence": 53,
@@ -1050,8 +1050,8 @@
         "ATA05"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 53,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/53"
     },
     {
       "sequence": 54,
@@ -1068,8 +1068,8 @@
         "OP13"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 54,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/54"
     },
     {
       "sequence": 55,
@@ -1085,8 +1085,8 @@
         "OP24"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 55,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/55"
     },
     {
       "sequence": 56,
@@ -1102,8 +1102,8 @@
         "OP25"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 56,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/56"
     },
     {
       "sequence": 57,
@@ -1117,8 +1117,8 @@
       "goal": "Tratar riscos, problemas e mudanças de projeto com efeito rastreável.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 57,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/57"
     },
     {
       "sequence": 58,
@@ -1134,8 +1134,8 @@
         "BR08"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 58,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/58"
     },
     {
       "sequence": 59,
@@ -1155,8 +1155,8 @@
         "REL04"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 59,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/59"
     },
     {
       "sequence": 60,
@@ -1173,8 +1173,8 @@
         "BR27"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 60,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/60"
     },
     {
       "sequence": 61,
@@ -1190,8 +1190,8 @@
         "OP22"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 61,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/61"
     },
     {
       "sequence": 62,
@@ -1210,8 +1210,8 @@
         "UX09"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 62,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/62"
     },
     {
       "sequence": 63,
@@ -1230,8 +1230,8 @@
         "UX18"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 63,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/63"
     },
     {
       "sequence": 64,
@@ -1247,8 +1247,8 @@
         "UX12"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 64,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/64"
     },
     {
       "sequence": 65,
@@ -1264,8 +1264,8 @@
         "BR28"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 65,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/65"
     },
     {
       "sequence": 66,
@@ -1282,8 +1282,8 @@
         "BR24"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 66,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/66"
     },
     {
       "sequence": 67,
@@ -1301,8 +1301,8 @@
         "BR30"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 67,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/67"
     },
     {
       "sequence": 68,
@@ -1321,8 +1321,8 @@
         "BR35"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 68,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/68"
     },
     {
       "sequence": 69,
@@ -1340,8 +1340,8 @@
         "UX17"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 69,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/69"
     },
     {
       "sequence": 70,
@@ -1355,8 +1355,8 @@
       "goal": "Validar os módulos construídos até a etapa 70 e seus cenários integrados, antes dos pilotos e da liberação.",
       "rule_ids": [],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 70,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/70"
     },
     {
       "sequence": 71,
@@ -1372,8 +1372,8 @@
         "BR36"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 71,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/71"
     },
     {
       "sequence": 72,
@@ -1389,8 +1389,14 @@
         "BR38"
       ],
       "state": "planned",
-      "github_number": null,
-      "github_url": null
+      "github_number": 72,
+      "github_url": "https://github.com/tjsasakifln/canteiro-360/issues/72"
     }
-  ]
+  ],
+  "publication": {
+    "repository": "tjsasakifln/canteiro-360",
+    "native_numbers": "1..72",
+    "created_before_first_pull_request": true,
+    "state": "72 issues abertas; corpos conferidos por leitura independente da API."
+  }
 }

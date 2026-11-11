@@ -226,7 +226,7 @@
     "source": "docs/prontidao-comercial.md",
     "locator": "§6.2 Revisão de segurança e §7 Oferta",
     "rule": "Autenticação e sessões.",
-    "private_rule": "Se houver senha própria, Argon 2 id com salt único e parâmetros versionados, configuração inicial de 64 MiB, três iterações e paralelismo um, medidos na issue 06 sem ajuste abaixo das recomendações OWASP; IdP aprovado é alternativa. Reset usa 256 bits aleatórios, validade de 15 minutos, hash persistido e uso único. Recuperação não contorna MFA nem cria sessão privilegiada.",
+    "private_rule": "Se houver senha própria, Argon2id com salt único e parâmetros versionados, configuração inicial de 64 MiB, três iterações e paralelismo um, medidos na issue 06 sem ajuste abaixo das recomendações OWASP; IdP aprovado é alternativa. Reset usa 256 bits aleatórios, validade de 15 minutos, hash persistido e uso único. Recuperação não contorna MFA nem cria sessão privilegiada.",
     "issue": 6,
     "acceptance": "Senha e token não aparecem em claro em persistência/log. Senhas iguais têm salt distinto e parâmetros identificados. Reset usado, expirado ou inválido falha; sessões são revogáveis; MFA não é removido silenciosamente. Gerenciador/colagem/teclado funcionam. Limites de tentativas e custo são medidos."
   },
