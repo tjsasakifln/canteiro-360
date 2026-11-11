@@ -91,7 +91,7 @@ O adaptador de persistência recebe uma URL externa por `DatabaseSettings::from_
 | `cargo xtask check` | Plano e política |
 | `cargo xtask build` | Servidor, processamento, WASM, interoperabilidade, Brotli e orçamento |
 | `cargo xtask budget` | Integridade das versões Brotli e soma do conjunto inicial, incluindo arquivos adicionais |
-| `cargo xtask ci` | Verificações locais de formatação, análise, testes, dependências e compilação |
+| `cargo xtask ci` | Formatação, análise, testes, dependências, compilação e ensaios de navegador; requer ferramentas, Chrome e driver previamente configurados |
 
 As verificações de segredos são uma barreira automatizada de formatos e padrões conhecidos, complementada pela revisão do código. A única exceção de manutenção de dependências está justificada na [decisão técnica da fundação](decisoes/0001-fundacao.md); outras advertências de segurança não recebem exceção automática.
 

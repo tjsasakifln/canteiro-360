@@ -1,0 +1,28 @@
+2026-11-11T15:11:50.1022283Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1026592Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1170786Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-11T15:11:50.1183940Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1203149Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1214989Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1219358Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1237209Z test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1245795Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1267804Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:50.1272704Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.2088435Z test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.08s
+2026-11-11T15:11:52.2513952Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.2664101Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.2844470Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.2973316Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.3101076Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.3342761Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:11:52.3789839Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:21:37.8446306Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-11T15:22:02.9936429Z Lab result: {"cache":"cold","clsP75":0.0,"controlledInteractionP75Ms":29.099999999976717,"hydrationP75Ms":738.5,"lcpP75Ms":408.0,"n":20,"profile":"desktop"}
+2026-11-11T15:22:26.4289175Z Lab result: {"cache":"warm","clsP75":0.0,"controlledInteractionP75Ms":26.400000000023283,"hydrationP75Ms":696.0999999999767,"lcpP75Ms":384.0,"n":20,"profile":"desktop"}
+2026-11-11T15:22:48.8899710Z Lab result: {"cache":"cold","clsP75":0.0,"controlledInteractionP75Ms":21.19999999995343,"hydrationP75Ms":695.2000000000698,"lcpP75Ms":376.0,"n":20,"profile":"mobile"}
+2026-11-11T15:23:12.1984194Z Lab result: {"cache":"warm","clsP75":0.0,"controlledInteractionP75Ms":29.69999999995343,"hydrationP75Ms":691.8000000000466,"lcpP75Ms":376.0,"n":20,"profile":"mobile"}
+2026-11-11T15:23:12.1995090Z Performance acceptance passed; evidence: /home/runner/work/canteiro-360/canteiro-360/target/evidence
+2026-11-11T15:23:24.2869199Z Functional browser acceptance passed; evidence: /home/runner/work/canteiro-360/canteiro-360/target/evidence
+2026-11-11T15:23:24.3437721Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 106.50s
+2026-11-11T15:23:24.3561012Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

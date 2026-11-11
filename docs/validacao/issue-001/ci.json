@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "repository": "tjsasakifln/canteiro-360",
+  "issue": 1,
+  "pr": 73,
+  "head_sha": "41b4173acbd79e8b68e29a9f09bfdcf289b0f8b0",
+  "tested_merge_sha": "7885fe4b79c3050f4432cea0b1ed63199872e581",
+  "workflow_run_id": 43045304102,
+  "workflow_url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43045304102",
+  "conclusion": "success",
+  "artifact_id": 13868181675,
+  "artifact_sha256": "8b651d5caeec5f28a3168ea85c0c3533309f0f2398498251d54f62fe866277dd",
+  "native_tests_passed": 28,
+  "browser_tests_passed": 2,
+  "browser_measurement_navigations": 80,
+  "job": [
+    {
+      "id": 130607544827,
+      "name": "Formatação, regras, testes, SSR e WASM",
+      "started_at": "2026-11-11T15:08:18Z",
+      "completed_at": "2026-11-11T15:23:26Z",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "started_at": "2026-11-11T15:08:19Z",
+          "completed_at": "2026-11-11T15:08:19Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Obter a revisão",
+          "started_at": "2026-11-11T15:08:19Z",
+          "completed_at": "2026-11-11T15:08:21Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Instalar toolchain fixada",
+          "started_at": "2026-11-11T15:08:21Z",
+          "completed_at": "2026-11-11T15:08:31Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Conferir formatação",
+          "started_at": "2026-11-11T15:08:31Z",
+          "completed_at": "2026-11-11T15:08:31Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Conferir plano, linguagens e segredos",
+          "started_at": "2026-11-11T15:08:31Z",
+          "completed_at": "2026-11-11T15:08:45Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Analisar Rust com avisos tratados como erro",
+          "started_at": "2026-11-11T15:08:45Z",
+          "completed_at": "2026-11-11T15:10:04Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Analisar também o código compilado para navegador",
+          "started_at": "2026-11-11T15:10:04Z",
+          "completed_at": "2026-11-11T15:10:37Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Executar testes positivos e negativos",
+          "started_at": "2026-11-11T15:10:37Z",
+          "completed_at": "2026-11-11T15:11:52Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Instalar ferramentas nas versões fixadas",
+          "started_at": "2026-11-11T15:11:52Z",
+          "completed_at": "2026-11-11T15:16:15Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Auditar dependências, origens e licenças",
+          "started_at": "2026-11-11T15:16:15Z",
+          "completed_at": "2026-11-11T15:16:16Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Compilar servidor, processamento e navegador",
+          "started_at": "2026-11-11T15:16:16Z",
+          "completed_at": "2026-11-11T15:21:20Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Conferir orçamento dos arquivos servidos",
+          "started_at": "2026-11-11T15:21:20Z",
+          "completed_at": "2026-11-11T15:21:20Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Preparar navegador e driver fixos",
+          "started_at": "2026-11-11T15:21:20Z",
+          "completed_at": "2026-11-11T15:21:24Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verificar SSR, hidratação, falha e teclado em navegador real",
+          "started_at": "2026-11-11T15:21:24Z",
+          "completed_at": "2026-11-11T15:23:24Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Preservar medidas da revisão",
+          "started_at": "2026-11-11T15:23:24Z",
+          "completed_at": "2026-11-11T15:23:25Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Obter a revisão",
+          "started_at": "2026-11-11T15:23:25Z",
+          "completed_at": "2026-11-11T15:23:25Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "started_at": "2026-11-11T15:23:25Z",
+          "completed_at": "2026-11-11T15:23:25Z",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

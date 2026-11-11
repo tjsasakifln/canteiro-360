@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "scenarios": [
+    {
+      "scenario": "baseline-policy",
+      "return_code": 0,
+      "expected_success": true,
+      "matched_expectation": true,
+      "elapsed_seconds": 0.135
+    },
+    {
+      "scenario": "reject-nested-config",
+      "return_code": 1,
+      "expected_success": false,
+      "matched_expectation": true,
+      "elapsed_seconds": 0.09
+    },
+    {
+      "scenario": "reject-typescript",
+      "return_code": 1,
+      "expected_success": false,
+      "matched_expectation": true,
+      "elapsed_seconds": 0.078
+    },
+    {
+      "scenario": "reject-broken-test",
+      "return_code": 101,
+      "expected_success": false,
+      "matched_expectation": true,
+      "elapsed_seconds": 0.882
+    },
+    {
+      "scenario": "restored-application-tests",
+      "return_code": 0,
+      "expected_success": true,
+      "matched_expectation": true,
+      "elapsed_seconds": 0.172
+    },
+    {
+      "scenario": "restored-policy",
+      "return_code": 0,
+      "expected_success": true,
+      "matched_expectation": true,
+      "elapsed_seconds": 0.095
+    }
+  ]
+}
