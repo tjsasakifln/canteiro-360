@@ -63,14 +63,53 @@
     ]
   },
   "publication": {
-    "status": "Issues nativas conferidas; conferência final dos arquivos em andamento.",
+    "status": "PASS",
     "repository": "tjsasakifln/canteiro-360",
+    "repository_url": "https://github.com/tjsasakifln/canteiro-360",
     "visibility": "private",
+    "checked_at_utc": "2026-11-11 03:57:33 UTC",
+    "verified_core_commit": "562b305f742f5115a48a9b758d1a60fb6e032d73",
+    "verified_core_tree": "7069d7073edee9ffab573a01d6e375e476b7272c",
+    "files_compared": 100,
+    "all_file_blobs_match": true,
+    "unexpected_remote_files": 0,
+    "direct_file_reads": [
+      {
+        "path": "LEIAME.md",
+        "matches": true
+      },
+      {
+        "path": "PRD.md",
+        "matches": true
+      },
+      {
+        "path": "docs/arquitetura-rust.md",
+        "matches": true
+      },
+      {
+        "path": "docs/regras/calculos.md",
+        "matches": true
+      },
+      {
+        "path": "docs/BACKLOG.md",
+        "matches": true
+      },
+      {
+        "path": "docs/validacao/REVISAO-ADVERSARIAL.md",
+        "matches": true
+      },
+      {
+        "path": "docs/backlog.json",
+        "matches": true
+      }
+    ],
     "native_issues": 72,
     "native_numbers": "1..72",
     "all_issues_open": true,
     "titles_and_bodies_match": true,
-    "method": "Leitura independente da API GitHub após criação; quatro páginas, 18 issues por página."
+    "issue_readback_method": "Leitura independente da API GitHub após criação; quatro páginas com 18 issues.",
+    "file_readback_method": "Comparação dos blobs Git de todos os arquivos locais com leitura independente da árvore remota.",
+    "note": "Este registro de resultados é publicado após conferir o commit indicado; a própria gravação do registro também é relida. Nenhuma issue de implementação foi encerrada."
   },
   "structural_checks": {
     "status": "PASS",
