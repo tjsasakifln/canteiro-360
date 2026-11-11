@@ -1,0 +1,67 @@
+name: Fundação Rust
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  foundation:
+    name: Formatação, regras, testes, SSR e WASM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Obter a revisão
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Instalar toolchain fixada
+        run: rustup show
+      - name: Conferir formatação
+        run: cargo fmt --all -- --check
+      - name: Conferir plano, linguagens e segredos
+        run: cargo xtask check
+      - name: Analisar Rust com avisos tratados como erro
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - name: Analisar também o código compilado para navegador
+        run: cargo clippy --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown -- -D warnings
+      - name: Executar testes positivos e negativos
+        run: cargo test --locked --workspace
+      - name: Instalar ferramentas nas versões fixadas
+        run: cargo xtask setup
+      - name: Auditar dependências, origens e licenças
+        run: cargo deny --locked check
+      - name: Compilar servidor, processamento e navegador
+        run: cargo xtask build
+      - name: Conferir orçamento dos arquivos servidos
+        run: cargo xtask budget
+      - name: Preparar navegador e driver fixos
+        run: |
+          mkdir -p "${RUNNER_TEMP}/canteiro-browser"
+          curl --fail --location --silent --show-error --retry 3 https://storage.googleapis.com/chrome-for-testing-public/156.0.8078.80/linux64/chrome-linux64.zip -o "${RUNNER_TEMP}/canteiro-browser/chrome.zip"
+          curl --fail --location --silent --show-error --retry 3 https://storage.googleapis.com/chrome-for-testing-public/156.0.8078.80/linux64/chromedriver-linux64.zip -o "${RUNNER_TEMP}/canteiro-browser/driver.zip"
+          unzip -q "${RUNNER_TEMP}/canteiro-browser/chrome.zip" -d "${RUNNER_TEMP}/canteiro-browser"
+          unzip -q "${RUNNER_TEMP}/canteiro-browser/driver.zip" -d "${RUNNER_TEMP}/canteiro-browser"
+          echo "CANTEIRO_BROWSER_BIN=${RUNNER_TEMP}/canteiro-browser/chrome-linux64/chrome" >> "${GITHUB_ENV}"
+          echo "CANTEIRO_WEBDRIVER_BIN=${RUNNER_TEMP}/canteiro-browser/chromedriver-linux64/chromedriver" >> "${GITHUB_ENV}"
+      - name: Verificar SSR, hidratação, falha e teclado em navegador real
+        run: cargo test --locked -p canteiro-e2e -- --ignored --nocapture
+      - name: Preservar medidas da revisão
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: evidencia-fundacao-${{ github.sha }}
+          path: target/evidence/
+          if-no-files-found: error
+          retention-days: 30

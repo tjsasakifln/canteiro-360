@@ -35,7 +35,7 @@ flowchart TD
 | `crates/contracts` | Estruturas de entrada/saída e erros públicos | Separar dados serializáveis de segredos e entidades internas |
 | `tools/xtask` | Comandos Rust para validação e operação | Sem scripts de negócio em outra linguagem |
 
-Essa é a estrutura a implementar; a presente especificação não afirma que esses crates já existam.
+Essa estrutura foi criada na issue 1. Os crates de domínio e processamento reservam as fronteiras dos módulos futuros; sua existência não significa que os respectivos processos de negócio já funcionem. Os comandos e as versões efetivamente compiladas estão em [desenvolvimento](desenvolvimento.md) e no [registro da issue 1](validacao/ISSUE-001.md).
 
 ## 3. Linguagens e interoperabilidade
 
