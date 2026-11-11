@@ -1,6 +1,6 @@
-# Desenvolvimento da fundação Rust
+# Desenvolvimento em Rust e PostgreSQL
 
-Este procedimento entrega a issue 1. A página inicial, o servidor e o executável de processamento compilam; o aplicativo permanece em desenvolvimento. Cadastro, autenticação, banco transacional, fila e operações de obras serão implementados nas próximas issues.
+Este procedimento cobre a fundação da issue 1 e a persistência da issue 2. A página inicial, o servidor, a ferramenta de migração e o executável reservado ao processamento compilam; o aplicativo permanece em desenvolvimento. A base transacional não oferece, por si, cadastro, autenticação, fila ou operações de obras. Essas capacidades pertencem às próximas issues.
 
 ## 1. Requisitos
 
@@ -8,6 +8,7 @@ Este procedimento entrega a issue 1. A página inicial, o servidor e o executáv
 - Acesso aos registros oficiais de Rust, crates.io e ao banco de avisos RustSec.
 - Pelo menos 8 GiB de RAM recomendados para compilar; o repositório limita o paralelismo a dois processos e remove símbolos de depuração dos perfis de desenvolvimento/teste para controlar memória.
 - Chrome e ChromeDriver compatíveis somente para os ensaios do navegador. A integração contínua usa Chrome for Testing e ChromeDriver `156.0.8078.80`, ambos fixados.
+- PostgreSQL para executar a API, as migrações e os testes de integração. A integração contínua fixa a imagem `postgres:17.7-bookworm`; o [guia de persistência](persistencia.md) descreve identidades, bancos e configuração externa.
 
 `rust-toolchain.toml` instala Rust `1.99.1`, `rustfmt`, `clippy` e `wasm32-unknown-unknown`. As dependências diretas têm versões exatas; `Cargo.lock` fixa o grafo completo. O servidor não precisa de Node e não existe aplicação JS/TS própria.
 
@@ -22,18 +23,21 @@ cargo xtask check
 cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
+cargo test --locked -p canteiro-persistence -- --ignored --nocapture
 cargo deny --locked check
 cargo xtask build
 cargo clippy --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown -- -D warnings
 cargo xtask budget
 ```
 
+O comando de testes da persistência exige `CANTEIRO_TEST_DATABASE_URL` previamente injetada e acesso administrativo a uma instância descartável, exclusivamente de teste. Ele cria bases e identidades próprias. A ausência dessa configuração produz falha, sem substituir o PostgreSQL por simulação. A compilação e os testes unitários não exigem banco; a aprovação da issue 2 exige os cenários de integração executados explicitamente.
+
 `setup` instala `wasm-bindgen-cli 0.2.130` e `cargo-deny 0.20.2`. O comando conserva uma instalação existente somente se a versão coincidir. A versão do gerador de interoperabilidade também precisa coincidir com `wasm-bindgen` no lock.
 
 `build` compila separadamente:
 
 ```sh
-cargo build --locked -p canteiro-api -p canteiro-jobs --release
+cargo build --locked -p canteiro-api -p canteiro-jobs -p canteiro-persistence --release
 cargo build --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown --profile wasm-release
 ```
 
@@ -41,13 +45,18 @@ Em seguida, produz a interoperabilidade com `wasm-bindgen`, copia o CSS, gera os
 
 Não use `--all-features` para compilar servidor e navegador juntos. `ssr` e `hydrate` pertencem a alvos diferentes; cada um possui sua verificação própria.
 
-Os arquivos distribuíveis são `target/release/canteiro-api`, `target/release/canteiro-jobs` e `target/site/`. Não versione `target/`. O binário e os arquivos da interface devem ser publicados como uma única versão, sem misturar resultados de compilações diferentes.
+Os arquivos distribuíveis são `target/release/canteiro-api`, `target/release/canteiro-db`, `target/release/canteiro-jobs` e `target/site/`. Não versione `target/`. O binário, as migrações embutidas e os arquivos da interface devem ser publicados como uma única versão, sem misturar resultados de compilações diferentes.
 
 ## 3. Executar localmente
 
+Provisione o banco e as identidades separadas conforme o [guia de persistência](persistencia.md). Injete `CANTEIRO_ENV`, `CANTEIRO_MIGRATION_DATABASE_URL` e `CANTEIRO_DATABASE_URL` no processo administrativo. As duas conexões precisam apontar ao mesmo banco e a usuários diferentes.
+
 ```sh
-target/release/canteiro-api
+target/release/canteiro-db migrate
+env -u CANTEIRO_MIGRATION_DATABASE_URL target/release/canteiro-api
 ```
+
+O primeiro comando aplica e confere as migrações; o segundo inicia a API somente com a identidade de execução. A inicialização normal exige a conexão de execução, esquema acessível, ambiente compatível e papel sem privilégios que contornem o isolamento. O histórico de migrações precisa coincidir com a versão embutida no binário, incluindo versões, integridade e execução concluída. Banco antigo, migração desconhecida ou integridade divergente são recusados. A migração não ocorre automaticamente no servidor HTTP. `--render-shell` continua disponível sem conexão ao banco para a compilação e a medição dos artefatos.
 
 Abrir `http://127.0.0.1:3000`. A página contém apresentação útil mesmo sem scripts. Quando a hidratação termina, o botão abre detalhes apenas nesta aba. Se o carregamento não termina em dez segundos, aparece a orientação para conferir a conexão e recarregar. A ação não cria nenhum registro.
 
@@ -67,20 +76,22 @@ O comando acima verifica o executável reservado ao processamento. Sem `--check`
 | Endereço padrão | `127.0.0.1:3000` | `0.0.0.0:3000` |
 | `CANTEIRO_BIND_ADDR` | Sobrescreve somente o endereço público de escuta | Mesma regra |
 | `CANTEIRO_SITE_ROOT` | Diretório dos arquivos compilados, padrão `target/site` | Caminho do artefato da mesma versão |
+| `CANTEIRO_DATABASE_URL` | Conexão externa da identidade de execução | Conexão de outro banco e outra identidade, próprios da homologação |
+| `CANTEIRO_MIGRATION_DATABASE_URL` | Somente no processo de migração | Somente no processo de migração da homologação |
 
 As bases públicas estão em `config/development.toml` e `config/homologation.toml`. Ambientes não reconhecidos são recusados. A fundação ainda não habilita o ambiente de produção.
 
 Exemplo de execução de homologação em ambiente controlado:
 
 ```sh
-CANTEIRO_ENV=homologation CANTEIRO_SITE_ROOT=target/site target/release/canteiro-api
+CANTEIRO_ENV=homologation CANTEIRO_SITE_ROOT=target/site env -u CANTEIRO_MIGRATION_DATABASE_URL target/release/canteiro-api
 ```
 
-A exposição, TLS e controle de acesso desse ambiente pertencem à infraestrutura de homologação. Este comando não provisiona hospedagem nem configura um domínio.
+A conexão externa de execução e as migrações da homologação precisam estar preparadas antes desse comando. A exposição, TLS e controle de acesso pertencem à infraestrutura de homologação. Este comando não provisiona hospedagem nem configura um domínio.
 
 Segredos devem ser injetados no ambiente do processo por um cofre ou pelo serviço de execução. `.env.example` contém apenas configurações públicas e não é carregado automaticamente. Arquivos `.env` locais e valores secretos literais são recusados pela política de validação; mantenha os segredos fora do diretório do repositório.
 
-O adaptador de persistência recebe uma URL externa por `DatabaseSettings::from_external_url`, não serializa essa configuração e oculta seu conteúdo em erros e diagnóstico. A fundação não abre uma conexão nem consulta `CANTEIRO_DATABASE_URL`. A implementação do banco, das migrações e das transações começa na issue 2. Credenciais jamais devem entrar no crate web ou nos contratos públicos.
+O adaptador recebe uma URL externa por `DatabaseSettings::from_external_url`, não serializa essa configuração e oculta seu conteúdo em erros e diagnóstico. A API consulta somente `CANTEIRO_DATABASE_URL`; a ferramenta administrativa consulta também a configuração de migração. A credencial administrativa não deve ser fornecida ao processo HTTP. Credenciais jamais devem entrar no crate web ou nos contratos públicos. Um marcador persistido identifica `development`, `homologation` ou `test`; tentar reutilizar o banco com outro ambiente é recusado.
 
 ## 5. Verificações
 
@@ -89,9 +100,10 @@ O adaptador de persistência recebe uma URL externa por `DatabaseSettings::from_
 | `cargo xtask plan` | Sequência das 72 etapas, dependências, fontes e correspondência das regras entre plano, matriz e registros |
 | `cargo xtask policy` | Ausência de lógica JS/TS própria, scripts inline próprios e credenciais embutidas detectáveis |
 | `cargo xtask check` | Plano e política |
-| `cargo xtask build` | Servidor, processamento, WASM, interoperabilidade, Brotli e orçamento |
+| `cargo xtask build` | Servidor, migrador, processamento, WASM, interoperabilidade, Brotli e orçamento |
 | `cargo xtask budget` | Integridade das versões Brotli e soma do conjunto inicial, incluindo arquivos adicionais |
-| `cargo xtask ci` | Formatação, análise, testes, dependências, compilação e ensaios de navegador; requer ferramentas, Chrome e driver previamente configurados |
+| `cargo test --locked -p canteiro-persistence -- --ignored --nocapture` | Migrações, isolamento, falhas e concorrência contra PostgreSQL real |
+| `cargo xtask ci` | Formatação, análise, testes unitários e de banco real, dependências, compilação e navegador; requer instância de teste, banco da API migrado, ferramentas, Chrome e driver previamente configurados |
 
 As verificações de segredos são uma barreira automatizada de formatos e padrões conhecidos, complementada pela revisão do código. A única exceção de manutenção de dependências está justificada na [decisão técnica da fundação](decisoes/0001-fundacao.md); outras advertências de segurança não recebem exceção automática.
 
@@ -99,7 +111,7 @@ Os limites de UX13 são 1 MiB para WASM, 80 KiB para interoperabilidade JS e 60 
 
 ## 6. Ensaios do navegador
 
-Defina caminhos de Chrome e ChromeDriver compatíveis, já instalados:
+Prepare o banco de desenvolvimento com as migrações e mantenha `CANTEIRO_DATABASE_URL` disponível para os servidores iniciados pelo ensaio. Defina caminhos de Chrome e ChromeDriver compatíveis, já instalados:
 
 ```sh
 CANTEIRO_BROWSER_BIN=/caminho/chrome CANTEIRO_WEBDRIVER_BIN=/caminho/chromedriver cargo test --locked -p canteiro-e2e -- --ignored --nocapture
@@ -109,4 +121,12 @@ Os testes iniciam os processos e usam cópias temporárias dos arquivos compilad
 
 O navegador e seu driver ausentes fazem o ensaio falhar. Os testes marcados `ignored` no comando básico são executados explicitamente pela integração contínua depois da compilação dos artefatos.
 
-Medidas, imagens e resultados ficam em `target/evidence/`. O workflow preserva esse diretório como artefato associado ao commit. Os resultados efetivamente conferidos desta entrega e suas condições ficam no [registro da issue 1](validacao/ISSUE-001.md).
+Medidas, imagens e resultados ficam em `target/evidence/`. O workflow preserva esse diretório como artefato associado ao commit. As evidências anteriores da fundação permanecem no [registro da issue 1](validacao/ISSUE-001.md); não substituem a execução da revisão atual.
+
+## 7. Banco real na integração contínua
+
+O workflow mantém as verificações de Rust, dependências, SSR, WASM, orçamento e navegador. Acrescenta PostgreSQL `17.7`, executa explicitamente os testes marcados `ignored` da persistência, provisiona um banco de desenvolvimento com migrador e execução separados e aplica `canteiro-db migrate` antes de iniciar o navegador.
+
+A instância é descartável e não contém dados reais. A porta do contêiner é publicada apenas em `127.0.0.1`; autenticação local sem senha é uma configuração exclusiva desse ensaio. Os endereços fictícios no workflow não são credenciais de cliente e não devem ser reutilizados em hospedagem ou homologação. A conexão administrativa dos testes e a conexão de migração ficam restritas aos respectivos passos. O passo de navegador recebe somente a conexão de execução.
+
+`target/evidence/persistence.log` e `target/evidence/migrations.log` registram a execução sem imprimir as configurações externas. Os passos usam `pipefail`, de modo que preservar a saída com `tee` não oculta falhas dos testes ou da migração.

@@ -1,4 +1,5 @@
 use canteiro_api::{config::Config, render_shell, router};
+use canteiro_persistence::{Database, DatabaseEnvironment, DatabaseSettings, TransactionLimits};
 use std::{error::Error, io::Write};
 use tokio::net::TcpListener;
 
@@ -23,11 +24,29 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .init();
+    let environment = match config.environment {
+        canteiro_api::config::Environment::Development => DatabaseEnvironment::Development,
+        canteiro_api::config::Environment::Homologation => DatabaseEnvironment::Homologation,
+    };
+    let database_settings =
+        DatabaseSettings::from_external_url(&std::env::var("CANTEIRO_DATABASE_URL").map_err(
+            |_| "Injete a configuração externa do PostgreSQL antes de iniciar o servidor.",
+        )?)?;
+    let database = Database::connect(
+        &database_settings,
+        environment,
+        TransactionLimits::default(),
+    )
+    .await?;
     let listener = TcpListener::bind(config.bind_addr).await?;
     tracing::info!(address = %listener.local_addr()?, environment = ?config.environment, "Canteiro 360 iniciado");
-    axum::serve(listener, router(&config))
-        .with_graceful_shutdown(shutdown())
-        .await?;
+    axum::serve(
+        listener,
+        router(&config).layer(axum::Extension(database.clone())),
+    )
+    .with_graceful_shutdown(shutdown())
+    .await?;
+    database.close().await;
     Ok(())
 }
 

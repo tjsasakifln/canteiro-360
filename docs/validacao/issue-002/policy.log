@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.50s
+     Running `target/debug/xtask check`
+Plano aprovado: 72 issues, 192 regras, dependências, fontes e documentos coerentes.
+Política aprovada: 167 arquivos, sem lógica JS/TS própria ou credenciais embutidas detectadas.

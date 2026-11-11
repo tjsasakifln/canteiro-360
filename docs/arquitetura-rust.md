@@ -35,7 +35,7 @@ flowchart TD
 | `crates/contracts` | Estruturas de entrada/saída e erros públicos | Separar dados serializáveis de segredos e entidades internas |
 | `tools/xtask` | Comandos Rust para validação e operação | Sem scripts de negócio em outra linguagem |
 
-Essa estrutura foi criada na issue 1. Os crates de domínio e processamento reservam as fronteiras dos módulos futuros; sua existência não significa que os respectivos processos de negócio já funcionem. Os comandos e as versões efetivamente compiladas estão em [desenvolvimento](desenvolvimento.md) e no [registro da issue 1](validacao/ISSUE-001.md).
+Essa estrutura foi criada na issue 1. A issue 2 implementa tipos puros de identidade, datas, instantes e versão, contratos seguros de erro e o adaptador transacional PostgreSQL. O processamento e os fluxos completos de negócio continuam nas etapas seguintes. Os comandos estão em [desenvolvimento](desenvolvimento.md) e [persistência](persistencia.md); as evidências identificam a versão realmente testada em `docs/validacao`.
 
 ## 3. Linguagens e interoperabilidade
 

@@ -1,4 +1,8 @@
 //! Contratos públicos. Nunca incluir credenciais nem entidades internas.
+mod error;
+
+pub use error::{ErrorCode, ErrorField, PublicError, WriteOutcome};
+
 use serde::{Deserialize, Serialize};
 
 /// Liveness do processo; não representa prontidão do produto ou do banco.

@@ -1,5 +1,6 @@
 //! Servidor HTTP e fronteira de configuração da fundação.
 pub mod config;
+pub mod error;
 
 use axum::{
     Json, Router,

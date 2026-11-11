@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized] target(s) in 0.14s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_persistence-c49da4608ba138b5)
+
+running 1 test
+test database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges ... FAILED
+
+failures:
+
+---- database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges stdout ----
+
+thread 'database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges' (17) panicked at crates/persistence/src/database_tests.rs:60:14:
+CANTEIRO_TEST_DATABASE_URL é obrigatória para a suíte PostgreSQL real: NotPresent
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p canteiro-persistence --lib`

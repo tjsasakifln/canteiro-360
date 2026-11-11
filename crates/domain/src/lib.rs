@@ -1,5 +1,9 @@
-//! Fronteira das regras puras do Canteiro 360.
-//!
-//! A issue 1 não introduz cálculos, saldos nem estados de negócio.
-//! As próximas etapas colocam aqui os tipos e invariantes, sem HTTP, SQL ou UI.
+//! Tipos e invariantes puros compartilháveis com o navegador.
+//! A persistência converte explicitamente estes tipos, sem acoplar o domínio ao SQL.
 #![forbid(unsafe_code)]
+
+mod values;
+
+pub use values::{
+    ActorId, CivilDate, EntityId, EntityVersion, InvalidValue, OperationId, TenantId, UtcInstant,
+};
