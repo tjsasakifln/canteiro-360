@@ -3,7 +3,7 @@
 **Versão da especificação:** 1.0, 11/11/2026.  
 **Responsável pelo produto:** Tiago Sasaki / CONFENGE.  
 **Mercado inicial:** gestão profissional de obras e projetos privados no Brasil.  
-**Estado:** especificado para implementação; aplicativo ainda não construído.  
+**Estado:** fundação da issue 1 implementada; módulos de negócio ainda em implementação futura, sem liberação comercial.  
 **Diretriz técnica:** Rust no servidor e no front-end, com experiência rápida, acessível e intuitiva.
 
 ## 1. Problema e resultado esperado

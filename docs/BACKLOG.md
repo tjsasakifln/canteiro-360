@@ -4,6 +4,8 @@
 
 A numeração no título é estável. O número nativo foi reservado pela criação sequencial das 72 issues antes das primeiras pull requests. O [manifesto](backlog.json) registra os vínculos publicados. Os [arquivos individuais](issues) preservam o conteúdo planejado, com entregas, critérios, regras e evidências.
 
+Progresso de implementação: a fundação da issue 1 possui [registro próprio de validação](validacao/ISSUE-001.md). A aceitação e a integração são conferidas na issue nativa e no PR correspondente; as especificações das 72 etapas permanecem preservadas.
+
 ## Fases
 
 | Fase | Issues | Resultado acumulado |

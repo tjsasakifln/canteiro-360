@@ -2,13 +2,28 @@
 
 Gestão de obras e projetos privados no Brasil, com a disciplina operacional documentada nos manuais públicos do SICOP/SC e uma experiência de uso própria, rápida e intuitiva.
 
-**Situação atual:** especificação e plano de implementação. O aplicativo ainda não foi implementado nem liberado para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
+**Situação atual:** fundação Rust da issue 1 implementada, com servidor, página inicial SSR/WASM e verificações automatizadas. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
+
+## Compilar e executar
+
+Com Rustup e as ferramentas de compilação disponíveis:
+
+```sh
+rustup show
+cargo xtask setup
+cargo xtask build
+target/release/canteiro-api
+```
+
+O comando `cargo xtask ci` executa a conferência completa e exige Chrome e ChromeDriver nos caminhos configurados. O [guia de desenvolvimento](docs/desenvolvimento.md) detalha a instalação, os comandos separados, os ambientes e as evidências. Abrir `http://127.0.0.1:3000` após a compilação. O executável de processamento oferece apenas `--check` nesta etapa.
 
 ## Comece aqui
 
 | Documento | Para que serve |
 |---|---|
 | [LEIAME](LEIAME.md) | Objetivo, escopo, decisões e orientação de execução |
+| [Desenvolvimento](docs/desenvolvimento.md) | Compilação reproduzível, execução e validação |
+| [Aceite da issue 1](docs/validacao/ISSUE-001.md) | Versões compiladas, medidas, revisão e evidências |
 | [PRD](PRD.md) | Requisitos do produto e critérios de sucesso |
 | [Plano de implementação](docs/BACKLOG.md) | Issues 01 a 72, dependências e fases |
 | [Issues no GitHub](https://github.com/tjsasakifln/canteiro-360/issues?q=is%3Aissue%20sort%3Acreated-asc) | Fila de execução e evidências de aceite |

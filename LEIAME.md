@@ -12,7 +12,7 @@ O ponto de partida funcional é o **SICOP de Santa Catarina**, identificado pelo
 
 Este repositório contém o PRD, regras rastreáveis, decisões de cálculo, arquitetura, modelo de dados, especificação de experiência e **72 issues de implementação**. Os arquivos `docs/issues/001.md` a `072.md` preservam o conteúdo planejado; as issues nativas são a fila operacional. O [manifesto](docs/backlog.json) liga os números, os arquivos e os endereços publicados.
 
-A versão presente é uma especificação. Não oferece ambiente produtivo, autenticação funcional, banco em operação ou aplicação pronta para vender. Essas entregas fazem parte das issues. A revisão desta sessão valida a qualidade e a coerência do plano, não certifica um software que ainda será construído.
+A fundação da issue 1 acrescenta o workspace Rust, servidor, página inicial renderizada no servidor e hidratada em WebAssembly, configuração pública por ambiente e verificações automatizadas. O [guia de desenvolvimento](docs/desenvolvimento.md) permite compilar e executar essa etapa; o [registro de aceite](docs/validacao/ISSUE-001.md) identifica a implementação e as evidências. Ainda não há ambiente produtivo, autenticação funcional, banco em operação ou aplicação pronta para vender. Essas entregas pertencem às próximas issues. A revisão original da especificação permanece preservada, separada da validação do código.
 
 ## 3. Como a fidelidade ao SICOP será tratada
 
