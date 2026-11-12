@@ -560,7 +560,7 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
     browser.key(ENTER).await?;
     browser
         .wait(
-            "return location.pathname.includes('/prototipo/horizonte/');",
+            "return location.pathname.includes('/prototipo/horizonte/') && document.querySelector('#context-dialog')?.open === false && document.querySelector('#organization')?.value === 'horizonte' && document.activeElement?.id === 'organization';",
             Duration::from_secs(5),
         )
         .await?;
@@ -683,7 +683,7 @@ async fn browser_history_context_guard(h: &Harness, browser: &Browser) -> TestRe
     browser.key(ENTER).await?;
     browser
         .wait(
-            "return location.pathname.startsWith('/prototipo/aurora/');",
+            "return location.pathname.startsWith('/prototipo/aurora/') && document.querySelector('#context-dialog')?.open === false && document.querySelector('#organization')?.value === 'aurora' && document.activeElement?.id === 'organization';",
             Duration::from_secs(5),
         )
         .await?;
