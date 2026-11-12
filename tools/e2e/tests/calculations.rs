@@ -96,6 +96,14 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
         .await?;
     assert!(browser.text("#allocation-output").await?.contains("33,34"));
     assert!(!browser.enabled("#allocation-total").await?);
+    for (selector, value) in [
+        ("#allocation-total", "100,00"),
+        ("#allocation-count", "3"),
+        ("#calendar-start", "31/01/2027"),
+        ("#calendar-end", "31/03/2027"),
+    ] {
+        assert_eq!(browser.property(selector, "value").await?, value);
+    }
     browser.wait("return getComputedStyle(document.querySelector('#calculation-retry').parentElement).visibility === 'visible'", Duration::from_secs(20)).await?;
     assert_eq!(
         browser.attribute("#calculation-retry", "href").await?,
@@ -134,6 +142,66 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
         browser
             .full_screenshot(&h.evidence.join(format!("calculation-{width}.png")))
             .await?;
+        // A capture beyond the viewport can omit a composited scroll surface
+        // that has never been on screen. Bring each result into the viewport
+        // with real keyboard navigation and wheel input, then preserve what a
+        // reader sees. Focusing a region alone need not center its entire box.
+        for (name, selector) in [
+            ("allocation", "#allocation-output .calculation-table"),
+            ("calendar", "#calendar-output .calculation-table"),
+        ] {
+            browser.tab_to(selector).await?;
+            let before = browser.execute(&format!(
+                "const e=document.querySelector({});const r=e.getBoundingClientRect();return {{top:r.top,bottom:r.bottom,height:innerHeight,text:e.innerText,scrollLeft:e.scrollLeft}};",
+                serde_json::to_string(selector)?
+            )).await?;
+            let delta = ((before["top"].as_f64().unwrap() + before["bottom"].as_f64().unwrap()
+                - before["height"].as_f64().unwrap())
+                / 2.0)
+                .round() as i64;
+            browser.post("actions", json!({"actions":[{"type":"wheel","id":"calculation-page-wheel","actions":[{"type":"scroll","origin":"viewport","x":1,"y":450,"deltaX":0,"deltaY":delta,"duration":200}]}]})).await?;
+            browser.wait(&format!("const r=document.querySelector({}).getBoundingClientRect();return r.top >= 0 && r.bottom <= innerHeight + 1;", serde_json::to_string(selector)?), Duration::from_secs(5)).await?;
+            let bounds = browser.execute(&format!(
+                "const e=document.querySelector({});const r=e.getBoundingClientRect();return {{top:r.top,bottom:r.bottom,height:innerHeight,text:e.innerText,scrollLeft:e.scrollLeft}};",
+                serde_json::to_string(selector)?
+            )).await?;
+            assert!(bounds["top"].as_f64().unwrap() >= 0.0);
+            assert!(bounds["bottom"].as_f64().unwrap() <= bounds["height"].as_f64().unwrap() + 1.0);
+            assert!(
+                bounds["text"]
+                    .as_str()
+                    .unwrap()
+                    .contains(if name == "calendar" {
+                        "28/02/2027"
+                    } else {
+                        "33,34"
+                    })
+            );
+            browser
+                .screenshot(
+                    &h.evidence
+                        .join(format!("calculation-{name}-visible-{width}.png")),
+                )
+                .await?;
+            if width == 360 {
+                browser.key("\u{e014}").await?;
+                browser
+                    .wait(
+                        &format!(
+                            "return document.querySelector({}).scrollLeft > 0;",
+                            serde_json::to_string(selector)?
+                        ),
+                        Duration::from_secs(5),
+                    )
+                    .await?;
+                browser
+                    .screenshot(
+                        &h.evidence
+                            .join(format!("calculation-{name}-scrolled-{width}.png")),
+                    )
+                    .await?;
+            }
+        }
         layouts.push(dimensions);
     }
     browser.tab_to("#allocation-total").await?;
@@ -170,7 +238,7 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
             .contains("Total preservado")
     );
     browser
-        .full_screenshot(&h.evidence.join("calculation-invalid-preserved.png"))
+        .screenshot(&h.evidence.join("calculation-invalid-preserved.png"))
         .await?;
     browser.fill("#allocation-total", "100,00").await?;
     browser.fill("#allocation-count", "0").await?;
@@ -223,7 +291,7 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
     assert_eq!(logs, json!([]), "Browser console: {logs}");
     write_json(
         &h.evidence.join("calculation-interface.json"),
-        &json!({"status":"passed","layouts":layouts,"versions":browser.versions,"console":logs,"deliberately_blocked_wasm_console":blocked_logs,"environment":h.environment,"checks":["SSR defaults","WASM failure keeps readable preview and offers reload","360 and 1280 CSS pixels","keyboard entry","ambiguous decimal keeps other fields","invalid date keeps term","leap year","explicit fixed cadence","recovery"]}),
+        &json!({"status":"passed","layouts":layouts,"versions":browser.versions,"console":logs,"deliberately_blocked_wasm_console":blocked_logs,"environment":h.environment,"checks":["SSR defaults remain in all four inputs without WASM","WASM failure keeps readable preview and offers reload","360 and 1280 CSS pixels","keyboard entry","result tables visible after native Tab and wheel input","horizontal table scrolling by arrow key at 360 CSS pixels","ambiguous decimal keeps other fields","invalid date keeps term","leap year","explicit fixed cadence","recovery"]}),
     )?;
     // Save the exact golden file used with the browser observations.
     fs::write(

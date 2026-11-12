@@ -79,14 +79,14 @@ fn AllocationCard(ready: RwSignal<bool>) -> impl IntoView {
             <p>"O total é preservado até o último centavo. A ordem das parcelas define quem recebe o centavo de diferença."</p>
             <div class="form-grid">
                 <div class="field"><label for="allocation-total">"Valor total (R$)"</label>
-                    <input id="allocation-total" inputmode="decimal" maxlength="128" disabled=move || !ready.get() prop:value=move || total.get()
+                    <input id="allocation-total" inputmode="decimal" maxlength="128" disabled=move || !ready.get() value=move || total.get() prop:value=move || total.get()
                         aria-describedby="allocation-total-help allocation-total-error" aria-invalid=move || parsed_total.get().is_err().to_string()
                         on:input=move |event| total.set(event_target_value(&event))/>
                     <p id="allocation-total-help">"Use vírgula para os centavos. Exemplo: 1.234,56."</p>
                     <p id="allocation-total-error" class="field-error" role="status">{move || parsed_total.get().err().map(|e| e.message).unwrap_or_default()}</p>
                 </div>
                 <div class="field"><label for="allocation-count">"Quantidade de parcelas"</label>
-                    <input id="allocation-count" inputmode="numeric" maxlength="3" disabled=move || !ready.get() prop:value=move || count.get()
+                    <input id="allocation-count" inputmode="numeric" maxlength="3" disabled=move || !ready.get() value=move || count.get() prop:value=move || count.get()
                         aria-describedby="allocation-count-help allocation-count-error" aria-invalid=move || parsed_count.get().is_err().to_string()
                         on:input=move |event| count.set(event_target_value(&event))/>
                     <p id="allocation-count-help">"De 1 a 100 parcelas. A primeira recebe prioridade no desempate."</p>
@@ -148,13 +148,13 @@ fn CalendarCard(ready: RwSignal<bool>) -> impl IntoView {
             <p>"O calendário civil mantém a data de referência. O último período respeita o término informado."</p>
             <div class="form-grid">
                 <div class="field"><label for="calendar-start">"Data de referência"</label>
-                    <input id="calendar-start" maxlength="10" disabled=move || !ready.get() prop:value=move || start.get() aria-describedby="calendar-start-help calendar-start-error"
+                    <input id="calendar-start" maxlength="10" disabled=move || !ready.get() value=move || start.get() prop:value=move || start.get() aria-describedby="calendar-start-help calendar-start-error"
                         aria-invalid=move || parsed_start.get().is_err().to_string() on:input=move |event| start.set(event_target_value(&event))/>
                     <p id="calendar-start-help">"Dia/mês/ano. Exemplo: 31/01/2027."</p>
                     <p id="calendar-start-error" class="field-error" role="status">{move || parsed_start.get().err().map(|e| e.message).unwrap_or_default()}</p>
                 </div>
                 <div class="field"><label for="calendar-end">"Término informado"</label>
-                    <input id="calendar-end" maxlength="10" disabled=move || !ready.get() prop:value=move || end.get() aria-describedby="calendar-end-help calendar-end-error"
+                    <input id="calendar-end" maxlength="10" disabled=move || !ready.get() value=move || end.get() prop:value=move || end.get() aria-describedby="calendar-end-help calendar-end-error"
                         aria-invalid=move || parsed_end.get().is_err().to_string() on:input=move |event| end.set(event_target_value(&event))/>
                     <p id="calendar-end-help">"A data final do instrumento é preservada."</p>
                     <p id="calendar-end-error" class="field-error" role="status">{move || parsed_end.get().err().map(|e| e.message).unwrap_or_default()}</p>
