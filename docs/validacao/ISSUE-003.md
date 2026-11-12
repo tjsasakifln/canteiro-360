@@ -26,7 +26,19 @@ Esta etapa não implementa autenticação, autorização comercial, medições r
 
 ## Execução técnica
 
-Os resultados finais, a versão testada e os artefatos da integração serão registrados nesta seção após a execução. A existência dos cenários e do código de teste não significa que já passaram.
+Verificações locais concluídas sobre a implementação da revisão `86f2f40ba1a07f3480be8ea253b419a173dae9de`, mais a calibração e os cenários de contraste acrescentados à suíte de navegador. Os resultados finais da integração e sua revisão exata serão registrados após a execução. A existência de um cenário ainda não executado não significa que passou.
+
+| Verificação local | Resultado e evidência |
+|---|---|
+| Testes nativos | 45 aprovados, zero falhas; [log](issue-003/native-tests.log). As 18 verificações que exigem banco/navegador não são executadas pelo comando nativo e têm etapas explícitas próprias. |
+| PostgreSQL 17.7 real | 15 aprovados, zero falhas e zero ignorados na execução explícita; [log](issue-003/postgresql-tests.log). Instância e testes executados na mesma sessão isolada. |
+| Clippy nativo e WASM | Sem avisos tratados como erro; [nativo](issue-003/clippy-native.log) e [WASM](issue-003/clippy-wasm.log). |
+| Formatação e regras | Formatação, política de linguagens/segredos e consistência das 72 issues e 192 regras aprovadas. |
+| Dependências | `cargo deny --locked check` aprovado. A exceção anterior de `paste 1.0.15` permanece restrita e documentada; nenhuma nova exceção foi criada. |
+| Compilação SSR/WASM | Aprovada com Rust 1.99.1 e wasm-bindgen 0.2.130; [registro](issue-003/build-local.json). |
+| Pacote servido | WASM 345.206 B, interoperabilidade JS 8.051 B, CSS 5.518 B, nos limites de 1 MiB, 80 KiB e 60 KiB; [medição local](issue-003/budget-local.json). Inclui as duas folhas CSS e o conteúdo inline. |
+
+O executor local impede sockets Unix, necessários para iniciar o Chromium disponível. A prova de interação e as capturas serão obtidas pela CI com navegador real, sem substituir o teste por HTML estático. A simulação de viewport não é apresentada como ensaio em aparelho físico, zoom manual de 400% ou teste com leitor de tela.
 
 Comandos de referência, com os pré-requisitos e variáveis externos descritos em `docs/desenvolvimento.md` e `docs/persistencia.md`:
 
@@ -47,7 +59,20 @@ A suíte `prototype_accessibility_context_and_recovery` executa o aplicativo Rus
 
 ## Revisão adversarial
 
-Revisão de requisitos, revisão independente de código e implementação de testes negativos foram conduzidas separadamente. Os achados, correções e retestes finais serão consolidados após a execução da versão candidata. Não atribuir aos testes automatizados conformidade integral WCAG ou teste manual com leitor de tela.
+Revisão de requisitos, revisão independente de código e implementação de testes negativos foram conduzidas separadamente. A revisão final de código não identificou novo bloqueador nos pontos abaixo; a execução em navegador ainda precisa confirmar os percursos correspondentes.
+
+| Achado | Correção e prova aplicável |
+|---|---|
+| Voltar para outra empresa podia descartar um rascunho sem decisão | Estado associado à empresa, restauração da última rota e diálogo antes do descarte; cenário de histórico com cancelamento e nova tentativa de confirmação na suíte de navegador |
+| Contexto desconhecido recebia HTTP 200 | Vocabulário de rotas compartilhado com a fronteira HTTP; testes de GET, HEAD e método inválido, além das dez rotas válidas |
+| Painel mantinha pendência depois da aprovação demonstrativa | O painel deriva seu estado do mesmo registro local; faturado e pago continuam separados e não são alterados pela simulação |
+| Data malformada podia alcançar conversões inadequadas | Validação de formato ASCII e calendário antes da comparação; testes negativos e de ano bissexto |
+| Texto dinâmico dentro de textarea arriscava divergência entre SSR e hidratação | Valor controlado pela propriedade do campo, sem filho dinâmico de texto bruto; conservação do texto verificada nos percursos de edição e navegação |
+| Composição de tipos excedia o limite de análise da compilação SSR | Fronteira de tipos da shell limitada, com compilação nativa e WASM concluída |
+| Documentação sugeria entrada de arquivo já entregue e retorno de foco idêntico em toda saída | Texto corrigido: arquivos ainda não são recebidos; cancelar devolve foco ao acionador e concluir conduz ao resultado |
+| A primeira execução do novo teste leu o atributo HTML de um seletor, sem observar seu valor atual | Leituras de valores editáveis passam a usar a propriedade DOM via WebDriver; as verificações de valor foram preservadas. A [execução 43130838092](https://github.com/tjsasakifln/canteiro-360/actions/runs/43130838092) aprovou a fundação, o banco e os dois testes de navegador anteriores, mas interrompeu o novo protótipo nesse ponto; não constitui aprovação integral. |
+
+Não atribuir aos testes automatizados conformidade integral WCAG ou teste manual com leitor de tela. Os resultados finais de interação e as capturas devem identificar a revisão realmente executada.
 
 ## Encerramento
 

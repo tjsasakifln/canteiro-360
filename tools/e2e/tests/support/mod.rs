@@ -243,6 +243,17 @@ impl Browser {
         .await
     }
 
+    /// W3C attributes reflect markup; live field state must be read as a property.
+    pub async fn property(&self, selector: &str, property: &str) -> TestResult<Value> {
+        let id = self.element(selector).await?;
+        self.request(
+            Method::GET,
+            &format!("element/{id}/property/{property}"),
+            None,
+        )
+        .await
+    }
+
     pub async fn enabled(&self, selector: &str) -> TestResult<bool> {
         let id = self.element(selector).await?;
         self.request(Method::GET, &format!("element/{id}/enabled"), None)

@@ -73,13 +73,13 @@ Tabelas técnicas mantêm a relação bidimensional entre serviço, unidade, qua
 | Comparação | `version-comparison` | Revisões identificadas; valor anterior, diferença e valor proposto distinguíveis |
 | Aprovação | `prototype-dialog`, `dialog-actions` | Revisão antes do ato; foco contido; cancelamento e Escape sem confirmação |
 
-Calendários, seletores e entradas de arquivo utilizam controles nativos onde atendem ao comportamento exigido. Customização futura não deve perder navegação por teclado, leitura assistida ou operação móvel. A aparência de uma ação indisponível não implementa sua regra: o componente Rust e o servidor do módulo correspondente devem aplicar a condição.
+Os campos de data e seletores entregues utilizam controles nativos. Entradas de arquivo, quando forem implementadas, devem seguir a mesma preferência onde ela atender ao comportamento exigido; esta demonstração não recebe arquivos. Customização futura não deve perder navegação por teclado, leitura assistida ou operação móvel. A aparência de uma ação indisponível não implementa sua regra: o componente Rust e o servidor do módulo correspondente devem aplicar a condição.
 
 ## Teclado, foco e movimento
 
 - O link de salto leva ao conteúdo principal. Títulos e marcos permitem compreender a página antes de usar controles.
 - O foco segue a ordem do documento. Navegação por Tab, Shift+Tab, Enter e Espaço não depende do ponteiro.
-- Diálogos devem usar a API modal nativa, receber foco ao abrir, impedir interação com o fundo e devolver foco ao acionador ao sair. Escape cancela; o fechamento não confirma o ato.
+- Diálogos devem usar a API modal nativa, receber foco ao abrir e impedir interação com o fundo. O cancelamento devolve foco ao acionador; a conclusão conduz ao resultado da ação. Escape cancela; o fechamento não confirma o ato.
 - Atalhos específicos da aplicação devem estar anunciados junto à ajuda, evitar conflitos e respeitar campos em edição. Um botão alcançável por teclado continua disponível como alternativa.
 - Erros associados ao campo usam texto explícito. A recuperação conduz ao campo ou resumo pertinente, sem reiniciar o formulário.
 - `prefers-reduced-motion` elimina animações e deslocamentos desnecessários. Informações de recuperação do carregamento permanecem disponíveis.
@@ -91,7 +91,7 @@ O seletor de apresentação permite examinar estado normal, vazio, carregando, e
 
 O conteúdo essencial e os links devem existir antes da hidratação. Controles que dependem da interação carregada informam essa condição e oferecem recuperação. A interface não mostra confirmação de gravação por simples clique, mudança de cor ou temporizador.
 
-Os exemplos usam Escola Aurora, contrato CT-014, versão 2, e Galpão Horizonte, contrato CT-027, versão 1, em contextos fictícios distintos. Períodos, valores e responsáveis da demonstração não representam contratos da CONFENGE ou de clientes.
+Os exemplos usam Escola Vila Nova, da Construtora Aurora, contrato CT-014/2026, revisão 02 do orçamento, e Galpão Horizonte, da empresa Obras Horizonte, contrato CT-027/2026, revisão 01 do orçamento. São contextos fictícios distintos. Períodos, valores e responsáveis da demonstração não representam contratos da CONFENGE ou de clientes.
 
 ## Verificação e aceite
 

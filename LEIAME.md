@@ -14,6 +14,8 @@ Este repositório contém o PRD, regras rastreáveis, decisões de cálculo, arq
 
 A fundação da issue 1 acrescenta o workspace Rust, servidor, página inicial renderizada no servidor e hidratada em WebAssembly. A issue 2 acrescenta PostgreSQL, migrações, tipos validados, transações com contexto de empresa e erros públicos seguros. O [guia de desenvolvimento](docs/desenvolvimento.md) e o [guia de persistência](docs/persistencia.md) explicam a operação. Os [registros de validação](docs/validacao) distinguem cada entrega. Ainda não há ambiente produtivo, autenticação funcional ou aplicação pronta para vender. Essas capacidades pertencem às próximas issues. A revisão original da especificação permanece preservada, separada da validação do código.
 
+A implementação da issue 3 acrescenta o [sistema visual](docs/sistema-visual.md) e os percursos de painel, orçamento, medição, aprovação e documentos com exemplos fictícios. O aceite integral permanece pendente do teste inicial com três profissionais previsto na própria issue. O [registro da etapa](docs/validacao/ISSUE-003.md) separa evidência técnica e validação humana; não há fechamento automático da issue por compilação ou revisão de agentes.
+
 ## 3. Como a fidelidade ao SICOP será tratada
 
 A [matriz](docs/MATRIZ-RASTREABILIDADE.md) distingue:

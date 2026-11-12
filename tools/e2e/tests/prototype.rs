@@ -6,7 +6,7 @@
 mod support;
 
 use serde_json::{Value, json};
-use std::time::Duration;
+use std::{fs, sync::Arc, time::Duration};
 use support::{
     ALT, Browser, DOWN, ENTER, ESCAPE, HOME, Harness, SHIFT, TAB, TestResult, write_json,
 };
@@ -19,16 +19,45 @@ const DRAFT_NOTE: &str = "Conferido em campo: amostra A-17, três vigas.";
 #[tokio::test]
 #[ignore = "Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver"]
 async fn prototype_accessibility_context_and_recovery() -> TestResult {
-    let h = Harness::start("prototype-functional").await?;
-    let browser = Browser::start(&h).await?;
-    let result = acceptance(&h, &browser).await;
+    let h = Arc::new(Harness::start("prototype-functional").await?);
+    let browser = Arc::new(Browser::start(&h).await?);
+    let task_h = Arc::clone(&h);
+    let task_browser = Arc::clone(&browser);
+    // Keep the live browser and its process guards here while an assertion runs
+    // in a child task. A panic must fail the suite, but must not erase its proof.
+    let result: TestResult =
+        match tokio::spawn(async move { acceptance(&task_h, &task_browser).await }).await {
+            Ok(result) => result,
+            Err(error) => Err(format!("Prototype acceptance task failed: {error}").into()),
+        };
     if let Err(error) = &result {
-        let _ = browser
+        let screenshot_error = browser
             .screenshot(&h.evidence.join("prototype-failure.png"))
-            .await;
+            .await
+            .err()
+            .map(|error| error.to_string());
+        let snapshot = browser.execute("return {url:location.href,title:document.title,focus:{tag:document.activeElement?.tagName,id:document.activeElement?.id},ready:document.querySelector('#prototype-shell')?.dataset.ready,openDialogs:[...document.querySelectorAll('dialog[open]')].map(e=>e.id),fields:[...document.querySelectorAll('input,select,textarea')].map(e=>({id:e.id,value:e.value})),visibleText:document.body?.innerText.slice(0,10000)};").await;
+        let console = browser.logs().await;
+        let html_error = match browser
+            .execute("return document.documentElement.outerHTML;")
+            .await
+        {
+            Ok(html) => match html.as_str() {
+                Some(html) => fs::write(h.evidence.join("prototype-failure.html"), html)
+                    .err()
+                    .map(|error| error.to_string()),
+                None => Some("DOM snapshot was not a string".into()),
+            },
+            Err(error) => Some(error.to_string()),
+        };
         write_json(
             &h.evidence.join("prototype-functional.json"),
-            &json!({"status":"failed","error":error.to_string(),"versions":browser.versions}),
+            &json!({
+                "status":"failed","error":error.to_string(),"versions":browser.versions,
+                "snapshot":snapshot.as_ref().ok(),"snapshotError":snapshot.as_ref().err().map(ToString::to_string),
+                "console":console.as_ref().ok(),"consoleError":console.as_ref().err().map(ToString::to_string),
+                "screenshotError":screenshot_error,"htmlError":html_error
+            }),
         )?;
     }
     let closing = browser.close().await;
@@ -69,7 +98,7 @@ async fn acceptance(h: &Harness, browser: &Browser) -> TestResult {
             "checks":[
                 "direct_ssr_all_routes_and_two_companies", "useful_navigation_without_scripts",
                 "five_routes_reflow_320_360_1280", "explicit_control_labels", "keyboard_navigation_without_forced_sequence",
-                "filter_detail_and_return_preserve_query", "loading_empty_error_forbidden_states",
+                "filter_detail_and_return_preserve_query", "loading_empty_error_forbidden_states", "state_recovery_by_keyboard", "computed_text_contrast_actual_dom",
                 "forbidden_removes_business_dom", "invalid_draft_preserves_note_and_period",
                 "cancel_context_keeps_draft", "confirm_context_discards_only_with_consent",
                 "cross_company_context_does_not_retain_previous_draft", "back_history_context_cancel_and_confirm", "approval_native_modal_focus_trap",
@@ -190,7 +219,9 @@ async fn reflow_and_semantics(h: &Harness, browser: &Browser) -> TestResult<Vec<
                     .await?,
                 "page"
             );
-            assert_eq!(browser.attribute("#organization", "value").await?, "aurora");
+            assert_eq!(browser.property("#organization", "value").await?, "aurora");
+            check_text_contrast(h, browser, &format!("{route}-{width}"), "#prototype-shell")
+                .await?;
             browser
                 .full_screenshot(&h.evidence.join(format!("prototype-{route}-{width}.png")))
                 .await?;
@@ -215,7 +246,7 @@ async fn keyboard_and_filter(h: &Harness, browser: &Browser) -> TestResult {
         .await?;
     browser.wait(READY, Duration::from_secs(20)).await?;
     assert_eq!(
-        browser.attribute("#budget-filter", "value").await?,
+        browser.property("#budget-filter", "value").await?,
         "concreto"
     );
     browser.tab_to("a[href*='item=01']").await?;
@@ -236,7 +267,7 @@ async fn keyboard_and_filter(h: &Harness, browser: &Browser) -> TestResult {
     browser.key(ENTER).await?;
     browser.wait("return !new URL(location.href).searchParams.has('item') && new URL(location.href).searchParams.get('busca') === 'concreto';", Duration::from_secs(5)).await?;
     assert_eq!(
-        browser.attribute("#budget-filter", "value").await?,
+        browser.property("#budget-filter", "value").await?,
         "concreto"
     );
     browser.tab_to("#nav-documentos").await?;
@@ -301,9 +332,28 @@ async fn display_states(h: &Harness, browser: &Browser) -> TestResult {
                 "Forbidden must not retain financial content in DOM"
             );
         }
+        check_text_contrast(
+            h,
+            browser,
+            &format!("state-{state}"),
+            &format!("#state-{state}"),
+        )
+        .await?;
         browser
             .full_screenshot(&h.evidence.join(format!("prototype-state-{state}.png")))
             .await?;
+        browser.tab_to(&format!("#state-{state} button")).await?;
+        browser.key(ENTER).await?;
+        browser.wait("return document.querySelector('#display-state')?.value === 'content' && !!document.querySelector('#measurement-note');", Duration::from_secs(3)).await?;
+        assert_eq!(
+            browser
+                .execute(&format!(
+                    "return !!document.querySelector('#state-{state}');"
+                ))
+                .await?,
+            false,
+            "The state's recovery action must actually return to task content"
+        );
     }
     browser.choose("#display-state", 0, "content").await?;
     assert!(browser.enabled("#measurement-note").await?);
@@ -327,14 +377,14 @@ async fn display_states(h: &Harness, browser: &Browser) -> TestResult {
 
 async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
     open(h, browser, "medicao").await?;
-    let original_start = browser.attribute("#period-start", "value").await?;
-    let original_end = browser.attribute("#period-end", "value").await?;
+    let original_start = browser.property("#period-start", "value").await?;
+    let original_end = browser.property("#period-end", "value").await?;
     browser.tab_to("#period-start").await?;
     browser.key(DOWN).await?;
     browser.tab_to("#period-end").await?;
     browser.key(DOWN).await?;
-    let start = browser.attribute("#period-start", "value").await?;
-    let end = browser.attribute("#period-end", "value").await?;
+    let start = browser.property("#period-start", "value").await?;
+    let end = browser.property("#period-end", "value").await?;
     assert_ne!(
         start, original_start,
         "The negative case must really edit the period"
@@ -357,20 +407,28 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
         "alert"
     );
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         SHORT_NOTE
     );
-    assert_eq!(browser.attribute("#period-start", "value").await?, start);
-    assert_eq!(browser.attribute("#period-end", "value").await?, end);
+    assert_eq!(browser.property("#period-start", "value").await?, start);
+    assert_eq!(browser.property("#period-end", "value").await?, end);
+    check_text_contrast(h, browser, "invalid-draft", "#prototype-main").await?;
     browser.choose("#display-state", 3, "error").await?;
-    browser.choose("#display-state", 0, "content").await?;
+    browser.tab_to("#retry-content").await?;
+    browser.key(ENTER).await?;
+    browser
+        .wait(
+            "return !!document.querySelector('#measurement-note');",
+            Duration::from_secs(3),
+        )
+        .await?;
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         SHORT_NOTE,
         "Returning from a load error must preserve work in progress"
     );
-    assert_eq!(browser.attribute("#period-start", "value").await?, start);
-    assert_eq!(browser.attribute("#period-end", "value").await?, end);
+    assert_eq!(browser.property("#period-start", "value").await?, start);
+    assert_eq!(browser.property("#period-end", "value").await?, end);
 
     assert!(!browser.enabled("#complete-measurement").await?);
     let blocked_reason = browser
@@ -413,11 +471,11 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
         )
         .await?;
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         DRAFT_NOTE
     );
-    assert_eq!(browser.attribute("#period-start", "value").await?, start);
-    assert_eq!(browser.attribute("#period-end", "value").await?, end);
+    assert_eq!(browser.property("#period-start", "value").await?, start);
+    assert_eq!(browser.property("#period-end", "value").await?, end);
 
     request_company_change(browser).await?;
     browser
@@ -434,9 +492,9 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
             Duration::from_secs(3),
         )
         .await?;
-    assert_eq!(browser.attribute("#organization", "value").await?, "aurora");
+    assert_eq!(browser.property("#organization", "value").await?, "aurora");
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         DRAFT_NOTE
     );
     assert_eq!(
@@ -455,7 +513,7 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
     browser.tab_to("#cancel-context").await?;
     browser.key(ENTER).await?;
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         DRAFT_NOTE
     );
     browser.tab_to("#save-draft").await?;
@@ -473,7 +531,7 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
         "Draft result must disclose demonstration and lack of server persistence: {feedback}"
     );
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         DRAFT_NOTE
     );
     browser
@@ -499,7 +557,7 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
         .await?;
     browser.wait(READY, Duration::from_secs(20)).await?;
     assert_eq!(
-        browser.attribute("#organization", "value").await?,
+        browser.property("#organization", "value").await?,
         "horizonte"
     );
     let main = browser.text("main").await?;
@@ -582,7 +640,7 @@ async fn browser_history_context_guard(h: &Harness, browser: &Browser) -> TestRe
         )
         .await?;
     assert_eq!(
-        browser.attribute("#organization", "value").await?,
+        browser.property("#organization", "value").await?,
         "horizonte"
     );
     assert_eq!(browser.text("#current-contract").await?, "CT-027/2026");
@@ -595,7 +653,7 @@ async fn browser_history_context_guard(h: &Harness, browser: &Browser) -> TestRe
         )
         .await?;
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         HISTORY_NOTE
     );
     browser.history_back().await?;
@@ -630,7 +688,7 @@ async fn browser_history_context_guard(h: &Harness, browser: &Browser) -> TestRe
         )
         .await?;
     assert_eq!(
-        browser.attribute("#measurement-note", "value").await?,
+        browser.property("#measurement-note", "value").await?,
         "",
         "A draft discarded through history confirmation cannot follow another company"
     );
@@ -659,6 +717,7 @@ async fn approval_dialog(h: &Harness, browser: &Browser) -> TestResult {
         !title.as_str().unwrap_or_default().is_empty(),
         "Native dialog needs an accessible name"
     );
+    check_text_contrast(h, browser, "approval-modal", "#approval-dialog").await?;
     browser
         .screenshot(&h.evidence.join("prototype-approval-modal.png"))
         .await?;
@@ -718,6 +777,7 @@ async fn approval_dialog(h: &Harness, browser: &Browser) -> TestResult {
             .as_bool()
             .unwrap_or(true)
     );
+    check_text_contrast(h, browser, "approval-result", "#approval-feedback").await?;
     browser
         .screenshot(&h.evidence.join("prototype-approval-result.png"))
         .await?;
@@ -828,7 +888,7 @@ async fn reduced_motion_and_density(h: &Harness, browser: &Browser) -> TestResul
 async fn assert_visible_focus(browser: &Browser) -> TestResult {
     let focus = browser.execute("const e=document.activeElement,r=e.getBoundingClientRect(),s=getComputedStyle(e);return {outline:parseFloat(s.outlineWidth),style:s.outlineStyle,height:r.height,width:r.width,top:r.top,bottom:r.bottom,viewport:innerHeight};").await?;
     assert!(
-        number(&focus, "outline")? >= 2.0,
+        number(&focus, "outline")? >= 3.0,
         "Keyboard focus must be visible: {focus}"
     );
     assert_ne!(focus["style"], "none");
@@ -846,4 +906,188 @@ fn number(value: &Value, key: &str) -> TestResult<f64> {
     value[key]
         .as_f64()
         .ok_or_else(|| format!("Missing numeric metric {key}").into())
+}
+
+/// Observes actual text and inherited CSS colors. It does not infer results
+/// from token declarations and never changes DOM, styles or application state.
+const CONTRAST_OBSERVER: &str = r#"
+const root = document.querySelector(SCOPE);
+if (!root) throw new Error('Contrast scope absent');
+const samples = new Map();
+const hasArea = rectangles => [...rectangles].some(rect => rect.width > 0 && rect.height > 0);
+const add = (element, text, textNode) => {
+  if (!text?.trim() || !hasArea(element.getClientRects()) || element.closest('[hidden],[aria-hidden=true],:disabled,[aria-disabled=true],script,style,noscript,option')) return;
+  for(let ancestor=element;ancestor;ancestor=ancestor.parentElement) {
+    if(ancestor.matches('details:not([open])') && !ancestor.querySelector(':scope > summary')?.contains(element)) return;
+  }
+  if(textNode) {
+    const range=document.createRange();
+    range.selectNodeContents(textNode);
+    if(!hasArea(range.getClientRects())) return;
+  }
+  const style = getComputedStyle(element);
+  if (style.visibility !== 'visible') return;
+  const layers=[];
+  for(let node=element;node;node=node.parentElement) {
+    const css=getComputedStyle(node);
+    if(css.display==='none' || css.visibility!=='visible' || Number(css.opacity)===0) return;
+    layers.push({background:css.backgroundColor,image:css.backgroundImage,opacity:Number(css.opacity)});
+  }
+  const record={tag:element.tagName,id:element.id,text:text.trim().slice(0,100),foreground:style.color,fontSize:parseFloat(style.fontSize),fontWeight:parseFloat(style.fontWeight),layers,count:1};
+  const key=JSON.stringify([record.foreground,record.fontSize,record.fontWeight,layers]);
+  if(samples.has(key)) samples.get(key).count++; else samples.set(key,record);
+};
+const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+while(walker.nextNode()) add(walker.currentNode.parentElement,walker.currentNode.textContent,walker.currentNode);
+for(const field of root.querySelectorAll('input,select,textarea')) add(field,field.tagName==='SELECT' ? field.selectedOptions[0]?.textContent : field.value);
+return [...samples.values()];
+"#;
+
+async fn check_text_contrast(
+    h: &Harness,
+    browser: &Browser,
+    label: &str,
+    scope: &str,
+) -> TestResult {
+    let script = CONTRAST_OBSERVER.replace("SCOPE", &serde_json::to_string(scope)?);
+    let observations = browser.execute(&script).await?;
+    let samples = observations
+        .as_array()
+        .ok_or("Contrast samples must be an array")?;
+    assert!(
+        !samples.is_empty(),
+        "Contrast check must observe real visible text: {label}"
+    );
+    let mut measurements = Vec::new();
+    let mut failures = Vec::new();
+    for sample in samples {
+        let layers = sample["layers"]
+            .as_array()
+            .ok_or("Background ancestry absent")?;
+        let mut background = [1.0, 1.0, 1.0];
+        for layer in layers.iter().rev() {
+            if layer["image"] != "none" || layer["opacity"] != 1.0 {
+                return Err(format!(
+                    "Contrast cannot be certified by solid-color calculation for {label}: {sample}"
+                )
+                .into());
+            }
+            background = composite(
+                parse_rgb(
+                    layer["background"]
+                        .as_str()
+                        .ok_or("Background color absent")?,
+                )?,
+                background,
+            );
+        }
+        let foreground = composite(
+            parse_rgb(
+                sample["foreground"]
+                    .as_str()
+                    .ok_or("Foreground color absent")?,
+            )?,
+            background,
+        );
+        let ratio = contrast_ratio(foreground, background);
+        let font_size = number(sample, "fontSize")?;
+        let font_weight = number(sample, "fontWeight")?;
+        let required =
+            if font_size >= 24.0 || (font_size >= 14.0 * 96.0 / 72.0 && font_weight >= 700.0) {
+                3.0
+            } else {
+                4.5
+            };
+        let passed = ratio >= required;
+        let measurement = json!({"sample":sample,"effectiveForeground":foreground,"effectiveBackground":background,"ratio":ratio,"minimum":required,"passed":passed});
+        if !passed {
+            failures.push(measurement.clone());
+        }
+        measurements.push(measurement);
+    }
+    write_json(
+        &h.evidence.join(format!("prototype-contrast-{label}.json")),
+        &json!({
+            "status":if failures.is_empty() {"passed"} else {"failed"},
+            "scope":scope,"source":"https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+            "measurements":measurements,
+            "limitation":"Computed text/solid-background colors of currently rendered samples. Does not certify all WCAG requirements, text in images, screen readers or physical devices. Inactive controls and decorative/hidden text are excluded."
+        }),
+    )?;
+    if !failures.is_empty() {
+        return Err(format!(
+            "Computed text contrast failed for {label}: {}",
+            serde_json::to_string(&failures)?
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn parse_rgb(css: &str) -> TestResult<[f64; 4]> {
+    let inner = css
+        .strip_prefix("rgba(")
+        .or_else(|| css.strip_prefix("rgb("))
+        .and_then(|value| value.strip_suffix(')'))
+        .ok_or_else(|| format!("Unsupported computed RGB color: {css}"))?;
+    let values = inner
+        .split(',')
+        .map(|part| part.trim().parse::<f64>())
+        .collect::<Result<Vec<_>, _>>()?;
+    if values.len() != 3 && values.len() != 4 {
+        return Err(format!("Malformed computed RGB color: {css}").into());
+    }
+    let alpha = values.get(3).copied().unwrap_or(1.0);
+    if !values[..3]
+        .iter()
+        .all(|channel| (0.0..=255.0).contains(channel))
+        || !(0.0..=1.0).contains(&alpha)
+    {
+        return Err(format!("Out-of-range computed RGB color: {css}").into());
+    }
+    Ok([
+        values[0] / 255.0,
+        values[1] / 255.0,
+        values[2] / 255.0,
+        alpha,
+    ])
+}
+
+fn composite(color: [f64; 4], background: [f64; 3]) -> [f64; 3] {
+    std::array::from_fn(|index| color[index] * color[3] + background[index] * (1.0 - color[3]))
+}
+
+// WCAG 2.2 relative luminance, for measured sRGB colors only:
+// https://www.w3.org/TR/WCAG22/#dfn-relative-luminance
+fn contrast_ratio(first: [f64; 3], second: [f64; 3]) -> f64 {
+    let luminance = |rgb: [f64; 3]| {
+        let linear = rgb.map(|channel| {
+            if channel <= 0.04045 {
+                channel / 12.92
+            } else {
+                ((channel + 0.055) / 1.055).powf(2.4)
+            }
+        });
+        0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+    };
+    let first = luminance(first);
+    let second = luminance(second);
+    (first.max(second) + 0.05) / (first.min(second) + 0.05)
+}
+
+#[test]
+fn contrast_measurement_rejects_near_threshold_and_composites_alpha() -> TestResult {
+    let white = [1.0; 3];
+    assert!((contrast_ratio([0.0; 3], white) - 21.0).abs() < 0.000_001);
+    let gray = composite(parse_rgb("rgb(119, 119, 119)")?, white);
+    assert!(
+        contrast_ratio(gray, white) < 4.5,
+        "4.478 must not round up to passing 4.5"
+    );
+    let gray = composite(parse_rgb("rgb(118, 118, 118)")?, white);
+    assert!(contrast_ratio(gray, white) > 4.5);
+    assert_eq!(composite(parse_rgb("rgba(0, 0, 0, 0.5)")?, white), [0.5; 3]);
+    assert!(parse_rgb("rgb(300, 0, 0)").is_err());
+    assert!(parse_rgb("rgba(0, 0, 0, 2)").is_err());
+    Ok(())
 }
