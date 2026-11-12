@@ -131,13 +131,15 @@ pub enum Task {
     Measurement,
     Approvals,
     Documents,
+    Worksheet,
 }
 
 impl Task {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::Dashboard,
         Self::Budget,
         Self::Measurement,
+        Self::Worksheet,
         Self::Approvals,
         Self::Documents,
     ];
@@ -151,6 +153,7 @@ impl Task {
             Self::Measurement => "medicao",
             Self::Approvals => "aprovacoes",
             Self::Documents => "documentos",
+            Self::Worksheet => "planilha",
         }
     }
     pub fn label(self) -> &'static str {
@@ -160,6 +163,7 @@ impl Task {
             Self::Measurement => "Preparar medição",
             Self::Approvals => "Aprovações",
             Self::Documents => "Documentos",
+            Self::Worksheet => "Planilha de medição",
         }
     }
     pub fn symbol(self) -> &'static str {
@@ -169,6 +173,7 @@ impl Task {
             Self::Measurement => "▤",
             Self::Approvals => "✓",
             Self::Documents => "▱",
+            Self::Worksheet => "▦",
         }
     }
 }
@@ -196,6 +201,7 @@ pub struct DemoState {
     pub end: String,
     pub checked: bool,
     pub approved: bool,
+    pub worksheet: super::worksheet::WorksheetState,
 }
 
 impl DemoState {
@@ -207,6 +213,7 @@ impl DemoState {
             end: "2026-11-15".into(),
             checked: false,
             approved: false,
+            worksheet: super::worksheet::WorksheetState::default(),
         }
     }
 
@@ -223,6 +230,7 @@ impl DemoState {
             || self.start != "2026-11-01"
             || self.end != "2026-11-15"
             || self.approved
+            || self.worksheet.has_edits()
     }
 
     /// Native date controls follow the browser locale. This label confirms the

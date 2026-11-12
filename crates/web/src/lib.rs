@@ -12,6 +12,7 @@ use leptos_router::{
     path,
 };
 
+pub mod form_components;
 mod prototype;
 pub use prototype::is_supported_prototype_route;
 

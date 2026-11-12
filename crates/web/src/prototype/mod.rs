@@ -2,6 +2,7 @@
 mod components;
 mod model;
 mod pages;
+mod worksheet;
 
 use components::{close_dialog, focus, show_dialog, trap_dialog_tab};
 use leptos::prelude::*;
@@ -63,6 +64,17 @@ pub(super) struct DemoContext {
 }
 
 impl DemoContext {
+    fn with<T>(self, read: impl FnOnce(&DemoState) -> T) -> T {
+        let company = self.company.get();
+        self.store.state.with(|state| {
+            if state.company == company {
+                read(state)
+            } else {
+                read(&DemoState::new(company))
+            }
+        })
+    }
+
     fn data(self) -> DemoState {
         self.store.state.get().for_company(self.company.get())
     }
@@ -242,6 +254,7 @@ fn PrototypeShell() -> impl IntoView {
                         Task::Measurement => view! { <Measurement/> }.into_any(),
                         Task::Approvals => view! { <Approvals/> }.into_any(),
                         Task::Documents => view! { <Documents/> }.into_any(),
+                        Task::Worksheet => view! { <worksheet::Worksheet/> }.into_any(),
                     }}
                 </Show>
             </section>
@@ -284,7 +297,7 @@ fn PrototypeShell() -> impl IntoView {
                 }
             >
                 <h2 id="context-title">"Trocar de empresa?"</h2>
-                <p id="context-description">"Ao trocar, o rascunho e os resultados desta demonstração serão descartados. Nada foi enviado ao servidor."</p>
+                <p id="context-description">"Ao trocar, o rascunho e os resultados desta demonstração serão descartados. Nenhuma gravação foi feita no servidor."</p>
                 <p>{move || pending_company.get().map(|next| format!("Destino: {} · {}.", next.name(), next.work())).unwrap_or_default()}</p>
                 <div class="dialog-actions">
                     <button id="cancel-context" class="secondary-button" type="button" on:click=move |_| close_dialog("context-dialog")>"Continuar nesta empresa"</button>

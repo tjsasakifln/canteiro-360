@@ -1,6 +1,7 @@
 //! Servidor HTTP e fronteira de configuração da fundação.
 pub mod config;
 pub mod error;
+mod forms;
 
 use axum::{
     Json, Router,
@@ -24,6 +25,15 @@ pub fn router(config: &Config) -> Router {
     let shell_options = options.clone();
     let fallback_options = options.clone();
     Router::new()
+        .route("/api/prototipo/{organization}/medicoes", get(forms::page))
+        .route(
+            "/api/prototipo/{organization}/medicoes/export",
+            get(forms::export),
+        )
+        .route(
+            "/api/prototipo/{organization}/medicoes/preview",
+            axum::routing::post(forms::preview).layer(axum::extract::DefaultBodyLimit::max(16_384)),
+        )
         .route(
             "/healthz",
             get(|| async { Json(canteiro_application::liveness()) }),
