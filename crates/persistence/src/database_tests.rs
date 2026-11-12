@@ -967,7 +967,8 @@ async fn environment_owner_and_inherited_privilege_mismatches_fail_closed() {
             .await
             .unwrap();
     assert_eq!(environment, "test");
-    let database = fixture.database(short).await;
+    // Conexões válidas verificam identidade e privilégios, não prazo de aquisição.
+    let database = fixture.database(limits()).await;
     let ddl = format!(
         "GRANT {} TO {}",
         quoted_identifier(&fixture.owner_role),
@@ -996,7 +997,7 @@ async fn environment_owner_and_inherited_privilege_mismatches_fail_closed() {
         .await
         .unwrap();
     database.close().await;
-    let database = fixture.database(short).await;
+    let database = fixture.database(limits()).await;
     assert_clean_pool(&database).await;
     database.close().await;
     for permission in ["INSERT", "DELETE", "TRUNCATE"] {
@@ -1070,7 +1071,7 @@ async fn environment_owner_and_inherited_privilege_mismatches_fail_closed() {
             .execute(&fixture.admin)
             .await
             .unwrap();
-        let restored = fixture.database(short).await;
+        let restored = fixture.database(limits()).await;
         assert_clean_pool(&restored).await;
         restored.close().await;
     }
@@ -1096,7 +1097,7 @@ async fn environment_owner_and_inherited_privilege_mismatches_fail_closed() {
             .execute(&fixture.admin)
             .await
             .unwrap();
-        let restored = fixture.database(short).await;
+        let restored = fixture.database(limits()).await;
         assert_clean_pool(&restored).await;
         restored.close().await;
     }

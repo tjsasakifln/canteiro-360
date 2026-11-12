@@ -38,7 +38,7 @@ O moderador não deve apontar botões, citar o menu correto ou explicar o signif
 
 O moderador prepara o cenário de cada tarefa sem expor a resposta. Nos estados demonstrativos, selecionar o cenário necessário antes de entregar o objetivo. A tarefa de erro pode usar uma entrada inválida controlada ou a apresentação de erro disponível.
 
-Depois das tarefas, perguntar: “O que você entendeu por contratado, medido e pago?” Registrar a explicação com palavras do participante. Não considerar suficiente que tenha lido os rótulos.
+Depois das tarefas, perguntar: “O que você entendeu por contratado, medido, faturado e pago pelo contratante?” Registrar a explicação com palavras do participante. Não considerar suficiente que tenha lido os rótulos.
 
 ## Registro da versão
 
