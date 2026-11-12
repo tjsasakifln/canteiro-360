@@ -70,7 +70,7 @@ pub(super) fn MeasurementTable(
                     }>{move || if selection.all_results.get() { "Ir à exportação da seleção" } else { "Preparar dados para copiar" }}</button>
                     <Show when=move || selection.all_results.get()>
                         <a id="export-selection" class="primary-button" href=move || format!("/api/prototipo/{}/medicoes/export?{}", context.company.get().key(), network::query_string(&query.get())) download="medicao-referencia.tsv">{format!("Baixar os {total} resultados selecionados (.tsv)")}</a>
-                        <p>"O arquivo contém os valores da base de referência e os filtros desta consulta. Rascunhos locais não entram na exportação."</p>
+                        <p>"O arquivo contém os valores da base de referência correspondentes a esta busca. Rascunhos locais não entram na exportação."</p>
                     </Show>
                 </div>
                 <Show when=move || selection.copy_data.get().is_some()>

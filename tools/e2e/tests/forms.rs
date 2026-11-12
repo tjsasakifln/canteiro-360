@@ -72,6 +72,7 @@ async fn acceptance(h: &Harness, browser: &Browser) -> TestResult {
     exact_fields_and_error_recovery(h, browser).await?;
     same_company_history_keeps_draft(browser).await?;
     delayed_preview_cannot_replace_newer_input(h, browser).await?;
+    delayed_table_keeps_the_typing_focus(h, browser).await?;
     remote_failures_keep_work(h, browser).await?;
     context_guard_preserves_or_discards(h, browser).await?;
     let console = browser.logs().await?;
@@ -107,7 +108,7 @@ async fn acceptance(h: &Harness, browser: &Browser) -> TestResult {
                 "keyboard_pagination_and_explicit_edit", "page_selection_distinct_from_all_results",
                 "copy_selected_page_rows_with_headers", "invalid_field_keeps_other_inputs",
                 "field_error_association_and_correction_focus", "conditional_note_is_required_and_reachable", "draft_survives_filter_and_pagination", "history_keeps_grade_draft",
-                "local_selection_and_expansion_feedback_measured_inside_browser", "late_preview_cannot_replace_newer_input",
+                "local_selection_and_expansion_feedback_measured_inside_browser", "late_preview_cannot_replace_newer_input", "late_table_response_does_not_steal_typing_focus",
                 "actual_preview_network_failure_preserves_inputs", "table_retry_after_actual_network_failure",
                 "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent"
             ],
@@ -1036,6 +1037,79 @@ async fn delayed_preview_cannot_replace_newer_input(h: &Harness, browser: &Brows
         .await?;
     assert_eq!(browser.text("#preview-difference").await?, "17 m²");
     assert_eq!(browser.text("#preview-value").await?, "R$ 170,00");
+    browser.fill("#form-current", "35").await?;
+    Ok(())
+}
+
+async fn delayed_table_keeps_the_typing_focus(h: &Harness, browser: &Browser) -> TestResult {
+    assert_eq!(
+        browser
+            .execute("return !!document.querySelector('#form-current');")
+            .await?,
+        true,
+        "The row editor must remain open during pagination"
+    );
+    browser.cdp("Network.enable", json!({})).await?;
+    browser.cdp("Network.emulateNetworkConditions",json!({"offline":false,"latency":1200,"downloadThroughput":500000,"uploadThroughput":125000,"connectionType":"cellular4g"})).await?;
+    browser.click("#table-next").await?;
+    browser.wait("return document.querySelector('#table-content')?.getAttribute('aria-busy') === 'true';",Duration::from_secs(2)).await?;
+    browser.fill("#form-current", "38").await?;
+    assert_eq!(
+        browser
+            .execute("return document.activeElement?.id;")
+            .await?,
+        "form-current"
+    );
+    assert_eq!(
+        browser.attribute("#table-content", "aria-busy").await?,
+        "true",
+        "Typing must occur before the delayed GET completes"
+    );
+    browser.wait("return document.querySelector('#table-content')?.getAttribute('aria-busy') === 'false' && document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId === '26';",Duration::from_secs(12)).await?;
+    // Observe after two frames so a scheduled focus restoration has had time
+    // to run. An immediate assertion could miss the very focus theft at issue.
+    let settled = browser.post("execute/async",json!({
+        "script":"const done=arguments[arguments.length-1];requestAnimationFrame(()=>requestAnimationFrame(()=>done({focus:document.activeElement?.id,current:document.querySelector('#form-current')?.value,notes:document.querySelector('#form-notes')?.value,firstRow:document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId,busy:document.querySelector('#table-content')?.getAttribute('aria-busy')})));",
+        "args":[]
+    })).await?;
+    assert_eq!(
+        settled["focus"], "form-current",
+        "The completed table request must not steal focus from an input being edited"
+    );
+    assert_eq!(settled["current"], "38");
+    assert_eq!(settled["notes"], NOTE);
+    assert_eq!(settled["firstRow"], "26");
+    assert_eq!(settled["busy"], "false");
+    let requests = browser.execute("return performance.getEntriesByType('resource').filter(e=>e.name.includes('/api/prototipo/aurora/medicoes?')&&new URL(e.name).searchParams.get('page')==='2').map(e=>({url:e.name,durationMs:e.duration}));").await?;
+    let delayed = requests
+        .as_array()
+        .and_then(|requests| requests.last())
+        .ok_or("Delayed table timing absent")?;
+    assert!(
+        delayed["durationMs"]
+            .as_f64()
+            .ok_or("Delayed table duration missing")?
+            >= 900.0,
+        "The GET must have actually been delayed: {delayed}"
+    );
+    browser
+        .screenshot(&h.evidence.join("forms-delayed-table-keeps-focus.png"))
+        .await?;
+    write_json(
+        &h.evidence.join("forms-delayed-table-focus.json"),
+        &json!({
+            "status":"passed","request":delayed,"settled":settled,
+            "method":"Real page 2 GET delayed by CDP network latency of 1200 ms. After the request starts, WebDriver types 38 into the already open row editor. Focus, content and loaded page are observed after completion and two animation frames. No application state or response was mocked."
+        }),
+    )?;
+    browser
+        .cdp(
+            "Network.emulateNetworkConditions",
+            json!({"offline":false,"latency":0,"downloadThroughput":-1,"uploadThroughput":-1}),
+        )
+        .await?;
+    browser.click("#table-prev").await?;
+    browser.wait("return document.querySelector('#table-content')?.getAttribute('aria-busy') === 'false' && document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId === '1';",Duration::from_secs(10)).await?;
     browser.fill("#form-current", "35").await?;
     Ok(())
 }

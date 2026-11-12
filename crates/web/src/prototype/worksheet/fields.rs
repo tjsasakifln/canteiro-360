@@ -115,3 +115,23 @@ pub fn focus_row_or_summary(id: u32) {
     let exists = false;
     super::super::components::focus(if exists { &row } else { "table-summary" });
 }
+
+/// Finish keyboard navigation without interrupting work started while waiting.
+pub fn focus_query_summary() {
+    #[cfg(feature = "hydrate")]
+    {
+        let active = web_sys::window()
+            .and_then(|window| window.document())
+            .and_then(|document| document.active_element());
+        let can_move = active.is_none_or(|element| {
+            element.tag_name() == "BODY"
+                || matches!(
+                    element.id().as_str(),
+                    "table-submit" | "table-prev" | "table-next" | "table-retry"
+                )
+        });
+        if can_move {
+            super::super::components::focus("table-summary");
+        }
+    }
+}

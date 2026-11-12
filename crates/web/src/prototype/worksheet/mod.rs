@@ -82,7 +82,7 @@ pub(super) fn Worksheet() -> impl IntoView {
             was_loading.set(true);
         } else if was_loading.get_untracked() {
             was_loading.set(false);
-            request_animation_frame(move || focus("table-summary"));
+            request_animation_frame(fields::focus_query_summary);
         }
     });
     let initial = RwSignal::new(true);
