@@ -16,7 +16,7 @@ async fn independent_vectors_match_native_and_real_browser_wasm() -> TestResult 
     browser
         .navigate(&format!("{}/conferencia", h.app_url))
         .await?;
-    browser.wait("document.querySelector('[data-calculation-ready]')?.dataset.calculationReady === 'true'", Duration::from_secs(30)).await?;
+    browser.wait("return document.querySelector('[data-calculation-ready]')?.dataset.calculationReady === 'true'", Duration::from_secs(30)).await?;
     let reference: Value = serde_json::from_str(REFERENCE)?;
     let cases: Vec<_> = reference["vectors"]
         .as_array()
@@ -96,7 +96,7 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
         .await?;
     assert!(browser.text("#allocation-output").await?.contains("33,34"));
     assert!(!browser.enabled("#allocation-total").await?);
-    browser.wait("getComputedStyle(document.querySelector('#calculation-retry').parentElement).visibility === 'visible'", Duration::from_secs(20)).await?;
+    browser.wait("return getComputedStyle(document.querySelector('#calculation-retry').parentElement).visibility === 'visible'", Duration::from_secs(20)).await?;
     assert_eq!(
         browser.attribute("#calculation-retry", "href").await?,
         "/conferencia"
@@ -114,7 +114,7 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
         browser
             .navigate(&format!("{}/conferencia", h.app_url))
             .await?;
-        browser.wait("document.querySelector('[data-calculation-ready]')?.dataset.calculationReady === 'true'", Duration::from_secs(30)).await?;
+        browser.wait("return document.querySelector('[data-calculation-ready]')?.dataset.calculationReady === 'true'", Duration::from_secs(30)).await?;
         assert!(browser.text("#allocation-output").await?.contains("33,34"));
         assert!(
             browser
@@ -140,7 +140,7 @@ async fn previews_are_readable_keyboard_operable_and_preserve_invalid_input() ->
     browser.fill("#allocation-total", "100,01").await?;
     browser
         .wait(
-            "document.querySelector('#allocation-output').textContent.includes('100,01')",
+            "return document.querySelector('#allocation-output').textContent.includes('100,01')",
             Duration::from_secs(10),
         )
         .await?;

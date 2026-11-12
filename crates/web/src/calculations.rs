@@ -43,7 +43,7 @@ pub fn CalculationPage() -> impl IntoView {
             <p class="eyebrow">"Prévia de planejamento"</p>
             <h1>"Conferência de valores e prazos"</h1>
             <p class="intro-copy">"Confira as parcelas e as datas antes de consolidar uma versão. Os exemplos são fictícios; esta prévia não altera contratos ou pagamentos."</p>
-            <div class="interaction-status" data-ready=move || ready.get().to_string()>
+            <div class="interaction-status" hidden=move || ready.get() data-ready=move || ready.get().to_string()>
                 <div class="waiting-state" hidden=move || ready.get()>
                     <p role="status">"Preparando os campos para edição…"</p>
                     <div class="delayed-help" role="status">
