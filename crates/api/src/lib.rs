@@ -5,10 +5,12 @@ pub mod error;
 use axum::{
     Json, Router,
     body::Body,
-    http::{HeaderValue, Request, StatusCode, header},
+    http::{HeaderValue, Method, Request, StatusCode, header},
+    middleware::{self, Next},
+    response::Response,
     routing::get,
 };
-use canteiro_web::{App, shell};
+use canteiro_web::{App, is_supported_prototype_route, shell};
 use config::Config;
 use leptos_axum::{LeptosRoutes, generate_route_list, render_app_to_stream};
 use tower::ServiceExt;
@@ -40,6 +42,7 @@ pub fn router(config: &Config) -> Router {
                 response
             }
         })
+        .layer(middleware::from_fn(prototype_route_status))
         .layer(SetResponseHeaderLayer::overriding(
             header::CACHE_CONTROL,
             HeaderValue::from_static("no-store"),
@@ -58,6 +61,20 @@ pub fn router(config: &Config) -> Router {
         ))
         .layer(CompressionLayer::new())
         .with_state(options)
+}
+
+/// Dynamic Leptos routes also match unknown parameter values. Preserve the
+/// rendered not-found page while giving GET/HEAD the corresponding HTTP status.
+/// This validates demonstration URLs only, never a user's business permissions.
+async fn prototype_route_status(request: Request<Body>, next: Next) -> Response {
+    let invalid_prototype = matches!(*request.method(), Method::GET | Method::HEAD)
+        && request.uri().path().starts_with("/prototipo/")
+        && !is_supported_prototype_route(request.uri().path());
+    let mut response = next.run(request).await;
+    if invalid_prototype && response.status() == StatusCode::OK {
+        *response.status_mut() = StatusCode::NOT_FOUND;
+    }
+    response
 }
 
 /// Usa o mesmo serviço da aplicação para gerar a evidência e medir o bootstrap.

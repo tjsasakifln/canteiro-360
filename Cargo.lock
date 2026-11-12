@@ -388,6 +388,7 @@ dependencies = [
  "leptos_meta",
  "leptos_router",
  "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

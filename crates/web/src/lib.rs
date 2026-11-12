@@ -1,7 +1,5 @@
-//! Public presentation for the first implementation stage.
-//!
-//! The only interaction changes a local disclosure. It neither persists data nor
-//! represents authentication, an approval, or a financial operation.
+//! Public presentation and accessible prototypes with fictitious data.
+//! Interactions never represent authentication, approval or a financial act.
 
 use leptos::prelude::*;
 use leptos_meta::{Meta, MetaTags, Stylesheet, Title, provide_meta_context};
@@ -9,6 +7,9 @@ use leptos_router::{
     components::{Route, Router, Routes},
     path,
 };
+
+mod prototype;
+pub use prototype::is_supported_prototype_route;
 
 /// Complete document rendered by the server. Only Leptos generates bootstrap JS.
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -34,6 +35,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
+    prototype::provide_prototype_store();
 
     view! {
         <Stylesheet id="canteiro-style" href="/pkg/canteiro-web.css"/>
@@ -56,6 +58,7 @@ pub fn App() -> impl IntoView {
             <main id="conteudo" class="page-width main-content" tabindex="-1">
                 <Routes fallback=NotFoundPage>
                     <Route path=path!("/") view=HomePage/>
+                    <Route path=path!("/prototipo/:organization/:task") view=prototype::PrototypePage/>
                 </Routes>
             </main>
             <footer class="site-footer page-width">
@@ -82,6 +85,7 @@ fn HomePage() -> impl IntoView {
                 "O Canteiro 360 está sendo preparado para conectar obras, projetos, "
                 "contratos e acompanhamento financeiro em um só lugar."
             </p>
+            <p class="prototype-entry"><a class="primary-button" href="/prototipo/aurora/painel">"Experimentar os percursos da obra"</a></p>
         </section>
 
         <section class="foundation-card" aria-labelledby="stage-title">
@@ -89,12 +93,12 @@ fn HomePage() -> impl IntoView {
                 <span class="stage-marker" aria-hidden="true">"01"</span>
                 <div>
                     <p class="eyebrow">"Primeira etapa"</p>
-                    <h2 id="stage-title">"A base está em construção"</h2>
+                    <h2 id="stage-title">"Conheça a base e os percursos da obra"</h2>
                 </div>
             </div>
             <p class="stage-description">
-                "Esta página apresenta o início do produto. Cadastro, acesso às obras "
-                "e registros financeiros ainda não estão disponíveis."
+                "Os exemplos de painel, orçamento, medição, aprovação e documentos já podem ser "
+                "experimentados. Cadastro, acesso a obras reais e registros financeiros ainda não estão disponíveis."
             </p>
 
             <div class="scope-note">
@@ -141,9 +145,9 @@ fn HomePage() -> impl IntoView {
             <div id="foundation-details" class="details-panel" hidden=move || !expanded.get()>
                 <h3>"O que você pode conferir agora"</h3>
                 <ul>
-                    <li>"Ler a apresentação antes de terminar o carregamento da interação."</li>
-                    <li>"Abrir e fechar estes detalhes com mouse, toque ou teclado."</li>
-                    <li>"Consultar esta página também em telas pequenas."</li>
+                    <li>"Consultar os exemplos da rotina da obra com dados fictícios."</li>
+                    <li>"Navegar, conferir um rascunho e revisar uma decisão com teclado, mouse ou toque."</li>
+                    <li>"Conferir o contexto da empresa e os estados de carregamento, erro e permissão."</li>
                 </ul>
                 <p>"Abrir estes detalhes apenas muda a apresentação nesta aba. Nenhum registro é criado."</p>
             </div>

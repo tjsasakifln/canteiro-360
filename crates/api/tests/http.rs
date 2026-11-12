@@ -63,6 +63,88 @@ async fn unknown_routes_and_private_files_never_receive_a_success_page() {
 }
 
 #[tokio::test]
+async fn prototype_routes_render_only_the_requested_company_and_reject_unknown_contexts() {
+    let config = Config::from_lookup(|_| None).unwrap();
+    for (company, own_contract, other_contract) in [
+        ("aurora", "CT-014/2026", "CT-027/2026"),
+        ("horizonte", "CT-027/2026", "CT-014/2026"),
+    ] {
+        for task in ["painel", "orcamento", "medicao", "aprovacoes", "documentos"] {
+            let path = format!("/prototipo/{company}/{task}?busca=alvenaria");
+            let response = router(&config)
+                .oneshot(Request::get(&path).body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK, "{path}");
+            assert_eq!(response.headers()["cache-control"], "no-store");
+            let html = String::from_utf8(
+                to_bytes(response.into_body(), 1_048_576)
+                    .await
+                    .unwrap()
+                    .to_vec(),
+            )
+            .unwrap();
+            assert!(html.contains(own_contract), "{path}");
+            assert!(!html.contains(other_contract), "{path}");
+            assert!(html.contains("Dados fictícios"), "{path}");
+            assert!(html.contains("id=\"prototype-shell\""), "{path}");
+        }
+    }
+    for path in [
+        "/prototipo/desconhecida/painel",
+        "/prototipo/aurora/tarefa-inexistente",
+        "/prototipo/horizonte/tarefa-inexistente?busca=concreto",
+    ] {
+        let response = router(&config)
+            .oneshot(Request::get(path).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND, "{path}");
+        assert_eq!(response.headers()["cache-control"], "no-store");
+        assert_eq!(response.headers()["x-content-type-options"], "nosniff");
+        let html = String::from_utf8(
+            to_bytes(response.into_body(), 1_048_576)
+                .await
+                .unwrap()
+                .to_vec(),
+        )
+        .unwrap();
+        assert!(
+            html.contains("Este endereço não está disponível."),
+            "{path}"
+        );
+        assert!(
+            !html.contains("CT-014/2026") && !html.contains("CT-027/2026"),
+            "{path}"
+        );
+        assert!(!html.contains("id=\"prototype-shell\""), "{path}");
+    }
+    // A URL check must not turn method errors into success or mask their status.
+    for path in ["/prototipo/aurora/painel", "/prototipo/invalida/painel"] {
+        let response = router(&config)
+            .oneshot(Request::post(path).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED, "{path}");
+    }
+    let response = router(&config)
+        .oneshot(
+            Request::head("/prototipo/invalida/painel")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    assert!(
+        to_bytes(response.into_body(), 1024)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[tokio::test]
 async fn liveness_does_not_claim_business_or_database_readiness() {
     let config = Config::from_lookup(|_| None).unwrap();
     let response = router(&config)

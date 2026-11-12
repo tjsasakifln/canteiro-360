@@ -1,3 +1,5 @@
+@import url("prototype.css");
+
 :root {
   color-scheme: light;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -161,6 +163,10 @@ h3 {
   margin-block-start: 20px;
   color: var(--text-muted);
   font-size: 1.125rem;
+}
+
+.prototype-entry {
+  margin-block-start: 24px;
 }
 
 .foundation-card {
