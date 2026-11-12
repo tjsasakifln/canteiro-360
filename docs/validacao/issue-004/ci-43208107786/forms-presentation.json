@@ -1,0 +1,172 @@
+{
+  "checks": [
+    "server_page_bounded_with_10000_records",
+    "stable_server_search_and_sort",
+    "server_exact_decimal_canonicalization",
+    "server_ambiguous_value_rejected",
+    "server_20_to_35_means_15",
+    "server_cumulative_truncation_0_335",
+    "server_rendered_page_and_pagination_without_scripts",
+    "reflow_360_and_1280",
+    "table_and_controls_accessibly_named"
+  ],
+  "console": [],
+  "environment": {
+    "apiBinaryBytes": 34570592,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: Intel(R) Xeon(R) 6975P-C",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        7962896 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794483520508,
+    "wasmBinaryBytes": 21584921
+  },
+  "group": "forms-presentation",
+  "limits": "HTTP contracts, no-script navigation and rendered layout only. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial.",
+  "server": {
+    "ambiguous": {
+      "canonical": {
+        "current": "35",
+        "date": "2026-11-12",
+        "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+        "percent": "5",
+        "unit": "m²"
+      },
+      "errors": [
+        {
+          "code": "ambiguous",
+          "field": "unit_price",
+          "message": "O ponto sozinho é ambíguo. Para milhar, escreva 1.234,00; para decimal, use vírgula, como 1,234."
+        }
+      ],
+      "preview": null
+    },
+    "cumulativePreview": {
+      "canonical": {
+        "current": "2",
+        "date": "2026-11-12",
+        "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+        "percent": "5",
+        "unit": "un",
+        "unit_price": "0.335"
+      },
+      "errors": [],
+      "preview": {
+        "balance": "98",
+        "balance_value": "32.83",
+        "code": "AUR-00002",
+        "contracted": "100",
+        "current": "2",
+        "description": "Componente demonstrativo 00002",
+        "difference": "1",
+        "id": 2,
+        "period_value": "0.34",
+        "previous": "1",
+        "unit": "un",
+        "unit_price": "0.335"
+      }
+    },
+    "descendingFirstId": 10000,
+    "exactPreview": {
+      "canonical": {
+        "current": "35",
+        "date": "2026-11-12",
+        "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+        "percent": "5",
+        "unit": "m²",
+        "unit_price": "1234.56"
+      },
+      "errors": [],
+      "preview": {
+        "balance": "65",
+        "balance_value": "80246.40",
+        "code": "AUR-00001",
+        "contracted": "100",
+        "current": "35",
+        "description": "Alvenaria de vedação 00001",
+        "difference": "15",
+        "id": 1,
+        "period_value": "18518.40",
+        "previous": "20",
+        "unit": "m²",
+        "unit_price": "1234.56"
+      }
+    },
+    "filteredTotal": 1,
+    "first": {
+      "balance": "65",
+      "balance_value": "650.00",
+      "code": "AUR-00001",
+      "contracted": "100",
+      "current": "35",
+      "description": "Alvenaria de vedação 00001",
+      "difference": "15",
+      "id": 1,
+      "period_value": "150.00",
+      "previous": "20",
+      "unit": "m²",
+      "unit_price": "10"
+    },
+    "fixtureTotal": 10000,
+    "pageSize": 25,
+    "pages": 400,
+    "secondPageFirstId": 26
+  },
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  },
+  "viewports": [
+    {
+      "metrics": {
+        "body": 345,
+        "caption": "Serviços da medição. Anterior e atual são acumulados; diferença representa a quantidade do período. Cada quantidade usa a unidade da linha.",
+        "columns": [
+          "Selecionar",
+          "Serviço, unidade e edição",
+          "Contratado (unid. da linha)",
+          "Anterior acumulado (unid. da linha)",
+          "Atual acumulado (unid. da linha)",
+          "Diferença no período (unid. da linha)",
+          "Preço unitário (R$)",
+          "Valor do período (R$)",
+          "Saldo (unid. da linha)",
+          "Saldo (R$)"
+        ],
+        "document": 345,
+        "rows": 25,
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "width": 360
+    },
+    {
+      "metrics": {
+        "body": 1265,
+        "caption": "Serviços da medição. Anterior e atual são acumulados; diferença representa a quantidade do período. Cada quantidade usa a unidade da linha.",
+        "columns": [
+          "Selecionar",
+          "Serviço, unidade e edição",
+          "Contratado (unid. da linha)",
+          "Anterior acumulado (unid. da linha)",
+          "Atual acumulado (unid. da linha)",
+          "Diferença no período (unid. da linha)",
+          "Preço unitário (R$)",
+          "Valor do período (R$)",
+          "Saldo (unid. da linha)",
+          "Saldo (R$)"
+        ],
+        "document": 1265,
+        "rows": 25,
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "width": 1280
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source_commit": "5588b0c695c13259e6e19b0a5a1256e39112a6c8",
+  "source_tree": "ccdc477a623394a0af87450cc64a406f3f7821d1",
+  "status": "passed_for_sampled_responses",
+  "scope": "Soma do JavaScript externo Brotli desta CI com todo o inline bruto das seis respostas locais já medidas na mesma árvore. Não representa nova execução do probe, tempo de carregamento nem todas as buscas possíveis.",
+  "external_source": "budget.json",
+  "external_source_sha256": "2222be6ee0d7dbd61f27116922dd61c01ce5f7da354a918ff589d69357376fc5",
+  "inline_source": "worksheet-payload-local.json",
+  "inline_source_sha256": "85fbaa5d4b6bf153f0028eb926b627360b01408adfb3b861d999bea261a5edc3",
+  "sample_count": 6,
+  "max_html_raw_bytes": 133780,
+  "max_inline_javascript_raw_bytes": 29083,
+  "external_javascript_brotli_bytes": 7947,
+  "javascript_limit_bytes": 81920,
+  "max_javascript_budget_bytes": 37030,
+  "within_limit": true
+}

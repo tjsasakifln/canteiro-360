@@ -1,0 +1,92 @@
+{
+  "afterEditorReturn": {
+    "bounds": {
+      "bottom": 545.8125,
+      "height": 46.390625,
+      "left": 141.5,
+      "right": 362.5,
+      "top": 499.421875,
+      "width": 221
+    },
+    "clip": {
+      "bottom": 900,
+      "left": 33.5,
+      "right": 1216.5,
+      "top": 374.421875
+    },
+    "focus": "edit-row-1",
+    "fullyVisible": true,
+    "headerBottom": 374.421875,
+    "hit": {
+      "classes": "secondary-button",
+      "id": "edit-row-1",
+      "tag": "BUTTON"
+    },
+    "hitIsButton": true,
+    "outlineWidth": 3,
+    "scrollLeft": 0,
+    "scrollTop": 0,
+    "scroller": {
+      "bottom": 916.421875,
+      "left": 32.5,
+      "right": 1232.5,
+      "top": 276.421875
+    },
+    "viewport": {
+      "height": 900,
+      "width": 1280
+    },
+    "wheelOrigin": {
+      "x": 625,
+      "y": 637.2109375
+    }
+  },
+  "returned": {
+    "bounds": {
+      "bottom": 545.8125,
+      "height": 46.390625,
+      "left": 141.5,
+      "right": 362.5,
+      "top": 499.421875,
+      "width": 221
+    },
+    "clip": {
+      "bottom": 900,
+      "left": 33.5,
+      "right": 1216.5,
+      "top": 374.421875
+    },
+    "focus": "edit-row-1",
+    "fullyVisible": true,
+    "headerBottom": 374.421875,
+    "hit": {
+      "classes": "secondary-button",
+      "id": "edit-row-1",
+      "tag": "BUTTON"
+    },
+    "hitIsButton": true,
+    "outlineWidth": 3,
+    "scrollLeft": 0,
+    "scrollTop": 0,
+    "scroller": {
+      "bottom": 916.421875,
+      "left": 32.5,
+      "right": 1232.5,
+      "top": 276.421875
+    },
+    "viewport": {
+      "height": 900,
+      "width": 1280
+    },
+    "wheelOrigin": {
+      "x": 625,
+      "y": 637.2109375
+    }
+  },
+  "scrolled": {
+    "focus": "edit-row-25",
+    "scrollTop": 3895
+  },
+  "status": "passed",
+  "width": 1280
+}

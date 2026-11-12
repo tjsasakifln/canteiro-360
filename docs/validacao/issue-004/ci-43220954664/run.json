@@ -1,0 +1,90 @@
+{
+  "run_id": 43220954664,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43220954664",
+  "source_commit": "b6dc408221b0bc5a1e71da01947e277c2380f170",
+  "source_tree": "48046848edf6c004b91987c5eaee0f8b3e53b933",
+  "checkout_commit": "4c6097ba480045dd1dd9f377cba0742a23fa5ec6",
+  "checkout_tree": "48046848edf6c004b91987c5eaee0f8b3e53b933",
+  "base_commit": "2013cef3c5097c087c9e4a116c125d2dfb248596",
+  "tree_verification": "Árvore do merge conferida via API do GitHub. O log do job confirma o checkout por git log -1 --format=%H.",
+  "job_id": 131192033151,
+  "artifact_id": 13946404607,
+  "artifact_sha256": "26ddd80f1539f717337c3906606c4a4ce204c2d3dfc9822d2eb2b58bc32d6223",
+  "conclusion": "failure",
+  "native_passed": 60,
+  "basic_command_ignored": 21,
+  "postgresql_passed": 15,
+  "foundation_browser_passed": 2,
+  "foundation_performance_navigations": 80,
+  "forms_browser_passed": 2,
+  "forms_browser_failed": 1,
+  "forms_groups": {
+    "forms_http_ssr_and_presentation": "passed",
+    "forms_local_selection_and_expansion_feedback": "passed",
+    "forms_drafts_tables_and_context": "failed"
+  },
+  "forms_local_response_observations": 80,
+  "forms_local_response_violations": 0,
+  "forms_prior_functional_phases_completed": [
+    "keyboard_pagination_and_search",
+    "page_selection_and_copy",
+    "exact_fields_and_error_recovery"
+  ],
+  "prior_phase_evidence": "Inferência a partir da ordem de chamadas sequenciais na fonte b6dc4082 e do timeout na função seguinte same_company_history_keeps_draft, corroborada pelas capturas forms-ambiguous-error-1280.png e forms-draft-saved.png. O grupo funcional não produziu relatório final aprovado.",
+  "keyboard_replacement_regression": "O cenário anterior de preço 1.234,56 e acumulado 35 concluiu suas asserções, interpretação, erros, prévia e salvamento local antes da falha de histórico.",
+  "document_height_regression": {
+    "status": "passed",
+    "measurements": [
+      {
+        "viewport_css_px": 360,
+        "metrics_file": "forms-document-height-360.json",
+        "document_height_css_px": 3134.0,
+        "footer_bottom_css_px": 3134.171875,
+        "maximum_extent_css_px": 3166.171875,
+        "image_file": "forms-table-360.png",
+        "image_width_px": 345,
+        "image_height_px": 3134
+      },
+      {
+        "viewport_css_px": 1280,
+        "metrics_file": "forms-document-height-1280.json",
+        "document_height_css_px": 2077.0,
+        "footer_bottom_css_px": 2076.8125,
+        "maximum_extent_css_px": 2108.8125,
+        "image_file": "forms-table-1280.png",
+        "image_width_px": 1265,
+        "image_height_px": 2077
+      }
+    ]
+  },
+  "forms_pointer_preparation": "passed; original element click opened the editor",
+  "forms_late_keyboard_regression_executed": false,
+  "prototype_browser_executed": true,
+  "prototype_browser_passed": 1,
+  "cargo_no_fail_fast": true,
+  "failure": {
+    "phase": "same_company_history_keeps_draft, após history_back",
+    "error": "Browser condition timed out after 10s: return document.querySelector('#forms-shell')?.dataset.ready === 'true';",
+    "snapshot_title": "Documentos | Escola Vila Nova | Canteiro 360",
+    "snapshot_url": "http://127.0.0.1:45751/prototipo/aurora/planilha?page=1&page_size=25&search=AUR-00002&sort=code&direction=asc",
+    "forms_ready": null,
+    "console_entries": 6,
+    "console_finding": "Tried to access a reactive value that has already been disposed; stack includes RwSignal<bool>::get. DOM permaneceu na página Documentos apesar da URL de planilha.",
+    "scope": "A leitura do estado descartado e a falha de navegação estão observadas. A correção do ciclo de vida da navegação ainda não foi retestada nesta execução."
+  },
+  "later_functional_scenarios": "Não executados após o timeout: prévia atrasada, consulta atrasada, falhas reais de rede, troca de empresa e percurso final da grade por Tab/Shift+Tab.",
+  "failure_snapshot": {
+    "original_file": "forms-functional-failure.html",
+    "sha256": "752d487a22ad489319263956c5bae17a3614074960fa3b750502c8fe814b279b",
+    "archived": false,
+    "reason": "HTML completo contém scripts; preservados relatório, captura e hash, sem incorporar o HTML."
+  },
+  "job_log": {
+    "file": "job.log",
+    "sha256": "dacfb88c0de275e7669192d3b598180c0a4cd599e443b47498ac9a6b902d979f",
+    "provenance": "Log original do job obtido separadamente; não pertence ao ZIP identificado por artifact_sha256."
+  },
+  "human_professionals": "Não executado; a issue 3 e a PR 75 continuam dependentes de pelo menos três profissionais reais.",
+  "screen_reader": "Não executado; automação de DOM e teclado não equivale a leitor de tela.",
+  "selection_note": "Consolidados, geometria, altura, preparação por roda, cinco capturas forms e log original separado. Provas locais correntes apenas copiadas para preservar a fonte; nenhum probe foi reexecutado e nenhum manifesto corrente foi modificado nesta consolidação."
+}

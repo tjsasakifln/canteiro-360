@@ -1,0 +1,190 @@
+{
+  "cases": [
+    {
+      "afterEditorReturn": {
+        "bounds": {
+          "bottom": 545.8125,
+          "height": 46.390625,
+          "left": 141.5,
+          "right": 362.5,
+          "top": 499.421875,
+          "width": 221
+        },
+        "clip": {
+          "bottom": 900,
+          "left": 33.5,
+          "right": 1216.5,
+          "top": 374.421875
+        },
+        "focus": "edit-row-1",
+        "fullyVisible": true,
+        "headerBottom": 374.421875,
+        "hit": {
+          "classes": "secondary-button",
+          "id": "edit-row-1",
+          "tag": "BUTTON"
+        },
+        "hitIsButton": true,
+        "outlineWidth": 3,
+        "scrollLeft": 0,
+        "scrollTop": 0,
+        "scroller": {
+          "bottom": 916.421875,
+          "left": 32.5,
+          "right": 1232.5,
+          "top": 276.421875
+        },
+        "viewport": {
+          "height": 900,
+          "width": 1280
+        },
+        "wheelOrigin": {
+          "x": 625,
+          "y": 637.2109375
+        }
+      },
+      "returned": {
+        "bounds": {
+          "bottom": 545.8125,
+          "height": 46.390625,
+          "left": 141.5,
+          "right": 362.5,
+          "top": 499.421875,
+          "width": 221
+        },
+        "clip": {
+          "bottom": 900,
+          "left": 33.5,
+          "right": 1216.5,
+          "top": 374.421875
+        },
+        "focus": "edit-row-1",
+        "fullyVisible": true,
+        "headerBottom": 374.421875,
+        "hit": {
+          "classes": "secondary-button",
+          "id": "edit-row-1",
+          "tag": "BUTTON"
+        },
+        "hitIsButton": true,
+        "outlineWidth": 3,
+        "scrollLeft": 0,
+        "scrollTop": 0,
+        "scroller": {
+          "bottom": 916.421875,
+          "left": 32.5,
+          "right": 1232.5,
+          "top": 276.421875
+        },
+        "viewport": {
+          "height": 900,
+          "width": 1280
+        },
+        "wheelOrigin": {
+          "x": 625,
+          "y": 637.2109375
+        }
+      },
+      "scrolled": {
+        "focus": "edit-row-25",
+        "scrollTop": 3895
+      },
+      "status": "passed",
+      "width": 1280
+    },
+    {
+      "afterEditorReturn": {
+        "bounds": {
+          "bottom": 484.171875,
+          "height": 68.78125,
+          "left": 125,
+          "right": 266,
+          "top": 415.390625,
+          "width": 141
+        },
+        "clip": {
+          "bottom": 830.390625,
+          "left": 17,
+          "right": 313,
+          "top": 304.390625
+        },
+        "focus": "edit-row-1",
+        "fullyVisible": true,
+        "headerBottom": 304.390625,
+        "hit": {
+          "classes": "secondary-button",
+          "id": "edit-row-1",
+          "tag": "BUTTON"
+        },
+        "hitIsButton": true,
+        "outlineWidth": 3,
+        "scrollLeft": 0,
+        "scrollTop": 14,
+        "scroller": {
+          "bottom": 846.390625,
+          "left": 16,
+          "right": 329,
+          "top": 206.390625
+        },
+        "viewport": {
+          "height": 900,
+          "width": 360
+        },
+        "wheelOrigin": {
+          "x": 165,
+          "y": 567.390625
+        }
+      },
+      "returned": {
+        "bounds": {
+          "bottom": 554.171875,
+          "height": 68.78125,
+          "left": 125,
+          "right": 266,
+          "top": 485.390625,
+          "width": 141
+        },
+        "clip": {
+          "bottom": 900,
+          "left": 17,
+          "right": 313,
+          "top": 374.390625
+        },
+        "focus": "edit-row-1",
+        "fullyVisible": true,
+        "headerBottom": 374.390625,
+        "hit": {
+          "classes": "secondary-button",
+          "id": "edit-row-1",
+          "tag": "BUTTON"
+        },
+        "hitIsButton": true,
+        "outlineWidth": 3,
+        "scrollLeft": 0,
+        "scrollTop": 14,
+        "scroller": {
+          "bottom": 916.390625,
+          "left": 16,
+          "right": 329,
+          "top": 276.390625
+        },
+        "viewport": {
+          "height": 900,
+          "width": 360
+        },
+        "wheelOrigin": {
+          "x": 165,
+          "y": 637.1953125
+        }
+      },
+      "scrolled": {
+        "focus": "edit-row-25",
+        "scrollTop": 4839
+      },
+      "status": "passed",
+      "width": 360
+    }
+  ],
+  "method": "WebDriver Tab to row 25, reverse Tab to row 1, DOM hit-testing without mutation, real WebDriver click, then return from editor. This keyboard regression uses no wheel preparation. The earlier pointer journey separately records its native wheel preparation and preserves the original WebDriver element click.",
+  "status": "passed"
+}

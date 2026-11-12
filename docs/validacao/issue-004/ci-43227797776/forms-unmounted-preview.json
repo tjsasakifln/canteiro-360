@@ -1,0 +1,103 @@
+{
+  "before": {
+    "comparisonPresent": false,
+    "focus": "form-current",
+    "inputs": {
+      "current": "36",
+      "date": "12/11/2026",
+      "money": "10,00",
+      "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+      "percent": "12,5",
+      "unit": "m2"
+    },
+    "previewDisabled": false,
+    "query": {
+      "direction": "asc",
+      "pageSize": "25",
+      "search": "",
+      "sort": "code"
+    },
+    "saveEnabled": false,
+    "url": "http://127.0.0.1:37697/prototipo/aurora/planilha?page=1&page_size=25&search=&sort=code&direction=asc"
+  },
+  "completedAfterFocus": [],
+  "completedBeforeFocus": [],
+  "completedRequests": [
+    {
+      "durationMs": 4007.09999999986,
+      "startTimeMs": 11238.100000000091,
+      "status": 200,
+      "url": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes/preview"
+    }
+  ],
+  "focusedBeforeResponse": {
+    "comparisonPresent": false,
+    "focus": "form-current",
+    "inputs": {
+      "current": "36",
+      "date": "12/11/2026",
+      "money": "10,00",
+      "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+      "percent": "12,5",
+      "unit": "m2"
+    },
+    "previewDisabled": false,
+    "query": {
+      "direction": "asc",
+      "pageSize": "25",
+      "search": "",
+      "sort": "code"
+    },
+    "saveEnabled": false,
+    "url": "http://127.0.0.1:37697/prototipo/aurora/planilha?page=1&page_size=25&search=&sort=code&direction=asc"
+  },
+  "method": "Real POST for current 36 under 4000 ms CDP latency, followed by native navigation to Documents and Back. The editor must remount with identical inputs and query before that POST completes. No application state or response is mocked.",
+  "recovery": {
+    "difference": "16 m²",
+    "explicitNewPreview": true,
+    "value": "R$ 160,00"
+  },
+  "reopened": {
+    "comparisonPresent": false,
+    "focus": "nav-documentos",
+    "inputs": {
+      "current": "36",
+      "date": "12/11/2026",
+      "money": "10,00",
+      "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+      "percent": "12,5",
+      "unit": "m2"
+    },
+    "previewDisabled": false,
+    "query": {
+      "direction": "asc",
+      "pageSize": "25",
+      "search": "",
+      "sort": "code"
+    },
+    "saveEnabled": false,
+    "url": "http://127.0.0.1:37697/prototipo/aurora/planilha?page=1&page_size=25&search=&sort=code&direction=asc"
+  },
+  "settledAfterOldResponse": {
+    "comparisonPresent": false,
+    "focus": "form-current",
+    "inputs": {
+      "current": "36",
+      "date": "12/11/2026",
+      "money": "10,00",
+      "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+      "percent": "12,5",
+      "unit": "m2"
+    },
+    "previewDisabled": false,
+    "query": {
+      "direction": "asc",
+      "pageSize": "25",
+      "search": "",
+      "sort": "code"
+    },
+    "saveEnabled": false,
+    "url": "http://127.0.0.1:37697/prototipo/aurora/planilha?page=1&page_size=25&search=&sort=code&direction=asc"
+  },
+  "status": "passed"
+}

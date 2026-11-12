@@ -1,0 +1,12 @@
+{
+  "editedWhilePending": "37",
+  "lateResponseApplied": false,
+  "method": "CDP network latency of 1200 ms while the real HTTP request executes. Input changed through WebDriver before completion; no application state or response was mocked.",
+  "request": {
+    "durationMs": 1213.6999999999534,
+    "status": 200,
+    "url": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes/preview"
+  },
+  "sentCurrent": "36",
+  "status": "passed"
+}

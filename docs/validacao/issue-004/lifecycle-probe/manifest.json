@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "application_source_commit": "5588b0c695c13259e6e19b0a5a1256e39112a6c8",
+  "application_source_tree": "ccdc477a623394a0af87450cc64a406f3f7821d1",
+  "selected_files_excluding_manifest": 10,
+  "original_local_probe_files": 8,
+  "total_bytes_excluding_manifest": 72972,
+  "scope": "Fonte, manifestos de dependências, quatro logs e comparação nativa preservados sem alteração. Documentação e recontagem independentes identificadas separadamente. Sem código de dependências nem HTML executável.",
+  "files": [
+    {
+      "file": "Cargo.lock",
+      "bytes": 27302,
+      "sha256": "d595f1b684e33a1f4aec059cbf46a9c20c7a0c0b022406fbaa7755872d107f5a",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "Cargo.toml",
+      "bytes": 372,
+      "sha256": "03c238faf116656a5b3b827fb44b8ff1a371d6becac26bd6feccf6f9eeefdebf",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "README.md",
+      "bytes": 3529,
+      "sha256": "36dbf9df89d12912d00d64d1699463e334975fe812943fa5aa4823c7ecb64eef",
+      "provenance": "local_documentation_or_verification"
+    },
+    {
+      "file": "comparison-baseline.log",
+      "bytes": 17268,
+      "sha256": "c1634e9925515c70bff1253dbb3dfa6c0bf3a21c42af9469e091bae09f8975c1",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "comparison-combined.log",
+      "bytes": 2702,
+      "sha256": "6e0f5b0510a24681eb42de410815fcf88aa9de6a24eef3cc9413df2561e79992",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "comparison-idempotent.log",
+      "bytes": 2685,
+      "sha256": "14ce1ae3d1a7a7fdbcdd96d7f96eb2b4b03d269bff01ec9188ebba2bdaa1adb3",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "comparison-owned.log",
+      "bytes": 10460,
+      "sha256": "cb45ecb1bfb83dc451b0e3537442392f9be1279c8e53d2b553b852569e4f48f6",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "comparison.json",
+      "bytes": 1254,
+      "sha256": "774157b23f14c4da12eec39433b2022807d4de62d1a978b139bf05131ab82be0",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "src/main.rs",
+      "bytes": 5692,
+      "sha256": "8406e0d30a933d4e1e4b0b1c5e6bb6d469ffa2cb48fc3e050243e7c73c6611ba",
+      "provenance": "original_local_probe"
+    },
+    {
+      "file": "verification.json",
+      "bytes": 1708,
+      "sha256": "22ba58e0930e9463f899d5affac9fb1cc1b1edfd43747bb3c573023f1b760ee0",
+      "provenance": "local_documentation_or_verification"
+    }
+  ]
+}

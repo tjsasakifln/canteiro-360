@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "browser_driver": "ChromeDriver 156.0.8078.80",
+  "driver_revision": "fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705}",
+  "binary_sha256": "d7f1682dcf9e4087bae6a52ca03c9913390a79ab86e09796562db7ed6f534587",
+  "inspected_atom": "GET_LOCATION_IN_VIEW",
+  "elf_relative_relocation_pointer_range": [
+    "0x15c9600",
+    "0x15c9aa0"
+  ],
+  "chunks": 149,
+  "reconstructed_atom_bytes": 10194,
+  "reconstructed_atom_sha256": "1c381cd9f34cdd7f795912a0168d186de4cace83b8985bc75f5d31369683b4ea",
+  "binary_literal_occurrences": {
+    "scroll-padding": 0,
+    "scroll-margin": 0
+  },
+  "finding": "O atom inspecionado calcula deslocamentos a partir de retângulos, clientWidth e clientHeight e escreve scrollTop e scrollLeft diretamente. Sua implementação não consulta a reserva de rolagem CSS. Essa observação descreve o mecanismo do driver; a acessibilidade de teclado da aplicação é verificada em cenário separado.",
+  "test_adjustment": "Antes de um clique que segue a seleção/cópia, o teste usa roda nativa com origem na área da grade, deslocamento limitado e registro de estados. Mantém o clique WebDriver original e exige visibilidade integral e hit-test correto. O cenário independente por Tab e Shift+Tab não recebe preparação por roda.",
+  "matching_primary_source": "https://chromium.googlesource.com/chromium/src/+/bd1634ed7148aa766a2167811bbe3cce334ac1a9/third_party/selenium-atoms/atoms.cc",
+  "call_path_source": "https://chromium.googlesource.com/chromium/src/+/main/chrome/test/chromedriver/element_util.cc",
+  "scope": "Inspeção estática do binário fixado. O código do atom não é incorporado à aplicação nem à evidência versionada.",
+  "atom_hash_method": "Trecho reconstruído no relatório de inspeção, removendo somente a quebra de linha adicional usada para imprimir o relatório; preservada a quebra de linha final do atom."
+}

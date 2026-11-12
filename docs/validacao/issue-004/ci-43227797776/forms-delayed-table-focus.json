@@ -1,0 +1,15 @@
+{
+  "method": "Real page 2 GET delayed by CDP network latency of 1200 ms. After the request starts, WebDriver types 38 into the already open row editor. Focus, content and loaded page are observed after completion and two animation frames. No application state or response was mocked.",
+  "request": {
+    "durationMs": 1205.7999999998135,
+    "url": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes?page=2&page_size=25&search=&sort=code&direction=asc"
+  },
+  "settled": {
+    "busy": "false",
+    "current": "38",
+    "firstRow": "26",
+    "focus": "form-current",
+    "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B."
+  },
+  "status": "passed"
+}

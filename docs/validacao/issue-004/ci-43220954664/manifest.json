@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "run_id": 43220954664,
+  "source_commit": "b6dc408221b0bc5a1e71da01947e277c2380f170",
+  "source_tree": "48046848edf6c004b91987c5eaee0f8b3e53b933",
+  "artifact_id": 13946404607,
+  "artifact_sha256": "26ddd80f1539f717337c3906606c4a4ce204c2d3dfc9822d2eb2b58bc32d6223",
+  "selected_files_excluding_manifest": 27,
+  "original_artifact_files": 21,
+  "separate_original_job_logs": 1,
+  "total_bytes_excluding_manifest": 1524531,
+  "selection": "21 arquivos conferidos byte a byte com o ZIP, incluindo cinco capturas forms. Log do job obtido separadamente e cinco provas/metadados locais identificados. Material repetido do protótipo, amostras brutas de fundação, logs auxiliares e HTML com scripts ficam fora desta seleção.",
+  "local_probe_note": "Provas existentes da árvore 48046848 copiadas sem alteração dos arquivos correntes ou execução de novos probes. Orçamento derivado combina apenas medidas da mesma fonte.",
+  "executable_html_archived": false,
+  "files": [
+    {
+      "file": "browser-functional.json",
+      "bytes": 2269,
+      "sha256": "c9516a64c9f9e17377f39a804b4be1be8e13f1ceb1cb0fe17832c0687f955add",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "browser-performance.json",
+      "bytes": 2601,
+      "sha256": "bbf6b4ba288d53c716635dec7c63fd59d9e6c6013fd2758cea9009a1c5a8e90e",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "budget.json",
+      "bytes": 1874,
+      "sha256": "ee780ca1b50871bd7947562c1e7414fe5d1c04d29f8f7ff3bcb087c4524e5bf4",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "build.json",
+      "bytes": 2385,
+      "sha256": "d82f93d558a6b795a2da3b4d7735d2d1f24b86d95200698776aaba3243f77d16",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-ambiguous-error-1280.png",
+      "bytes": 397412,
+      "sha256": "f57224a3883642b2557b89d4a5d89b774de082a9450ea6b386c8384c81a77504",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-document-height-1280.json",
+      "bytes": 231,
+      "sha256": "a5effa9d7aff208bfd45c4574e59f1bd019b8636aeee787b0523c221507a797f",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-document-height-360.json",
+      "bytes": 235,
+      "sha256": "8f4defe671c73f43ad6120515ee5b12a87ab828769776586ea67425ec7f1b657",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-draft-saved.png",
+      "bytes": 120363,
+      "sha256": "27277fbbdb65a669f66c8bb08d9af9fab13caa3518ee6204d48df2eb8d6587c8",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-functional-failure.png",
+      "bytes": 83448,
+      "sha256": "acaede33dd88a0772433074204f64da7f2a5e2ebb606a580043ddd00c613160b",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-functional.json",
+      "bytes": 10376,
+      "sha256": "b6b4ba460ee3dec74cb411946ce1b436df2cf9a48f890bb59bd116de11beb276",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-grid-geometry-1280.json",
+      "bytes": 2008,
+      "sha256": "688a47ea2ff37d7336577c4249d7a3078af6682d8fbb3755a9a9830721c65348",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-grid-geometry-360.json",
+      "bytes": 1982,
+      "sha256": "c63a7e9c17338fe43a8d14264d5c132db002ab9597e353d4e90fcb3c260bc0d5",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-local-response.json",
+      "bytes": 32401,
+      "sha256": "ea12347ea5ffdf3aafccd97312c1e6444a362c347210b8382b9285630640c4f9",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-pointer-scroll.json",
+      "bytes": 7963,
+      "sha256": "0bbc4761c7d0b6ffd474b8454a81fe5879c59107659c6becf05110f7b1e7f764",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-presentation.json",
+      "bytes": 11407,
+      "sha256": "a0a30743913990dd8ab6d5c5d734e5dc4e6e69ce7a11bd2ceabbd4bb7b07bc8c",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-server-requests.json",
+      "bytes": 919,
+      "sha256": "86da959f2ae32e122e97f4cd1b465e3e80dbade62cb3ccfc7436e129cf657d26",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-table-1280.png",
+      "bytes": 216552,
+      "sha256": "293da08a2981539c563f4cc238fc7b842472f2045da9627ec1bbbb81ae09dc03",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-table-360.png",
+      "bytes": 189823,
+      "sha256": "22e137e0c072e39c286e613fbf45ce690fd864a8302612a587d4df9fba0f54f6",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "job.log",
+      "bytes": 383138,
+      "sha256": "dacfb88c0de275e7669192d3b598180c0a4cd599e443b47498ac9a6b902d979f",
+      "provenance": "original_job_log_obtained_separately"
+    },
+    {
+      "file": "migrations.log",
+      "bytes": 441,
+      "sha256": "14fd057a07acf37fd8ef7be2fcfd48eb3b5109bf836457ee0a7f0ef13b91fd5d",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "persistence.log",
+      "bytes": 4662,
+      "sha256": "6e725861f7d8eed6ce626fa12836fa86145e3c5f4003b400d0125d05543bcbcd",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "prototype-functional.json",
+      "bytes": 6004,
+      "sha256": "815a411c2f82637bd928bbf2a5516705b9c6452569f0bfc7b0b5cba86d0153d1",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "run.json",
+      "bytes": 4983,
+      "sha256": "a15b521ad6956c839a48d1075a34525d0cdf8910997665014664b70d9c92b060",
+      "provenance": "derived_metadata"
+    },
+    {
+      "file": "serialization-safety.json",
+      "bytes": 10634,
+      "sha256": "3bf7caf8a80551a031a6939777d708449a7d09e0c1f38d4451d098ca59c5dfce",
+      "provenance": "local_probe_same_source_tree"
+    },
+    {
+      "file": "source-manifest.json",
+      "bytes": 24043,
+      "sha256": "15b974e8f58539dfce470299a83aa6a9112e0f39bf6e4a32224787ebe958f80e",
+      "provenance": "local_source_manifest"
+    },
+    {
+      "file": "worksheet-budget.json",
+      "bytes": 944,
+      "sha256": "61e5fd9ebdcb44ed6f97f22a4c0af8f728867d27f45c05ce728cb28ea5a7c7c7",
+      "provenance": "derived_metadata"
+    },
+    {
+      "file": "worksheet-payload-local.json",
+      "bytes": 5433,
+      "sha256": "74983f167127ee766d55ca66fb9ea78613ef0b22a453058e8b54cbc42887d108",
+      "provenance": "local_probe_same_source_tree"
+    }
+  ]
+}

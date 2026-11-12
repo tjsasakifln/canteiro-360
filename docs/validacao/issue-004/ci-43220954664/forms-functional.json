@@ -1,0 +1,94 @@
+{
+  "console": [
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:45751/pkg/canteiro-web.js 337:24 \"panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:\\nTried to access a reactive value that has already been disposed.\\n\\nStack:\\n\\nError\\n    at __wbg_new_bb74001155cb8ca8 (http://127.0.0.1:45751/pkg/canteiro-web.js:622:25)\\n    at canteiro_web.wasm.\\u003Cconsole_error_panic_hook[f8a311e03a561efe]::Error>::new::__wbg_new_bb74001155cb8ca8 externref shim (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[11252]:0x16d550)\\n    at canteiro_web.wasm.console_error_panic_hook[f8a311e03a561efe]::hook (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[736]:0x9bb6e)\\n    at canteiro_web.wasm.\\u003Cconsole_error_panic_hook[f8a311e03a561efe]::hook as core[37ee0ce0c4cd57d5]::ops::function::Fn\\u003C(&std[d775520e4a0009e6]::panic::PanicHookInfo,)>>::call (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[12969]:0x173713)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::panicking::panic_with_hook (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[893]:0xa6278)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::panicking::panic_handler::{closure#0} (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[2203]:0xdcd86)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::sys::backtrace::__rust_end_short_backtrace::\\u003Cstd[d775520e4a0009e6]::panicking::panic_handler::{closure#0}, !> (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[12856]:0x173329)\\n    at canteiro_web.wasm.__rustc[3d2f79520d6fa809]::rust_begin_unwind (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[8623]:0x158eaf)\\n    at canteiro_web.wasm.core[37ee0ce0c4cd57d5]::panicking::panic_fmt (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[6645]:0x13e939)\\n    at canteiro_web.wasm.\\u003Creactive_graph[8ec79a8cbb70f3fb]::signal::rw::RwSignal\\u003Cbool> as reactive_graph[8ec79a8cbb70f3fb]::traits::Get>::get (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[8886]:0x15ba3d)\\n\\n\"",
+      "source": "console-api",
+      "timestamp": 1794488796309
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm 0:1521989 Uncaught RuntimeError: unreachable",
+      "source": "javascript",
+      "timestamp": 1794488796310
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:45751/pkg/canteiro-web.js 337:24 \"panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:\\nTried to access a reactive value that has already been disposed.\\n\\nStack:\\n\\nError\\n    at __wbg_new_bb74001155cb8ca8 (http://127.0.0.1:45751/pkg/canteiro-web.js:622:25)\\n    at canteiro_web.wasm.\\u003Cconsole_error_panic_hook[f8a311e03a561efe]::Error>::new::__wbg_new_bb74001155cb8ca8 externref shim (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[11252]:0x16d550)\\n    at canteiro_web.wasm.console_error_panic_hook[f8a311e03a561efe]::hook (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[736]:0x9bb6e)\\n    at canteiro_web.wasm.\\u003Cconsole_error_panic_hook[f8a311e03a561efe]::hook as core[37ee0ce0c4cd57d5]::ops::function::Fn\\u003C(&std[d775520e4a0009e6]::panic::PanicHookInfo,)>>::call (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[12969]:0x173713)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::panicking::panic_with_hook (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[893]:0xa6278)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::panicking::panic_handler::{closure#0} (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[2203]:0xdcd86)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::sys::backtrace::__rust_end_short_backtrace::\\u003Cstd[d775520e4a0009e6]::panicking::panic_handler::{closure#0}, !> (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[12856]:0x173329)\\n    at canteiro_web.wasm.__rustc[3d2f79520d6fa809]::rust_begin_unwind (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[8623]:0x158eaf)\\n    at canteiro_web.wasm.core[37ee0ce0c4cd57d5]::panicking::panic_fmt (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[6645]:0x13e939)\\n    at canteiro_web.wasm.\\u003Creactive_graph[8ec79a8cbb70f3fb]::signal::rw::RwSignal\\u003Cbool> as reactive_graph[8ec79a8cbb70f3fb]::traits::Get>::get (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[8886]:0x15ba3d)\\n\\n\"",
+      "source": "console-api",
+      "timestamp": 1794488796311
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm 0:1521989 Uncaught RuntimeError: unreachable",
+      "source": "javascript",
+      "timestamp": 1794488796312
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:45751/pkg/canteiro-web.js 337:24 \"panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:\\nTried to access a reactive value that has already been disposed.\\n\\nStack:\\n\\nError\\n    at __wbg_new_bb74001155cb8ca8 (http://127.0.0.1:45751/pkg/canteiro-web.js:622:25)\\n    at canteiro_web.wasm.\\u003Cconsole_error_panic_hook[f8a311e03a561efe]::Error>::new::__wbg_new_bb74001155cb8ca8 externref shim (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[11252]:0x16d550)\\n    at canteiro_web.wasm.console_error_panic_hook[f8a311e03a561efe]::hook (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[736]:0x9bb6e)\\n    at canteiro_web.wasm.\\u003Cconsole_error_panic_hook[f8a311e03a561efe]::hook as core[37ee0ce0c4cd57d5]::ops::function::Fn\\u003C(&std[d775520e4a0009e6]::panic::PanicHookInfo,)>>::call (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[12969]:0x173713)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::panicking::panic_with_hook (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[893]:0xa6278)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::panicking::panic_handler::{closure#0} (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[2203]:0xdcd86)\\n    at canteiro_web.wasm.std[d775520e4a0009e6]::sys::backtrace::__rust_end_short_backtrace::\\u003Cstd[d775520e4a0009e6]::panicking::panic_handler::{closure#0}, !> (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[12856]:0x173329)\\n    at canteiro_web.wasm.__rustc[3d2f79520d6fa809]::rust_begin_unwind (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[8623]:0x158eaf)\\n    at canteiro_web.wasm.core[37ee0ce0c4cd57d5]::panicking::panic_fmt (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[6645]:0x13e939)\\n    at canteiro_web.wasm.\\u003Creactive_graph[8ec79a8cbb70f3fb]::signal::rw::RwSignal\\u003Cbool> as reactive_graph[8ec79a8cbb70f3fb]::traits::Get>::get (http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm:wasm-function[8886]:0x15ba3d)\\n\\n\"",
+      "source": "console-api",
+      "timestamp": 1794488796341
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:45751/pkg/canteiro-web_bg.wasm 0:1521989 Uncaught RuntimeError: unreachable",
+      "source": "javascript",
+      "timestamp": 1794488796342
+    }
+  ],
+  "consoleError": null,
+  "environment": {
+    "apiBinaryBytes": 34632296,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V74 80-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        8122976 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794488788155,
+    "wasmBinaryBytes": 21701730
+  },
+  "error": "Browser condition timed out after 10s: return document.querySelector('#forms-shell')?.dataset.ready === 'true';",
+  "group": "forms-functional",
+  "htmlError": null,
+  "phaseEvidence": {
+    "startedAtUnixMs": 1794488788155,
+    "status": "running"
+  },
+  "screenshotError": null,
+  "snapshot": {
+    "fields": [
+      {
+        "id": "organization",
+        "value": "aurora"
+      },
+      {
+        "id": "density",
+        "value": "comfortable"
+      },
+      {
+        "id": "display-state",
+        "value": "content"
+      }
+    ],
+    "focus": {
+      "id": "prototype-main",
+      "tag": "SECTION"
+    },
+    "formsReady": null,
+    "openDialogs": [],
+    "title": "Documentos | Escola Vila Nova | Canteiro 360",
+    "url": "http://127.0.0.1:45751/prototipo/aurora/planilha?page=1&page_size=25&search=AUR-00002&sort=code&direction=asc",
+    "visibleText": "Pular para o conteúdo\nC\nCanteiro 360\nEm desenvolvimento\n\nDemonstração com dados fictícios. Nada é gravado.\n\nEmpresa\nConstrutora Aurora\nObras Horizonte\nObra\nEscola Vila Nova\nContrato\nCT-014/2026\nVersão do orçamento\nRevisão 02\n\nDemonstração pronta para usar.\n\n◫\nPainel da obra\n≡\nOrçamento\n▤\nPreparar medição\n▦\nPlanilha de medição\n✓\nAprovações\n▱\nDocumentos\n\nROTINA DA OBRA\n\nDocumentos e versões\n\nConsulte a referência disponível sem depender da ordem dos menus.\n\nConsulta disponível com cadastro pendente\n\nA pendência de cadastro não impede abrir estes documentos. Atos que dependem de uma comissão válida continuam bloqueados na medição.\n\nReferências da obra\nVersão vigente do exemplo\nMemorial de execução\n\nEscola Vila Nova · CT-014/2026 · revisão 02\n\nDisponibilizado em 25/10/2026 pela equipe técnica fictícia.\n\nAbrir prévia do memorial\nEvidência da medição 02\nRegistro da conferência técnica\n\nRevisão 01 · 03/11/2026 · Rafael Lima, conferente fictício\n\nAbrir registro de conferência\nComo identificar a versão de referência\nOpções da demonstração e ajuda\n\nCanteiro 360 · Gestão de obras e projetos privados\n\nUma solução da CONFENGE"
+  },
+  "snapshotError": null,
+  "status": "failed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}

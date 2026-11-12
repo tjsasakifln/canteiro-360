@@ -1,0 +1,11 @@
+[package]
+name = "worksheet-lifecycle-probe"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+reactive_graph = { version = "=0.2.16", features = ["effects"] }
+leptos_server = "=0.8.8"
+any_spawner = { version = "=0.3.0", features = ["tokio"] }
+tachys = { version = "=0.2.19", features = ["reactive_graph"] }
+tokio = { version = "1", features = ["rt", "macros", "time"] }
