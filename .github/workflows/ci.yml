@@ -106,7 +106,7 @@ jobs:
         run: |
           export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
           unset CANTEIRO_FIXTURE_RUNTIME
-          cargo test --locked -p canteiro-e2e -- --ignored --nocapture
+          cargo test --locked -p canteiro-e2e --no-fail-fast -- --ignored --nocapture
       - name: Preservar medidas da revisão
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

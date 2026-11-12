@@ -15,21 +15,68 @@ const READY: &str = "return document.querySelector('#forms-shell')?.dataset.read
 const PAGE_READY: &str = "return document.querySelector('#forms-shell')?.dataset.ready === 'true' && document.querySelectorAll('#measurement-grid tbody tr[data-row-id]').length > 0 && !document.querySelector('#measurement-grid')?.closest('[aria-busy=true]');";
 const NOTE: &str = "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.";
 
+// Separate test cases preserve independent failure reports. Serialize their
+// browser workloads so the performance group is not measured under our own
+// concurrent functional workload. A failed group releases this async guard.
+static FORMS_BROWSER_RUN: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+#[derive(Clone, Copy)]
+enum Group {
+    Presentation,
+    LocalResponse,
+    Functional,
+}
+
+impl Group {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Presentation => "forms-presentation",
+            Self::LocalResponse => "forms-local-response",
+            Self::Functional => "forms-functional",
+        }
+    }
+}
+
 #[tokio::test]
 #[ignore = "Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver"]
-async fn forms_tables_preserve_exact_values_context_and_keyboard() -> TestResult {
-    let h = Arc::new(Harness::start("forms-functional").await?);
+async fn forms_http_ssr_and_presentation() -> TestResult {
+    run_group(Group::Presentation).await
+}
+
+#[tokio::test]
+#[ignore = "Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver"]
+async fn forms_local_selection_and_expansion_feedback() -> TestResult {
+    run_group(Group::LocalResponse).await
+}
+
+#[tokio::test]
+#[ignore = "Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver"]
+async fn forms_drafts_tables_and_context() -> TestResult {
+    run_group(Group::Functional).await
+}
+
+async fn run_group(group: Group) -> TestResult {
+    let _exclusive_browser = FORMS_BROWSER_RUN.lock().await;
+    let name = group.name();
+    let h = Arc::new(Harness::start(name).await?);
     let browser = Arc::new(Browser::start(&h).await?);
     let task_h = Arc::clone(&h);
     let task_browser = Arc::clone(&browser);
-    let result: TestResult =
-        match tokio::spawn(async move { acceptance(&task_h, &task_browser).await }).await {
-            Ok(result) => result,
-            Err(error) => Err(format!("Forms acceptance task failed: {error}").into()),
-        };
+    let result: TestResult = match tokio::spawn(async move {
+        match group {
+            Group::Presentation => presentation_acceptance(&task_h, &task_browser).await,
+            Group::LocalResponse => response_acceptance(&task_h, &task_browser).await,
+            Group::Functional => functional_acceptance(&task_h, &task_browser).await,
+        }
+    })
+    .await
+    {
+        Ok(result) => result,
+        Err(error) => Err(format!("{name} acceptance task failed: {error}").into()),
+    };
     if let Err(error) = &result {
         let screenshot_error = browser
-            .screenshot(&h.evidence.join("forms-failure.png"))
+            .screenshot(&h.evidence.join(format!("{name}-failure.png")))
             .await
             .err()
             .map(|error| error.to_string());
@@ -40,20 +87,25 @@ async fn forms_tables_preserve_exact_values_context_and_keyboard() -> TestResult
             .await
         {
             Ok(html) => match html.as_str() {
-                Some(html) => fs::write(h.evidence.join("forms-failure.html"), html)
+                Some(html) => fs::write(h.evidence.join(format!("{name}-failure.html")), html)
                     .err()
                     .map(|error| error.to_string()),
                 None => Some("DOM snapshot was not a string".into()),
             },
             Err(error) => Some(error.to_string()),
         };
+        // Retain already measured samples if a performance assertion failed.
+        // Harness::start replaced any older run's report before this attempt.
+        let phase_evidence = fs::read(h.evidence.join(format!("{name}.json")))
+            .ok()
+            .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok());
         write_json(
-            &h.evidence.join("forms-functional.json"),
+            &h.evidence.join(format!("{name}.json")),
             &json!({
-                "status":"failed","error":error.to_string(),"versions":browser.versions,
+                "status":"failed","group":name,"error":error.to_string(),"versions":browser.versions,"environment":h.environment,
                 "snapshot":snapshot.as_ref().ok(),"snapshotError":snapshot.as_ref().err().map(ToString::to_string),
                 "console":console.as_ref().ok(),"consoleError":console.as_ref().err().map(ToString::to_string),
-                "screenshotError":screenshot_error,"htmlError":html_error
+                "screenshotError":screenshot_error,"htmlError":html_error,"phaseEvidence":phase_evidence
             }),
         )?;
     }
@@ -63,10 +115,34 @@ async fn forms_tables_preserve_exact_values_context_and_keyboard() -> TestResult
     Ok(())
 }
 
-async fn acceptance(h: &Harness, browser: &Browser) -> TestResult {
+async fn presentation_acceptance(h: &Harness, browser: &Browser) -> TestResult {
     let server = server_pagination_and_exact_preview(h).await?;
     let viewports = reflow_and_semantics(h, browser).await?;
-    let local_response = local_response_performance(h, browser).await?;
+    let console = browser.logs().await?;
+    assert_console(&console, false)?;
+    write_json(
+        &h.evidence.join("forms-presentation.json"),
+        &json!({
+            "status":"passed","group":"forms-presentation","versions":browser.versions,"environment":h.environment,
+            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named"],
+            "server":server,"viewports":viewports,"console":console,
+            "limits":"HTTP contracts, no-script navigation and rendered layout only. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial."
+        }),
+    )?;
+    Ok(())
+}
+
+async fn response_acceptance(h: &Harness, browser: &Browser) -> TestResult {
+    let mut report = local_response_performance(h, browser).await?;
+    let console = browser.logs().await?;
+    assert_console(&console, false)?;
+    report["group"] = json!("forms-local-response");
+    report["console"] = console;
+    write_json(&h.evidence.join("forms-local-response.json"), &report)
+}
+
+async fn functional_acceptance(h: &Harness, browser: &Browser) -> TestResult {
+    browser.viewport(1280, 900, false).await?;
     keyboard_pagination_and_search(h, browser).await?;
     page_selection_and_copy(h, browser).await?;
     exact_fields_and_error_recovery(h, browser).await?;
@@ -76,14 +152,41 @@ async fn acceptance(h: &Harness, browser: &Browser) -> TestResult {
     remote_failures_keep_work(h, browser).await?;
     context_guard_preserves_or_discards(h, browser).await?;
     let console = browser.logs().await?;
+    assert_console(&console, true)?;
+    write_json(
+        &h.evidence.join("forms-functional.json"),
+        &json!({
+            "status":"passed", "group":"forms-functional", "versions":browser.versions, "environment":h.environment,
+            "checks":[
+                "ui_exact_decimal_date_percent_and_unit_interpretation", "ambiguous_value_rejected_without_coercion",
+                "keyboard_pagination_and_explicit_edit", "page_selection_distinct_from_all_results",
+                "copy_selected_page_rows_with_headers", "invalid_field_keeps_other_inputs",
+                "field_error_association_and_correction_focus", "conditional_note_is_required_and_reachable", "draft_survives_filter_and_pagination", "history_keeps_grade_draft",
+                "late_preview_cannot_replace_newer_input", "late_table_response_does_not_steal_typing_focus",
+                "actual_preview_network_failure_preserves_inputs", "table_retry_after_actual_network_failure",
+                "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent"
+            ],
+            "console":console,
+            "limits":"Fictitious draft/context journey. Does not claim results from the independent HTTP/SSR/layout or response-time groups, a professional-user trial, assistive-technology session, physical mobile device or commercial validation."
+        }),
+    )?;
+    println!(
+        "Forms acceptance passed; evidence: {}",
+        h.evidence.display()
+    );
+    Ok(())
+}
+
+fn assert_console(console: &Value, allow_expected_network_failures: bool) -> TestResult {
     for entry in console.as_array().ok_or("Browser logs must be an array")? {
-        // Two expected network failures below are injected by the browser's
-        // network layer, never by mutating the application or its request code.
-        let expected_negative_response = entry["message"].as_str().is_some_and(|message| {
-            message.contains("/api/prototipo/")
-                && (message.contains("ERR_BLOCKED_BY_CLIENT")
-                    || (message.contains("/medicoes/preview") && message.contains("status of 422")))
-        });
+        // Only the functional journey intentionally exercises these failures.
+        let expected_negative_response = allow_expected_network_failures
+            && entry["message"].as_str().is_some_and(|message| {
+                message.contains("/api/prototipo/")
+                    && (message.contains("ERR_BLOCKED_BY_CLIENT")
+                        || (message.contains("/medicoes/preview")
+                            && message.contains("status of 422")))
+            });
         assert!(
             entry["level"] != "SEVERE" || expected_negative_response,
             "Unexpected browser error: {entry}"
@@ -96,30 +199,6 @@ async fn acceptance(h: &Harness, browser: &Browser) -> TestResult {
             "Hydration or runtime error: {entry}"
         );
     }
-    write_json(
-        &h.evidence.join("forms-functional.json"),
-        &json!({
-            "status":"passed", "versions":browser.versions, "environment":h.environment,
-            "checks":[
-                "server_page_bounded_with_10000_records", "stable_server_search_and_sort",
-                "pt_br_exact_decimal_canonicalization", "ambiguous_value_rejected_without_coercion",
-                "server_20_to_35_means_15", "server_cumulative_truncation_0_335",
-                "reflow_360_and_1280", "table_and_controls_accessibly_named",
-                "keyboard_pagination_and_explicit_edit", "page_selection_distinct_from_all_results",
-                "copy_selected_page_rows_with_headers", "invalid_field_keeps_other_inputs",
-                "field_error_association_and_correction_focus", "conditional_note_is_required_and_reachable", "draft_survives_filter_and_pagination", "history_keeps_grade_draft",
-                "local_selection_and_expansion_feedback_measured_inside_browser", "late_preview_cannot_replace_newer_input", "late_table_response_does_not_steal_typing_focus",
-                "actual_preview_network_failure_preserves_inputs", "table_retry_after_actual_network_failure",
-                "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent"
-            ],
-            "server":server, "viewports":viewports, "localResponse":local_response, "console":console,
-            "limits":"Fictitious prototype, desktop Chromium with simulated CSS widths. Does not represent a professional-user trial, assistive-technology session, physical mobile device or commercial validation."
-        }),
-    )?;
-    println!(
-        "Forms acceptance passed; evidence: {}",
-        h.evidence.display()
-    );
     Ok(())
 }
 
@@ -222,6 +301,7 @@ async fn reflow_and_semantics(h: &Harness, browser: &Browser) -> TestResult<Vec<
     assert_eq!(browser.execute("return document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId;").await?,"1");
     tab_to(browser, "#table-next").await?;
     browser.key(ENTER).await?;
+    browser.wait("return document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId === '26';",Duration::from_secs(10)).await?;
     assert_eq!(browser.execute("return document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId;").await?,"26");
     browser
         .full_screenshot(&h.evidence.join("forms-ssr-without-scripts.png"))
@@ -365,7 +445,7 @@ async fn keyboard_pagination_and_search(h: &Harness, browser: &Browser) -> TestR
             Duration::from_secs(3),
         )
         .await?;
-    browser.fill("#table-search", "").await?;
+    clear_field_by_keyboard(browser, "#table-search").await?;
     browser.click("#table-submit").await?;
     browser.wait("return document.querySelectorAll('#measurement-grid tbody tr[data-row-id]').length === 25;", Duration::from_secs(10)).await?;
     write_json(&h.evidence.join("forms-server-requests.json"), &requests)?;
@@ -468,7 +548,7 @@ async fn exact_fields_and_error_recovery(h: &Harness, browser: &Browser) -> Test
     browser.fill("#form-current", "35").await?;
     browser.fill("#form-date", "12/11/2026").await?;
     ensure_advanced(browser).await?;
-    browser.fill("#form-notes", "").await?;
+    clear_field_by_keyboard(browser, "#form-notes").await?;
     browser.click("#form-advanced-toggle").await?;
     assert_eq!(
         browser
@@ -844,6 +924,14 @@ async fn ensure_advanced(browser: &Browser) -> TestResult {
         browser.key(ENTER).await?;
         browser.wait("return document.querySelector('#form-advanced-toggle')?.closest('details')?.open === true;",Duration::from_secs(3)).await?;
     }
+    Ok(())
+}
+
+async fn clear_field_by_keyboard(browser: &Browser, selector: &str) -> TestResult {
+    browser.click(selector).await?;
+    browser.chord(&["\u{e009}"], "a").await?;
+    browser.key("\u{e003}").await?;
+    assert_eq!(browser.property(selector, "value").await?, "");
     Ok(())
 }
 

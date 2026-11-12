@@ -28,6 +28,28 @@ async fn worksheet_html_contains_only_its_page_before_hydration() {
                 .to_vec(),
         )
         .unwrap();
+        // Out-of-order SSR can contain all row markup inside an inert template
+        // while the live document only has a loading fallback. Counting the raw
+        // response alone would incorrectly pass with JavaScript disabled.
+        assert!(
+            !html.contains("<template"),
+            "The server must render the worksheet into the document, not an inert template"
+        );
+        assert!(
+            !html.contains("id=\"table-loading\""),
+            "The initial worksheet must not require a script to replace its loading fallback"
+        );
+        let table_container = html
+            .split("id=\"table-content\"")
+            .nth(1)
+            .expect("The rendered worksheet has its table container")
+            .split('>')
+            .next()
+            .unwrap();
+        assert!(
+            table_container.contains("aria-busy=\"false\""),
+            "The resolved server-rendered worksheet must not remain announced as loading"
+        );
         assert_eq!(html.matches("data-row-id=").count(), 25);
         assert!(html.contains(&format!("{prefix}-00026")));
         assert!(html.contains(&format!("{prefix}-00050")));

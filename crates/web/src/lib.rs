@@ -8,6 +8,7 @@
 use leptos::prelude::*;
 use leptos_meta::{Meta, MetaTags, Stylesheet, Title, provide_meta_context};
 use leptos_router::{
+    SsrMode,
     components::{Route, Router, Routes},
     path,
 };
@@ -63,7 +64,10 @@ pub fn App() -> impl IntoView {
             <main id="conteudo" class="page-width main-content" tabindex="-1">
                 <Routes fallback=NotFoundPage>
                     <Route path=path!("/") view=HomePage/>
-                    <Route path=path!("/prototipo/:organization/:task") view=prototype::PrototypePage/>
+                    // Resolve the page on the server before emitting its HTML.
+                    // OutOfOrder streaming places suspended rows in an inert
+                    // template that requires JavaScript to become visible.
+                    <Route path=path!("/prototipo/:organization/:task") view=prototype::PrototypePage ssr=SsrMode::Async/>
                 </Routes>
             </main>
             <footer class="site-footer page-width">
