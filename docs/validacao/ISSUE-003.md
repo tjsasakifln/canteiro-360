@@ -26,7 +26,9 @@ Esta etapa não implementa autenticação, autorização comercial, medições r
 
 ## Execução técnica
 
-Os testes nativos, o Clippy, a compilação SSR/WASM e as medidas locais foram repetidos após as correções de foco, leitura móvel e resumo do período, sobre os arquivos de implementação da revisão `ab2685bea1c9c10c1b81e9bcbfdfe2b49b1e1632`. A [terceira execução de integração](https://github.com/tjsasakifln/canteiro-360/actions/runs/43137531210) aprovou essas etapas, o PostgreSQL e os dois testes de navegador anteriores. O novo teste passou pelo ciclo de foco corrigido, mas leu o seletor antes do evento de fechamento terminar sua restauração. A captura subsequente registra empresa e foco corretos. A espera foi corrigida para exigir o resultado completo; a nova execução ainda precisa concluir os percursos de histórico e aprovação. A existência de um cenário ainda não executado não significa que passou.
+**CI completa aprovada:** [execução 43142248739](https://github.com/tjsasakifln/canteiro-360/actions/runs/43142248739), sobre o código da revisão `61ed5b653f473e29eb90ec48d2230e17fa9298a5`. O checkout efetivo foi o merge temporário `5c8871c23a41589f47f4075764267a5ab54c6ec7`; sua árvore `fa495de7a66c1df9065e4564b717b20df9b76780` é idêntica à árvore da revisão da PR. A confirmação está no [registro da execução](issue-003/ci-43142248739/run.json) e no [log completo](issue-003/ci-43142248739/job.log).
+
+Os registros locais de testes nativos, Clippy, compilação SSR/WASM e tamanho dos arquivos correspondem à implementação de interface da revisão `ab2685bea1c9c10c1b81e9bcbfdfe2b49b1e1632`. Depois dela, os ajustes de código ficaram restritos às esperas dos testes de navegador e aos prazos das conexões positivas de um teste de banco. Os 15 cenários locais de PostgreSQL foram repetidos após esse último ajuste. A CI aprovada executou novamente todas as etapas sobre a revisão final.
 
 | Verificação local | Resultado e evidência |
 |---|---|
@@ -38,7 +40,43 @@ Os testes nativos, o Clippy, a compilação SSR/WASM e as medidas locais foram r
 | Compilação SSR/WASM | Aprovada com Rust 1.99.1 e wasm-bindgen 0.2.130; [registro](issue-003/build-local.json). |
 | Pacote servido | WASM 348.809 B, interoperabilidade JS 8.193 B, CSS 5.570 B, nos limites de 1 MiB, 80 KiB e 60 KiB; [medição local](issue-003/budget-local.json). Inclui as duas folhas CSS e o conteúdo inline. |
 
-O executor local impede sockets Unix, necessários para iniciar o Chromium disponível. A prova de interação e as capturas serão obtidas pela CI com navegador real, sem substituir o teste por HTML estático. A simulação de viewport não é apresentada como ensaio em aparelho físico, zoom manual de 400% ou teste com leitor de tela.
+O executor local impede sockets Unix, necessários para iniciar o Chromium disponível. A prova de interação e as capturas foram obtidas pela CI com navegador real Chromium e ChromeDriver `156.0.8078.80`. A simulação de viewport não é apresentada como ensaio em aparelho físico, zoom manual de 400% ou teste com leitor de tela.
+
+### Resultados da execução aprovada
+
+| Verificação | Resultado e evidência |
+|---|---|
+| Testes nativos | 45 aprovados, zero falhas. As 18 verificações ignoradas neste comando foram executadas nas etapas explícitas de banco e navegador. |
+| PostgreSQL 17.7 | 15 aprovados, zero falhas e zero ignorados; [log da CI](issue-003/ci-43142248739/persistence.log). Migrações e identidades distintas também aprovadas. |
+| Navegador | Três testes aprovados: comportamento da fundação, desempenho da rota inicial e percurso completo do protótipo. [Protótipo](issue-003/ci-43142248739/prototype-functional.json) e [fundação](issue-003/ci-43142248739/browser-functional.json). |
+| Contexto e recuperação | Cancelar conserva empresa, período e texto; confirmar descarta explicitamente; Voltar pelo histórico entre empresas exige decisão. Empresa anterior não permanece na nova tarefa. |
+| Aprovação | Tab e Shift+Tab contidos, Escape e cancelamento restituem foco; confirmação leva ao resultado identificado como simulação. O painel deixa de apresentar a decisão simulada como pendente. |
+| Apresentação | 15 combinações de cinco tarefas e três larguras, sem transbordamento horizontal da página, sem campos sem rótulo, com um título principal e uma navegação atual por tela. As tabelas conservam rolagem própria. |
+| Contraste de texto | 22 relatórios, 453 combinações observadas somadas, todas aprovadas. Menor razão: 6,4700447145:1. Cores computadas de texto e fundo sólido; limites do método constam em cada relatório. |
+| Console do protótipo | Nenhuma entrada; sem erro grave, divergência de hidratação ou pânico nos percursos executados. |
+| Dependências, compilação e políticas | Formatação, plano, linguagens, segredos, Clippy nativo e WASM, auditoria e compilação aprovados. [Compilação](issue-003/ci-43142248739/build.json). |
+| Arquivos servidos | WASM 348.440 B, JS de interoperabilidade 8.193 B e CSS 5.570 B; todos abaixo dos limites. [Medição da CI](issue-003/ci-43142248739/budget.json). JS inclui 7.524 B com Brotli e 669 B inline sem compressão. |
+| Desempenho da fundação | 80 navegações aprovadas na rota `/`, com cenários de cache e larguras distintos. [Resumo](issue-003/ci-43142248739/browser-performance.json) e [amostras](issue-003/ci-43142248739/performance-samples.json). Esses tempos não são atribuídos às cinco rotas do protótipo. |
+
+O [manifesto](issue-003/manifest.json) identifica os 157 arquivos rastreados fora de `docs/validacao/`, seus hashes e os arquivos de evidência preservados. O hash agregado da implementação e dos testes é `e72a8d8d9f040f27e7a6de066f84c914111ce3220d23cd666f6ee0a843e9c8e1`. A consolidação deste registro acrescenta apenas documentação e evidência dentro de `docs/validacao/`, sem alterar o código testado. Capturas HTML e logs auxiliares permanecem no artefato da CI; scripts gerados não foram versionados como evidência.
+
+### Capturas conferidas
+
+| Tarefa | 320 CSS px | 360 CSS px | 1280 CSS px |
+|---|---|---|---|
+| Painel | [320](issue-003/ci-43142248739/prototype-painel-320.png) | [360](issue-003/ci-43142248739/prototype-painel-360.png) | [1280](issue-003/ci-43142248739/prototype-painel-1280.png) |
+| Orçamento | [320](issue-003/ci-43142248739/prototype-orcamento-320.png) | [360](issue-003/ci-43142248739/prototype-orcamento-360.png) | [1280](issue-003/ci-43142248739/prototype-orcamento-1280.png) |
+| Medição | [320](issue-003/ci-43142248739/prototype-medicao-320.png) | [360](issue-003/ci-43142248739/prototype-medicao-360.png) | [1280](issue-003/ci-43142248739/prototype-medicao-1280.png) |
+| Aprovações | [320](issue-003/ci-43142248739/prototype-aprovacoes-320.png) | [360](issue-003/ci-43142248739/prototype-aprovacoes-360.png) | [1280](issue-003/ci-43142248739/prototype-aprovacoes-1280.png) |
+| Documentos | [320](issue-003/ci-43142248739/prototype-documentos-320.png) | [360](issue-003/ci-43142248739/prototype-documentos-360.png) | [1280](issue-003/ci-43142248739/prototype-documentos-1280.png) |
+
+Estados: [vazio](issue-003/ci-43142248739/prototype-state-empty.png), [carregando](issue-003/ci-43142248739/prototype-state-loading.png), [erro](issue-003/ci-43142248739/prototype-state-error.png) e [sem permissão](issue-003/ci-43142248739/prototype-state-forbidden.png).
+
+Interação: [revisão da aprovação](issue-003/ci-43142248739/prototype-approval-modal.png), [resultado com foco](issue-003/ci-43142248739/prototype-approval-result.png), [troca para Horizonte](issue-003/ci-43142248739/prototype-company-changed.png), [retorno pelo histórico](issue-003/ci-43142248739/prototype-history-context-guard.png), [atalho](issue-003/ci-43142248739/prototype-keyboard-shortcut.png), [movimento reduzido](issue-003/ci-43142248739/prototype-reduced-motion.png) e [consulta sem scripts](issue-003/ci-43142248739/prototype-ssr-no-scripts.png).
+
+As 15 capturas de tela/largura e as quatro de estado são idênticas, byte a byte, às imagens da revisão visual anterior das correções. As capturas finais de aprovação, resultado, troca e histórico também receberam revisão independente e conferência final. Não foi encontrado bloqueador visual nos pontos revistos.
+
+Nas quatro imagens de estado, a captura de página inteira conserva a posição de elementos fixos enquanto a janela estava rolada até os controles. Por isso o link de salto pode aparecer sobre uma região anterior da imagem, embora sua posição calculada esteja totalmente acima da janela visível original. A geometria foi conferida nos quatro casos; esse efeito da captura não foi registrado como foco indevido do produto.
 
 Comandos de referência, com os pré-requisitos e variáveis externos descritos em `docs/desenvolvimento.md` e `docs/persistencia.md`:
 
@@ -59,7 +97,7 @@ A suíte `prototype_accessibility_context_and_recovery` executa o aplicativo Rus
 
 ## Revisão adversarial
 
-Revisão de requisitos, revisão independente de código e implementação de testes negativos foram conduzidas separadamente. A revisão final de código não identificou novo bloqueador nos pontos abaixo; a execução em navegador ainda precisa confirmar os percursos correspondentes.
+Revisão de requisitos, revisão independente de código e implementação de testes negativos foram conduzidas separadamente. As correções abaixo foram conferidas; a execução aprovada confirmou os percursos de navegador, inclusive histórico e aprovação, e repetiu os testes de banco. A revisão final não identificou bloqueador técnico nos cenários executados.
 
 | Achado | Correção e prova aplicável |
 |---|---|
@@ -78,8 +116,8 @@ Revisão de requisitos, revisão independente de código e implementação de te
 | O cabeçalho móvel afastava a tarefa e a ação principal | Aviso de demonstração abreviado, título decorativo repetido removido e opções de demonstração movidas para depois da tarefa. Empresa, obra, contrato e revisão permanecem identificados no cabeçalho. |
 | Campo nativo de data dependia do formato regional do navegador | Resumo reativo do período em português, junto à orientação do formulário, sem alterar os valores civis ISO ou as regras de validação. |
 
-Não atribuir aos testes automatizados conformidade integral WCAG ou teste manual com leitor de tela. Os resultados finais de interação e as capturas devem identificar a revisão realmente executada.
+Não atribuir aos testes automatizados conformidade integral WCAG ou teste manual com leitor de tela. Os resultados de interação e as capturas acima identificam a revisão realmente executada; o teste com profissionais permanece pendente.
 
 ## Encerramento
 
-Uma PR tecnicamente verificada pode ser apresentada para avaliação. Não usar fechamento automático da issue 3 nem tratar os componentes como definitivamente aceitos enquanto o teste com profissionais estiver pendente. A sequência de integração das próximas issues continua sujeita à aceitação desta etapa.
+A implementação da [PR 75](https://github.com/tjsasakifln/canteiro-360/pull/75) está tecnicamente verificada para avaliação. A issue 3 permanece aberta, sem fechamento automático, até o teste com pelo menos três profissionais reais e o tratamento de eventuais problemas graves. A sequência de integração das próximas issues continua sujeita à aceitação desta etapa.

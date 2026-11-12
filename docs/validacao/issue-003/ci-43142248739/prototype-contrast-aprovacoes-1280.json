@@ -1,0 +1,1699 @@
+{
+  "limitation": "Computed text/solid-background colors of currently rendered samples. Does not certify all WCAG requirements, text in images, screen readers or physical devices. Inactive controls and decorative/hidden text are excluded.",
+  "measurements": [
+    {
+      "effectiveBackground": [
+        0.9372549019607843,
+        0.9647058823529412,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 6.962953513285813,
+      "sample": {
+        "count": 1,
+        "fontSize": 14,
+        "fontWeight": 700,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(239, 246, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "STRONG",
+        "text": "Demonstração com dados fictícios."
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9372549019607843,
+        0.9647058823529412,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 6.962953513285813,
+      "sample": {
+        "count": 1,
+        "fontSize": 14,
+        "fontWeight": 400,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgb(239, 246, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Nada é gravado."
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 600,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "LABEL",
+        "text": "Empresa"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 3,
+        "fontSize": 14,
+        "fontWeight": 600,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "SPAN",
+        "text": "Obra"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 3,
+        "fontSize": 16,
+        "fontWeight": 650,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "current-work",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "STRONG",
+        "text": "Escola Vila Nova"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 1,
+        "fontSize": 13,
+        "fontWeight": 400,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Demonstração pronta para usar."
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 4,
+        "fontSize": 14,
+        "fontWeight": 650,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "nav-painel",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "A",
+        "text": "Painel da obra"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9372549019607843,
+        0.9647058823529412,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.11764705882352941,
+        0.25098039215686274,
+        0.6862745098039216
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 8.014836919642205,
+      "sample": {
+        "count": 1,
+        "fontSize": 14,
+        "fontWeight": 650,
+        "foreground": "rgb(30, 64, 175)",
+        "id": "nav-aprovacoes",
+        "layers": [
+          {
+            "background": "rgb(239, 246, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "A",
+        "text": "Aprovações"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9686274509803922,
+        0.9764705882352941,
+        0.9882352941176471
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.184621014124537,
+      "sample": {
+        "count": 1,
+        "fontSize": 13,
+        "fontWeight": 700,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Rotina da obra"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9686274509803922,
+        0.9764705882352941,
+        0.9882352941176471
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 3.0,
+      "passed": true,
+      "ratio": 15.424656675972026,
+      "sample": {
+        "count": 1,
+        "fontSize": 38,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "task-title",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "H1",
+        "text": "Aprovações da obra"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9686274509803922,
+        0.9764705882352941,
+        0.9882352941176471
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.184621014124537,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 400,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Revise o que muda e quem decide antes de confirmar uma ação."
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 3.0,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 20,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "approval-title",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "H2",
+        "text": "Medição 02"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9450980392156862,
+        0.9607843137254902,
+        0.9764705882352941
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 6.916973995632248,
+      "sample": {
+        "count": 1,
+        "fontSize": 13,
+        "fontWeight": 650,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgb(241, 245, 249)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "SPAN",
+        "text": "Aguardando decisão"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 2,
+        "fontSize": 16,
+        "fontWeight": 400,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Período de 16/10/2026 a 31/10/2026 · revisão 01 da medição"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 3,
+        "fontSize": 17,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "H3",
+        "text": "Serviços medidos"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 3.0,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 3,
+        "fontSize": 30,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "R$ 19.200,00"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 3,
+        "fontSize": 14,
+        "fontWeight": 400,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Execução submetida à conferência."
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 3,
+        "fontSize": 14,
+        "fontWeight": 600,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "DT",
+        "text": "Autor"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 3,
+        "fontSize": 16,
+        "fontWeight": 650,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "DD",
+        "text": "Marina Costa, execução"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 600,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "SUMMARY",
+        "text": "Conferir saldo, prazo e evidências"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.11372549019607843,
+        0.3058823529411765,
+        0.8470588235294118
+      ],
+      "effectiveForeground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 6.701618401398807,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 650,
+        "foreground": "rgb(255, 255, 255)",
+        "id": "review-approval",
+        "layers": [
+          {
+            "background": "rgb(29, 78, 216)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "BUTTON",
+        "text": "Revisar aprovação da medição"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 3.0,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 20,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "history-title",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "H2",
+        "text": "Histórico do exemplo"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 4,
+        "fontSize": 14,
+        "fontWeight": 400,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "TIME",
+        "text": "02/11/2026"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 2,
+        "fontSize": 16,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "STRONG",
+        "text": "Execução apresentada"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 14,
+        "fontWeight": 600,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "prototype-controls-toggle",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "SUMMARY",
+        "text": "Opções da demonstração e ajuda"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 400,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "organization",
+        "layers": [
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "SELECT",
+        "text": "Construtora Aurora"
+      }
+    }
+  ],
+  "scope": "#prototype-shell",
+  "source": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+  "status": "passed"
+}
