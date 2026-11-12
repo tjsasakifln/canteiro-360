@@ -225,6 +225,30 @@ impl DemoState {
             || self.approved
     }
 
+    /// Native date controls follow the browser locale. This label confirms the
+    /// actual ISO values in Portuguese without relying on that presentation.
+    pub fn period_description(&self) -> String {
+        match (portuguese_date(&self.start), portuguese_date(&self.end)) {
+            (Some(start), Some(end)) => {
+                let period = format!("Período selecionado: {start} a {end}.");
+                if self.end < self.start {
+                    format!("{period} A data final antecede a inicial; revise o período.")
+                } else {
+                    period
+                }
+            }
+            (None, None) => {
+                "Informe datas válidas de início e fim para conferir o período selecionado.".into()
+            }
+            (None, _) => {
+                "Informe uma data inicial válida para conferir o período selecionado.".into()
+            }
+            (_, None) => {
+                "Informe uma data final válida para conferir o período selecionado.".into()
+            }
+        }
+    }
+
     pub fn validation(&self) -> Option<(&'static str, &'static str)> {
         if self.note.trim().chars().count() < 10 {
             return Some((
@@ -284,6 +308,30 @@ fn valid_date(value: &str) -> bool {
         _ => 0,
     };
     year > 0 && day > 0 && day <= days
+}
+
+fn portuguese_date(value: &str) -> Option<String> {
+    if !valid_date(value) {
+        return None;
+    }
+    let year = value[..4].parse::<u32>().ok()?;
+    let month = value[5..7].parse::<usize>().ok()?;
+    let day = value[8..].parse::<u32>().ok()?;
+    let months = [
+        "janeiro",
+        "fevereiro",
+        "março",
+        "abril",
+        "maio",
+        "junho",
+        "julho",
+        "agosto",
+        "setembro",
+        "outubro",
+        "novembro",
+        "dezembro",
+    ];
+    Some(format!("{day} de {} de {year}", months[month - 1]))
 }
 
 /// Format exact cents without binary floating point or locale-dependent parsing.

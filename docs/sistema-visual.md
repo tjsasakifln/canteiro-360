@@ -51,7 +51,7 @@ As combinações de texto e fundo precisam ser verificadas nas telas renderizada
 
 O contexto e os formulários passam a uma coluna quando necessário. A navegação quebra em linhas; não depende de uma faixa horizontal invisível. O conteúdo usa tamanhos flexíveis e permite quebra de identificadores longos. A interface deve ser ensaiada a 320, 360 e 1280 CSS px, além de ampliação equivalente a 400% a partir de 1280 px.
 
-Os controles de densidade, cenário e ajuda ficam em uma expansão nativa fechada inicialmente. O contexto da obra permanece fora dessa expansão. Assim, as opções de demonstração não ocupam o percurso principal antes da ação da tarefa, mas continuam disponíveis por teclado e antes da hidratação para consulta da ajuda.
+Os controles de densidade, cenário e ajuda ficam depois do conteúdo da tarefa, em uma expansão nativa fechada inicialmente. O contexto da obra permanece no cabeçalho, junto do aviso curto de demonstração. As opções continuam disponíveis por teclado e antes da hidratação para consulta da ajuda, sem deslocar a tarefa principal para baixo no celular.
 
 Tabelas técnicas mantêm a relação bidimensional entre serviço, unidade, quantidade e valor em uma área de rolagem própria, identificada e acessível por teclado. A exceção não se estende à página, ao contexto, ao formulário ou ao resumo. Não esconder transbordamento horizontal da página para mascarar conteúdo cortado.
 
@@ -65,7 +65,7 @@ Tabelas técnicas mantêm a relação bidimensional entre serviço, unidade, qua
 | Painel | `metric-grid`, `metric-card`, `metric-value` | Não somar contratado, medido e pago como custos independentes |
 | Ações | `primary-button`, `secondary-button`, `text-link`, `page-actions` | Verbo explícito; consequência clara; bloqueio acompanhado de motivo |
 | Formulário | `field`, `field-help`, `field-error`, `form-grid` | Rótulo associado, unidade, instrução e erro vinculado; entradas preservadas |
-| Data | Campo nativo com rótulo e instrução | Leitura em convenção brasileira; valor inválido nunca vira data diferente silenciosamente |
+| Data | Campo nativo com rótulo, instrução e resumo textual em português | O resumo torna o período inequívoco mesmo quando o navegador apresenta o campo em outro formato regional; valor inválido nunca vira data diferente silenciosamente |
 | Tabela | `table-scroll`, `data-table`, `numeric`, `totals-panel` | Título/legenda, cabeçalhos associados, unidade e total inequívocos |
 | Estados | `status-badge`, `notice`, `empty-state`, `prototype-readiness` | Texto informa estado, motivo e recuperação; carregamento não finge sucesso |
 | Documento | `document-card` | Versão e situação explícitas; somente exemplos fictícios nesta etapa |
@@ -79,7 +79,7 @@ Os campos de data e seletores entregues utilizam controles nativos. Entradas de 
 
 - O link de salto leva ao conteúdo principal. Títulos e marcos permitem compreender a página antes de usar controles.
 - O foco segue a ordem do documento. Navegação por Tab, Shift+Tab, Enter e Espaço não depende do ponteiro.
-- Diálogos devem usar a API modal nativa, receber foco ao abrir e impedir interação com o fundo. O cancelamento devolve foco ao acionador; a conclusão conduz ao resultado da ação. Escape cancela; o fechamento não confirma o ato.
+- Diálogos usam a API modal nativa, recebem foco ao abrir e impedem interação com o fundo. O componente Rust mantém Tab e Shift+Tab no ciclo das ações disponíveis do diálogo. O cancelamento devolve foco ao acionador; a conclusão conduz ao resultado da ação. Escape cancela; o fechamento não confirma o ato. Atalhos com Ctrl, Alt ou Meta não são interceptados pelo ciclo de foco.
 - Atalhos específicos da aplicação devem estar anunciados junto à ajuda, evitar conflitos e respeitar campos em edição. Um botão alcançável por teclado continua disponível como alternativa.
 - Erros associados ao campo usam texto explícito. A recuperação conduz ao campo ou resumo pertinente, sem reiniciar o formulário.
 - `prefers-reduced-motion` elimina animações e deslocamentos desnecessários. Informações de recuperação do carregamento permanecem disponíveis.

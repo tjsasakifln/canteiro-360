@@ -160,18 +160,19 @@ pub(super) fn Measurement() -> impl IntoView {
                             <input id="period-start" name="inicio" type="date" required disabled=move || !context.ready.get()
                                 value=move || context.data().start prop:value=move || context.data().start
                                 aria-invalid=move || error.get().is_some_and(|(field,_)|field == "period-start").to_string()
-                                aria-describedby="period-help measurement-error"
+                                aria-describedby="period-help period-summary measurement-error"
                                 on:input=move |event| {context.update(|state|{state.start=event_target_value(&event);state.checked=false;});error.set(None);}/>
                         </div>
                         <div class="field"><label for="period-end">"Fim do período (obrigatório)"</label>
                             <input id="period-end" name="fim" type="date" required disabled=move || !context.ready.get()
                                 value=move || context.data().end prop:value=move || context.data().end
                                 aria-invalid=move || error.get().is_some_and(|(field,_)|field == "period-end").to_string()
-                                aria-describedby="period-help measurement-error"
+                                aria-describedby="period-help period-summary measurement-error"
                                 on:input=move |event| {context.update(|state|{state.end=event_target_value(&event);state.checked=false;});error.set(None);}/>
                         </div>
                     </div>
                     <p id="period-help" class="field-help">"Escolha as datas no calendário ou preencha pelo teclado. O fim não pode anteceder o início."</p>
+                    <p id="period-summary" class="field-help" role="status" aria-live="polite">{move || context.data().period_description()}</p>
                     <div class="field"><label for="measurement-note">"Descrição da execução (obrigatório)"</label>
                         <textarea id="measurement-note" name="descricao" rows="4" maxlength="2000" required disabled=move || !context.ready.get()
                             prop:value=move || context.data().note
@@ -231,6 +232,7 @@ pub(super) fn Approvals() -> impl IntoView {
         </section>
         <section class="section-card" aria-labelledby="history-title"><h2 id="history-title">"Histórico do exemplo"</h2><ol class="history-list"><li><time datetime="2026-11-02">"02/11/2026"</time><strong>"Execução apresentada"</strong><p>"Marina Costa incluiu a medição e os documentos."</p></li><li><time datetime="2026-11-03">"03/11/2026"</time><strong>"Conferência técnica concluída"</strong><p>"Rafael Lima encaminhou a versão 01 para decisão."</p></li></ol></section>
         <dialog id="approval-dialog" class="prototype-dialog" aria-labelledby="approval-dialog-title" aria-describedby="approval-consequence"
+            on:keydown=move |event| trap_dialog_tab(event, "approval-dialog", ["cancel-approval", "confirm-approval"])
             on:close=move |_| focus(if context.data().approved {"approval-feedback"} else {"review-approval"})>
             <h2 id="approval-dialog-title">"Revise antes de simular a aprovação"</h2>
             <dl class="context-grid"><div class="context-item"><dt>"Empresa"</dt><dd>{move || company.get().name()}</dd></div><div class="context-item"><dt>"Obra"</dt><dd>{move || company.get().work()}</dd></div><div class="context-item"><dt>"Contrato"</dt><dd>{move || company.get().contract()}</dd></div><div class="context-item"><dt>"Versão"</dt><dd>"Medição 02, revisão 01"</dd></div></dl>

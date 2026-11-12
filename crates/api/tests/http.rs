@@ -86,7 +86,7 @@ async fn prototype_routes_render_only_the_requested_company_and_reject_unknown_c
             .unwrap();
             assert!(html.contains(own_contract), "{path}");
             assert!(!html.contains(other_contract), "{path}");
-            assert!(html.contains("Dados fictícios"), "{path}");
+            assert!(html.to_lowercase().contains("dados fictícios"), "{path}");
             assert!(html.contains("id=\"prototype-shell\""), "{path}");
         }
     }

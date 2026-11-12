@@ -15,7 +15,7 @@ Este teste atende ao critério específico da [issue 3](https://github.com/tjsas
 - Reunir pelo menos três pessoas com atuação profissional pertinente. Buscar funções complementares, como orçamento/planejamento, fiscalização/gestão de obra e aprovação/gestão contratual.
 - Informar que a interface é uma demonstração e que as ações não produzem aprovação ou gravação comercial. Evitar apresentar os caminhos dos menus antes das tarefas.
 - Pedir autorização antes de gravar tela ou voz. É possível conduzir o teste apenas com notas. Manter eventual gravação em destino de acesso restrito, fora do repositório.
-- Identificar participantes por códigos P01, P02 e P03 no registro. Nome, contato e outros dados pessoais não são necessários nesta evidência pública do projeto.
+- Identificar participantes por códigos P01, P02 e P03 no registro. Nome, contato e outros dados pessoais não são necessários neste registro do projeto.
 - Executar ao menos uma sessão na largura móvel de 360 CSS px e uma em computador. A matriz automatizada de larguras continua sendo uma verificação separada.
 
 ## Instrução inicial ao participante

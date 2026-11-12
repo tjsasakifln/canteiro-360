@@ -58,6 +58,68 @@ pub fn show_dialog(id: &str, first: &str) {
     let _ = (id, first);
 }
 
+/// Keep the two actual dialog actions in a circular Tab sequence. Native
+/// modal dialogs make the background inert, but Chromium can still send Tab
+/// from their last control to browser chrome (reported as BODY). Each caller
+/// lists its actions in DOM order; disabled or hidden actions are excluded.
+/// Escape and browser shortcuts remain native. No business state is changed.
+pub fn trap_dialog_tab(event: leptos::ev::KeyboardEvent, dialog_id: &str, action_ids: [&str; 2]) {
+    #[cfg(feature = "hydrate")]
+    {
+        use wasm_bindgen::JsCast;
+
+        if event.key() != "Tab"
+            || event.ctrl_key()
+            || event.alt_key()
+            || event.meta_key()
+            || event.default_prevented()
+        {
+            return;
+        }
+        let Some(document) = web_sys::window().and_then(|window| window.document()) else {
+            return;
+        };
+        let Some(dialog) = document
+            .get_element_by_id(dialog_id)
+            .and_then(|element| element.dyn_into::<web_sys::HtmlDialogElement>().ok())
+            .filter(|dialog| dialog.open())
+        else {
+            return;
+        };
+        let actions = action_ids
+            .into_iter()
+            .filter_map(|id| document.get_element_by_id(id))
+            .filter_map(|element| element.dyn_into::<web_sys::HtmlElement>().ok())
+            .filter(|element| {
+                dialog.contains(Some(element.as_ref()))
+                    && element.tab_index() >= 0
+                    && !element.matches(":disabled, [hidden]").unwrap_or(true)
+            })
+            .collect::<Vec<_>>();
+        event.prevent_default();
+        if actions.is_empty() {
+            let _ = dialog.focus();
+            return;
+        }
+        let focused = document.active_element();
+        let current = actions.iter().position(|element| {
+            focused
+                .as_ref()
+                .is_some_and(|active| active.is_same_node(Some(element.as_ref())))
+        });
+        let next = if event.shift_key() {
+            current
+                .and_then(|index| index.checked_sub(1))
+                .unwrap_or(actions.len() - 1)
+        } else {
+            current.map_or(0, |index| (index + 1) % actions.len())
+        };
+        let _ = actions[next].focus();
+    }
+    #[cfg(not(feature = "hydrate"))]
+    let _ = (event, dialog_id, action_ids);
+}
+
 pub fn close_dialog(id: &str) {
     #[cfg(feature = "hydrate")]
     {

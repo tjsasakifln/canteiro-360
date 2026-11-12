@@ -3,7 +3,7 @@ mod components;
 mod model;
 mod pages;
 
-use components::{Badge, close_dialog, focus, show_dialog};
+use components::{close_dialog, focus, show_dialog, trap_dialog_tab};
 use leptos::prelude::*;
 use leptos_meta::Title;
 use leptos_router::{
@@ -201,11 +201,7 @@ fn PrototypeShell() -> impl IntoView {
             }
         >
             <header class="prototype-header">
-                <div class="page-heading">
-                    <div><p class="eyebrow">"Canteiro 360"</p><h2>"Sua obra, em contexto"</h2></div>
-                    <Badge tone="neutral">"Demonstração"</Badge>
-                </div>
-                <p class="prototype-note">"Dados fictícios. As ações abaixo permitem experimentar a interface; não criam contratos, medições ou pagamentos reais."</p>
+                <p class="prototype-note"><strong>"Demonstração com dados fictícios."</strong>" Nada é gravado."</p>
                 <div class="context-grid" aria-label="Contexto atual">
                     <div class="field">
                         <label for="organization">"Empresa"</label>
@@ -222,29 +218,6 @@ fn PrototypeShell() -> impl IntoView {
                     <div class="context-item"><span>"Contrato"</span><strong id="current-contract">{move || company.get().contract()}</strong></div>
                     <div class="context-item"><span>"Versão do orçamento"</span><strong id="current-version">{move || format!("Revisão {}", company.get().version())}</strong></div>
                 </div>
-                <details class="prototype-controls">
-                <summary id="prototype-controls-toggle">"Opções da demonstração e ajuda"</summary>
-                <div class="prototype-toolbar">
-                    <div class="field"><label for="density">"Densidade"</label>
-                        <select id="density" prop:value=move || store.density.get() disabled=move || !ready.get()
-                            on:change=move |event| store.density.set(event_target_value(&event))>
-                            <option value="comfortable">"Confortável"</option><option value="compact">"Compacta"</option>
-                        </select>
-                    </div>
-                    <div class="field"><label for="display-state">"Cenário da demonstração"</label>
-                        <select id="display-state" prop:value=move || display_state.get() disabled=move || !ready.get()
-                            on:change=move |event| display_state.set(event_target_value(&event))>
-                            <option value="content">"Com dados"</option><option value="empty">"Sem registros"</option>
-                            <option value="loading">"Carregando"</option><option value="error">"Falha de leitura"</option>
-                            <option value="forbidden">"Sem permissão"</option>
-                        </select>
-                    </div>
-                    <details class="shortcut-help"><summary id="shortcuts-toggle">"Ajuda e teclado"</summary>
-                        <p>"Use Tab para percorrer os controles, Enter para acionar e Escape para sair de diálogos. Alt + Shift + M leva ao conteúdo quando o foco está fora dos campos."</p>
-                        <p>"O navegador também permite voltar à tarefa anterior. Seus textos permanecem nesta aba ao navegar entre tarefas da mesma empresa."</p>
-                    </details>
-                </div>
-                </details>
                 <div class="interaction-status prototype-readiness" data-ready=move || ready.get().to_string()>
                     <div hidden=move || ready.get()><p role="status">"Preparando os controles. As consultas abaixo já podem ser lidas."</p>
                         <div class="delayed-help"><p>"Os controles ainda não carregaram. Confira sua conexão."</p><a class="retry-link" href=move || company.get().url(task.get())>"Recarregar a página"</a></div>
@@ -272,7 +245,32 @@ fn PrototypeShell() -> impl IntoView {
                     }}
                 </Show>
             </section>
+
+            <details class="prototype-controls">
+            <summary id="prototype-controls-toggle">"Opções da demonstração e ajuda"</summary>
+            <div class="prototype-toolbar">
+                <div class="field"><label for="density">"Densidade"</label>
+                    <select id="density" prop:value=move || store.density.get() disabled=move || !ready.get()
+                        on:change=move |event| store.density.set(event_target_value(&event))>
+                        <option value="comfortable">"Confortável"</option><option value="compact">"Compacta"</option>
+                    </select>
+                </div>
+                <div class="field"><label for="display-state">"Cenário da demonstração"</label>
+                    <select id="display-state" prop:value=move || display_state.get() disabled=move || !ready.get()
+                        on:change=move |event| display_state.set(event_target_value(&event))>
+                        <option value="content">"Com dados"</option><option value="empty">"Sem registros"</option>
+                        <option value="loading">"Carregando"</option><option value="error">"Falha de leitura"</option>
+                        <option value="forbidden">"Sem permissão"</option>
+                    </select>
+                </div>
+                <details class="shortcut-help"><summary id="shortcuts-toggle">"Ajuda e teclado"</summary>
+                    <p>"Use Tab para percorrer os controles, Enter para acionar e Escape para sair de diálogos. Alt + Shift + M leva ao conteúdo quando o foco está fora dos campos."</p>
+                    <p>"O navegador também permite voltar à tarefa anterior. Seus textos permanecem nesta aba ao navegar entre tarefas da mesma empresa."</p>
+                </details>
+            </div>
+            </details>
             <dialog id="context-dialog" class="prototype-dialog" aria-labelledby="context-title" aria-describedby="context-description"
+                on:keydown=move |event| trap_dialog_tab(event, "context-dialog", ["cancel-context", "confirm-context"])
                 on:close=move |_| {
                     pending_company.set(None);
                     pending_url.set(None);

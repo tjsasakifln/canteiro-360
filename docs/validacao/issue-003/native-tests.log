@@ -1,11 +1,12 @@
-   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/d5016a47320f/canteiro-360/tools/e2e)
-    Finished `test` profile [unoptimized] target(s) in 1.59s
+   Compiling canteiro-web v0.1.0 (/workspace/scratch/d5016a47320f/canteiro-360/crates/web)
+   Compiling canteiro-api v0.1.0 (/workspace/scratch/d5016a47320f/canteiro-360/crates/api)
+    Finished `test` profile [unoptimized] target(s) in 10.38s
      Running unittests src/lib.rs (target/debug/deps/canteiro_api-efd9cfbe7584bb2e)
 
 running 5 tests
 test error::tests::only_a_known_stale_version_marks_the_version_field ... ok
-test config::tests::environments_are_explicit_and_unknown_values_fail_closed ... ok
 test config::tests::configuration_does_not_read_external_credentials ... ok
+test config::tests::environments_are_explicit_and_unknown_values_fail_closed ... ok
 test error::tests::field_error_preserves_the_protocol_without_private_details ... ok
 test error::tests::public_errors_have_stable_status_and_matching_operation_reference ... ok
 
@@ -22,12 +23,12 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 6 tests
 test liveness_does_not_claim_business_or_database_readiness ... ok
 test initial_document_has_useful_content_before_wasm ... ok
-test static_asset_serves_the_measured_brotli_without_recompression ... ok
-test unknown_routes_and_private_files_never_receive_a_success_page ... ok
 test html_is_actually_transferred_with_brotli_when_requested ... ok
+test unknown_routes_and_private_files_never_receive_a_success_page ... ok
+test static_asset_serves_the_measured_brotli_without_recompression ... ok
 test prototype_routes_render_only_the_requested_company_and_reject_unknown_contexts ... ok
 
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
 
      Running unittests src/lib.rs (target/debug/deps/canteiro_application-f9ef99efef47bbfc)
 
@@ -47,8 +48,8 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 4 tests
 test values::tests::entity_versions_preserve_large_values_and_never_wrap ... ok
-test values::tests::identifiers_have_distinct_types_and_validate_deserialization ... ok
 test values::tests::civil_dates_keep_calendar_meaning_and_reject_impossible_or_ambiguous_dates ... ok
+test values::tests::identifiers_have_distinct_types_and_validate_deserialization ... ok
 test values::tests::instants_normalize_offsets_without_losing_microseconds ... ok
 
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
@@ -114,10 +115,10 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running unittests src/lib.rs (target/debug/deps/canteiro_web-17cf6f1442dfb193)
 
 running 4 tests
-test prototype::model::tests::fixtures_have_exact_distinct_totals_and_net_values ... ok
 test prototype::model::tests::invalid_input_is_rejected_without_changing_the_draft ... ok
-test prototype::model::tests::unrelated_context_never_exposes_draft_or_approval ... ok
+test prototype::model::tests::fixtures_have_exact_distinct_totals_and_net_values ... ok
 test prototype::model::tests::routes_and_queries_do_not_silently_choose_another_context ... ok
+test prototype::model::tests::unrelated_context_never_exposes_draft_or_approval ... ok
 
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -126,26 +127,26 @@ test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 20 tests
 test assets::tests::exact_limit_passes_but_one_byte_over_fails_for_each_kind ... ok
 test assets::tests::stale_or_missing_brotli_is_rejected ... ok
-test plan::tests::approved_documents_cross_reference_each_other ... ok
 test plan::tests::changed_acceptance_cannot_silently_diverge_from_source ... ok
+test plan::tests::same_count_with_orphan_or_reassigned_rule_is_rejected ... ok
 test plan::tests::same_count_with_cyclic_dependency_is_rejected ... ok
 test plan::tests::unknown_primary_source_is_rejected ... ok
-test plan::tests::same_count_with_orphan_or_reassigned_rule_is_rejected ... ok
-test assets::tests::extra_files_are_aggregated_instead_of_looking_only_at_main_wasm ... ok
+test plan::tests::approved_documents_cross_reference_each_other ... ok
 test assets::tests::local_stylesheet_import_is_validated_and_counted ... ok
+test assets::tests::extra_files_are_aggregated_instead_of_looking_only_at_main_wasm ... ok
 test policy::tests::dotenv_file_is_rejected_even_when_empty ... ok
+test assets::tests::inline_bootstrap_is_counted ... ok
 test assets::tests::remote_stylesheets_and_imports_cannot_escape_the_budget ... ok
 test policy::tests::example_password_is_not_an_exception ... ok
 test policy::tests::hardcoded_rust_secret_and_connection_password_are_rejected ... ok
-test assets::tests::inline_bootstrap_is_counted ... ok
-test policy::tests::external_environment_reference_and_parser_are_allowed ... ok
 test policy::tests::inline_script_cannot_hide_in_html_or_rust ... ok
-test policy::tests::secrets_in_nested_maps_and_inline_toml_are_rejected ... ok
 test policy::tests::prefixed_database_url_and_comment_like_password_are_rejected ... ok
+test policy::tests::external_environment_reference_and_parser_are_allowed ... ok
+test policy::tests::secrets_in_nested_maps_and_inline_toml_are_rejected ... ok
 test policy::tests::every_javascript_module_extension_is_rejected ... ok
 test assets::tests::additional_large_javascript_file_breaks_real_compressed_budget ... ok
 
-test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.94s
 
    Doc-tests canteiro_api
 
