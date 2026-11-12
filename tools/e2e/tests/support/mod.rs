@@ -278,7 +278,13 @@ impl Browser {
             "return document.activeElement?.matches({});",
             serde_json::to_string(selector)?
         );
-        for _ in 0..60 {
+        if self.execute(&expression).await? == true {
+            return Ok(());
+        }
+        // A supported page of 100 services exposes up to 200 row controls,
+        // in addition to the editor, navigation and prototype options.
+        // Keep real keyboard traversal and a finite failure limit.
+        for _ in 0..320 {
             self.key(TAB).await?;
             if self.execute(&expression).await? == true {
                 return Ok(());
