@@ -124,7 +124,7 @@ async fn presentation_acceptance(h: &Harness, browser: &Browser) -> TestResult {
         &h.evidence.join("forms-presentation.json"),
         &json!({
             "status":"passed","group":"forms-presentation","versions":browser.versions,"environment":h.environment,
-            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named","initial_row_identity_and_edit_visible_without_horizontal_scroll","row_selection_and_edit_targets_44px"],
+            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named","initial_row_identity_and_edit_visible_without_horizontal_scroll","row_selection_and_edit_targets_44px","document_ends_at_footer_without_escaped_grid_content"],
             "server":server,"viewports":viewports,"console":console,
             "limits":"HTTP contracts, no-script navigation and rendered layout only. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial."
         }),
@@ -351,11 +351,11 @@ async fn reflow_and_semantics(h: &Harness, browser: &Browser) -> TestResult<Vec<
                 .contains("10000")
         );
         let first_row_geometry = initial_grid_controls(h, browser, width).await?;
+        let vertical_extent = document_ends_at_footer(h, browser, width).await?;
         browser
             .full_screenshot(&h.evidence.join(format!("forms-table-{width}.png")))
             .await?;
-        observations
-            .push(json!({"width":width,"metrics":metrics,"firstRowGeometry":first_row_geometry}));
+        observations.push(json!({"width":width,"metrics":metrics,"firstRowGeometry":first_row_geometry,"verticalExtent":vertical_extent}));
     }
     Ok(observations)
 }
@@ -808,6 +808,7 @@ async fn same_company_history_keeps_draft(browser: &Browser) -> TestResult {
         .await?;
     browser.history_back().await?;
     browser.wait(READY, Duration::from_secs(10)).await?;
+    browser.wait(PAGE_READY, Duration::from_secs(10)).await?;
     if browser
         .execute("return !!document.querySelector('#form-current');")
         .await?
@@ -933,11 +934,45 @@ async fn ensure_advanced(browser: &Browser) -> TestResult {
 }
 
 async fn clear_field_by_keyboard(browser: &Browser, selector: &str) -> TestResult {
-    browser.click(selector).await?;
-    browser.chord(&["\u{e009}"], "a").await?;
-    browser.key("\u{e003}").await?;
+    browser.fill(selector, "").await?;
     assert_eq!(browser.property(selector, "value").await?, "");
     Ok(())
+}
+
+async fn document_ends_at_footer(h: &Harness, browser: &Browser, width: u32) -> TestResult<Value> {
+    let mut metrics = browser.execute(r#"
+const footer=document.querySelector('footer.site-footer');
+return {documentScrollHeight:document.documentElement.scrollHeight,bodyScrollHeight:document.body.scrollHeight,footerBottom:footer?footer.getBoundingClientRect().bottom+scrollY:null,innerHeight};
+"#).await?;
+    let layout = browser.cdp("Page.getLayoutMetrics", json!({})).await?;
+    metrics["cdpCssContentHeight"] = layout["cssContentSize"]["height"].clone();
+    let path = h
+        .evidence
+        .join(format!("forms-document-height-{width}.json"));
+    write_json(&path, &metrics)?;
+    let number = |key: &str| -> TestResult<f64> {
+        let value = metrics[key]
+            .as_f64()
+            .ok_or_else(|| format!("Missing vertical extent {key}: {metrics}"))?;
+        assert!(value.is_finite() && value > 0.0, "Invalid {key}: {metrics}");
+        Ok(value)
+    };
+    let largest_extent = number("documentScrollHeight")?
+        .max(number("bodyScrollHeight")?)
+        .max(number("cdpCssContentHeight")?);
+    // The footer rectangle already includes its 24 px vertical padding; body
+    // has no margin. Permit only a small trailing spacing band, not grid rows
+    // escaping their scroll container and creating thousands of blank pixels.
+    let maximum_extent = number("innerHeight")?.max(number("footerBottom")?) + 32.0;
+    metrics["largestExtent"] = json!(largest_extent);
+    metrics["maximumExtent"] = json!(maximum_extent);
+    metrics["trailingAllowancePx"] = json!(32);
+    write_json(&path, &metrics)?;
+    assert!(
+        largest_extent <= maximum_extent,
+        "Content escapes beyond the footer at {width}px: {metrics}"
+    );
+    Ok(metrics)
 }
 
 // Laboratory-only instrumentation, following browser.rs. It neither dispatches

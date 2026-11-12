@@ -1243,7 +1243,7 @@ dialog.prototype-dialog[open] {
 .measurement-grid .unit-label { color: var(--c360-muted); margin-top: 4px; font-size: 0.875rem; }
 .measurement-grid tr[data-selected="true"] td, .measurement-grid tr[data-selected="true"] th { background: var(--c360-primary-soft); }
 .measurement-grid td:first-child { padding: 16px; text-align: center; }
-.row-selection-target { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; cursor: pointer; }
+.row-selection-target { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; cursor: pointer; }
 .measurement-grid :is(button, input, .row-selection-target) { scroll-margin-block: 1rem; }
 .measurement-grid .secondary-button { white-space: nowrap; }
 .table-pagination { display: flex; gap: 16px; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 20px 0; }
