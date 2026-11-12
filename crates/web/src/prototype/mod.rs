@@ -301,7 +301,7 @@ fn PrototypeShell() -> impl IntoView {
                 </div>
             </dialog>
         </section>
-    }
+    }.into_any()
 }
 
 #[component]

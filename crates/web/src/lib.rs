@@ -1,6 +1,10 @@
 //! Public presentation and accessible prototypes with fictitious data.
 //! Interactions never represent authentication, approval or a financial act.
 
+// Leptos composes nested HTML into Rust types; the form tree exceeds the
+// compiler's default query depth. This changes compilation only, not runtime.
+#![recursion_limit = "256"]
+
 use leptos::prelude::*;
 use leptos_meta::{Meta, MetaTags, Stylesheet, Title, provide_meta_context};
 use leptos_router::{
