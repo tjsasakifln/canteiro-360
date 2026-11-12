@@ -4,6 +4,10 @@
 
 mod values;
 
+pub mod calendar;
+pub mod decimal;
+pub mod units;
+
 pub use values::{
     ActorId, CivilDate, EntityId, EntityVersion, InvalidValue, OperationId, TenantId, UtcInstant,
 };

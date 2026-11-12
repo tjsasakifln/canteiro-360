@@ -7,6 +7,7 @@ publish.workspace = true
 license.workspace = true
 
 [dev-dependencies]
+canteiro-calculation-verification = { path = "../calculation-verification" }
 base64.workspace = true
 tokio.workspace = true
 serde_json.workspace = true

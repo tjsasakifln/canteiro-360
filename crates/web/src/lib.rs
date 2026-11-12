@@ -13,6 +13,7 @@ use leptos_router::{
     path,
 };
 
+mod calculations;
 pub mod form_components;
 mod prototype;
 pub use prototype::is_supported_prototype_route;
@@ -64,6 +65,7 @@ pub fn App() -> impl IntoView {
             <main id="conteudo" class="page-width main-content" tabindex="-1">
                 <Routes fallback=NotFoundPage>
                     <Route path=path!("/") view=HomePage/>
+                    <Route path=path!("/conferencia") view=calculations::CalculationPage/>
                     // Resolve the page on the server before emitting its HTML.
                     // OutOfOrder streaming places suspended rows in an inert
                     // template that requires JavaScript to become visible.
@@ -95,6 +97,7 @@ fn HomePage() -> impl IntoView {
                 "contratos e acompanhamento financeiro em um só lugar."
             </p>
             <p class="prototype-entry"><a class="primary-button" href="/prototipo/aurora/painel">"Experimentar os percursos da obra"</a></p>
+            <p><a class="text-link" href="/conferencia">"Conferir valores e prazos"</a></p>
         </section>
 
         <section class="foundation-card" aria-labelledby="stage-title">

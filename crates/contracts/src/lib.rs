@@ -1,4 +1,5 @@
 //! Contratos públicos. Nunca incluir credenciais nem entidades internas.
+pub mod calculations;
 mod error;
 pub mod forms;
 

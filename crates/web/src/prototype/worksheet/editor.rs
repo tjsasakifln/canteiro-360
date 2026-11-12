@@ -212,6 +212,7 @@ pub(super) fn MeasurementEditor() -> impl IntoView {
                         <aside id="form-local-preview" class="notice neutral" aria-label="Prévia local da edição">
                             <strong>"Prévia enquanto você edita"</strong>
                             <p>{format!("{} para {} {}: {} {} no período; valor de R$ {}; saldo de {} {}.", format_decimal_pt_br(&preview.previous), format_decimal_pt_br(&preview.current), preview.unit, format_decimal_pt_br(&preview.difference), preview.unit, format_decimal_pt_br(&preview.period_value), format_decimal_pt_br(&preview.balance), preview.unit)}</p>
+                            <p>"Regra de cálculo versão 1: o valor acumulado é truncado em centavos; o período recebe a diferença entre acumulados."</p>
                             <p>"Aguarda conferência no servidor. Nada foi gravado."</p>
                         </aside>
                     })}
@@ -324,7 +325,7 @@ fn BeforeAfter(before: MeasurementRow, after: MeasurementRow) -> impl IntoView {
     view! {
         <ValueComparison id="form-comparison" title_id="comparison-title" title="Conferência do rascunho"
             description="Prévia conferida no servidor. Nenhuma medição foi aprovada ou gravada."
-            note="O valor do período é a diferença entre os valores acumulados, calculados em centavos. O preço informado vale somente para esta simulação."
+            note="Regra de cálculo versão 1: cada acumulado é truncado em centavos e o período recebe a diferença. Isso preserva os centavos entre períodos. O preço informado vale somente para esta simulação."
             values=values/>
     }
 }
