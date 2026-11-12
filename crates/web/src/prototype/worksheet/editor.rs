@@ -4,6 +4,10 @@ use canteiro_contracts::forms::{
     FormPreview, MeasurementRow, format_decimal_pt_br, validate_measurement_form,
 };
 use leptos::prelude::*;
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
 
 #[derive(Clone, Copy)]
 pub(super) struct EditContext {
@@ -55,6 +59,13 @@ pub(super) fn MeasurementEditor() -> impl IntoView {
     provide_context(edit);
     let pending = RwSignal::new(false);
     let server_error = RwSignal::new(None::<String>);
+    // A draft survives navigation, but a request belongs to the editor instance
+    // that submitted it. Reopening identical input must not revive that request.
+    let active = Arc::new(AtomicBool::new(true));
+    on_cleanup({
+        let active = Arc::clone(&active);
+        move || active.store(false, Ordering::Release)
+    });
     let errors = Memo::new(move |_| {
         if !edit.draft().is_some_and(|draft| draft.submitted) {
             return Vec::new();
@@ -100,21 +111,24 @@ pub(super) fn MeasurementEditor() -> impl IntoView {
         let organization = context.company.get_untracked();
         let store = context.store.state;
         pending.set(true);
+        let active = Arc::clone(&active);
         leptos::task::spawn_local(async move {
             let response = network::validate_form(organization.key(), &input).await;
-            let still_current = store.try_get_untracked().is_some_and(|state| {
-                state.company == organization
-                    && state.worksheet.editing == Some(input.row_id)
-                    && state
-                        .worksheet
-                        .drafts
-                        .get(&input.row_id)
-                        .is_some_and(|draft| draft.input == input)
-            });
+            let still_current = active.load(Ordering::Acquire)
+                && store.try_with_untracked(|state| {
+                    state.company == organization
+                        && state.worksheet.editing == Some(input.row_id)
+                        && state
+                            .worksheet
+                            .drafts
+                            .get(&input.row_id)
+                            .is_some_and(|draft| draft.input == input)
+                }) == Some(true);
             if still_current {
                 match response {
                     Ok(result) => {
                         let first_error = result.errors.first().map(|error| error.field.clone());
+                        let focus_input = input.clone();
                         store.try_update(|state| {
                             if let Some(draft) = state.worksheet.drafts.get_mut(&input.row_id) {
                                 draft.checked = Some(result);
@@ -124,7 +138,24 @@ pub(super) fn MeasurementEditor() -> impl IntoView {
                         if let Some(field) = first_error {
                             focus_field(&field);
                         } else {
-                            request_animation_frame(move || focus("form-comparison"));
+                            request_animation_frame(move || {
+                                let still_current = active.load(Ordering::Acquire)
+                                    && store.try_with_untracked(|state| {
+                                        state.company == organization
+                                            && state.worksheet.editing == Some(focus_input.row_id)
+                                            && state
+                                                .worksheet
+                                                .drafts
+                                                .get(&focus_input.row_id)
+                                                .is_some_and(|draft| {
+                                                    draft.input == focus_input
+                                                        && draft.checked_for_current_input()
+                                                })
+                                    }) == Some(true);
+                                if still_current {
+                                    focus("form-comparison");
+                                }
+                            });
                         }
                     }
                     Err(message) => {

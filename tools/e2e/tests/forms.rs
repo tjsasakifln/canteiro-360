@@ -60,6 +60,16 @@ async fn run_group(group: Group) -> TestResult {
     let name = group.name();
     let h = Arc::new(Harness::start(name).await?);
     let browser = Arc::new(Browser::start(&h).await?);
+    if matches!(group, Group::Functional) {
+        // Preserve callers above the panic hook in failure diagnostics. This
+        // changes only stack-trace depth, without suppressing any error.
+        browser
+            .cdp(
+                "Page.addScriptToEvaluateOnNewDocument",
+                json!({"source":"Error.stackTraceLimit = 50;"}),
+            )
+            .await?;
+    }
     let task_h = Arc::clone(&h);
     let task_browser = Arc::clone(&browser);
     let result: TestResult = match tokio::spawn(async move {
@@ -118,15 +128,16 @@ async fn run_group(group: Group) -> TestResult {
 async fn presentation_acceptance(h: &Harness, browser: &Browser) -> TestResult {
     let server = server_pagination_and_exact_preview(h).await?;
     let viewports = reflow_and_semantics(h, browser).await?;
+    sticky_grid_controls_remain_reachable(h, browser).await?;
     let console = browser.logs().await?;
     assert_console(&console, false)?;
     write_json(
         &h.evidence.join("forms-presentation.json"),
         &json!({
             "status":"passed","group":"forms-presentation","versions":browser.versions,"environment":h.environment,
-            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named","initial_row_identity_and_edit_visible_without_horizontal_scroll","row_selection_and_edit_targets_44px","document_ends_at_footer_without_escaped_grid_content"],
+            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named","initial_row_identity_and_edit_visible_without_horizontal_scroll","row_selection_and_edit_targets_44px","document_ends_at_footer_without_escaped_grid_content","sticky_grid_targets_remain_visible_and_clickable_after_keyboard_scroll"],
             "server":server,"viewports":viewports,"console":console,
-            "limits":"HTTP contracts, no-script navigation and rendered layout only. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial."
+            "limits":"HTTP contracts, no-script navigation, rendered layout and keyboard navigation within the grid. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial."
         }),
     )?;
     Ok(())
@@ -147,11 +158,11 @@ async fn functional_acceptance(h: &Harness, browser: &Browser) -> TestResult {
     page_selection_and_copy(h, browser).await?;
     exact_fields_and_error_recovery(h, browser).await?;
     same_company_history_keeps_draft(browser).await?;
+    preview_from_unmounted_editor_is_ignored(h, browser).await?;
     delayed_preview_cannot_replace_newer_input(h, browser).await?;
     delayed_table_keeps_the_typing_focus(h, browser).await?;
     remote_failures_keep_work(h, browser).await?;
     context_guard_preserves_or_discards(h, browser).await?;
-    sticky_grid_controls_remain_reachable(h, browser).await?;
     let console = browser.logs().await?;
     assert_console(&console, true)?;
     write_json(
@@ -163,10 +174,10 @@ async fn functional_acceptance(h: &Harness, browser: &Browser) -> TestResult {
                 "keyboard_pagination_and_explicit_edit", "page_selection_distinct_from_all_results",
                 "copy_selected_page_rows_with_headers", "invalid_field_keeps_other_inputs",
                 "field_error_association_and_correction_focus", "conditional_note_is_required_and_reachable", "draft_survives_filter_and_pagination", "history_keeps_grade_draft",
+                "preview_from_unmounted_editor_cannot_certify_reopened_editor",
                 "late_preview_cannot_replace_newer_input", "late_table_response_does_not_steal_typing_focus",
                 "actual_preview_network_failure_preserves_inputs", "table_retry_after_actual_network_failure",
-                "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent",
-                "sticky_grid_targets_remain_visible_and_clickable_after_keyboard_scroll"
+                "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent"
             ],
             "console":console,
             "limits":"Fictitious draft/context journey. Does not claim results from the independent HTTP/SSR/layout or response-time groups, a professional-user trial, assistive-technology session, physical mobile device or commercial validation."
@@ -663,6 +674,11 @@ async fn exact_fields_and_error_recovery(h: &Harness, browser: &Browser) -> Test
     browser
         .full_screenshot(&h.evidence.join("forms-ambiguous-error-1280.png"))
         .await?;
+    let skip_link = browser.execute("const e=document.querySelector('.skip-link'); if(!e) return null; const r=e.getBoundingClientRect(),s=getComputedStyle(e); return {focus:document.activeElement?.id,skipLinkFocused:document.activeElement===e,bounds:{left:r.left,right:r.right,top:r.top,bottom:r.bottom},transform:s.transform,position:s.position,visibility:s.visibility,viewport:{width:innerWidth,height:innerHeight},scrollY};").await?;
+    write_json(
+        &h.evidence.join("forms-error-focus-geometry.json"),
+        &skip_link,
+    )?;
     browser.fill("#form-money", "10,00").await?;
     browser.fill("#form-current", "101").await?;
     browser.click("#form-preview").await?;
@@ -797,6 +813,13 @@ async fn remote_failures_keep_work(h: &Harness, browser: &Browser) -> TestResult
 }
 
 async fn same_company_history_keeps_draft(browser: &Browser) -> TestResult {
+    let previous_url = browser.execute("return location.href;").await?;
+    let previous_query = browser.execute("return {search:document.querySelector('#table-search')?.value,pageSize:document.querySelector('#table-page-size')?.value,sort:document.querySelector('#table-sort')?.value,direction:document.querySelector('#table-direction')?.value,firstRow:document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId,rows:document.querySelectorAll('#measurement-grid tbody tr[data-row-id]').length};").await?;
+    assert_eq!(
+        previous_query,
+        json!({"search":"","pageSize":"25","sort":"code","direction":"asc","firstRow":"1","rows":25}),
+        "The history journey starts from the unfiltered first page"
+    );
     browser.click("#nav-documentos").await?;
     browser.wait("return document.querySelector('#nav-documentos')?.getAttribute('aria-current') === 'page';",Duration::from_secs(5)).await?;
     browser.chord(&[ALT, SHIFT], "M").await?;
@@ -809,6 +832,12 @@ async fn same_company_history_keeps_draft(browser: &Browser) -> TestResult {
     browser.history_back().await?;
     browser.wait(READY, Duration::from_secs(10)).await?;
     browser.wait(PAGE_READY, Duration::from_secs(10)).await?;
+    assert_eq!(
+        browser.execute("return location.href;").await?,
+        previous_url,
+        "Back must restore the exact preceding worksheet query"
+    );
+    assert_eq!(browser.execute("return {search:document.querySelector('#table-search')?.value,pageSize:document.querySelector('#table-page-size')?.value,sort:document.querySelector('#table-sort')?.value,direction:document.querySelector('#table-direction')?.value,firstRow:document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId,rows:document.querySelectorAll('#measurement-grid tbody tr[data-row-id]').length};").await?, previous_query, "The restored table and controls must agree with the prior history entry");
     if browser
         .execute("return !!document.querySelector('#form-current');")
         .await?
@@ -1104,6 +1133,163 @@ async fn local_response_performance(h: &Harness, browser: &Browser) -> TestResul
     Ok(report)
 }
 
+async fn preview_from_unmounted_editor_is_ignored(h: &Harness, browser: &Browser) -> TestResult {
+    const OBSERVE_EDITOR: &str = r#"
+return {
+    url:location.href,
+    focus:document.activeElement?.id,
+    inputs:Object.fromEntries(['current','unit','money','date','percent','notes'].map(name=>[name,document.querySelector('#form-'+name)?.value])),
+    query:{search:document.querySelector('#table-search')?.value,pageSize:document.querySelector('#table-page-size')?.value,sort:document.querySelector('#table-sort')?.value,direction:document.querySelector('#table-direction')?.value},
+    previewDisabled:document.querySelector('#form-preview')?.disabled,
+    comparisonPresent:!!document.querySelector('#form-comparison'),
+    saveEnabled:document.querySelector('#form-save')?.disabled===false
+};
+"#;
+    browser.fill("#form-current", "36").await?;
+    let before = browser.execute(OBSERVE_EDITOR).await?;
+    browser.cdp("Network.enable", json!({})).await?;
+    browser.cdp("Network.emulateNetworkConditions",json!({"offline":false,"latency":4000,"downloadThroughput":500000,"uploadThroughput":125000,"connectionType":"cellular4g"})).await?;
+    let started_at = browser
+        .execute("return performance.now();")
+        .await?
+        .as_f64()
+        .ok_or("Request start clock absent")?;
+    let request_entries = format!(
+        "performance.getEntriesByType('resource').filter(e=>e.name.endsWith('/api/prototipo/aurora/medicoes/preview')&&e.startTime>={started_at}).map(e=>({{url:e.name,startTimeMs:e.startTime,durationMs:e.duration,status:e.responseStatus}}))"
+    );
+    browser.click("#form-preview").await?;
+    browser
+        .wait(
+            "return document.querySelector('#form-preview')?.disabled === true;",
+            Duration::from_secs(2),
+        )
+        .await?;
+    browser.click("#nav-documentos").await?;
+    browser.wait("return document.querySelector('#nav-documentos')?.getAttribute('aria-current') === 'page' && !document.querySelector('#form-current');",Duration::from_secs(5)).await?;
+    browser.history_back().await?;
+    browser.wait(READY, Duration::from_secs(10)).await?;
+    // The editor is outside the table Suspense. Do not wait for the delayed GET
+    // before observing the earlier POST: its response must still be in flight.
+    browser
+        .wait(
+            "return document.querySelector('#form-current')?.value === '36';",
+            Duration::from_secs(5),
+        )
+        .await?;
+    let reopened = browser.execute(OBSERVE_EDITOR).await?;
+    let completed = browser
+        .execute(&format!("return {request_entries};"))
+        .await?;
+    let evidence_path = h.evidence.join("forms-unmounted-preview.json");
+    let mut report = json!({
+        "status":"reopened",
+        "before":before,
+        "reopened":reopened,
+        "completedBeforeFocus":completed,
+        "method":"Real POST for current 36 under 4000 ms CDP latency, followed by native navigation to Documents and Back. The editor must remount with identical inputs and query before that POST completes. No application state or response is mocked."
+    });
+    write_json(&evidence_path, &report)?;
+    assert_eq!(reopened["url"], before["url"]);
+    assert_eq!(reopened["query"], before["query"]);
+    assert_eq!(reopened["inputs"], before["inputs"]);
+    assert_eq!(
+        reopened["previewDisabled"], false,
+        "The reopened editor must not inherit the old instance's pending control"
+    );
+    assert_eq!(
+        completed,
+        json!([]),
+        "The earlier POST must still be in flight after remount"
+    );
+    assert_eq!(reopened["comparisonPresent"], false);
+    assert_eq!(reopened["saveEnabled"], false);
+    browser.click("#form-current").await?;
+    let focused = browser.execute(OBSERVE_EDITOR).await?;
+    let still_pending = browser
+        .execute(&format!("return {request_entries};"))
+        .await?;
+    report["focusedBeforeResponse"] = focused.clone();
+    report["completedAfterFocus"] = still_pending.clone();
+    write_json(&evidence_path, &report)?;
+    assert_eq!(focused["focus"], "form-current");
+    assert_eq!(
+        still_pending,
+        json!([]),
+        "Focus must be set while the old POST is still pending"
+    );
+    browser
+        .wait(
+            &format!("return ({request_entries}).length === 1;"),
+            Duration::from_secs(12),
+        )
+        .await?;
+    browser.post("execute/async",json!({
+        "script":"const done=arguments[arguments.length-1];requestAnimationFrame(()=>requestAnimationFrame(()=>done(true)));",
+        "args":[]
+    })).await?;
+    let settled = browser.execute(OBSERVE_EDITOR).await?;
+    let requests = browser
+        .execute(&format!("return {request_entries};"))
+        .await?;
+    report["settledAfterOldResponse"] = settled.clone();
+    report["completedRequests"] = requests.clone();
+    write_json(&evidence_path, &report)?;
+    let request = requests
+        .as_array()
+        .filter(|entries| entries.len() == 1)
+        .and_then(|entries| entries.first())
+        .ok_or("Expected exactly the earlier POST before recovery")?;
+    assert_eq!(
+        request["status"], 200,
+        "The earlier POST must finish successfully"
+    );
+    assert!(
+        request["durationMs"]
+            .as_f64()
+            .ok_or("Delayed POST duration absent")?
+            >= 3000.0,
+        "The remount scenario must actually overlap a delayed POST: {request}"
+    );
+    assert_eq!(settled["url"], before["url"]);
+    assert_eq!(settled["query"], before["query"]);
+    assert_eq!(settled["inputs"], before["inputs"]);
+    assert_eq!(
+        settled["focus"], "form-current",
+        "An old editor response must not steal focus from its replacement"
+    );
+    assert_eq!(
+        settled["comparisonPresent"], false,
+        "An old editor response must not certify the replacement instance"
+    );
+    assert_eq!(settled["saveEnabled"], false);
+    browser
+        .screenshot(&h.evidence.join("forms-unmounted-preview-ignored.png"))
+        .await?;
+    browser
+        .cdp(
+            "Network.emulateNetworkConditions",
+            json!({"offline":false,"latency":0,"downloadThroughput":-1,"uploadThroughput":-1}),
+        )
+        .await?;
+    browser.wait(PAGE_READY, Duration::from_secs(10)).await?;
+    browser.click("#form-preview").await?;
+    browser
+        .wait(
+            "return document.querySelector('#form-save')?.disabled === false;",
+            Duration::from_secs(10),
+        )
+        .await?;
+    let difference = browser.text("#preview-difference").await?;
+    let value = browser.text("#preview-value").await?;
+    assert_eq!(difference, "16 m²");
+    assert_eq!(value, "R$ 160,00");
+    report["recovery"] = json!({"explicitNewPreview":true,"difference":difference,"value":value});
+    browser.fill("#form-current", "35").await?;
+    report["status"] = json!("passed");
+    write_json(&evidence_path, &report)?;
+    Ok(())
+}
+
 async fn delayed_preview_cannot_replace_newer_input(h: &Harness, browser: &Browser) -> TestResult {
     browser.fill("#form-current", "36").await?;
     browser.cdp("Network.enable", json!({})).await?;
@@ -1131,11 +1317,15 @@ async fn delayed_preview_cannot_replace_newer_input(h: &Harness, browser: &Brows
         .await?;
     assert_eq!(browser.property("#form-current", "value").await?, "37");
     assert_eq!(browser.execute("return !document.querySelector('#form-comparison') && (!document.querySelector('#form-save') || document.querySelector('#form-save').disabled);").await?,true,"A late response for 36 must not certify the newer 37 input");
-    let requests = browser.execute("return performance.getEntriesByType('resource').filter(e=>e.name.includes('/medicoes/preview')).map(e=>({url:e.name,durationMs:e.duration}));").await?;
+    let requests = browser.execute("return performance.getEntriesByType('resource').filter(e=>e.name.includes('/medicoes/preview')).map(e=>({url:e.name,durationMs:e.duration,status:e.responseStatus}));").await?;
     let delayed = requests
         .as_array()
         .and_then(|requests| requests.last())
         .ok_or("Delayed request timing absent")?;
+    assert_eq!(
+        delayed["status"], 200,
+        "The stale-input scenario requires a successful earlier HTTP response"
+    );
     assert!(
         delayed["durationMs"]
             .as_f64()

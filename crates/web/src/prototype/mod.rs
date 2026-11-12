@@ -166,7 +166,9 @@ fn PrototypeShell() -> impl IntoView {
                     show_dialog("context-dialog", "cancel-context");
                 }
             });
-            ready.set(true);
+            if !ready.get_untracked() {
+                ready.set(true);
+            }
             return;
         }
         if selected != previous_state.company {
@@ -177,7 +179,11 @@ fn PrototypeShell() -> impl IntoView {
             display_state.set("content".into());
         }
         store.last_context_url.set(Some(destination));
-        ready.set(true);
+        // Readiness changes only once. Notifying true again during navigation
+        // can wake nested render effects after their task owner is cleaned up.
+        if !ready.get_untracked() {
+            ready.set(true);
+        }
     });
 
     let change_company = move |requested: Company| {
