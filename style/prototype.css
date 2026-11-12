@@ -1229,17 +1229,22 @@ dialog.prototype-dialog[open] {
 .checkbox-label { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; }
 .prototype-shell input[type="checkbox"] { width: 24px; min-height: 24px; height: 24px; accent-color: var(--c360-primary); flex-shrink: 0; }
 .text-button { border: 0; background: transparent; color: var(--c360-primary); text-decoration: underline; padding: 10px; min-height: 44px; font: inherit; cursor: pointer; }
-.measurement-scroll { max-width: 100%; overflow: auto; border: 1px solid var(--c360-border); border-radius: var(--c360-radius); background: var(--c360-surface); max-height: 640px; }
-.measurement-grid { width: 100%; min-width: 1530px; font-variant-numeric: tabular-nums; border-collapse: separate; border-spacing: 0; }
+.measurement-scroll { max-width: 100%; overflow: auto; border: 1px solid var(--c360-border); border-radius: var(--c360-radius); background: var(--c360-surface); max-height: 640px; scroll-padding-block: 12rem 1rem; }
+.measurement-grid { width: 100%; min-width: 1530px; table-layout: fixed; font-variant-numeric: tabular-nums; border-collapse: separate; border-spacing: 0; }
+.measurement-grid .selection-column { width: 96px; }
+.measurement-grid .service-column { width: 245px; }
 .measurement-grid thead th { position: sticky; top: 0; z-index: 1; background: var(--c360-surface-subtle); border-block-end: 2px solid var(--c360-input-border); padding: 16px 12px; max-width: 150px; }
-.measurement-grid .service-cell { min-width: 245px; max-width: 270px; text-align: left; background: var(--c360-surface); font-weight: 400; }
+.measurement-grid thead th:first-child { min-inline-size: 0; padding-inline: 8px; text-align: center; }
+.measurement-grid tbody th.service-cell { min-inline-size: 0; max-inline-size: none; text-align: left; background: var(--c360-surface); font-weight: 400; }
 .measurement-grid .service-cell strong, .measurement-grid .service-cell span { display: block; }
 .measurement-grid .service-cell .status-badge { display: inline-flex; margin-top: 8px; }
 .measurement-grid td, .measurement-grid tbody th { padding: var(--c360-row-padding) 12px; border-block-end: 1px solid var(--c360-border); vertical-align: top; }
 .measurement-grid .number { text-align: right; }
 .measurement-grid .unit-label { color: var(--c360-muted); margin-top: 4px; font-size: 0.875rem; }
 .measurement-grid tr[data-selected="true"] td, .measurement-grid tr[data-selected="true"] th { background: var(--c360-primary-soft); }
-.measurement-grid td:first-child { padding: 16px; }
+.measurement-grid td:first-child { padding: 16px; text-align: center; }
+.row-selection-target { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; cursor: pointer; }
+.measurement-grid :is(button, input, .row-selection-target) { scroll-margin-block: 1rem; }
 .measurement-grid .secondary-button { white-space: nowrap; }
 .table-pagination { display: flex; gap: 16px; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 20px 0; }
 .prototype-shell [aria-disabled="true"] { color: var(--c360-muted); background: var(--c360-surface-subtle); cursor: default; }
@@ -1292,9 +1297,8 @@ dialog.prototype-dialog[open] {
 }
 #table-content[aria-busy="true"] .measurement-table-section { visibility: hidden; }
 .measurement-grid .service-cell { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--c360-border); }
-.measurement-grid .service-cell button { display: block; margin-top: 12px; }
-.measurement-grid thead .service-heading { left: 0; z-index: 3; }
+.measurement-grid .service-cell button { display: block; width: 100%; max-inline-size: 100%; margin-top: 12px; white-space: normal; }
+.measurement-grid thead .service-heading { left: 0; z-index: 3; max-inline-size: none; }
 @media (max-width: 520px) {
-  .measurement-grid .service-cell { width: 165px; min-width: 165px; max-width: 165px; }
-  .measurement-grid .service-cell button { white-space: normal; }
+  .measurement-grid .service-column { width: 165px; }
 }

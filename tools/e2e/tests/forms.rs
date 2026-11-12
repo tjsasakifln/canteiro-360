@@ -124,7 +124,7 @@ async fn presentation_acceptance(h: &Harness, browser: &Browser) -> TestResult {
         &h.evidence.join("forms-presentation.json"),
         &json!({
             "status":"passed","group":"forms-presentation","versions":browser.versions,"environment":h.environment,
-            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named"],
+            "checks":["server_page_bounded_with_10000_records","stable_server_search_and_sort","server_exact_decimal_canonicalization","server_ambiguous_value_rejected","server_20_to_35_means_15","server_cumulative_truncation_0_335","server_rendered_page_and_pagination_without_scripts","reflow_360_and_1280","table_and_controls_accessibly_named","initial_row_identity_and_edit_visible_without_horizontal_scroll","row_selection_and_edit_targets_44px"],
             "server":server,"viewports":viewports,"console":console,
             "limits":"HTTP contracts, no-script navigation and rendered layout only. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial."
         }),
@@ -151,6 +151,7 @@ async fn functional_acceptance(h: &Harness, browser: &Browser) -> TestResult {
     delayed_table_keeps_the_typing_focus(h, browser).await?;
     remote_failures_keep_work(h, browser).await?;
     context_guard_preserves_or_discards(h, browser).await?;
+    sticky_grid_controls_remain_reachable(h, browser).await?;
     let console = browser.logs().await?;
     assert_console(&console, true)?;
     write_json(
@@ -164,7 +165,8 @@ async fn functional_acceptance(h: &Harness, browser: &Browser) -> TestResult {
                 "field_error_association_and_correction_focus", "conditional_note_is_required_and_reachable", "draft_survives_filter_and_pagination", "history_keeps_grade_draft",
                 "late_preview_cannot_replace_newer_input", "late_table_response_does_not_steal_typing_focus",
                 "actual_preview_network_failure_preserves_inputs", "table_retry_after_actual_network_failure",
-                "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent"
+                "context_guard_cancellation_preserves_grade_draft", "context_confirm_discards_only_with_consent",
+                "sticky_grid_targets_remain_visible_and_clickable_after_keyboard_scroll"
             ],
             "console":console,
             "limits":"Fictitious draft/context journey. Does not claim results from the independent HTTP/SSR/layout or response-time groups, a professional-user trial, assistive-technology session, physical mobile device or commercial validation."
@@ -348,10 +350,12 @@ async fn reflow_and_semantics(h: &Harness, browser: &Browser) -> TestResult<Vec<
                 .replace('.', "")
                 .contains("10000")
         );
+        let first_row_geometry = initial_grid_controls(h, browser, width).await?;
         browser
             .full_screenshot(&h.evidence.join(format!("forms-table-{width}.png")))
             .await?;
-        observations.push(json!({"width":width,"metrics":metrics}));
+        observations
+            .push(json!({"width":width,"metrics":metrics,"firstRowGeometry":first_row_geometry}));
     }
     Ok(observations)
 }
@@ -536,6 +540,7 @@ async fn page_selection_and_copy(h: &Harness, browser: &Browser) -> TestResult {
 }
 
 async fn exact_fields_and_error_recovery(h: &Harness, browser: &Browser) -> TestResult {
+    scroll_first_edit_into_pointer_view(h, browser).await?;
     browser.click("#edit-row-1").await?;
     browser
         .wait(
@@ -1199,5 +1204,257 @@ async fn delayed_table_keeps_the_typing_focus(h: &Harness, browser: &Browser) ->
     browser.click("#table-prev").await?;
     browser.wait("return document.querySelector('#table-content')?.getAttribute('aria-busy') === 'false' && document.querySelector('#measurement-grid tbody tr[data-row-id]')?.dataset.rowId === '1';",Duration::from_secs(10)).await?;
     browser.fill("#form-current", "35").await?;
+    Ok(())
+}
+
+async fn initial_grid_controls(h: &Harness, browser: &Browser, width: u32) -> TestResult<Value> {
+    let geometry = browser.execute(r#"
+const scroller = document.querySelector('.measurement-scroll');
+const row = document.querySelector('#measurement-grid tbody tr[data-row-id="1"]');
+if (!scroller || !row) throw new Error('First row or scroller missing');
+const rect = element => {const r=element.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+const checkbox = row.querySelector('#select-row-1');
+const checkboxTarget = checkbox.labels?.[0] || checkbox;
+const parts = [['checkbox',checkboxTarget],['identity',row.querySelector('.service-cell strong')],['description',row.querySelector('.service-cell > span:not(.unit-label):not(.status-badge)')],['unit',row.querySelector('.unit-label')],['edit',row.querySelector('#edit-row-1')]];
+const clip = scroller.getBoundingClientRect();
+const left = Math.max(0,clip.left + scroller.clientLeft);
+const right = Math.min(innerWidth,clip.left + scroller.clientLeft + scroller.clientWidth);
+return {viewport:innerWidth,scrollLeft:scroller.scrollLeft,clip:{left,right},parts:parts.map(([name,element])=>{
+  if(!element) throw new Error('Missing control '+name);
+  const bounds=rect(element);
+  return {name,tag:element.tagName,id:element.id,bounds,horizontallyContained:bounds.left>=left-1&&bounds.right<=right+1,text:element.innerText,clientWidth:element.clientWidth,scrollWidth:element.scrollWidth};
+})};
+"#).await?;
+    write_json(
+        &h.evidence.join(format!("forms-grid-geometry-{width}.json")),
+        &geometry,
+    )?;
+    assert_eq!(geometry["viewport"], width);
+    assert_eq!(
+        geometry["scrollLeft"], 0,
+        "Initial identity and actions must be readable without first scrolling horizontally"
+    );
+    for part in geometry["parts"]
+        .as_array()
+        .ok_or("First-row geometry absent")?
+    {
+        assert_eq!(
+            part["horizontallyContained"], true,
+            "Essential row control is clipped at {width}px: {part}"
+        );
+        if matches!(part["name"].as_str(), Some("checkbox" | "edit")) {
+            assert!(
+                part["bounds"]["width"]
+                    .as_f64()
+                    .ok_or("Target width absent")?
+                    >= 44.0,
+                "The clickable target must be at least 44 px wide: {part}"
+            );
+            assert!(
+                part["bounds"]["height"]
+                    .as_f64()
+                    .ok_or("Target height absent")?
+                    >= 44.0,
+                "The clickable target must be at least 44 px high: {part}"
+            );
+        } else {
+            assert!(!part["text"].as_str().unwrap_or_default().trim().is_empty());
+            assert!(
+                part["scrollWidth"]
+                    .as_u64()
+                    .ok_or("Text scroll width absent")?
+                    <= part["clientWidth"]
+                        .as_u64()
+                        .ok_or("Text client width absent")?
+                        + 1,
+                "Essential identity text must fit its cell: {part}"
+            );
+        }
+    }
+    Ok(geometry)
+}
+
+async fn scroll_first_edit_into_pointer_view(h: &Harness, browser: &Browser) -> TestResult {
+    // The inspected ChromeDriver 156.0.8078.80 GET_LOCATION_IN_VIEW atom
+    // writes scrollTop/scrollLeft directly and ignores CSS scroll margins.
+    // Prepare this offscreen pointer target with actual wheel input. The
+    // independent Tab/Shift+Tab regression below gets no such preparation.
+    let path = h.evidence.join("forms-pointer-scroll.json");
+    let mut states = vec![focused_grid_button_geometry(browser).await?];
+    let mut wheels = Vec::new();
+    let method = "Native WebDriver wheel input prepares the pointer target after clearing selection. DOM scripts only observe bounds, focus, scroll offsets and hit-testing. The inspected ChromeDriver 156.0.8078.80 GET_LOCATION_IN_VIEW atom scrolls by direct offsets without consuming CSS scroll-padding/scroll-margin; this describes the inspected driver atom only; the separate keyboard regression verifies the application behavior. The original WebDriver element click remains after the visibility assertion. The separate Tab/Shift+Tab regression has no wheel preparation.";
+    for _ in 0..8 {
+        let current = states.last().ok_or("Pointer geometry absent")?;
+        write_json(
+            &path,
+            &json!({"status":"observed","method":method,"versions":browser.versions,"states":states,"wheelActions":wheels}),
+        )?;
+        if current["fullyVisible"] == true && current["hitIsButton"] == true {
+            break;
+        }
+        let origin = &current["wheelOrigin"];
+        let x = origin["x"]
+            .as_f64()
+            .ok_or("No visible grid area for native wheel input")?
+            .round() as i64;
+        let y = origin["y"]
+            .as_f64()
+            .ok_or("No visible grid area for native wheel input")?
+            .round() as i64;
+        let top = current["bounds"]["top"]
+            .as_f64()
+            .ok_or("Pointer target top absent")?;
+        let bottom = current["bounds"]["bottom"]
+            .as_f64()
+            .ok_or("Pointer target bottom absent")?;
+        let clip_top = current["clip"]["top"]
+            .as_f64()
+            .ok_or("Grid visible top absent")?;
+        let clip_bottom = current["clip"]["bottom"]
+            .as_f64()
+            .ok_or("Grid visible bottom absent")?;
+        let delta = if top < clip_top {
+            (top - clip_top - 16.0).floor().max(-640.0)
+        } else if bottom > clip_bottom {
+            (bottom - clip_bottom + 16.0).ceil().min(640.0)
+        } else {
+            return Err(format!(
+                "Pointer target is obstructed despite fitting the visible grid: {current}"
+            )
+            .into());
+        };
+        let wheel = json!({"type":"scroll","origin":"viewport","x":x,"y":y,"deltaX":0,"deltaY":delta as i64,"duration":200});
+        wheels.push(wheel.clone());
+        browser
+            .post(
+                "actions",
+                json!({"actions":[{"type":"wheel","id":"forms-grid-wheel","actions":[wheel]}]}),
+            )
+            .await?;
+        states.push(focused_grid_button_geometry(browser).await?);
+    }
+    let after = states.last().ok_or("Final pointer geometry absent")?;
+    write_json(
+        &path,
+        &json!({"status":"observed","method":method,"versions":browser.versions,"states":states,"wheelActions":wheels}),
+    )?;
+    assert_eq!(
+        after["fullyVisible"], true,
+        "Native wheel input must reveal the whole button below the sticky header before the original click: {after}"
+    );
+    assert_eq!(
+        after["hitIsButton"], true,
+        "The button center must receive the pointer before the original click: {after}"
+    );
+    write_json(
+        &path,
+        &json!({"status":"passed","method":method,"versions":browser.versions,"states":states,"wheelActions":wheels}),
+    )
+}
+
+async fn sticky_grid_controls_remain_reachable(h: &Harness, browser: &Browser) -> TestResult {
+    let mut cases = Vec::new();
+    for width in [1280, 360] {
+        browser.viewport(width, 900, false).await?;
+        open(h, browser).await?;
+        tab_to(browser, "#edit-row-25").await?;
+        let scrolled=browser.execute("return {scrollTop:document.querySelector('.measurement-scroll')?.scrollTop,focus:document.activeElement?.id};").await?;
+        assert_eq!(scrolled["focus"], "edit-row-25");
+        assert!(
+            scrolled["scrollTop"]
+                .as_f64()
+                .ok_or("Grid scroll offset absent")?
+                > 0.0,
+            "This regression must actually scroll the grid"
+        );
+        let mut returned = false;
+        for _ in 0..100 {
+            browser.chord(&[SHIFT], TAB).await?;
+            if browser
+                .execute("return document.activeElement?.id === 'edit-row-1';")
+                .await?
+                == true
+            {
+                returned = true;
+                break;
+            }
+        }
+        assert!(
+            returned,
+            "The first edit action must remain reachable by reverse Tab"
+        );
+        let geometry = focused_grid_button_geometry(browser).await?;
+        write_json(
+            &h.evidence.join(format!("forms-sticky-edit-{width}.json")),
+            &json!({"status":"observed","scrolled":scrolled,"returned":geometry}),
+        )?;
+        assert_focused_grid_button(&geometry, true)?;
+        browser
+            .screenshot(&h.evidence.join(format!("forms-sticky-edit-{width}.png")))
+            .await?;
+        // Keep the actual click. A keyboard-only activation would not detect
+        // the sticky header intercepting a pointer click at the button center.
+        browser.click("#edit-row-1").await?;
+        browser
+            .wait(
+                "return !!document.querySelector('#form-current');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        browser.click("#form-cancel").await?;
+        browser.wait("return !document.querySelector('#form-current') && document.activeElement?.id === 'edit-row-1';",Duration::from_secs(5)).await?;
+        let restored = focused_grid_button_geometry(browser).await?;
+        assert_focused_grid_button(&restored, false)?;
+        let case = json!({"status":"passed","width":width,"scrolled":scrolled,"returned":geometry,"afterEditorReturn":restored});
+        write_json(
+            &h.evidence.join(format!("forms-sticky-edit-{width}.json")),
+            &case,
+        )?;
+        cases.push(case);
+    }
+    write_json(
+        &h.evidence.join("forms-sticky-controls.json"),
+        &json!({"status":"passed","cases":cases,"method":"WebDriver Tab to row 25, reverse Tab to row 1, DOM hit-testing without mutation, real WebDriver click, then return from editor. This keyboard regression uses no wheel preparation. The earlier pointer journey separately records its native wheel preparation and preserves the original WebDriver element click."}),
+    )
+}
+
+async fn focused_grid_button_geometry(browser: &Browser) -> TestResult<Value> {
+    browser.post("execute/async",json!({"script":r#"
+const done=arguments[arguments.length-1];
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const button=document.querySelector('#edit-row-1');
+  const scroller=document.querySelector('.measurement-scroll');
+  const heading=document.querySelector('.service-heading');
+  const r=button.getBoundingClientRect(), s=scroller.getBoundingClientRect(), h=heading.getBoundingClientRect();
+  const x=r.left+r.width/2, y=r.top+r.height/2, hit=document.elementFromPoint(x,y);
+  const clip={left:Math.max(0,s.left+scroller.clientLeft),right:Math.min(innerWidth,s.left+scroller.clientLeft+scroller.clientWidth),top:Math.max(0,s.top+scroller.clientTop,h.bottom),bottom:Math.min(innerHeight,s.top+scroller.clientTop+scroller.clientHeight)};
+  const wheelOrigin=clip.right-clip.left>=24&&clip.bottom-clip.top>=24?{x:(clip.left+clip.right)/2,y:(clip.top+clip.bottom)/2}:null;
+  done({focus:document.activeElement?.id,outlineWidth:parseFloat(getComputedStyle(button).outlineWidth),bounds:{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height},clip,wheelOrigin,viewport:{width:innerWidth,height:innerHeight},scroller:{left:s.left,right:s.right,top:s.top,bottom:s.bottom},headerBottom:h.bottom,scrollTop:scroller.scrollTop,scrollLeft:scroller.scrollLeft,hit:{tag:hit?.tagName,id:hit?.id,classes:hit?.className},hitIsButton:hit===button||button.contains(hit),fullyVisible:r.left>=clip.left-1&&r.right<=clip.right+1&&r.top>=clip.top-1&&r.bottom<=clip.bottom+1});
+}));
+"#,"args":[]})).await
+}
+
+fn assert_focused_grid_button(geometry: &Value, keyboard_focus: bool) -> TestResult {
+    assert_eq!(
+        geometry["focus"], "edit-row-1",
+        "Focus must identify the reached edit action: {geometry}"
+    );
+    assert_eq!(
+        geometry["fullyVisible"], true,
+        "The focused edit action must not be clipped by the viewport, scroller or sticky heading: {geometry}"
+    );
+    assert_eq!(
+        geometry["hitIsButton"], true,
+        "The sticky heading must not intercept the button center: {geometry}"
+    );
+    if keyboard_focus {
+        assert!(
+            geometry["outlineWidth"]
+                .as_f64()
+                .ok_or("Focus outline absent")?
+                >= 3.0,
+            "Keyboard focus needs its visible outline: {geometry}"
+        );
+    }
     Ok(())
 }

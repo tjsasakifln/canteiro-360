@@ -82,6 +82,7 @@ pub(super) fn MeasurementTable(
                 <div class="measurement-scroll" role="region" aria-label="Grade de medição com rolagem horizontal, use as setas para consultar todas as colunas" tabindex="0">
                     <table id="measurement-grid" class="data-table measurement-grid">
                         <caption class="sr-only">"Serviços da medição. Anterior e atual são acumulados; diferença representa a quantidade do período. Cada quantidade usa a unidade da linha."</caption>
+                        <colgroup><col class="selection-column"/><col class="service-column"/><col span="8"/></colgroup>
                         <thead><tr>
                             <th scope="col">"Selecionar"</th><th scope="col" class="service-heading">"Serviço, unidade e edição"</th>
                             <th scope="col" class="number">"Contratado (unid. da linha)"</th>
@@ -115,11 +116,13 @@ fn MeasurementLine(row: MeasurementRow) -> impl IntoView {
     let fmt = format_decimal_pt_br;
     view! {
         <tr data-row-id=id data-selected=move || (selection.all_results.get() || selection.selected.with(|ids| ids.contains(&id))).to_string()>
-            <td><input id=format!("select-row-{id}") type="checkbox" aria-label=row.with_value(|row| format!("Selecionar serviço {}", row.code)) disabled=move || !context.ready.get() || selection.all_results.get()
+            <td><label class="row-selection-target" for=format!("select-row-{id}")>
+                <span class="sr-only">{row.with_value(|row| format!("Selecionar serviço {}", row.code))}</span>
+                <input id=format!("select-row-{id}") type="checkbox" disabled=move || !context.ready.get() || selection.all_results.get()
                 prop:checked=move || selection.all_results.get() || selection.selected.with(|ids| ids.contains(&id)) on:change=move |event| {
                     let checked = event_target_checked(&event);
                     selection.selected.update(|ids| { if checked { ids.insert(id); } else { ids.remove(&id); } }); selection.copy_data.set(None);
-                }/></td>
+                }/></label></td>
             <th scope="row" class="service-cell"><strong>{row.with_value(|row| row.code.clone())}</strong><span>{row.with_value(|row| row.description.clone())}</span><span class="unit-label">{row.with_value(|row| format!("Unidade: {}", row.unit))}</span>
                 <Show when=move || context.with(|state| state.worksheet.drafts.get(&id).is_some_and(|draft| draft.has_edits()))><span class="status-badge warning">"Rascunho nesta aba"</span></Show>
                 <button id=format!("edit-row-{id}") class="secondary-button" type="button" disabled=move || !context.ready.get() aria-label=row.with_value(|row| format!("Editar rascunho do serviço {}", row.code)) on:click=move |_| {
