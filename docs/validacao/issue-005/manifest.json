@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-11-12T22:41:56.607148+00:00",
+  "repository": "tjsasakifln/canteiro-360",
+  "issue": 5,
+  "pull_request": 77,
+  "source_commit": "9c4c9b92aeed975695220734c2ea5432512ff3c9",
+  "source_tree": "f3b9fb823304f814baebe044f66e950420a02f40",
+  "base_commit": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+  "initial_source_commit": "8f658c8f01560f1d6d176fc64066d3d51d8f6fa5",
+  "source_correspondence": "docs/validacao/issue-005/local/source-correspondence.json",
+  "source_files_checked": 82,
+  "scope": "Local evidence for the application source identified above. Documentation consolidation does not modify implementation or tests. The final PR workflow run is recorded separately in the PR and must not be inferred from this manifest.",
+  "policy": "C360-DECIMAL-1",
+  "reference": {
+    "path": "docs/validacao/issue-005/reference-vectors.json",
+    "sha256": "6c7f315a565d0d459cd5ca44f4e9ccc13d6b9dc5a4f6ddfaa6fbf69f83537bb5",
+    "deterministic_vectors": 50,
+    "property_samples": 24,
+    "total": 74
+  },
+  "local_results": [
+    {
+      "command": "cargo test --locked --workspace",
+      "source": "9c4c9b92",
+      "passed": 99,
+      "failed": 0,
+      "ignored": 23,
+      "log": "local/native.log"
+    },
+    {
+      "command": "cargo test --locked -p canteiro-persistence -- --ignored --nocapture",
+      "source": "9c4c9b92",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "log": "local/postgresql.log"
+    },
+    {
+      "command": "cargo test --locked -p canteiro-e2e --test calculations -- --ignored --nocapture",
+      "source": "9c4c9b92",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "log": "local/browser-calculations.log"
+    },
+    {
+      "command": "cargo test --locked -p canteiro-e2e --no-fail-fast -- --ignored --nocapture",
+      "source": "8f658c8f",
+      "passed": 6,
+      "failed": 2,
+      "log": "initial/browser.log",
+      "note": "The two failing calculation waits omitted return. The six existing browser tests passed; this run is not reported as approved as a whole."
+    }
+  ],
+  "whitespace_check": {
+    "scope": "all changed source and documentation except raw .log files in issue-005/initial and issue-005/local",
+    "reason": "Preserve unmodified tool output, including cargo-deny diagnostic spacing and final blank lines."
+  },
+  "toolchain": {
+    "rust": "1.99.1",
+    "wasm_bindgen": "0.2.130",
+    "cargo_deny": "0.20.2",
+    "local_postgresql": "17.11",
+    "ci_postgresql": "17.7",
+    "local_browser": "Chrome Headless Shell 156.0.8078.80",
+    "webdriver": "156.0.8078.80"
+  },
+  "production_asset_budget": {
+    "measurement": "before adding the test-only WASM verifier",
+    "wasm_brotli_bytes": 654860,
+    "javascript_budget_bytes": 8636,
+    "css_budget_bytes": 7028,
+    "wasm_limit_bytes": 1048576,
+    "javascript_limit_bytes": 81920,
+    "css_limit_bytes": 61440,
+    "report": "local/budget.json"
+  },
+  "review_status": "Local independent numerical, contract, interface and evidence review completed after corrections. Integration remains dependent on acceptance of issues 3 and 4, including three real professionals for issue 3.",
+  "file_count": 47,
+  "files": [
+    {
+      "path": "docs/validacao/ISSUE-005.md",
+      "bytes": 18729,
+      "sha256": "12edbca78a8ada17b9d3b4a0cd23cb9f1e8125c03509dc40e851a4cc59936a6f",
+      "git_blob_sha1": "86bd5eca07e301c634e97a6b2a32c8262e0f81eb"
+    },
+    {
+      "path": "docs/calculos-calendarios.md",
+      "bytes": 22320,
+      "sha256": "f088e7d1fa7f6be2ad47db2e36b669f84bb3986f2b307594ce01f9996f3f3412",
+      "git_blob_sha1": "d5bb6ba63af859aa2faf6b41f9362b63207fd923"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/browser-functional.json",
+      "bytes": 2264,
+      "sha256": "b210cae0eb5e9fb81c945032284d17dbb77fde424ab61e1e0dfd27d965606f69",
+      "git_blob_sha1": "97389ec4ebbb49eedf990d0448f55f8d71876db0"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/browser-performance.json",
+      "bytes": 2608,
+      "sha256": "8dd9c0a9a6d98ed491cd6fdc0b155d0c6b8bfe67d15dd6801883ffee64b9f660",
+      "git_blob_sha1": "c299e2aaf51a4e7cd2715e3f7e7ce540e9758a55"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/browser-return-corrected.log",
+      "bytes": 628,
+      "sha256": "b3ffd25f0b558ee3d2b6c0fc76d07ed73ca06fb12f4ecac6795ec62e1a7c19f8",
+      "git_blob_sha1": "e66c6b57188aedb204ccf38a00dc89ecafc7d302"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/browser-viewport-focus.log",
+      "bytes": 979,
+      "sha256": "4edcb6f3ac53ecaa80382c59d0a8961aeb42c813a1c0d6e67aab3f90882d0b51",
+      "git_blob_sha1": "5582787425bdcae10b9efad2bb21b168d1be9e35"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/browser.log",
+      "bytes": 3368,
+      "sha256": "10e99179855d03c80bc9782c5954c63e5e3d798d8f1ba0bd5a7c3188150703ea",
+      "git_blob_sha1": "668c39b4b0352cbe6571ce823be5eddd85610691"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/budget.json",
+      "bytes": 1874,
+      "sha256": "1bb424b2d8331977d1532ce12a70746576c8b32ca062bce254611f9c1e1399a5",
+      "git_blob_sha1": "34c11cb9c24172be1c9f6b115f2f2051e031f982"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/build.json",
+      "bytes": 2385,
+      "sha256": "dcf97152ed26922e20be2ac053eee37c3794a9855c64d0df0422f2e6d3f393b9",
+      "git_blob_sha1": "d8e42d828b9c756e272becf69dbebf01842d1660"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/diagnostic-blocked.json",
+      "bytes": 9372,
+      "sha256": "4204158071e07d3e3410dae41ceaa11eef85b95f1f8704372bc67aa40f7f5179",
+      "git_blob_sha1": "fbedc8ce7ebb95e16a287fe387906a7ee8983a11"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/diagnostic-normal.json",
+      "bytes": 9108,
+      "sha256": "5e959c20ca24c9abbc09ab9020c42fd25655b5478c5cfbb18c100f4101a69413",
+      "git_blob_sha1": "c5b7f5ed2b0c561de75cc882cde1a2804ed25a4f"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/diagnostic-normal.png",
+      "bytes": 192362,
+      "sha256": "006ba8a6f0ce7b496d3af345b074998e8686a6b87c0a2e8c6791fd449c4a41ca",
+      "git_blob_sha1": "767e2e5ccb9faa41a1b831507b52bbe8beae3a14"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/forms-functional.json",
+      "bytes": 2007,
+      "sha256": "6c0c0d6af7331c9f1f20285f6b03256d1e17905f10f07a27801ac7c35b77a83f",
+      "git_blob_sha1": "d701961fed2ce48718e6537b2a1df3feb645a9fb"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/forms-local-response.json",
+      "bytes": 32514,
+      "sha256": "a9162563018dbf9afd3bebe96d7c9e8d930e5ebbdf98d008d245d960f51ae0e8",
+      "git_blob_sha1": "7a3594e207600f5cf23b181ed5ccbb2c9a08951c"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/forms-presentation.json",
+      "bytes": 11620,
+      "sha256": "4f053be752d3cedaef8af34c35f2c1845bd82a16e594cd9801933f85ce6a5018",
+      "git_blob_sha1": "897ffe1b078e18872e135b27d110940ae81128ef"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/performance-samples.json",
+      "bytes": 467099,
+      "sha256": "62e1ff629d46a26578280cb09f466a84217b61f1592d06b3b9d95e583827b5b7",
+      "git_blob_sha1": "75b1501084c28d5f9ad351d41243129da33ffc3e"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/prototype-functional.json",
+      "bytes": 6004,
+      "sha256": "1296d084b83e9fd3e1c1dc2982030fd6910c28fd8a250bfe4319893252c30ff4",
+      "git_blob_sha1": "c24977b67b970f3de16e6a813ddde31fbb37df33"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/source-correspondence-return-corrected.json",
+      "bytes": 19934,
+      "sha256": "500c58ef1b1170ffed971dc117edc7e0ed2586bbc35d8c93111b5a22a1fdaac0",
+      "git_blob_sha1": "50c2b687456e261496d40c72e7756b2b745233ab"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/source-correspondence.json",
+      "bytes": 19873,
+      "sha256": "b4b84056b43aba2e49c93367a817363cd1ec33510ed46510f8d79d19b3e53021",
+      "git_blob_sha1": "28861800e9168ba5e9f75587a780229a79538f9e"
+    },
+    {
+      "path": "docs/validacao/issue-005/initial/wasm-unavailable-before-values.png",
+      "bytes": 202384,
+      "sha256": "03de7007e43f34629f8517a8bed7172eff5f88379cf254d1f03912769a981e61",
+      "git_blob_sha1": "47040111f20ea9b85308a277d0fcf4628994da56"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/browser-calculations.log",
+      "bytes": 628,
+      "sha256": "f3a0d05ae8bd9b891ecdc4f082432dbcaadd7c91311cdf11a694add159675aa2",
+      "git_blob_sha1": "a7d2f767561ad52c13816a969fa833b0b3b36199"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/budget.json",
+      "bytes": 1874,
+      "sha256": "ccba624e1ae7f171aedee8f20bc5c30936f8b7b43f07f92df85e62cca6c67803",
+      "git_blob_sha1": "e3b07d971780c39c140571db53f82501dfd14a6a"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/build.json",
+      "bytes": 2383,
+      "sha256": "7ef3afb9d89809ce7c9c7b047fabd362a3e287f1e76a74ecd95919974216509d",
+      "git_blob_sha1": "c892b9e9a68d71e4945c8b732e5e9b9050460b62"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/build.log",
+      "bytes": 1278,
+      "sha256": "93bcf7c1332397e2cfe0e188d1725780130402ce11941ee71bfb3e7f089be7d5",
+      "git_blob_sha1": "c740aaae41c4d0b53aa8c414fec4272e0dbbc3db"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-1280.png",
+      "bytes": 190372,
+      "sha256": "40941f6b9424668d71a98a2f85743be0251cf5dcd7953be5f7d766635a883866",
+      "git_blob_sha1": "196c9ff8e71c9904b192ad3815a0c2cd9f9b1144"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-360.png",
+      "bytes": 188277,
+      "sha256": "0e3fcda70b9bf24fa47448ff9b09eda5135b1533d1d61244c12badab803ff331",
+      "git_blob_sha1": "513f0e0bbf180f1cceaf108f501d9ca56c6135b9"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-allocation-scrolled-360.png",
+      "bytes": 57731,
+      "sha256": "baeee349b91d6af9afa93aa5b27d4ca60e41e5e5cf9c9fbf7011ba480fb76510",
+      "git_blob_sha1": "51143bc2fc7a68e1b09a8de2e251c64d063c04b1"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-allocation-visible-1280.png",
+      "bytes": 151359,
+      "sha256": "e400da05815a08851f9970833af8f7568a8dfd0e51f9a5e3e23f7a2e6fe11c13",
+      "git_blob_sha1": "6a8c0b24a455833bc14482aff06ed4f20b1bece9"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-allocation-visible-360.png",
+      "bytes": 55735,
+      "sha256": "be51acc7a1db82cabfe8b6133587442edd125e4c03638e36bf0ced2066716ee0",
+      "git_blob_sha1": "ecc5a9f4b4ce381ed8ec3b023d4d9eeabc224fc5"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-calendar-scrolled-360.png",
+      "bytes": 64148,
+      "sha256": "dad0044d21f44134e15f36e734f72fb73e4348494d784f834838524da2c4d9fe",
+      "git_blob_sha1": "ca0116edb3ae83e4e650d25d7399b926584ccd0d"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-calendar-visible-1280.png",
+      "bytes": 151277,
+      "sha256": "534a325dbebf23a8e82ee939d4fc25f00d8651c247e42f95f0f8c0cec129b025",
+      "git_blob_sha1": "6691d0d53d8a80458bec41c5e58afc4d7cf4a74a"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-calendar-visible-360.png",
+      "bytes": 61880,
+      "sha256": "18360b3499ea0aeb543286aa96261f818d6b51a6ffac7508eb41b2354a12a3e9",
+      "git_blob_sha1": "0ca7f3f83ed0bcd20de23f72b1fe1c39c13475db"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-interface.json",
+      "bytes": 2897,
+      "sha256": "853bb61bbde66439030f69bad3fd4251afb61c4f0e04c3c83ce3b86f176ecf07",
+      "git_blob_sha1": "b3a7125a6424e3da533e9df9c1e215a33b35ed97"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-invalid-preserved.png",
+      "bytes": 134649,
+      "sha256": "1e7a8575fc5e7b2a0123502bfda31e74000078641d3372d06e842a8fda55d749",
+      "git_blob_sha1": "705142db2144e11bb5e4d0d8d47679bbbedcb65f"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-parity-reference.json",
+      "bytes": 70947,
+      "sha256": "6c7f315a565d0d459cd5ca44f4e9ccc13d6b9dc5a4f6ddfaa6fbf69f83537bb5",
+      "git_blob_sha1": "0c9347621b30a3954e9c75198336d62c628b53ea"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-parity.json",
+      "bytes": 35070,
+      "sha256": "7b1b3fae0345597b010e769e933a640e860fe0003f0073358b5d5c2749be416f",
+      "git_blob_sha1": "a989a6c1f7a014986cee269c7468a69b4588b579"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/calculation-wasm-unavailable.png",
+      "bytes": 204954,
+      "sha256": "65279729a59b76cc791f0f7847d0111a3619a4213e6e7f3435609ab99bd2b39a",
+      "git_blob_sha1": "be5d16d78078c6a5237e52aed3e5e83431a06b31"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/clippy-corrected.log",
+      "bytes": 241,
+      "sha256": "892790d9eaf99f2ed30ae4dd54f3824da2ca5f87b5f841ee4c0df185b2bf31cf",
+      "git_blob_sha1": "94b0fa09f02a12617b4b4c8820612177cf03ad0f"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/clippy-native.log",
+      "bytes": 1692,
+      "sha256": "6437ba3f1bc1a3321010e24eb1db938f121251dced6cbb99312833692f83168a",
+      "git_blob_sha1": "6773114a762c3916e0023443408a3282271b7cf5"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/clippy-wasm.log",
+      "bytes": 151,
+      "sha256": "ebba392db6d14d848c9f56a7066f10606e3875a2f21b1785f8ea8e3473cc0514",
+      "git_blob_sha1": "07b790bac4d4851c404e3019f213476177cf9cf6"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/dependencies.log",
+      "bytes": 88541,
+      "sha256": "3c1118f6befa7885719867c7779812824afddc157af8bf74aab13e8bdf4a1a92",
+      "git_blob_sha1": "343dd0604684bf877db8cb21bfd75c52eec0cf3f"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/migrations.log",
+      "bytes": 168,
+      "sha256": "a5d3f1ec300b1f1d04e0b916da8db8ccae5052654ec20c5e8f7fab11fac23def",
+      "git_blob_sha1": "113048c701951bf4a66a42260a1c4b723e001c91"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/native.log",
+      "bytes": 17690,
+      "sha256": "7755779a33b76b5a1b5fee197758fd5a3badff3f47011dca0273a67745f934ff",
+      "git_blob_sha1": "19c7ccfb8cfa496ae63fd699fbcee654ee0aec38"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/policy.log",
+      "bytes": 283,
+      "sha256": "406d8b0846464f04be8e74a5b59db6ef87691e28dd71d0305524f6175aef4649",
+      "git_blob_sha1": "6325a7db1bc2cfe12ff789955bc14ae0937d5d05"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/postgresql.log",
+      "bytes": 2106,
+      "sha256": "0ec2c600b5e84b91b68193b76f66ee6c9fd98b8c7d31cf1f9e9a515861d82608",
+      "git_blob_sha1": "d7c21302e290b812c48c75a6b529ace757bbb69c"
+    },
+    {
+      "path": "docs/validacao/issue-005/local/source-correspondence.json",
+      "bytes": 19934,
+      "sha256": "0e620eb357baf7301fbefae19a290f2b5b457c4fd1804c667eca9bcb13a598dc",
+      "git_blob_sha1": "b89bfe9d031bd3ec984252a4c4431f64bfccdb41"
+    },
+    {
+      "path": "docs/validacao/issue-005/reference-vectors.json",
+      "bytes": 70947,
+      "sha256": "6c7f315a565d0d459cd5ca44f4e9ccc13d6b9dc5a4f6ddfaa6fbf69f83537bb5",
+      "git_blob_sha1": "0c9347621b30a3954e9c75198336d62c628b53ea"
+    }
+  ],
+  "manifest_note": "This manifest deliberately excludes its own hash to avoid a recursive checksum. Source files are verified separately in source-correspondence.json."
+}

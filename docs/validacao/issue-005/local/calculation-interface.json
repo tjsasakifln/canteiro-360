@@ -1,0 +1,109 @@
+{
+  "checks": [
+    "SSR defaults remain in all four inputs without WASM",
+    "WASM failure keeps readable preview and offers reload",
+    "360 and 1280 CSS pixels",
+    "keyboard entry",
+    "result tables visible after native Tab and wheel input",
+    "horizontal table scrolling by arrow key at 360 CSS pixels",
+    "ambiguous decimal keeps other fields",
+    "invalid date keeps term",
+    "leap year",
+    "explicit fixed cadence",
+    "recovery"
+  ],
+  "console": [],
+  "deliberately_blocked_wasm_console": [
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:41505/pkg/canteiro-web.js 1350:25 Uncaught TypeError: Failed to fetch",
+      "source": "javascript",
+      "timestamp": 1794523087149
+    }
+  ],
+  "environment": {
+    "apiBinaryBytes": 38445232,
+    "architecture": "x86_64",
+    "availableParallelism": 9,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V45 96-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:       10206472 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794523086848,
+    "wasmBinaryBytes": 24369385
+  },
+  "layouts": [
+    {
+      "height": 2805,
+      "inputs": [
+        {
+          "height": 44.390625,
+          "id": "allocation-total",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "allocation-count",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "calendar-start",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "calendar-end",
+          "label": true
+        },
+        {
+          "height": 46,
+          "id": "calendar-policy",
+          "label": true
+        }
+      ],
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "height": 1290,
+      "inputs": [
+        {
+          "height": 44.390625,
+          "id": "allocation-total",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "allocation-count",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "calendar-start",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "calendar-end",
+          "label": true
+        },
+        {
+          "height": 46,
+          "id": "calendar-policy",
+          "label": true
+        }
+      ],
+      "scroll": 1265,
+      "width": 1280
+    }
+  ],
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}

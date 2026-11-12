@@ -1,0 +1,14 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.06s
+     Running `target/debug/xtask build`
+Plano aprovado: 72 issues, 192 regras, dependências, fontes e documentos coerentes.
+Política aprovada: 217 arquivos, sem lógica JS/TS própria ou credenciais embutidas detectadas.
+Executando cargo build --locked -p canteiro-api -p canteiro-jobs -p canteiro-persistence --release
+   Compiling canteiro-web v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/web)
+   Compiling canteiro-api v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/api)
+    Finished `release` profile [optimized] target(s) in 1m 04s
+Executando cargo build --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown --profile wasm-release
+   Compiling canteiro-web v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/web)
+    Finished `wasm-release` profile [optimized] target(s) in 20.03s
+Executando wasm-bindgen --target web --no-typescript --out-name canteiro-web --out-dir target/site/pkg target/wasm32-unknown-unknown/wasm-release/canteiro_web.wasm
+Orçamento inicial (.br servido + inline bruto): WASM 654860/1048576 B, JS 8636/81920 B, CSS 7028/61440 B.
+Compilação e orçamento aprovados. Evidências: target/evidence/build.json

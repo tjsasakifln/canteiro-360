@@ -1,0 +1,43 @@
+{
+  "checks": [
+    "ui_exact_decimal_date_percent_and_unit_interpretation",
+    "ambiguous_value_rejected_without_coercion",
+    "keyboard_pagination_and_explicit_edit",
+    "page_selection_distinct_from_all_results",
+    "copy_selected_page_rows_with_headers",
+    "invalid_field_keeps_other_inputs",
+    "field_error_association_and_correction_focus",
+    "conditional_note_is_required_and_reachable",
+    "draft_survives_filter_and_pagination",
+    "history_keeps_grade_draft",
+    "preview_from_unmounted_editor_cannot_certify_reopened_editor",
+    "late_preview_cannot_replace_newer_input",
+    "late_table_response_does_not_steal_typing_focus",
+    "actual_preview_network_failure_preserves_inputs",
+    "table_retry_after_actual_network_failure",
+    "context_guard_cancellation_preserves_grade_draft",
+    "context_confirm_discards_only_with_consent"
+  ],
+  "console": [],
+  "environment": {
+    "apiBinaryBytes": 38408832,
+    "architecture": "x86_64",
+    "availableParallelism": 9,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V45 96-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:       10206472 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794522426072,
+    "wasmBinaryBytes": 24214832
+  },
+  "group": "forms-functional",
+  "limits": "Fictitious draft/context journey. Does not claim results from the independent HTTP/SSR/layout or response-time groups, a professional-user trial, assistive-technology session, physical mobile device or commercial validation.",
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}
