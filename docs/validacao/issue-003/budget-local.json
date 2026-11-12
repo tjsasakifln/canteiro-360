@@ -14,23 +14,23 @@
     {
       "path": "pkg/canteiro-web.js",
       "kind": "javascript",
-      "raw_bytes": 52243,
-      "brotli_bytes": 7382,
-      "budget_bytes": 7382
+      "raw_bytes": 53199,
+      "brotli_bytes": 7524,
+      "budget_bytes": 7524
     },
     {
       "path": "pkg/canteiro-web_bg.wasm",
       "kind": "wasm",
-      "raw_bytes": 8917328,
-      "brotli_bytes": 345206,
-      "budget_bytes": 345206
+      "raw_bytes": 8960581,
+      "brotli_bytes": 348809,
+      "budget_bytes": 348809
     },
     {
       "path": "pkg/prototype.css",
       "kind": "css",
-      "raw_bytes": 26687,
-      "brotli_bytes": 3950,
-      "budget_bytes": 3950
+      "raw_bytes": 26931,
+      "brotli_bytes": 4002,
+      "budget_bytes": 4002
     },
     {
       "path": "HTML:inline-script-0",
@@ -55,9 +55,9 @@
     }
   ],
   "totals": {
-    "wasm_brotli_bytes": 345206,
-    "javascript_brotli_bytes": 7382,
-    "css_brotli_bytes": 5518,
+    "wasm_brotli_bytes": 348809,
+    "javascript_brotli_bytes": 7524,
+    "css_brotli_bytes": 5570,
     "other_brotli_bytes": 0,
     "inline_javascript_raw_bytes": 669,
     "inline_css_raw_bytes": 0
@@ -65,8 +65,8 @@
   "wasm_limit_bytes": 1048576,
   "javascript_limit_bytes": 81920,
   "css_limit_bytes": 61440,
-  "javascript_budget_bytes": 8051,
-  "css_budget_bytes": 5518,
+  "javascript_budget_bytes": 8193,
+  "css_budget_bytes": 5570,
   "html_raw_bytes": 4923,
-  "html_reference_brotli_bytes": 1814
+  "html_reference_brotli_bytes": 1818
 }

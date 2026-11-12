@@ -488,7 +488,10 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
     browser.key(ESCAPE).await?;
     browser
         .wait(
-            "return !document.querySelector('#context-dialog')?.open;",
+            // HTML closes the dialog before it queues the `close` event. Wait
+            // for the user-visible restoration performed by that event too.
+            // https://html.spec.whatwg.org/multipage/interactive-elements.html#close-the-dialog
+            "return document.querySelector('#context-dialog')?.open === false && document.querySelector('#organization')?.value === 'aurora' && document.activeElement?.id === 'organization';",
             Duration::from_secs(3),
         )
         .await?;
@@ -512,6 +515,12 @@ async fn draft_and_context(h: &Harness, browser: &Browser) -> TestResult {
         .await?;
     browser.tab_to("#cancel-context").await?;
     browser.key(ENTER).await?;
+    browser
+        .wait(
+            "return document.querySelector('#context-dialog')?.open === false && document.querySelector('#organization')?.value === 'aurora' && document.activeElement?.id === 'organization';",
+            Duration::from_secs(3),
+        )
+        .await?;
     assert_eq!(
         browser.property("#measurement-note", "value").await?,
         DRAFT_NOTE
@@ -635,7 +644,7 @@ async fn browser_history_context_guard(h: &Harness, browser: &Browser) -> TestRe
     browser.key(ENTER).await?;
     browser
         .wait(
-            "return document.querySelector('#context-dialog')?.open === false;",
+            "return document.querySelector('#context-dialog')?.open === false && document.querySelector('#organization')?.value === 'horizonte' && document.activeElement?.id === 'organization';",
             Duration::from_secs(3),
         )
         .await?;
@@ -724,7 +733,7 @@ async fn approval_dialog(h: &Harness, browser: &Browser) -> TestResult {
     browser.key(ESCAPE).await?;
     browser
         .wait(
-            "return !document.querySelector('#approval-dialog')?.open;",
+            "return document.querySelector('#approval-dialog')?.open === false && document.activeElement?.id === 'review-approval';",
             Duration::from_secs(3),
         )
         .await?;
@@ -746,7 +755,7 @@ async fn approval_dialog(h: &Harness, browser: &Browser) -> TestResult {
     browser.key(ENTER).await?;
     browser
         .wait(
-            "return !document.querySelector('#approval-dialog')?.open;",
+            "return document.querySelector('#approval-dialog')?.open === false && document.activeElement?.id === 'review-approval';",
             Duration::from_secs(3),
         )
         .await?;
@@ -761,7 +770,7 @@ async fn approval_dialog(h: &Harness, browser: &Browser) -> TestResult {
     browser.key(ENTER).await?;
     browser
         .wait(
-            "return document.querySelector('#approval-feedback')?.hidden === false;",
+            "return document.querySelector('#approval-feedback')?.hidden === false && document.querySelector('#approval-dialog')?.open === false && document.activeElement?.id === 'approval-feedback';",
             Duration::from_secs(3),
         )
         .await?;
