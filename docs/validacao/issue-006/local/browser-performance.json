@@ -1,0 +1,73 @@
+{
+  "cacheNote": "Cold disables and clears the HTTP cache before every navigation. Warm enables cache after one unmeasured navigation. The response cache policy still applies; inspect resource transfer sizes before claiming cache hits.",
+  "environment": {
+    "apiBinaryBytes": 49457160,
+    "architecture": "x86_64",
+    "availableParallelism": 9,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V74 80-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:       10206472 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794553219251,
+    "wasmBinaryBytes": 2185471
+  },
+  "interactionNote": "Controlled click to two animation frames is a conservative lab proxy, not real-user INP. Event Timing entries are included when above the browser threshold.",
+  "memoryNote": "JavaScript heap and CDP runtime counters, not whole-process RSS or total WASM memory.",
+  "physicalDevice": "Not executed; desktop and mobile are Chromium viewport emulations.",
+  "samplesFile": "performance-samples.json",
+  "scenario": {
+    "cpuSlowdown": 4,
+    "downloadMbps": 4,
+    "navigationsPerProfileAndCache": 20,
+    "rttMs": 150,
+    "totalNavigations": 80,
+    "uploadMbps": 1,
+    "warmupNavigations": 2
+  },
+  "status": "passed",
+  "summaries": [
+    {
+      "cache": "cold",
+      "clsP75": 0.0,
+      "controlledInteractionP75Ms": 30.399999999906868,
+      "hydrationP75Ms": 1483.2000000001865,
+      "lcpP75Ms": 556.0,
+      "n": 20,
+      "profile": "desktop"
+    },
+    {
+      "cache": "warm",
+      "clsP75": 0.0,
+      "controlledInteractionP75Ms": 26.899999999906868,
+      "hydrationP75Ms": 1459.3999999999069,
+      "lcpP75Ms": 544.0,
+      "n": 20,
+      "profile": "desktop"
+    },
+    {
+      "cache": "cold",
+      "clsP75": 0.0,
+      "controlledInteractionP75Ms": 26.5,
+      "hydrationP75Ms": 1458.5,
+      "lcpP75Ms": 540.0,
+      "n": 20,
+      "profile": "mobile"
+    },
+    {
+      "cache": "warm",
+      "clsP75": 0.0,
+      "controlledInteractionP75Ms": 32.200000000186265,
+      "hydrationP75Ms": 1465.5,
+      "lcpP75Ms": 564.0,
+      "n": 20,
+      "profile": "mobile"
+    }
+  ],
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}

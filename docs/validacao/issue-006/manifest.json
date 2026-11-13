@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "issue": 6,
+  "pull_request": "https://github.com/tjsasakifln/canteiro-360/pull/78",
+  "recorded_on": "2026-11-13",
+  "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+  "source_tree": "c30db5b52d088e49ed0ca73bb023fa6fa8d1dcf4",
+  "base_commit": "90034d15372fc209583a90fabb567942935869bd",
+  "code_correspondence": "local/source-correspondence.json",
+  "runs": [
+    {
+      "name": "native",
+      "source_commit": "17f1c5fcdd16475be79c72253772221fa2ac5423",
+      "command": "cargo test --locked --workspace",
+      "passed": 111,
+      "failed": 0,
+      "ignored": 39,
+      "log": "local/native.log"
+    },
+    {
+      "name": "authentication_postgresql",
+      "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+      "command": "cargo test --locked -p canteiro-application -- --ignored --nocapture --test-threads=1",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 163.92,
+      "log": "local/auth-application.log"
+    },
+    {
+      "name": "persistence_postgresql",
+      "source_commit": "17f1c5fcdd16475be79c72253772221fa2ac5423",
+      "command": "cargo test --locked -p canteiro-persistence -- --ignored --nocapture",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 11.9,
+      "log": "local/persistence.log"
+    },
+    {
+      "name": "http_postgresql",
+      "source_commit": "17f1c5fcdd16475be79c72253772221fa2ac5423",
+      "command": "cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 36.58,
+      "log": "local/auth-http.log"
+    },
+    {
+      "name": "browser_complete",
+      "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+      "command": "cargo test --locked -p canteiro-e2e --no-fail-fast -- --ignored --nocapture",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "log": "local/browser-all.log"
+    },
+    {
+      "name": "password_cost_release",
+      "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+      "command": "cargo test --locked --release -p canteiro-application password_cost_is_measured_with_bounded_parallelism -- --ignored --nocapture",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "repeat_of": "authentication_postgresql",
+      "hash_ms": 109,
+      "verify_ms": 104,
+      "log": "local/argon2-release.log"
+    },
+    {
+      "name": "build",
+      "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+      "command": "cargo xtask build",
+      "result": "passed",
+      "log": "local/build.log",
+      "report": "local/build.json"
+    },
+    {
+      "name": "clippy_native",
+      "source_commit": "17f1c5fcdd16475be79c72253772221fa2ac5423",
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "result": "passed",
+      "log": "local/clippy-native.log"
+    },
+    {
+      "name": "clippy_wasm",
+      "source_commit": "17f1c5fcdd16475be79c72253772221fa2ac5423",
+      "command": "cargo clippy --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown -- -D warnings",
+      "result": "passed",
+      "log": "local/clippy-wasm.log"
+    },
+    {
+      "name": "clippy_packaging",
+      "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+      "command": "cargo clippy --locked -p xtask --all-targets -- -D warnings",
+      "result": "passed",
+      "log": "local/clippy-packaging.log"
+    },
+    {
+      "name": "dependencies",
+      "source_commit": "17f1c5fcdd16475be79c72253772221fa2ac5423",
+      "command": "cargo deny --locked check",
+      "result": "passed",
+      "log": "local/dependencies.log"
+    },
+    {
+      "name": "policy",
+      "source_commit": "15c4c0710076ea5b2b13fb49bf3402d42186b488",
+      "command": "cargo xtask check",
+      "result": "passed",
+      "log": "local/policy.log"
+    }
+  ],
+  "unique_test_functions_passed": 150,
+  "counting_note": "The 39 ignored external tests in the native command are the same 30 PostgreSQL/HTTP and nine browser tests executed explicitly. Repeats and the 74 internal parity vectors are not added to 150.",
+  "source_note": "Source 15c4c071 differs from 17f1c5fc only in the production wasm-bindgen --remove-name-section argument. Authentication PostgreSQL, browser, optimized password measurement, build and packaging Clippy were executed against the final source. Evidence consolidation changes documentation and evidence only.",
+  "limits": [
+    "Mail transport tested with local HTTP receiver; real inbox delivery not tested.",
+    "Password-manager metadata and field value reading verified; no specific extension, screen reader or physical device tested.",
+    "Measurements use a shared executor and do not establish production capacity.",
+    "Integration remains blocked by prior issue acceptance, including three real professionals for issue 3."
+  ],
+  "files": [
+    {
+      "path": "local/argon2-release.log",
+      "bytes": 2778,
+      "sha256": "ec9a9e42e56db3379ea84615c1cf70e6d46a193ce5d69254e890e59d71377908"
+    },
+    {
+      "path": "local/auth-account-1280.png",
+      "bytes": 173436,
+      "sha256": "30b9bc36b930a27357097b2aebe3caf171cddf849a8dd790e553a134266b42cc"
+    },
+    {
+      "path": "local/auth-account-360.png",
+      "bytes": 157246,
+      "sha256": "d5b9cc993d30dc702221f33e85d425fe003cdaecb575a52c7be8d4b496f98e38"
+    },
+    {
+      "path": "local/auth-application.log",
+      "bytes": 1795,
+      "sha256": "c08792d3fef027132c1cb79731c780e6b88c4752db0dc4f2dafc6249c78d8565"
+    },
+    {
+      "path": "local/auth-http.log",
+      "bytes": 469,
+      "sha256": "d15df6087aa2c7f48a79389bc8fbeb5ba52fbfbfdcc2cd8438a4dee201458d20"
+    },
+    {
+      "path": "local/auth-interface.json",
+      "bytes": 3482,
+      "sha256": "cbe1e3a3d040e79782f9c8e378f0f2b7404e8537c249fd2049a697873f4dcad5"
+    },
+    {
+      "path": "local/auth-login-1280.png",
+      "bytes": 100135,
+      "sha256": "32a24fc1b7cb478567871c32e0758f02135dfd1eddf92cb6257cf34f877c1095"
+    },
+    {
+      "path": "local/auth-login-360.png",
+      "bytes": 89226,
+      "sha256": "eeaadc0ee9dca2f21045be257b9ca31153634b960e70b67cef574af69829d36a"
+    },
+    {
+      "path": "local/auth-migrations.log",
+      "bytes": 168,
+      "sha256": "38f857cf4a82b9edf6ede098b71895466c13a88a1997013a4d947c24be9e5473"
+    },
+    {
+      "path": "local/browser-all.log",
+      "bytes": 3202,
+      "sha256": "c09c98d81059ec572b696fa06a76cea6fbdea3a4b2e6273d11e60473728a61f4"
+    },
+    {
+      "path": "local/browser-auth.log",
+      "bytes": 1282,
+      "sha256": "aa2bad9bf262d422cde05ad6b9574216bab80d9a7790290c046a945eb8b676b5"
+    },
+    {
+      "path": "local/browser-functional.json",
+      "bytes": 2262,
+      "sha256": "7ad855d1ac429865c15335e663f1385adaa60e6b9f60508fa1caa03319ff83a8"
+    },
+    {
+      "path": "local/browser-performance.json",
+      "bytes": 2590,
+      "sha256": "2b94f99666af8a283de66fbe307a6781460fa0b8359ad44011553ac16458d652"
+    },
+    {
+      "path": "local/build.json",
+      "bytes": 2378,
+      "sha256": "a22de01b00439b63ec1ad701290a49d8ec999d30412e04284119cb11ad648a61"
+    },
+    {
+      "path": "local/build.log",
+      "bytes": 1110,
+      "sha256": "2d99cc8337f4f82f3c72274e5854b88aa367b3ca900c53286a17e71a1bd228e4"
+    },
+    {
+      "path": "local/calculation-interface.json",
+      "bytes": 2896,
+      "sha256": "574faa03e1fc2b3877358423870e1fe00a0a47d5108d951203d5fa642e423506"
+    },
+    {
+      "path": "local/calculation-parity.json",
+      "bytes": 35069,
+      "sha256": "aa1484504e7d6c826772641ec237718f1c0af34adb959cf670972a689092a42a"
+    },
+    {
+      "path": "local/clippy-native.log",
+      "bytes": 1056,
+      "sha256": "eebac0bf3985266acf21cf6b67bff7c074733da20e3844677cfcd187801a7de9"
+    },
+    {
+      "path": "local/clippy-packaging.log",
+      "bytes": 536,
+      "sha256": "1387ee4892884f7666762266910992e684aef9ed87d6b48f7846a6889b201797"
+    },
+    {
+      "path": "local/clippy-wasm.log",
+      "bytes": 151,
+      "sha256": "c1766e373561ca4dad12fa3bda2cef40bea3716c099c154853c5af4f5fc38cf0"
+    },
+    {
+      "path": "local/dependencies.log",
+      "bytes": 111809,
+      "sha256": "f8a239c1cce15a57509b6bf27afd06d52759c7dddda1099a5e547e6de65fea2f"
+    },
+    {
+      "path": "local/native.log",
+      "bytes": 21273,
+      "sha256": "60f7474d7978a02f47a1a0c513d6ee725f823d7290aec3ce6eae3b18e0a8b437"
+    },
+    {
+      "path": "local/performance-samples.json",
+      "bytes": 460397,
+      "sha256": "3063266ba35b22c3b0f5bbc494769bed18f6274aa3d195be556b5dc392b74960"
+    },
+    {
+      "path": "local/persistence.log",
+      "bytes": 2471,
+      "sha256": "e5dc9d9cf165cc43ab117d6ce9c22826b4ff3c6bd74fb3c8bb2af61f9e1832f4"
+    },
+    {
+      "path": "local/policy.log",
+      "bytes": 283,
+      "sha256": "6b3ad2535b049447b5e43f8ed3ffebebbace2edf5062de02ea74bbb208f61ad1"
+    },
+    {
+      "path": "local/source-correspondence.json",
+      "bytes": 19151,
+      "sha256": "05517bcc7417575a4b8c63ac3d39c1658ce114de3bd655f265d44318c2c946a3"
+    },
+    {
+      "path": "../ISSUE-006.md",
+      "bytes": 17775,
+      "sha256": "8af6fc8be7ab4a5a2b4d05d9ac4ba49dae117da0cb8e73b8fcc36f844f1830f1"
+    }
+  ]
+}

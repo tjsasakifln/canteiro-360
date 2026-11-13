@@ -1,0 +1,63 @@
+   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/tools/e2e)
+    Finished `test` profile [unoptimized] target(s) in 3.41s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_e2e-5d06a251213d6538)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/auth.rs (target/debug/deps/auth-78be6678d22f2339)
+
+running 1 test
+test account_access_recovers_without_losing_input_and_preserves_mfa ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.94s
+
+     Running tests/browser.rs (target/debug/deps/browser-1cd3b55b4a178708)
+
+running 2 tests
+Lab result: {"cache":"cold","clsP75":0.0,"controlledInteractionP75Ms":30.399999999906868,"hydrationP75Ms":1483.2000000001865,"lcpP75Ms":556.0,"n":20,"profile":"desktop"}
+test initial_route_performance_desktop_and_mobile has been running for over 60 seconds
+test rendered_page_hydrates_and_recovers_with_keyboard has been running for over 60 seconds
+Lab result: {"cache":"warm","clsP75":0.0,"controlledInteractionP75Ms":26.899999999906868,"hydrationP75Ms":1459.3999999999069,"lcpP75Ms":544.0,"n":20,"profile":"desktop"}
+Lab result: {"cache":"cold","clsP75":0.0,"controlledInteractionP75Ms":26.5,"hydrationP75Ms":1458.5,"lcpP75Ms":540.0,"n":20,"profile":"mobile"}
+Lab result: {"cache":"warm","clsP75":0.0,"controlledInteractionP75Ms":32.200000000186265,"hydrationP75Ms":1465.5,"lcpP75Ms":564.0,"n":20,"profile":"mobile"}
+Performance acceptance passed; evidence: /workspace/scratch/1a0d2c52492c/canteiro-360/target/evidence
+test initial_route_performance_desktop_and_mobile ... ok
+Functional browser acceptance passed; evidence: /workspace/scratch/1a0d2c52492c/canteiro-360/target/evidence
+test rendered_page_hydrates_and_recovers_with_keyboard ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 165.62s
+
+     Running tests/calculations.rs (target/debug/deps/calculations-30ceff15e00a2944)
+
+running 2 tests
+test independent_vectors_match_native_and_real_browser_wasm ... ok
+test previews_are_readable_keyboard_operable_and_preserve_invalid_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.77s
+
+     Running tests/forms.rs (target/debug/deps/forms-c55f37bce59815c6)
+
+running 3 tests
+test forms_local_selection_and_expansion_feedback ... ok
+Forms acceptance passed; evidence: /workspace/scratch/1a0d2c52492c/canteiro-360/target/evidence
+test forms_drafts_tables_and_context ... ok
+test forms_http_ssr_and_presentation ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 38.26s
+
+     Running tests/prototype.rs (target/debug/deps/prototype-5fd5b942953cdc36)
+
+running 1 test
+Prototype acceptance passed; evidence: /workspace/scratch/1a0d2c52492c/canteiro-360/target/evidence
+test prototype_accessibility_context_and_recovery ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 11.16s
+
+   Doc-tests canteiro_e2e
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

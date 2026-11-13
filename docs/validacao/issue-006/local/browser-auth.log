@@ -1,0 +1,29 @@
+   Compiling smallvec v1.16.5
+   Compiling futures-channel v0.3.34
+   Compiling icu_normalizer v2.4.0
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling idna_adapter v1.2.2
+   Compiling futures-intrusive v0.5.0
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling hyper v1.12.0
+   Compiling sqlx-core v0.9.0
+   Compiling tower v0.5.3
+   Compiling hyper-util v0.1.21
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.13.5
+   Compiling sqlx-postgres v0.9.0
+   Compiling canteiro-calculation-verification v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/tools/calculation-verification)
+   Compiling sqlx v0.9.0
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/persistence)
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/application)
+   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/tools/e2e)
+    Finished `test` profile [unoptimized] target(s) in 9.31s
+     Running tests/auth.rs (target/debug/deps/auth-78be6678d22f2339)
+
+running 1 test
+test account_access_recovers_without_losing_input_and_preserves_mfa ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.31s
+
