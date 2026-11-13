@@ -704,7 +704,11 @@ impl AuthService {
                 tx.pending_mfa(u.id, session.id, &cipher).await?;
                 setup = Some(data_encoding::BASE32_NOPAD.encode(&raw));
                 tx.audit(Some(u.id), "mfa_started").await?;
-                "Adicione esta chave ao autenticador e confirme um código. A chave de configuração vale por dez minutos."
+                if u.mfa_secret.is_some() {
+                    "Adicione a nova chave ao autenticador e confirme um código nesta sessão. A troca exige confirmação de acesso feita nos últimos cinco minutos."
+                } else {
+                    "Adicione esta chave ao autenticador e confirme um código. A chave de configuração vale por dez minutos."
+                }
             }
             AuthCommand::ConfirmMfa { code } => {
                 let u = Self::identified(&session, &user)?;

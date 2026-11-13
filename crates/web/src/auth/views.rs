@@ -38,7 +38,7 @@ fn Input(
             </div>
             <p id=help class="field-hint" hidden=hint.is_empty()>{hint}</p>
         </div>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -79,7 +79,7 @@ pub(super) fn AnonymousForms() -> impl IntoView {
             <Show when=move || access.mode.get() == Mode::Recovery><RecoveryForm/></Show>
             <Show when=move || access.mode.get() == Mode::Reset><ResetForm/></Show>
         </section>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -99,7 +99,7 @@ fn LoginForm() -> impl IntoView {
             <ModeButton id="auth-open-register" label="Criar conta" mode=Mode::Register/>
             <ModeButton id="auth-open-verification" label="Confirmar e-mail" mode=Mode::Verify/>
         </div>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -119,7 +119,7 @@ fn RegisterForm() -> impl IntoView {
             <Submit id="auth-register-submit" label="Criar conta e receber código"/>
         </form>
         <div class="access-links"><ModeButton id="auth-register-back" label="Já tenho uma conta" mode=Mode::Login/></div>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -147,7 +147,7 @@ fn VerifyForm() -> impl IntoView {
             </form>
         </details>
         <div class="access-links"><ModeButton id="auth-verify-back" label="Voltar para entrar" mode=Mode::Login/></div>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -164,7 +164,7 @@ fn RecoveryForm() -> impl IntoView {
             <ModeButton id="auth-open-reset" label="Já recebi meu código" mode=Mode::Reset/>
             <ModeButton id="auth-recovery-back" label="Voltar para entrar" mode=Mode::Login/>
         </div>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -188,7 +188,7 @@ fn ResetForm() -> impl IntoView {
             <ModeButton id="auth-reset-request" label="Pedir outro código" mode=Mode::Recovery/>
             <ModeButton id="auth-reset-back" label="Voltar para entrar" mode=Mode::Login/>
         </div>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -220,7 +220,7 @@ pub(super) fn MfaChallenge() -> impl IntoView {
             <button id="auth-mfa-cancel" type="button" class="access-text-button" disabled=move || access.blocked()
                 on:click=move |_| access.submit(AuthCommand::Logout)>"Cancelar acesso e voltar"</button>
         </section>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -247,7 +247,7 @@ fn MfaEnrollment() -> impl IntoView {
                 <Submit id="auth-confirm-mfa-submit" label=if access.context.get_untracked().mfa_enabled { "Confirmar novo autenticador" } else { "Ativar verificação em duas etapas" }/>
             </form>
         </Show>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -309,7 +309,7 @@ pub(super) fn Account() -> impl IntoView {
                     on:click=move |_| access.submit(AuthCommand::RevokeAll)>"Confirmar encerramento de todas"</button>
             </details>
         </section>
-    }
+    }.into_any()
 }
 
 fn display_instant(value: &str) -> String {

@@ -1,4 +1,6 @@
 //! Account access. Server responses determine every authenticated state.
+//! Component boundaries erase nested view types so SSR code generation remains
+//! bounded when account forms are composed with the application route tree.
 mod model;
 mod network;
 mod views;
@@ -70,7 +72,7 @@ pub fn AccessPage() -> impl IntoView {
                 </aside>
             </div>
         </section>
-    }
+    }.into_any()
 }
 
 fn focus(id: &str) {
