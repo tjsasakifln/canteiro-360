@@ -1,0 +1,11 @@
+    Checking canteiro-application v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/application)
+    Checking canteiro-web v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/web)
+    Checking canteiro-e2e v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/tools/e2e)
+    Checking canteiro-api v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/api)
+    Checking canteiro-jobs v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/jobs)
+    Checking canteiro-persistence v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/persistence)
+    Checking xtask v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/tools/xtask)
+    Checking canteiro-domain v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/domain)
+    Checking canteiro-calculation-verification v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/tools/calculation-verification)
+    Checking canteiro-contracts v0.1.0 (/workspace/scratch/1a0d2c52492c/canteiro-360/crates/contracts)
+    Finished `dev` profile [unoptimized] target(s) in 8.48s

@@ -35,7 +35,7 @@ console_error_panic_hook = { workspace = true, optional = true }
 wasm-bindgen-futures = { version = "=0.4.80", optional = true }
 js-sys = { version = "=0.3.107", optional = true }
 send_wrapper = { version = "=0.6.0", features = ["futures"], optional = true }
-web-sys = { version = "=0.3.107", optional = true, features = ["Window", "Document", "Element", "HtmlElement", "HtmlDialogElement", "HtmlSelectElement", "HtmlDetailsElement", "HtmlTextAreaElement", "BeforeUnloadEvent", "Response", "Request", "RequestInit", "Headers", "AbortController", "AbortSignal"] }
+web-sys = { version = "=0.3.107", optional = true, features = ["Window", "Document", "Element", "HtmlElement", "HtmlDialogElement", "HtmlSelectElement", "HtmlDetailsElement", "HtmlTextAreaElement", "BeforeUnloadEvent", "Response", "Request", "RequestInit", "Headers", "AbortController", "AbortSignal", "RequestCredentials", "HtmlInputElement"] }
 
 [lints]
 workspace = true

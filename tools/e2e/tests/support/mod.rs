@@ -32,6 +32,8 @@ pub struct Harness {
     browser_bin: PathBuf,
     pub http: Client,
     pub environment: Value,
+    #[allow(dead_code)] // Shared harness: only the authentication suite consumes its mail fixture.
+    pub auth: canteiro_application::auth::AuthService,
 }
 
 impl Harness {
@@ -68,10 +70,34 @@ impl Harness {
         let app_port = free_port()?;
         let driver_port = free_port()?;
         let mut api_command = Command::new(&api_bin);
+        let auth_key: [u8; 32] = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .decode(std::env::var("CANTEIRO_AUTH_KEY")?)?
+            .try_into()
+            .map_err(|_| "Inject a 32-byte ephemeral key for the fixture database")?;
+        let settings = canteiro_persistence::DatabaseSettings::from_external_url(&std::env::var(
+            "CANTEIRO_DATABASE_URL",
+        )?)?;
+        let database = canteiro_persistence::Database::connect(
+            &settings,
+            canteiro_persistence::DatabaseEnvironment::Development,
+            canteiro_persistence::TransactionLimits::default(),
+        )
+        .await?;
+        let auth = canteiro_application::auth::AuthService::new(database, auth_key).await?;
         api_command
             .current_dir(&root)
             .env("CANTEIRO_ENV", "development")
             .env("CANTEIRO_SITE_ROOT", &site)
+            .env(
+                "CANTEIRO_AUTH_KEY",
+                base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(auth_key),
+            )
+            .env(
+                "CANTEIRO_PUBLIC_ORIGIN",
+                format!("http://127.0.0.1:{app_port}"),
+            )
+            .env_remove("CANTEIRO_AUTH_MAIL_ENDPOINT")
+            .env_remove("CANTEIRO_AUTH_MAIL_CREDENTIAL")
             .env("CANTEIRO_BIND_ADDR", format!("127.0.0.1:{app_port}"));
         let api = ChildGuard::start(api_command, &evidence.join(format!("{name}-server.log")))?;
         let mut driver_command = Command::new(&driver_bin);
@@ -111,6 +137,7 @@ impl Harness {
             browser_bin,
             http,
             environment,
+            auth,
         })
     }
 }

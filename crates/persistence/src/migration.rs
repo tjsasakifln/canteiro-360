@@ -48,10 +48,15 @@ pub async fn migrate(
     );
     let grants = format!(
         "GRANT CONNECT ON DATABASE {database} TO {role}; \
-        GRANT USAGE ON SCHEMA canteiro, canteiro_meta TO {role}; \
+        GRANT USAGE ON SCHEMA canteiro, canteiro_meta, canteiro_auth TO {role}; \
         GRANT SELECT ON canteiro_meta.environment TO {role}; \
         GRANT SELECT (version, checksum, success) ON public._sqlx_migrations TO {role}; \
-        GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.organizations, canteiro.organization_units TO {role}"
+        GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.organizations, canteiro.organization_units TO {role}; \
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA canteiro_auth TO {role}; \
+        REVOKE UPDATE, DELETE ON canteiro_auth.audit FROM {role}; \
+        REVOKE INSERT, UPDATE ON canteiro_auth.users FROM {role}; \
+        GRANT INSERT (id, email, password_hash) ON canteiro_auth.users TO {role}; \
+        GRANT UPDATE (password_hash, password_version, verified, mfa_secret, mfa_pending, mfa_pending_until, mfa_pending_session, mfa_last_step) ON canteiro_auth.users TO {role}"
     );
     // Identificadores vêm da configuração administrativa e são sempre citados.
     sqlx::raw_sql(sqlx::AssertSqlSafe(grants))

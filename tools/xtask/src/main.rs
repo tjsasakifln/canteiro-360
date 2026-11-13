@@ -82,6 +82,36 @@ fn run() -> Result<()> {
                 &root,
                 "cargo",
                 &[
+                    "test",
+                    "--locked",
+                    "-p",
+                    "canteiro-application",
+                    "--",
+                    "--ignored",
+                    "--nocapture",
+                    "--test-threads=1",
+                ],
+            )?;
+            command(
+                &root,
+                "cargo",
+                &[
+                    "test",
+                    "--locked",
+                    "-p",
+                    "canteiro-api",
+                    "--test",
+                    "auth",
+                    "--",
+                    "--ignored",
+                    "--nocapture",
+                    "--test-threads=1",
+                ],
+            )?;
+            command(
+                &root,
+                "cargo",
+                &[
                     "clippy",
                     "--locked",
                     "-p",
@@ -282,6 +312,7 @@ fn build(root: &Path) -> Result<()> {
             "--target",
             "web",
             "--no-typescript",
+            "--remove-name-section",
             "--out-name",
             "canteiro-web",
             "--out-dir",

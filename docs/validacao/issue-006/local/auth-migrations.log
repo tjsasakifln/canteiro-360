@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.17s
+     Running `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.

@@ -8,6 +8,13 @@ license.workspace = true
 
 [dev-dependencies]
 canteiro-calculation-verification = { path = "../calculation-verification" }
+canteiro-application = { path = "../../crates/application" }
+canteiro-persistence = { path = "../../crates/persistence" }
+canteiro-contracts = { path = "../../crates/contracts" }
+getrandom = "=0.4.3"
+hmac = "=0.12.1"
+sha1 = "=0.10.7"
+data-encoding = "=2.9.0"
 base64.workspace = true
 tokio.workspace = true
 serde_json.workspace = true

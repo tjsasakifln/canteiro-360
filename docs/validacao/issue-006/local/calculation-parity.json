@@ -1,0 +1,1914 @@
+{
+  "console": [],
+  "count": 74,
+  "environment": {
+    "apiBinaryBytes": 49457160,
+    "architecture": "x86_64",
+    "availableParallelism": 9,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V74 80-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:       10206472 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794553384885,
+    "wasmBinaryBytes": 2185471
+  },
+  "note": "Golden expectations are external to the executed WASM; generated bridge transports JSON only.",
+  "policy": "C360-DECIMAL-1",
+  "reference": "docs/validacao/issue-005/reference-vectors.json",
+  "results": [
+    {
+      "expected": {
+        "value": "99999999999999.999999"
+      },
+      "id": "D001",
+      "native": {
+        "value": "99999999999999.999999"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "99999999999999.999999"
+      }
+    },
+    {
+      "expected": {
+        "error": "Overflow"
+      },
+      "id": "D002",
+      "native": {
+        "error": "Overflow"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Overflow"
+      }
+    },
+    {
+      "expected": {
+        "error": "Scale"
+      },
+      "id": "D003",
+      "native": {
+        "error": "Scale"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Scale"
+      }
+    },
+    {
+      "expected": {
+        "error": "Negative"
+      },
+      "id": "D004",
+      "native": {
+        "error": "Negative"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Negative"
+      }
+    },
+    {
+      "expected": {
+        "value": "999999999999999999.99"
+      },
+      "id": "D005",
+      "native": {
+        "value": "999999999999999999.99"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "999999999999999999.99"
+      }
+    },
+    {
+      "expected": {
+        "error": "Scale"
+      },
+      "id": "D006",
+      "native": {
+        "error": "Scale"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Scale"
+      }
+    },
+    {
+      "expected": {
+        "error": "Overflow"
+      },
+      "id": "D007",
+      "native": {
+        "error": "Overflow"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Overflow"
+      }
+    },
+    {
+      "expected": {
+        "error": "Range"
+      },
+      "id": "D008",
+      "native": {
+        "error": "Range"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Range"
+      }
+    },
+    {
+      "expected": {
+        "error": "Format"
+      },
+      "id": "D009",
+      "native": {
+        "error": "Format"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Format"
+      }
+    },
+    {
+      "expected": {
+        "error": "Format"
+      },
+      "id": "D010",
+      "native": {
+        "error": "Format"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Format"
+      }
+    },
+    {
+      "expected": {
+        "value": "9999999999999999999999999999"
+      },
+      "id": "D011",
+      "native": {
+        "value": "9999999999999999999999999999"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "9999999999999999999999999999"
+      }
+    },
+    {
+      "expected": {
+        "error": "Overflow"
+      },
+      "id": "D012",
+      "native": {
+        "error": "Overflow"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Overflow"
+      }
+    },
+    {
+      "expected": {
+        "error": "Precision"
+      },
+      "id": "D013",
+      "native": {
+        "error": "Precision"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Precision"
+      }
+    },
+    {
+      "expected": {
+        "error": "Precision"
+      },
+      "id": "D014",
+      "native": {
+        "error": "Precision"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Precision"
+      }
+    },
+    {
+      "expected": {
+        "error": "DivisionByZero"
+      },
+      "id": "D015",
+      "native": {
+        "error": "DivisionByZero"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "DivisionByZero"
+      }
+    },
+    {
+      "expected": {
+        "error": "Precision"
+      },
+      "id": "D016",
+      "native": {
+        "error": "Precision"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Precision"
+      }
+    },
+    {
+      "expected": {
+        "value": "-0.33"
+      },
+      "id": "D017",
+      "native": {
+        "value": "-0.33"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "-0.33"
+      }
+    },
+    {
+      "expected": {
+        "value": "-0.34"
+      },
+      "id": "D018",
+      "native": {
+        "value": "-0.34"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "-0.34"
+      }
+    },
+    {
+      "expected": {
+        "value": "108.000000"
+      },
+      "id": "D019",
+      "native": {
+        "value": "108.000000"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "108.000000"
+      }
+    },
+    {
+      "expected": {
+        "value": "0.000006"
+      },
+      "id": "D020",
+      "native": {
+        "value": "0.000006"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "0.000006"
+      }
+    },
+    {
+      "expected": {
+        "error": "Range"
+      },
+      "id": "D021",
+      "native": {
+        "error": "Range"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Range"
+      }
+    },
+    {
+      "expected": {
+        "error": "Range"
+      },
+      "id": "D022",
+      "native": {
+        "error": "Range"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Range"
+      }
+    },
+    {
+      "expected": {
+        "value": "0.3333333333"
+      },
+      "id": "D023",
+      "native": {
+        "value": "0.3333333333"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "0.3333333333"
+      }
+    },
+    {
+      "expected": {
+        "amount": "150.00",
+        "quantity": "15.000000"
+      },
+      "id": "D024",
+      "native": {
+        "amount": "150.00",
+        "quantity": "15.000000"
+      },
+      "passed": true,
+      "wasm": {
+        "amount": "150.00",
+        "quantity": "15.000000"
+      }
+    },
+    {
+      "expected": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33"
+        ],
+        "total": "1.00"
+      },
+      "id": "D025",
+      "native": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33"
+        ],
+        "total": "1.00"
+      },
+      "passed": true,
+      "wasm": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33"
+        ],
+        "total": "1.00"
+      }
+    },
+    {
+      "expected": {
+        "amount": "0.02",
+        "quantity": "0.000002"
+      },
+      "id": "D026",
+      "native": {
+        "amount": "0.02",
+        "quantity": "0.000002"
+      },
+      "passed": true,
+      "wasm": {
+        "amount": "0.02",
+        "quantity": "0.000002"
+      }
+    },
+    {
+      "expected": {
+        "error": "Decreasing"
+      },
+      "id": "D027",
+      "native": {
+        "error": "Decreasing"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "Decreasing"
+      }
+    },
+    {
+      "expected": {
+        "error": "InsufficientBalance"
+      },
+      "id": "D028",
+      "native": {
+        "error": "InsufficientBalance"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "InsufficientBalance"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      },
+      "id": "D029",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "16.67"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "50.00"
+          }
+        ],
+        "total": "100.00"
+      },
+      "id": "D030",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "16.67"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "50.00"
+          }
+        ],
+        "total": "100.00"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "16.67"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "50.00"
+          }
+        ],
+        "total": "100.00"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "D031",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "error": "ZeroWeight"
+      },
+      "id": "D032",
+      "native": {
+        "error": "ZeroWeight"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "ZeroWeight"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      },
+      "id": "D033",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      }
+    },
+    {
+      "expected": {
+        "compatible": [
+          true,
+          false,
+          false
+        ]
+      },
+      "id": "D034",
+      "native": {
+        "compatible": [
+          true,
+          false,
+          false
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "compatible": [
+          true,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-31"
+        ]
+      },
+      "id": "D035",
+      "native": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-31"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-31"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2028-02-29",
+          "2028-03-31"
+        ]
+      },
+      "id": "D036",
+      "native": {
+        "dates": [
+          "2028-02-29",
+          "2028-03-31"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2028-02-29",
+          "2028-03-31"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-30"
+        ]
+      },
+      "id": "D037",
+      "native": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-30"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-30"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2097-02-28",
+          "2100-02-28",
+          "2104-02-29"
+        ]
+      },
+      "id": "D038",
+      "native": {
+        "dates": [
+          "2097-02-28",
+          "2100-02-28",
+          "2104-02-29"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2097-02-28",
+          "2100-02-28",
+          "2104-02-29"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-03-02",
+          "2027-04-01"
+        ]
+      },
+      "id": "D039",
+      "native": {
+        "dates": [
+          "2027-03-02",
+          "2027-04-01"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-03-02",
+          "2027-04-01"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2029-01-30"
+        ]
+      },
+      "id": "D040",
+      "native": {
+        "dates": [
+          "2029-01-30"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2029-01-30"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "periods": [
+          {
+            "days": 28,
+            "end": "2027-02-28",
+            "residual": true,
+            "start": "2027-01-31"
+          }
+        ]
+      },
+      "id": "D041",
+      "native": {
+        "periods": [
+          {
+            "days": 28,
+            "end": "2027-02-28",
+            "residual": true,
+            "start": "2027-01-31"
+          }
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "periods": [
+          {
+            "days": 28,
+            "end": "2027-02-28",
+            "residual": true,
+            "start": "2027-01-31"
+          }
+        ]
+      }
+    },
+    {
+      "expected": {
+        "end": "2027-03-11",
+        "within_validity": true
+      },
+      "id": "D042",
+      "native": {
+        "end": "2027-03-11",
+        "within_validity": true
+      },
+      "passed": true,
+      "wasm": {
+        "end": "2027-03-11",
+        "within_validity": true
+      }
+    },
+    {
+      "expected": {
+        "end": "2027-06-09",
+        "within_validity": false
+      },
+      "id": "D043",
+      "native": {
+        "end": "2027-06-09",
+        "within_validity": false
+      },
+      "passed": true,
+      "wasm": {
+        "end": "2027-06-09",
+        "within_validity": false
+      }
+    },
+    {
+      "expected": {
+        "closed_days": 3,
+        "has_open_pause": false,
+        "open_days": 0,
+        "total_days": 3
+      },
+      "id": "D044",
+      "native": {
+        "closed_days": 3,
+        "has_open_pause": false,
+        "open_days": 0,
+        "total_days": 3
+      },
+      "passed": true,
+      "wasm": {
+        "closed_days": 3,
+        "has_open_pause": false,
+        "open_days": 0,
+        "total_days": 3
+      }
+    },
+    {
+      "expected": {
+        "error": "OverlappingPauses"
+      },
+      "id": "D045",
+      "native": {
+        "error": "OverlappingPauses"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "OverlappingPauses"
+      }
+    },
+    {
+      "expected": {
+        "closed_days": 5,
+        "has_open_pause": false,
+        "open_days": 0,
+        "total_days": 5
+      },
+      "id": "D046",
+      "native": {
+        "closed_days": 5,
+        "has_open_pause": false,
+        "open_days": 0,
+        "total_days": 5
+      },
+      "passed": true,
+      "wasm": {
+        "closed_days": 5,
+        "has_open_pause": false,
+        "open_days": 0,
+        "total_days": 5
+      }
+    },
+    {
+      "expected": {
+        "value": "2027-03-09T23:30:00.000000-03:00"
+      },
+      "id": "D047",
+      "native": {
+        "value": "2027-03-09T23:30:00.000000-03:00"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "2027-03-09T23:30:00.000000-03:00"
+      }
+    },
+    {
+      "expected": {
+        "error": "NonexistentLocalDateTime"
+      },
+      "id": "D048",
+      "native": {
+        "error": "NonexistentLocalDateTime"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "NonexistentLocalDateTime"
+      }
+    },
+    {
+      "expected": {
+        "error": "AmbiguousLocalDateTime"
+      },
+      "id": "D049",
+      "native": {
+        "error": "AmbiguousLocalDateTime"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "AmbiguousLocalDateTime"
+      }
+    },
+    {
+      "expected": {
+        "error": "CivilDate"
+      },
+      "id": "D050",
+      "native": {
+        "error": "CivilDate"
+      },
+      "passed": true,
+      "wasm": {
+        "error": "CivilDate"
+      }
+    },
+    {
+      "expected": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34"
+        ],
+        "total": "4.02"
+      },
+      "id": "P-TEL-1",
+      "native": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34"
+        ],
+        "total": "4.02"
+      },
+      "passed": true,
+      "wasm": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34",
+          "0.33",
+          "0.34"
+        ],
+        "total": "4.02"
+      }
+    },
+    {
+      "expected": {
+        "periods": [
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11"
+        ],
+        "total": "1.26"
+      },
+      "id": "P-TEL-2",
+      "native": {
+        "periods": [
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11"
+        ],
+        "total": "1.26"
+      },
+      "passed": true,
+      "wasm": {
+        "periods": [
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11",
+          "0.10",
+          "0.11"
+        ],
+        "total": "1.26"
+      }
+    },
+    {
+      "expected": {
+        "periods": [
+          "17.99",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00"
+        ],
+        "total": "215.99"
+      },
+      "id": "P-TEL-3",
+      "native": {
+        "periods": [
+          "17.99",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00"
+        ],
+        "total": "215.99"
+      },
+      "passed": true,
+      "wasm": {
+        "periods": [
+          "17.99",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00",
+          "18.00"
+        ],
+        "total": "215.99"
+      }
+    },
+    {
+      "expected": {
+        "periods": [
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00"
+        ],
+        "total": "0.00"
+      },
+      "id": "P-TEL-4",
+      "native": {
+        "periods": [
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00"
+        ],
+        "total": "0.00"
+      },
+      "passed": true,
+      "wasm": {
+        "periods": [
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00",
+          "0.00"
+        ],
+        "total": "0.00"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "P-ALLOC-1",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "P-ALLOC-2",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "P-ALLOC-3",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "P-ALLOC-4",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "P-ALLOC-5",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "id": "P-ALLOC-6",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.00"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "c",
+            "value": "0.00"
+          }
+        ],
+        "total": "0.00"
+      },
+      "id": "P-ALLOC-7",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.00"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "c",
+            "value": "0.00"
+          }
+        ],
+        "total": "0.00"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.00"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "c",
+            "value": "0.00"
+          }
+        ],
+        "total": "0.00"
+      }
+    },
+    {
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.00"
+          },
+          {
+            "id": "b",
+            "value": "0.01"
+          },
+          {
+            "id": "c",
+            "value": "0.00"
+          }
+        ],
+        "total": "0.01"
+      },
+      "id": "P-ALLOC-8",
+      "native": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.00"
+          },
+          {
+            "id": "b",
+            "value": "0.01"
+          },
+          {
+            "id": "c",
+            "value": "0.00"
+          }
+        ],
+        "total": "0.01"
+      },
+      "passed": true,
+      "wasm": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.00"
+          },
+          {
+            "id": "b",
+            "value": "0.01"
+          },
+          {
+            "id": "c",
+            "value": "0.00"
+          }
+        ],
+        "total": "0.01"
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-01-28",
+          "2027-02-28",
+          "2027-03-28",
+          "2028-01-28"
+        ]
+      },
+      "id": "P-CAL-2027-28",
+      "native": {
+        "dates": [
+          "2027-01-28",
+          "2027-02-28",
+          "2027-03-28",
+          "2028-01-28"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-01-28",
+          "2027-02-28",
+          "2027-03-28",
+          "2028-01-28"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-01-29",
+          "2027-02-28",
+          "2027-03-29",
+          "2028-01-29"
+        ]
+      },
+      "id": "P-CAL-2027-29",
+      "native": {
+        "dates": [
+          "2027-01-29",
+          "2027-02-28",
+          "2027-03-29",
+          "2028-01-29"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-01-29",
+          "2027-02-28",
+          "2027-03-29",
+          "2028-01-29"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-01-30",
+          "2027-02-28",
+          "2027-03-30",
+          "2028-01-30"
+        ]
+      },
+      "id": "P-CAL-2027-30",
+      "native": {
+        "dates": [
+          "2027-01-30",
+          "2027-02-28",
+          "2027-03-30",
+          "2028-01-30"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-01-30",
+          "2027-02-28",
+          "2027-03-30",
+          "2028-01-30"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2027-01-31",
+          "2027-02-28",
+          "2027-03-31",
+          "2028-01-31"
+        ]
+      },
+      "id": "P-CAL-2027-31",
+      "native": {
+        "dates": [
+          "2027-01-31",
+          "2027-02-28",
+          "2027-03-31",
+          "2028-01-31"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2027-01-31",
+          "2027-02-28",
+          "2027-03-31",
+          "2028-01-31"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2028-01-28",
+          "2028-02-28",
+          "2028-03-28",
+          "2029-01-28"
+        ]
+      },
+      "id": "P-CAL-2028-28",
+      "native": {
+        "dates": [
+          "2028-01-28",
+          "2028-02-28",
+          "2028-03-28",
+          "2029-01-28"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2028-01-28",
+          "2028-02-28",
+          "2028-03-28",
+          "2029-01-28"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2028-01-29",
+          "2028-02-29",
+          "2028-03-29",
+          "2029-01-29"
+        ]
+      },
+      "id": "P-CAL-2028-29",
+      "native": {
+        "dates": [
+          "2028-01-29",
+          "2028-02-29",
+          "2028-03-29",
+          "2029-01-29"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2028-01-29",
+          "2028-02-29",
+          "2028-03-29",
+          "2029-01-29"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2028-01-30",
+          "2028-02-29",
+          "2028-03-30",
+          "2029-01-30"
+        ]
+      },
+      "id": "P-CAL-2028-30",
+      "native": {
+        "dates": [
+          "2028-01-30",
+          "2028-02-29",
+          "2028-03-30",
+          "2029-01-30"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2028-01-30",
+          "2028-02-29",
+          "2028-03-30",
+          "2029-01-30"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "dates": [
+          "2028-01-31",
+          "2028-02-29",
+          "2028-03-31",
+          "2029-01-31"
+        ]
+      },
+      "id": "P-CAL-2028-31",
+      "native": {
+        "dates": [
+          "2028-01-31",
+          "2028-02-29",
+          "2028-03-31",
+          "2029-01-31"
+        ]
+      },
+      "passed": true,
+      "wasm": {
+        "dates": [
+          "2028-01-31",
+          "2028-02-29",
+          "2028-03-31",
+          "2029-01-31"
+        ]
+      }
+    },
+    {
+      "expected": {
+        "value": "2018-11-03T23:59:00.000000-03:00"
+      },
+      "id": "P-TZ-1",
+      "native": {
+        "value": "2018-11-03T23:59:00.000000-03:00"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "2018-11-03T23:59:00.000000-03:00"
+      }
+    },
+    {
+      "expected": {
+        "value": "2018-11-04T01:00:00.000000-02:00"
+      },
+      "id": "P-TZ-2",
+      "native": {
+        "value": "2018-11-04T01:00:00.000000-02:00"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "2018-11-04T01:00:00.000000-02:00"
+      }
+    },
+    {
+      "expected": {
+        "value": "2027-11-07T01:30:00.000000-04:00"
+      },
+      "id": "P-TZ-3",
+      "native": {
+        "value": "2027-11-07T01:30:00.000000-04:00"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "2027-11-07T01:30:00.000000-04:00"
+      }
+    },
+    {
+      "expected": {
+        "value": "2027-11-07T01:30:00.000000-05:00"
+      },
+      "id": "P-TZ-4",
+      "native": {
+        "value": "2027-11-07T01:30:00.000000-05:00"
+      },
+      "passed": true,
+      "wasm": {
+        "value": "2027-11-07T01:30:00.000000-05:00"
+      }
+    }
+  ],
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}

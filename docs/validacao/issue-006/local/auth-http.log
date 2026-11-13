@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized] target(s) in 0.14s
+     Running tests/auth.rs (target/debug/deps/auth-84d3d073023eb670)
+
+running 3 tests
+test csrf_origin_cookie_rotation_and_revocation_are_enforced_over_http ... ok
+test public_account_responses_and_recovery_timing_do_not_disclose_existence ... ok
+test reset_is_atomic_private_and_never_logs_in_over_http ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 36.58s
+

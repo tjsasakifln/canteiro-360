@@ -1,0 +1,109 @@
+{
+  "checks": [
+    "SSR without credentials",
+    "mobile and desktop layout",
+    "keyboard submission",
+    "password-manager autocomplete metadata",
+    "native clipboard paste of long codes",
+    "email confirmation with owner-selected password",
+    "expired session preserves fields",
+    "reconnect does not replay login",
+    "session list and remote revocation",
+    "authenticator enrollment",
+    "backup-code access",
+    "authenticator replacement keeps protection",
+    "old backup codes rejected after replacement",
+    "password reset revokes original session",
+    "reset preserves MFA",
+    "revoke all sessions",
+    "no credentials in HTML/browser logs/localStorage/sessionStorage"
+  ],
+  "console": [
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:43225/api/auth/command - Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "source": "network",
+      "timestamp": 1794553212973
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:43225/api/auth/command - Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "source": "network",
+      "timestamp": 1794553216612
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:43225/api/auth/command - Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "source": "network",
+      "timestamp": 1794553218417
+    }
+  ],
+  "environment": {
+    "apiBinaryBytes": 49457160,
+    "architecture": "x86_64",
+    "availableParallelism": 9,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V74 80-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:       10206472 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794553209312,
+    "wasmBinaryBytes": 2185471
+  },
+  "layouts": [
+    {
+      "fields": [
+        {
+          "autocomplete": "username",
+          "height": 44.390625,
+          "id": "auth-login-email",
+          "label": true
+        },
+        {
+          "autocomplete": "current-password",
+          "height": 44.390625,
+          "id": "auth-login-password",
+          "label": true
+        }
+      ],
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "fields": [
+        {
+          "autocomplete": "username",
+          "height": 44.390625,
+          "id": "auth-login-email",
+          "label": true
+        },
+        {
+          "autocomplete": "current-password",
+          "height": 44.390625,
+          "id": "auth-login-password",
+          "label": true
+        }
+      ],
+      "scroll": 1280,
+      "width": 1280
+    },
+    {
+      "hasSecrets": false,
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "hasSecrets": false,
+      "scroll": 1265,
+      "width": 1280
+    }
+  ],
+  "note": "Negative HTTP responses are expected in the deliberately invalid credential, revoked session and obsolete recovery-code scenarios. Test credentials and codes are omitted from reports and screenshots.",
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}

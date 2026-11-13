@@ -1,6 +1,6 @@
 # Desenvolvimento em Rust e PostgreSQL
 
-Este procedimento cobre a fundação da issue 1 e a persistência da issue 2. A página inicial, o servidor, a ferramenta de migração e o executável reservado ao processamento compilam; o aplicativo permanece em desenvolvimento. A base transacional não oferece, por si, cadastro, autenticação, fila ou operações de obras. Essas capacidades pertencem às próximas issues.
+Este procedimento cobre a fundação, a persistência PostgreSQL e a sequência de interface, cálculos e autenticação até a issue 6. O aplicativo permanece em desenvolvimento. Cadastro verificado, sessões, recuperação, segundo fator e fila de e-mail de acesso estão descritos no [guia de segurança e acesso](seguranca-acesso.md). Operações comerciais de obras e a fila geral de processamento acompanham as etapas seguintes.
 
 ## 1. Requisitos
 
@@ -24,13 +24,14 @@ cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 cargo test --locked -p canteiro-persistence -- --ignored --nocapture
+cargo test --locked -p canteiro-application -- --ignored --nocapture --test-threads=1
 cargo deny --locked check
 cargo xtask build
 cargo clippy --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown -- -D warnings
 cargo xtask budget
 ```
 
-O comando de testes da persistência exige `CANTEIRO_TEST_DATABASE_URL` previamente injetada e acesso administrativo a uma instância descartável, exclusivamente de teste. Ele cria bases e identidades próprias. A ausência dessa configuração produz falha, sem substituir o PostgreSQL por simulação. A compilação e os testes unitários não exigem banco; a aprovação da issue 2 exige os cenários de integração executados explicitamente.
+Os testes ignorados de persistência e aplicação exigem `CANTEIRO_TEST_DATABASE_URL` previamente injetada e acesso administrativo a uma instância descartável, exclusivamente de teste. Eles criam bases e identidades próprias. A ausência dessa configuração produz falha, sem substituir o PostgreSQL por simulação. A compilação e os testes unitários não exigem banco; os cenários de integração precisam ser executados explicitamente. Depois de provisionar a base de desenvolvimento e injetar uma única `CANTEIRO_AUTH_KEY` temporária para essa base, executar também `cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1` e a suíte de navegador. A chave da fixture não deve mudar entre execuções que conservam a mesma base.
 
 `setup` instala `wasm-bindgen-cli 0.2.130` e `cargo-deny 0.20.2`. O comando conserva uma instalação existente somente se a versão coincidir. A versão do gerador de interoperabilidade também precisa coincidir com `wasm-bindgen` no lock.
 
@@ -50,6 +51,8 @@ Os arquivos distribuíveis são `target/release/canteiro-api`, `target/release/c
 ## 3. Executar localmente
 
 Provisione o banco e as identidades separadas conforme o [guia de persistência](persistencia.md). Injete `CANTEIRO_ENV`, `CANTEIRO_MIGRATION_DATABASE_URL` e `CANTEIRO_DATABASE_URL` no processo administrativo. As duas conexões precisam apontar ao mesmo banco e a usuários diferentes.
+
+Para iniciar a API, injete também `CANTEIRO_AUTH_KEY` e configure `CANTEIRO_PUBLIC_ORIGIN`. O envio usa `CANTEIRO_AUTH_MAIL_CREDENTIAL` e `CANTEIRO_AUTH_MAIL_FROM` com remetente verificado na Resend. Homologação exige HTTPS e transporte configurado; os detalhes estão no [guia de acesso](seguranca-acesso.md#8-configuração-por-ambiente). O modo `--render-shell` não recebe nem requer esses segredos.
 
 ```sh
 target/release/canteiro-db migrate
