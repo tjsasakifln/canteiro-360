@@ -15,6 +15,7 @@ use leptos_router::{
 mod auth;
 mod calculations;
 pub mod form_components;
+mod organizations;
 mod prototype;
 pub use prototype::is_supported_prototype_route;
 
@@ -59,13 +60,14 @@ pub fn App() -> impl IntoView {
                         <span class="brand-symbol" aria-hidden="true">"C"</span>
                         <span>"Canteiro "<strong>"360"</strong></span>
                     </a>
-                    <nav class="site-account-nav" aria-label="Conta"><a class="account-link" href="/acesso">"Entrar"</a><span class="environment-label">"Em desenvolvimento"</span></nav>
+                    <nav class="site-account-nav" aria-label="Conta"><a class="account-link" href="/organizacoes">"Empresas"</a><a class="account-link" href="/acesso">"Entrar"</a><span class="environment-label">"Em desenvolvimento"</span></nav>
                 </div>
             </header>
             <main id="conteudo" class="page-width main-content" tabindex="-1">
                 <Routes fallback=NotFoundPage>
                     <Route path=path!("/") view=HomePage/>
                     <Route path=path!("/acesso") view=auth::AccessPage/>
+                    <Route path=path!("/organizacoes") view=organizations::OrganizationsPage/>
                     <Route path=path!("/conferencia") view=calculations::CalculationPage/>
                     // Resolve the page on the server before emitting its HTML.
                     // OutOfOrder streaming places suspended rows in an inert
@@ -111,7 +113,7 @@ fn HomePage() -> impl IntoView {
             </div>
             <p class="stage-description">
                 "Os exemplos de painel, orçamento, medição, aprovação e documentos já podem ser "
-                "experimentados. O acesso à conta está disponível para testes; obras reais e registros financeiros ainda estão em preparação."
+                "experimentados. A conta e a gestão de empresas estão disponíveis para testes; obras reais e registros financeiros ainda estão em preparação."
             </p>
 
             <div class="scope-note">
@@ -169,7 +171,7 @@ fn HomePage() -> impl IntoView {
         <section class="next-stage" aria-labelledby="next-title">
             <h2 id="next-title">"Próximas etapas do produto"</h2>
             <p>
-                "Organizações, controle de acesso e os módulos de gestão serão entregues "
+                "Permissões por obra e os módulos de gestão serão entregues "
                 "em etapas, com conferência das regras antes da liberação."
             </p>
         </section>

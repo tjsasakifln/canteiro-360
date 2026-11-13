@@ -1,4 +1,7 @@
 //! Exercita a fronteira HTTP real com PostgreSQL, cookies e origens distintas.
+#[path = "auth/organizations.rs"]
+mod organizations;
+
 use axum::{
     Extension, Router,
     body::{Body, to_bytes},

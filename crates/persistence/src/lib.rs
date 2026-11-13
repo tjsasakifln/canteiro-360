@@ -3,6 +3,7 @@
 pub mod auth;
 mod error;
 mod migration;
+pub mod organizations;
 mod pool;
 mod settings;
 mod unit_of_work;

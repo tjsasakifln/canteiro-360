@@ -55,7 +55,7 @@ pub struct StoredMail {
     pub expires_at: DateTime<Utc>,
 }
 pub struct AuthTransaction {
-    tx: Transaction<'static, Postgres>,
+    pub(crate) tx: Transaction<'static, Postgres>,
 }
 
 impl AuthStore {
@@ -122,14 +122,16 @@ impl AuthTransaction {
             .await?)
     }
     pub async fn user(&mut self, id: Uuid) -> Result<Option<StoredUser>, AuthStoreError> {
-        Ok(sqlx::query_as("SELECT id,email,password_hash,password_version,verified,privileged,mfa_secret,mfa_pending,mfa_pending_until,mfa_pending_session,mfa_last_step FROM canteiro_auth.users WHERE id=$1 FOR UPDATE")
+        // Credenciais são serializadas, mas a identidade nunca muda. O bloqueio
+        // permite KEY SHARE das FKs de membros sem criar ciclo entre duas pessoas.
+        Ok(sqlx::query_as("SELECT id,email,password_hash,password_version,verified,privileged,mfa_secret,mfa_pending,mfa_pending_until,mfa_pending_session,mfa_last_step FROM canteiro_auth.users WHERE id=$1 FOR NO KEY UPDATE")
             .bind(id).fetch_optional(&mut *self.tx).await?)
     }
     pub async fn user_by_email(
         &mut self,
         email: &str,
     ) -> Result<Option<StoredUser>, AuthStoreError> {
-        Ok(sqlx::query_as("SELECT id,email,password_hash,password_version,verified,privileged,mfa_secret,mfa_pending,mfa_pending_until,mfa_pending_session,mfa_last_step FROM canteiro_auth.users WHERE email=$1 FOR UPDATE")
+        Ok(sqlx::query_as("SELECT id,email,password_hash,password_version,verified,privileged,mfa_secret,mfa_pending,mfa_pending_until,mfa_pending_session,mfa_last_step FROM canteiro_auth.users WHERE email=$1 FOR NO KEY UPDATE")
             .bind(email).fetch_optional(&mut *self.tx).await?)
     }
     pub async fn insert_user(
