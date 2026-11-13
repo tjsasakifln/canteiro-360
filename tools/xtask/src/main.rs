@@ -312,6 +312,7 @@ fn build(root: &Path) -> Result<()> {
             "--target",
             "web",
             "--no-typescript",
+            "--remove-name-section",
             "--out-name",
             "canteiro-web",
             "--out-dir",
