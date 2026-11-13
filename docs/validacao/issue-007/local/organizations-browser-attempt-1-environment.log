@@ -1,0 +1,39 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.37s
+     Running `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.
+   Compiling smallvec v1.16.5
+   Compiling futures-channel v0.3.34
+   Compiling icu_normalizer v2.4.0
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling futures-intrusive v0.5.0
+   Compiling url v2.5.8
+   Compiling hyper v1.12.0
+   Compiling sqlx-core v0.9.0
+   Compiling tower v0.5.3
+   Compiling hyper-util v0.1.21
+   Compiling sqlx-postgres v0.9.0
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.13.5
+   Compiling canteiro-calculation-verification v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/tools/calculation-verification)
+   Compiling sqlx v0.9.0
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/persistence)
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/application)
+   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/tools/e2e)
+    Finished `test` profile [unoptimized] target(s) in 14.55s
+     Running tests/organizations.rs (target/debug/deps/organizations-95af4bd87f8e25a0)
+
+running 1 test
+test organization_membership_context_and_invitations_work_through_the_browser ... Error: "WebDriver 500 Internal Server Error: {\"error\":\"session not created\",\"message\":\"session not created: Chrome instance exited. Examine ChromeDriver verbose log to determine the cause.\",\"stacktrace\":\"#0 0x5630e92750aa <unknown>\\n#1 0x5630e8ba8875 <unknown>\\n#2 0x5630e8bd8e86 <unknown>\\n#3 0x5630e8bd6d44 <unknown>\\n#4 0x5630e8c16f51 <unknown>\\n#5 0x5630e8c169fc <unknown>\\n#6 0x5630e8be1a07 <unknown>\\n#7 0x5630e8be0d1e <unknown>\\n#8 0x5630e8be17f1 <unknown>\\n#9 0x5630e9237c5c <unknown>\\n#10 0x5630e9236475 <unknown>\\n#11 0x5630e92217f8 <unknown>\\n#12 0x5630e92370ca <unknown>\\n#13 0x5630e920a3f9 <unknown>\\n#14 0x5630e925f848 <unknown>\\n#15 0x5630e925f9e5 <unknown>\\n#16 0x5630e9273a43 <unknown>\\n#17 0x7ff0a64748bb <unknown>\\n\"}"
+FAILED
+
+failures:
+
+failures:
+    organization_membership_context_and_invitations_work_through_the_browser
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.50s
+
+error: test failed, to rerun pass `-p canteiro-e2e --test organizations`

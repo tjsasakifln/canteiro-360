@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "route": "/",
+  "scope": "todos os arquivos servidos em target/site e scripts/estilos inline da rota; soma conservadora",
+  "compression": "arquivos .br conferidos byte a byte; inline contabilizado sem compressão; HTML reference usa Brotli quality=11 lgwin=22 e não representa medida de rede",
+  "assets": [
+    {
+      "path": "pkg/canteiro-web.css",
+      "kind": "css",
+      "raw_bytes": 6309,
+      "brotli_bytes": 1578,
+      "budget_bytes": 1578
+    },
+    {
+      "path": "pkg/canteiro-web.js",
+      "kind": "javascript",
+      "raw_bytes": 57770,
+      "brotli_bytes": 8049,
+      "budget_bytes": 8049
+    },
+    {
+      "path": "pkg/canteiro-web_bg.wasm",
+      "kind": "wasm",
+      "raw_bytes": 3712331,
+      "brotli_bytes": 664955,
+      "budget_bytes": 664955
+    },
+    {
+      "path": "pkg/organizations.css",
+      "kind": "css",
+      "raw_bytes": 5253,
+      "brotli_bytes": 1145,
+      "budget_bytes": 1145
+    },
+    {
+      "path": "pkg/prototype.css",
+      "kind": "css",
+      "raw_bytes": 41303,
+      "brotli_bytes": 6266,
+      "budget_bytes": 6266
+    },
+    {
+      "path": "HTML:inline-script-0",
+      "kind": "javascript",
+      "raw_bytes": 552,
+      "brotli_bytes": null,
+      "budget_bytes": 552
+    },
+    {
+      "path": "HTML:inline-script-1",
+      "kind": "javascript",
+      "raw_bytes": 94,
+      "brotli_bytes": null,
+      "budget_bytes": 94
+    },
+    {
+      "path": "HTML:inline-script-2",
+      "kind": "javascript",
+      "raw_bytes": 23,
+      "brotli_bytes": null,
+      "budget_bytes": 23
+    }
+  ],
+  "totals": {
+    "wasm_brotli_bytes": 664955,
+    "javascript_brotli_bytes": 8049,
+    "css_brotli_bytes": 8989,
+    "other_brotli_bytes": 0,
+    "inline_javascript_raw_bytes": 669,
+    "inline_css_raw_bytes": 0
+  },
+  "wasm_limit_bytes": 1048576,
+  "javascript_limit_bytes": 81920,
+  "css_limit_bytes": 61440,
+  "javascript_budget_bytes": 8718,
+  "css_budget_bytes": 8989,
+  "html_raw_bytes": 5191,
+  "html_reference_brotli_bytes": 1878
+}

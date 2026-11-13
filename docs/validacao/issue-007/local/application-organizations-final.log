@@ -1,0 +1,17 @@
+    Blocking waiting for file lock on build directory
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/application)
+    Finished `test` profile [unoptimized] target(s) in 53.24s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_application-dfe921d7b9c4bb70)
+
+running 8 tests
+test auth::organizations::tests::access_requests_need_decision_and_rotation_invalidates_shared_code ... ok
+test auth::organizations::tests::concurrent_invitation_acceptance_has_one_effect_and_revoke_is_serialized ... ok
+test auth::organizations::tests::invitations_bind_identity_expiry_revocation_purpose_and_single_use ... ok
+test auth::organizations::tests::last_administrator_survives_concurrent_removal_and_old_versions ... ok
+test auth::organizations::tests::membership_expiry_session_revocation_and_administrator_mfa_are_rechecked ... ok
+test auth::organizations::tests::organization_creation_mfa_single_connection_and_clear_selection ... ok
+test auth::organizations::tests::organizations_ids_search_export_and_private_members_never_cross ... ok
+test auth::organizations::tests::stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothing ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 31.40s
+
