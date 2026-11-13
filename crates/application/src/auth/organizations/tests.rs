@@ -423,6 +423,17 @@ async fn invitations_bind_identity_expiry_revocation_purpose_and_single_use() {
         "invitation_invalid",
     );
     error(
+        f.execute(
+            &x,
+            OrganizationCommand::AcceptInvitation {
+                token: token.clone(),
+            },
+        )
+        .await,
+        "invitation_invalid",
+    );
+    assert!(f.context(&x).await.state.organizations.is_empty());
+    error(
         f.execute(&m, OrganizationCommand::AcceptInvitation { token: access })
             .await,
         "invitation_invalid",
