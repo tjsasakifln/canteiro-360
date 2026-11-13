@@ -1,0 +1,53 @@
+{
+  "sourceSha256": "8406e0d30a933d4e1e4b0b1c5e6bb6d469ffa2cb48fc3e050243e7c73c6611ba",
+  "variants": {
+    "baseline": {
+      "panics": 50,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "phases": [
+        "--- query page2 ---",
+        "--- navigate document ---",
+        "--- navigate history ---",
+        "--- navigate home ---",
+        "--- done ---"
+      ]
+    },
+    "owned": {
+      "panics": 25,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "phases": [
+        "--- query page2 ---",
+        "--- navigate document ---",
+        "--- navigate history ---",
+        "--- navigate home ---",
+        "--- done ---"
+      ]
+    },
+    "idempotent": {
+      "panics": 0,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "phases": [
+        "--- query page2 ---",
+        "--- navigate document ---",
+        "--- navigate history ---",
+        "--- navigate home ---",
+        "--- done ---"
+      ]
+    },
+    "combined": {
+      "panics": 0,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "phases": [
+        "--- query page2 ---",
+        "--- navigate document ---",
+        "--- navigate history ---",
+        "--- navigate home ---",
+        "--- done ---"
+      ]
+    }
+  }
+}

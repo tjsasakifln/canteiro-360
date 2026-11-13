@@ -1,5 +1,6 @@
 //! Contratos públicos. Nunca incluir credenciais nem entidades internas.
 mod error;
+pub mod forms;
 
 pub use error::{ErrorCode, ErrorField, PublicError, WriteOutcome};
 

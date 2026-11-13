@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "application_source_commit": "5588b0c695c13259e6e19b0a5a1256e39112a6c8",
+  "application_source_tree": "ccdc477a623394a0af87450cc64a406f3f7821d1",
+  "probe_source_sha256": "8406e0d30a933d4e1e4b0b1c5e6bb6d469ffa2cb48fc3e050243e7c73c6611ba",
+  "scope": "Reprodução nativa reduzida de efeitos reativos aninhados com Resource; sustenta a hipótese causal usada na correção. Não identifica diretamente qual bool produziu o panic na CI nem executa o DOM do navegador.",
+  "evaluation": "Contagem dos panics registrados nos efeitos/tarefas e das limpezas, com sua ordem por etapa; não utiliza exit code como critério de aprovação.",
+  "variants": {
+    "baseline": {
+      "panics": 50,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "panics_by_phase": {
+        "--- navigate document ---": 25,
+        "--- navigate home ---": 25
+      }
+    },
+    "owned": {
+      "panics": 25,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "panics_by_phase": {
+        "--- navigate home ---": 25
+      }
+    },
+    "idempotent": {
+      "panics": 0,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "panics_by_phase": {}
+    },
+    "combined": {
+      "panics": 0,
+      "worksheetCleanups": 2,
+      "shellCleanups": 1,
+      "panics_by_phase": {}
+    }
+  },
+  "limitations": [
+    "O processo assíncrono pode continuar após um panic de tarefa; saída zero não comprova ausência de panic.",
+    "As 25 linhas e o percurso sintético não reproduzem a quantidade de três panics nem toda a interface da CI.",
+    "A CI de navegador da fonte publicada é o critério decisivo para histórico, preservação do rascunho, contexto e foco."
+  ]
+}

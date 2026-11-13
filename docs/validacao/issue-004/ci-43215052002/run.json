@@ -1,0 +1,80 @@
+{
+  "run_id": 43215052002,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43215052002",
+  "source_commit": "8ff3034252cfef06268576ad273be28422c0130f",
+  "source_tree": "1f22073b21f0dd90c5f17dff63210e9268b11e39",
+  "checkout_commit": "2b81444c6dbd1183140c23c2415762fa806f1cf0",
+  "checkout_tree": "1f22073b21f0dd90c5f17dff63210e9268b11e39",
+  "base_commit": "2013cef3c5097c087c9e4a116c125d2dfb248596",
+  "checkout_parents": [
+    "2013cef3c5097c087c9e4a116c125d2dfb248596",
+    "8ff3034252cfef06268576ad273be28422c0130f"
+  ],
+  "tree_verification": "Árvore e pais do merge conferidos via GitHub /git/commits. O log do job confirma git log -1 --format=%H com o checkout 2b81444c6dbd1183140c23c2415762fa806f1cf0.",
+  "job_id": 131172197268,
+  "artifact_id": 13944064545,
+  "artifact_sha256": "f9d853bd3cdc232465f0ed0b169a78e4ed388990609c8245df85386e635b0ff9",
+  "conclusion": "failure",
+  "native_passed": 60,
+  "basic_command_ignored": 21,
+  "postgresql_passed": 15,
+  "foundation_browser_passed": 2,
+  "foundation_performance_navigations": 80,
+  "forms_browser_passed": 2,
+  "forms_browser_failed": 1,
+  "forms_groups": {
+    "forms_http_ssr_and_presentation": "passed",
+    "forms_local_selection_and_expansion_feedback": "passed",
+    "forms_drafts_tables_and_context": "failed"
+  },
+  "forms_local_response_observations": 80,
+  "forms_local_response_violations": 0,
+  "forms_pointer_preparation": "passed; the original element click then opened the editor",
+  "forms_initial_geometry": "passed in 360 and 1280 CSS px; row identity and edit contained horizontally without horizontal scrolling; selection/edit targets at least 44 CSS px",
+  "forms_late_keyboard_regression_executed": false,
+  "prototype_browser_executed": true,
+  "prototype_browser_passed": 1,
+  "cargo_no_fail_fast": true,
+  "failure": {
+    "test_location": "tools/e2e/tests/forms.rs:566:5",
+    "expected_unit_price_text": "1.234,56",
+    "actual_unit_price_text": "101.234,56",
+    "actual_current_text": "3535",
+    "focus": {
+      "id": "form-notes",
+      "tag": "TEXTAREA"
+    },
+    "note": "A jornada chegou ao editor e falhou ao conferir o texto preenchido. O helper Browser::fill e o uso de clear sem evento input estão sob investigação; esta evidência não estabelece aprovação da edição nem causa definitiva."
+  },
+  "later_functional_scenarios": "Não concluídos: correção de campos, respostas atrasadas, falhas de rede, troca de contexto e regressão final por Tab/Shift+Tab.",
+  "failure_snapshot": {
+    "original_file": "forms-functional-failure.html",
+    "sha256": "de6c827e966b2c204a9887d660f1391e51b43ed0c034fe8c06a2e9dc9b26ac3f",
+    "archived": false,
+    "reason": "HTML completo contém scripts; preservados relatório, captura e hash, sem incorporar o HTML."
+  },
+  "job_log": {
+    "file": "job.log",
+    "sha256": "b6aa7c378c577040be4fb0ab9a5a702548880901c47f674c913cc308ce51e06e",
+    "provenance": "Log original do job obtido separadamente; não pertence ao ZIP identificado por artifact_sha256."
+  },
+  "human_professionals": "Não executado; a issue 3 e a PR 75 continuam dependentes de pelo menos três profissionais reais.",
+  "screen_reader": "Não executado; automação de DOM e teclado não equivale a leitor de tela.",
+  "selection_note": "Consolidados, geometria inicial, preparação por roda, cinco capturas de forms e log original separado. Material repetido de fundação/protótipo e HTML com scripts não são incorporados. Provas locais existentes foram preservadas com sua fonte; nenhum novo probe foi executado para esta consolidação.",
+  "visual_review": {
+    "finding": "Área vazia extensa após o rodapé nas capturas de tabela; defeito não detectado pelas asserções de largura e geometria inicial do grupo aprovado.",
+    "evidence": [
+      {
+        "file": "forms-table-1280.png",
+        "image_width_px": 1265,
+        "image_height_px": 5524
+      },
+      {
+        "file": "forms-table-360.png",
+        "image_width_px": 345,
+        "image_height_px": 7395
+      }
+    ],
+    "planned_correction": "Conter elementos visualmente ocultos nos rótulos e verificar altura adicional após o rodapé; ainda sem reteste aprovado."
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "run_id": 43208107786,
+  "source_commit": "253b8d6524c017b1fbc1fb342ac5d20609b50e9b",
+  "source_tree": "c13d38a49548d66269030b00dc59d022c02e9da4",
+  "artifact_id": 13939618485,
+  "artifact_sha256": "7d568728679c6a8b87139cbaeb19195276e55797a3371c2a79e83a4a5e044082",
+  "selected_files_excluding_manifest": 21,
+  "total_bytes_excluding_manifest": 1328375,
+  "selection": "16 arquivos selecionados e conferidos byte a byte com o ZIP original: relatórios consolidados, logs de persistência/migrações e cinco capturas de forms. O log original do job foi obtido separadamente e possui origem e hash próprios. As provas locais e os metadados derivados não são atribuídos ao ZIP. Evidências repetidas da fundação e do protótipo continuam no ZIP original.",
+  "local_probe_note": "Probes executados localmente, separados dos resultados da CI. A prova de serialização mantém 12 resultados; a contagem foi corrigida para cinco vetores não vazios distintos, dez respostas não vazias e duas referências vazias.",
+  "executable_html_archived": false,
+  "files": [
+    {
+      "file": "browser-functional.json",
+      "bytes": 2270,
+      "sha256": "42f3555d721fa23a3b397908d287efe430aace884d0b229809ecdbac0210fd4a",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "browser-performance.json",
+      "bytes": 2604,
+      "sha256": "114a09d14e58b794e3ae75babb2b4ade47563b1b669a3394dbea38b774d3e815",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "budget.json",
+      "bytes": 1874,
+      "sha256": "81ad9be0e6d3137207d819d670ae78c5947134d8d419d69fd5709d71d9e40ea0",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "build.json",
+      "bytes": 2385,
+      "sha256": "afa3237b47d958877702f191cd044728c121016c5d3b5d5c66bfa11b49a2dff7",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-functional-failure.png",
+      "bytes": 106784,
+      "sha256": "64a31275591c572fb913b1a29332ad439b015edab4591034842e4508dc9614e7",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-functional.json",
+      "bytes": 9861,
+      "sha256": "01c3847d0dd8a6ac4871e8ec793671dc9cfdb50a5d8ff7b1415bf1e5150a28a9",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-local-response.json",
+      "bytes": 32437,
+      "sha256": "8e2170cb7a714d45e2c6ecf47e0fd1ebc8160ad976b44c02e48da00b9a1a62c2",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-presentation.json",
+      "bytes": 5430,
+      "sha256": "d3d4e7ba16d89aa943b31f21dad2fcf93dc6f36936f9262c77105e5195302350",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-selection-scope.png",
+      "bytes": 121110,
+      "sha256": "8722f14d1b304d308040ac001386bdb63f3428e16e8f69087fc81eff1df06d43",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-server-requests.json",
+      "bytes": 919,
+      "sha256": "c7ac818580486c62be572047e3dc2bc9ac0b030b14734bff3f43ef164909d06c",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-ssr-without-scripts.png",
+      "bytes": 228699,
+      "sha256": "7a4f1d661a7ea068a15483c4e92ee475b29ea88cce3d8e7b047dc3e299f8011c",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-table-1280.png",
+      "bytes": 214776,
+      "sha256": "21d2c4af156190cc8138f744642c100f0150c8560a541fb3351927b669ca171f",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-table-360.png",
+      "bytes": 183108,
+      "sha256": "ed346ec362a293a6e5caed515b9c613624ca74cd83fc8978f4e8ba93115462aa",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "job.log",
+      "bytes": 383774,
+      "sha256": "e327cc196fc8de6e5a0de7655f27c04f79c8044a4d8b814706424604eb63224b",
+      "provenance": "original_job_log_obtained_separately"
+    },
+    {
+      "file": "migrations.log",
+      "bytes": 441,
+      "sha256": "6da0675c1b39810653030063c9cad9601b8b30c9e1c173abaa082b65101262c6",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "persistence.log",
+      "bytes": 4661,
+      "sha256": "d309a8be50ee380db7743a72592f48b9a55617d01c77f6035777420dd9e39efd",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "prototype-functional.json",
+      "bytes": 5997,
+      "sha256": "cb8268ee29843489a5d1ae6b9f991e23168da6f43fa58168eac74d0caf78a2e8",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "run.json",
+      "bytes": 4618,
+      "sha256": "7313003b48994efb0ff93d2299e0bda6e5b826853c3f19421b29d8c2bc1f1ebb",
+      "provenance": "derived_metadata"
+    },
+    {
+      "file": "serialization-safety.json",
+      "bytes": 10258,
+      "sha256": "15b62833f4341fdaaa86f696291829be8c8eff47a095327c7b6446a0595c5964",
+      "provenance": "local_probe_same_source_tree"
+    },
+    {
+      "file": "worksheet-budget.json",
+      "bytes": 936,
+      "sha256": "aec51c8a85a4c538c07d3af0900c3fd58a00e2dac039791abf14c7fa84a9a7a2",
+      "provenance": "derived_metadata"
+    },
+    {
+      "file": "worksheet-payload-local.json",
+      "bytes": 5433,
+      "sha256": "c0e362fd2ea338caaa4fa3063d926d6e75754fe3891eb09d54313cc93c153214",
+      "provenance": "local_probe_same_source_tree"
+    }
+  ],
+  "original_artifact_files": 16,
+  "separate_original_job_logs": 1
+}

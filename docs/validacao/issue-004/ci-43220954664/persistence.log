@@ -1,0 +1,87 @@
+[1m[92m   Compiling[0m proc-macro2 v1.0.107
+[1m[92m   Compiling[0m thiserror v2.0.21
+[1m[92m   Compiling[0m crypto-common v0.1.7
+[1m[92m   Compiling[0m uuid v1.29.2
+[1m[92m   Compiling[0m digest v0.10.7
+[1m[92m   Compiling[0m quote v1.0.47
+[1m[92m   Compiling[0m syn v3.0.10
+[1m[92m   Compiling[0m syn v2.0.119
+[1m[92m   Compiling[0m synstructure v0.14.0
+[1m[92m   Compiling[0m serde_derive v1.0.229
+[1m[92m   Compiling[0m zerofrom-derive v0.1.8
+[1m[92m   Compiling[0m zerofrom v0.1.8
+[1m[92m   Compiling[0m yoke-derive v0.8.4
+[1m[92m   Compiling[0m yoke v0.8.4
+[1m[92m   Compiling[0m zerovec-derive v0.11.7
+[1m[92m   Compiling[0m serde v1.0.229
+[1m[92m   Compiling[0m zerovec v0.11.9
+[1m[92m   Compiling[0m displaydoc v0.2.7
+[1m[92m   Compiling[0m smallvec v1.16.5
+[1m[92m   Compiling[0m potential_utf v0.1.6
+[1m[92m   Compiling[0m tinystr v0.8.5
+[1m[92m   Compiling[0m zerotrie v0.2.5
+[1m[92m   Compiling[0m icu_locale_core v2.4.0
+[1m[92m   Compiling[0m icu_collections v2.4.0
+[1m[92m   Compiling[0m thiserror-impl v2.0.21
+[1m[92m   Compiling[0m icu_provider v2.4.0
+[1m[92m   Compiling[0m icu_properties v2.4.0
+[1m[92m   Compiling[0m icu_normalizer v2.4.0
+[1m[92m   Compiling[0m tracing-attributes v0.1.31
+[1m[92m   Compiling[0m idna_adapter v1.2.2
+[1m[92m   Compiling[0m parking_lot_core v0.9.12
+[1m[92m   Compiling[0m parking_lot v0.12.5
+[1m[92m   Compiling[0m idna v1.1.0
+[1m[92m   Compiling[0m futures-intrusive v0.5.0
+[1m[92m   Compiling[0m url v2.5.8
+[1m[92m   Compiling[0m either v1.19.0
+[1m[92m   Compiling[0m tracing v0.1.44
+[1m[92m   Compiling[0m tokio-macros v2.7.2
+[1m[92m   Compiling[0m sqlx-core v0.9.0
+[1m[92m   Compiling[0m tokio v1.54.1
+[1m[92m   Compiling[0m chrono v0.4.42
+[1m[92m   Compiling[0m tokio-stream v0.1.19
+[1m[92m   Compiling[0m sqlx-postgres v0.9.0
+[1m[92m   Compiling[0m sha2 v0.10.9
+[1m[92m   Compiling[0m regex-syntax v0.8.11
+[1m[92m   Compiling[0m sqlx-macros-core v0.9.0
+[1m[92m   Compiling[0m regex-automata v0.4.18
+[1m[92m   Compiling[0m sqlx-macros v0.9.0
+[1m[92m   Compiling[0m matchers v0.2.0
+[1m[92m   Compiling[0m canteiro-domain v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/domain)
+[1m[92m   Compiling[0m tracing-subscriber v0.3.23
+[1m[92m   Compiling[0m sqlx v0.9.0
+[1m[92m   Compiling[0m canteiro-persistence v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/persistence)
+[1m[92m    Finished[0m `test` profile [unoptimized] target(s) in 25.92s
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/canteiro_persistence-59aab702bda30a06)
+
+running 15 tests
+test database_tests::actual_database_error_is_redacted_in_diagnostics_and_public_persistence_error ... ok
+test database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges ... ok
+test database_tests::cancelled_borrowed_write_cannot_later_be_committed ... ok
+test database_tests::cancelled_task_rolls_back_pending_transaction_and_releases_clean_connection ... ok
+test database_tests::concurrent_expected_version_updates_have_one_winner_and_never_overflow ... ok
+test database_tests::cross_tenant_foreign_keys_reject_insert_and_update_even_for_superuser ... ok
+test database_tests::edited_or_future_migration_history_is_rejected_without_erasing_existing_data ... ok
+test database_tests::failure_delayed_until_commit_is_never_reported_as_confirmed_or_safe_to_retry ... ok
+test database_tests::ignored_second_write_and_raw_sql_errors_cannot_commit_partial_work ... ok
+test database_tests::lock_pool_and_global_transaction_deadlines_abort_without_partial_writes ... ok
+test database_tests::environment_owner_and_inherited_privilege_mismatches_fail_closed ... ok
+test database_tests::one_connection_pool_clears_context_after_commit_rollback_failure_timeout_and_drop ... ok
+test database_tests::runtime_rls_blocks_unscoped_reads_writes_and_wrong_tenant_mutations ... ok
+test database_tests::version_one_data_survives_upgrade_with_composite_and_date_constraints ... ok
+test database_tests::migration_advisory_lock_has_a_bounded_wait_and_rolls_back_bootstrap ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 10.86s
+
+[1m[92m     Running[0m unittests src/bin/canteiro-db.rs (target/debug/deps/canteiro_db-2a9c13d528e09908)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m   Doc-tests[0m canteiro_persistence
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

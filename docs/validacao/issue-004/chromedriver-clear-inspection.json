@@ -1,0 +1,19 @@
+{
+  "driverVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+  "binarySha256": "d7f1682dcf9e4087bae6a52ca03c9913390a79ab86e09796562db7ed6f534587",
+  "atom": "CLEAR",
+  "atomBytes": 29997,
+  "atomSha256": "eabdd90a4c897f7c9ad23194ff7d3410a10c55bbd38ac7ac0c4cb2ff08241559",
+  "extraction": "Concatenated 447 C-string chunks through ELF relative relocations; no browser execution.",
+  "textControlPath": {
+    "assignsEmptyValueDirectly": true,
+    "dispatchesChange": true,
+    "dispatchesInput": false,
+    "movesFocusToBodyAfterClearing": true
+  },
+  "finding": "This driver operation does not model keyboard deletion for controls updated by input events; their blur handler can re-render the prior state before subsequent typing.",
+  "primarySource": "https://chromium.googlesource.com/chromium/src/+/bd1634ed7148aa766a2167811bbe3cce334ac1a9/third_party/selenium-atoms/atoms.cc",
+  "ciEvidence": "43215052002: price became 101.234,56 from initial 10 and requested 1.234,56; current became 3535 from initial 35 and requested 35.",
+  "limits": "A inspeção estática não comprova o resultado de execução da correção; consultar o registro de validação para esse resultado. Não houve execução local do navegador nessa inspeção.",
+  "originalInspectionSha256": "8efde6a9c39696459fa522f02b771187a4d9f8bcb5c8f2ecea44146599b2f43d"
+}

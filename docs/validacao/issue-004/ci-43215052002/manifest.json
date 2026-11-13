@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "run_id": 43215052002,
+  "source_commit": "8ff3034252cfef06268576ad273be28422c0130f",
+  "source_tree": "1f22073b21f0dd90c5f17dff63210e9268b11e39",
+  "artifact_id": 13944064545,
+  "artifact_sha256": "f9d853bd3cdc232465f0ed0b169a78e4ed388990609c8245df85386e635b0ff9",
+  "selected_files_excluding_manifest": 25,
+  "original_artifact_files": 19,
+  "separate_original_job_logs": 1,
+  "total_bytes_excluding_manifest": 1450409,
+  "selection": "19 arquivos conferidos byte a byte com o ZIP: consolidados, registros de geometria/roda, logs de persistência/migrações e cinco capturas forms. Log do job separado e cinco provas/metadados locais identificados individualmente. HTML com scripts não incorporado.",
+  "local_probe_note": "Provas existentes da mesma árvore preservadas sem executar novos probes. A soma do orçamento apenas combina essas medidas já realizadas com budget.json desta CI.",
+  "executable_html_archived": false,
+  "files": [
+    {
+      "file": "browser-functional.json",
+      "bytes": 2269,
+      "sha256": "bcd5861a7404c82a3489a3eb3227be7d200b38ade9b3685df3326029e63f97fd",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "browser-performance.json",
+      "bytes": 2597,
+      "sha256": "68d7f7152dac7c3fa2714e4ee361fd088c014cf0f50b630474abf434e0d6c05f",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "budget.json",
+      "bytes": 1874,
+      "sha256": "7bfdbf4354788fc00b8d3379fbc5c1ff1e5b23c51ae7cdb8bf807b69a494e0a0",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "build.json",
+      "bytes": 2386,
+      "sha256": "cebcff1c08e18d6cd02b360f6586c02cd599d651f6fb27e7b51154f8098305a9",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-functional-failure.png",
+      "bytes": 119172,
+      "sha256": "583cb6043976d8be6d404ba946130598dbb39f83bf7cecaad2d61de81b02b6c6",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-functional.json",
+      "bytes": 12237,
+      "sha256": "ff4ba8b8f702f1d1eba8038f043a4c9f11e35af04ae0862a0d61eb217a9c7325",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-grid-geometry-1280.json",
+      "bytes": 2008,
+      "sha256": "688a47ea2ff37d7336577c4249d7a3078af6682d8fbb3755a9a9830721c65348",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-grid-geometry-360.json",
+      "bytes": 1982,
+      "sha256": "c63a7e9c17338fe43a8d14264d5c132db002ab9597e353d4e90fcb3c260bc0d5",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-local-response.json",
+      "bytes": 32233,
+      "sha256": "20772d0f681c814e284e926e725724695ab22111565a5b73efce0e5bd553ab63",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-pointer-scroll.json",
+      "bytes": 7963,
+      "sha256": "0bbc4761c7d0b6ffd474b8454a81fe5879c59107659c6becf05110f7b1e7f764",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-presentation.json",
+      "bytes": 10723,
+      "sha256": "e48c6aee658a8c35ae143f99db3e9b94699ad2ef6549067fed51f932f3693421",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-selection-scope.png",
+      "bytes": 121952,
+      "sha256": "c2cdf2afa9b187ca392ef45404f33659d9ad4d1c33a839670ae909ffd456b204",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-server-requests.json",
+      "bytes": 919,
+      "sha256": "a55b5cfe7b0cce0c849046ad3b1a7499567fddf76cfcd6bffcbdb20f5ffd5e1a",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-ssr-without-scripts.png",
+      "bytes": 252754,
+      "sha256": "7c5eb8982f22d57371e9d55f1132af48a731c1a826c467a85f1806424d97f30b",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-table-1280.png",
+      "bytes": 237192,
+      "sha256": "4a1bcd768a8066c1017d867d85513d83d075f2efecf11e7f7c82ccbec0a686f8",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "forms-table-360.png",
+      "bytes": 202196,
+      "sha256": "88759d588bf4a1431a5d22a21f1a9bb33859bc2f579d9a910f1bb29a1a8e94b8",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "job.log",
+      "bytes": 383575,
+      "sha256": "b6aa7c378c577040be4fb0ab9a5a702548880901c47f674c913cc308ce51e06e",
+      "provenance": "original_job_log_obtained_separately"
+    },
+    {
+      "file": "migrations.log",
+      "bytes": 441,
+      "sha256": "9692cc47c6b11e1f692620a27708d643372afb3a53bfdf2e8e0f7dc8f2e8ede8",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "persistence.log",
+      "bytes": 4661,
+      "sha256": "6b5bf989838af0ab08b195996ebf67bbe90f1a6de90bd5ddc879a6f40682bbb2",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "prototype-functional.json",
+      "bytes": 6004,
+      "sha256": "3d3fb697afdd26941cf6e991382494c87355441fcd06ac9385b15e527f916cd0",
+      "provenance": "original_ci_artifact"
+    },
+    {
+      "file": "run.json",
+      "bytes": 4203,
+      "sha256": "3528c222d726836a644f6be613bf14aa73d7443b93d4c4669dee0de7eef37f05",
+      "provenance": "derived_metadata"
+    },
+    {
+      "file": "serialization-safety.json",
+      "bytes": 10634,
+      "sha256": "18749ad5e3cf733219b11282e94e72d5359bf45b5b6adc21cd17751597512faa",
+      "provenance": "local_probe_same_source_tree"
+    },
+    {
+      "file": "source-manifest.json",
+      "bytes": 24043,
+      "sha256": "d507e6e19a6de35ea05da21a6c8e64dea7945b4fd8148899ff7b604a98e39d05",
+      "provenance": "local_source_manifest"
+    },
+    {
+      "file": "worksheet-budget.json",
+      "bytes": 958,
+      "sha256": "4c1316676ac87644f398b8de81f950a7d867df79aec6afd861a8e1d2f59bf728",
+      "provenance": "derived_metadata"
+    },
+    {
+      "file": "worksheet-payload-local.json",
+      "bytes": 5433,
+      "sha256": "e69fd4db926a06aadf80a845b249765619452ad65270998afc71556041e30959",
+      "provenance": "local_probe_same_source_tree"
+    }
+  ]
+}

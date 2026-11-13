@@ -1,0 +1,95 @@
+{
+  "clip": {
+    "left": 33.5,
+    "right": 1216.5
+  },
+  "parts": [
+    {
+      "bounds": {
+        "bottom": 1312.421875,
+        "height": 44,
+        "left": 49.5,
+        "right": 113.5,
+        "top": 1268.421875,
+        "width": 64
+      },
+      "clientWidth": 64,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "checkbox",
+      "scrollWidth": 64,
+      "tag": "LABEL",
+      "text": "Selecionar serviço AUR-00001"
+    },
+    {
+      "bounds": {
+        "bottom": 1292.421875,
+        "height": 24,
+        "left": 141.5,
+        "right": 362.5,
+        "top": 1268.421875,
+        "width": 221
+      },
+      "clientWidth": 221,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "identity",
+      "scrollWidth": 221,
+      "tag": "STRONG",
+      "text": "AUR-00001"
+    },
+    {
+      "bounds": {
+        "bottom": 1340.421875,
+        "height": 48,
+        "left": 141.5,
+        "right": 362.5,
+        "top": 1292.421875,
+        "width": 221
+      },
+      "clientWidth": 221,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "description",
+      "scrollWidth": 221,
+      "tag": "SPAN",
+      "text": "Alvenaria de vedação 00001"
+    },
+    {
+      "bounds": {
+        "bottom": 1365.421875,
+        "height": 21,
+        "left": 141.5,
+        "right": 362.5,
+        "top": 1344.421875,
+        "width": 221
+      },
+      "clientWidth": 221,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "unit",
+      "scrollWidth": 221,
+      "tag": "SPAN",
+      "text": "Unidade: m²"
+    },
+    {
+      "bounds": {
+        "bottom": 1423.8125,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": 1377.421875,
+        "width": 221
+      },
+      "clientWidth": 219,
+      "horizontallyContained": true,
+      "id": "edit-row-1",
+      "name": "edit",
+      "scrollWidth": 219,
+      "tag": "BUTTON",
+      "text": "Editar rascunho"
+    }
+  ],
+  "scrollLeft": 0,
+  "viewport": 1280
+}

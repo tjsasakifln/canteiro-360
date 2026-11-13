@@ -1,0 +1,244 @@
+{
+  "checks": [
+    "direct_ssr_all_routes_and_two_companies",
+    "useful_navigation_without_scripts",
+    "five_routes_reflow_320_360_1280",
+    "explicit_control_labels",
+    "keyboard_navigation_without_forced_sequence",
+    "filter_detail_and_return_preserve_query",
+    "loading_empty_error_forbidden_states",
+    "state_recovery_by_keyboard",
+    "computed_text_contrast_actual_dom",
+    "forbidden_removes_business_dom",
+    "invalid_draft_preserves_note_and_period",
+    "cancel_context_keeps_draft",
+    "confirm_context_discards_only_with_consent",
+    "cross_company_context_does_not_retain_previous_draft",
+    "back_history_context_cancel_and_confirm",
+    "approval_native_modal_focus_trap",
+    "escape_restores_trigger",
+    "keyboard_confirmation_explicitly_simulated",
+    "shortcut_announced_and_operable",
+    "reduced_motion",
+    "density_control"
+  ],
+  "console": [],
+  "environment": {
+    "apiBinaryBytes": 34699096,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 7763 64-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        8122984 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794491838851,
+    "wasmBinaryBytes": 21704910
+  },
+  "human_professionals": "Not executed. Three real professional participants remain a separate acceptance criterion.",
+  "screen_reader": "Not executed. This suite verifies semantic DOM and keyboard interaction.",
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  },
+  "viewports": [
+    {
+      "metrics": {
+        "body": 305,
+        "current": 1,
+        "document": 305,
+        "h1": 1,
+        "heading": "O que precisa da sua atenção",
+        "unlabelled": [],
+        "viewport": 320
+      },
+      "route": "painel",
+      "width": 320
+    },
+    {
+      "metrics": {
+        "body": 305,
+        "current": 1,
+        "document": 305,
+        "h1": 1,
+        "heading": "Orçamento da obra",
+        "unlabelled": [],
+        "viewport": 320
+      },
+      "route": "orcamento",
+      "width": 320
+    },
+    {
+      "metrics": {
+        "body": 305,
+        "current": 1,
+        "document": 305,
+        "h1": 1,
+        "heading": "Preparar medição",
+        "unlabelled": [],
+        "viewport": 320
+      },
+      "route": "medicao",
+      "width": 320
+    },
+    {
+      "metrics": {
+        "body": 305,
+        "current": 1,
+        "document": 305,
+        "h1": 1,
+        "heading": "Aprovações da obra",
+        "unlabelled": [],
+        "viewport": 320
+      },
+      "route": "aprovacoes",
+      "width": 320
+    },
+    {
+      "metrics": {
+        "body": 305,
+        "current": 1,
+        "document": 305,
+        "h1": 1,
+        "heading": "Documentos e versões",
+        "unlabelled": [],
+        "viewport": 320
+      },
+      "route": "documentos",
+      "width": 320
+    },
+    {
+      "metrics": {
+        "body": 345,
+        "current": 1,
+        "document": 345,
+        "h1": 1,
+        "heading": "O que precisa da sua atenção",
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "route": "painel",
+      "width": 360
+    },
+    {
+      "metrics": {
+        "body": 345,
+        "current": 1,
+        "document": 345,
+        "h1": 1,
+        "heading": "Orçamento da obra",
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "route": "orcamento",
+      "width": 360
+    },
+    {
+      "metrics": {
+        "body": 345,
+        "current": 1,
+        "document": 345,
+        "h1": 1,
+        "heading": "Preparar medição",
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "route": "medicao",
+      "width": 360
+    },
+    {
+      "metrics": {
+        "body": 345,
+        "current": 1,
+        "document": 345,
+        "h1": 1,
+        "heading": "Aprovações da obra",
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "route": "aprovacoes",
+      "width": 360
+    },
+    {
+      "metrics": {
+        "body": 345,
+        "current": 1,
+        "document": 345,
+        "h1": 1,
+        "heading": "Documentos e versões",
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "route": "documentos",
+      "width": 360
+    },
+    {
+      "metrics": {
+        "body": 1265,
+        "current": 1,
+        "document": 1265,
+        "h1": 1,
+        "heading": "O que precisa da sua atenção",
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "route": "painel",
+      "width": 1280
+    },
+    {
+      "metrics": {
+        "body": 1265,
+        "current": 1,
+        "document": 1265,
+        "h1": 1,
+        "heading": "Orçamento da obra",
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "route": "orcamento",
+      "width": 1280
+    },
+    {
+      "metrics": {
+        "body": 1265,
+        "current": 1,
+        "document": 1265,
+        "h1": 1,
+        "heading": "Preparar medição",
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "route": "medicao",
+      "width": 1280
+    },
+    {
+      "metrics": {
+        "body": 1265,
+        "current": 1,
+        "document": 1265,
+        "h1": 1,
+        "heading": "Aprovações da obra",
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "route": "aprovacoes",
+      "width": 1280
+    },
+    {
+      "metrics": {
+        "body": 1265,
+        "current": 1,
+        "document": 1265,
+        "h1": 1,
+        "heading": "Documentos e versões",
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "route": "documentos",
+      "width": 1280
+    }
+  ]
+}

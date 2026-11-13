@@ -1,0 +1,73 @@
+{
+  "checks": [
+    "useful_ssr_without_scripts",
+    "hydration_without_mismatch",
+    "keyboard_enter_space",
+    "focus_3px",
+    "touch_target_44px",
+    "reflow_320_360",
+    "http_404",
+    "missing_wasm_delayed_guidance",
+    "keyboard_retry_recovers"
+  ],
+  "environment": {
+    "apiBinaryBytes": 34699096,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 7763 64-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        8122984 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794491782347,
+    "wasmBinaryBytes": 21704910
+  },
+  "expected_missing_wasm_console": [
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:36501/pkg/canteiro-web_bg.wasm - Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "source": "network",
+      "timestamp": 1794491784430
+    },
+    {
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:36501/pkg/canteiro-web.js 1264:18 Uncaught Error: failed to fetch Wasm: 404 Not Found fetching 'http://127.0.0.1:36501/pkg/canteiro-web_bg.wasm'",
+      "source": "javascript",
+      "timestamp": 1794491784479
+    }
+  ],
+  "focus": {
+    "bottom": 515.578125,
+    "height": 50,
+    "id": "foundation-details-toggle",
+    "outline": "3px",
+    "top": 465.578125,
+    "viewport": 768,
+    "width": 292.4375
+  },
+  "hydration_navigation_wall_ms": 298.427938,
+  "normal_console": [],
+  "recovery_console": [],
+  "screen_reader": "Not executed; semantic DOM and keyboard only.",
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  },
+  "viewports": [
+    {
+      "body": 345,
+      "buttonHeight": 74,
+      "document": 345,
+      "viewport": 360
+    },
+    {
+      "body": 305,
+      "buttonHeight": 74,
+      "document": 305,
+      "viewport": 320
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "console": [],
+  "consoleError": null,
+  "environment": {
+    "apiBinaryBytes": 34570592,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: Intel(R) Xeon(R) 6975P-C",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        7962896 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794483515343,
+    "wasmBinaryBytes": 21584921
+  },
+  "error": "WebDriver 400 Bad Request: {\"error\":\"element click intercepted\",\"message\":\"element click intercepted: Element <button class=\\\"secondary-button\\\" id=\\\"edit-row-1\\\" type=\\\"button\\\" aria-label=\\\"... do serviço AUR-00001\\\">Editar rascunho</button> is not clickable at point (355, 624). Other element would receive the click: <th scope=\\\"col\\\" class=\\\"service-heading\\\">...</th>\\n  (Session info: chrome=156.0.8078.80)\",\"stacktrace\":\"#0 0x559716ead0aa <unknown>\\n#1 0x5597167e0875 <unknown>\\n#2 0x559716827d61 <unknown>\\n#3 0x55971682674e <unknown>\\n#4 0x559716824ae6 <unknown>\\n#5 0x5597168243aa <unknown>\\n#6 0x55971681a8e3 <unknown>\\n#7 0x55971681a3c3 <unknown>\\n#8 0x55971681a369 <unknown>\\n#9 0x55971685f143 <unknown>\\n#10 0x55971685ea51 <unknown>\\n#11 0x559716819a07 <unknown>\\n#12 0x559716818d1e <unknown>\\n#13 0x5597168197f1 <unknown>\\n#14 0x559716e6fc5c <unknown>\\n#15 0x559716e6e475 <unknown>\\n#16 0x559716e597f8 <unknown>\\n#17 0x559716e6f0ca <unknown>\\n#18 0x559716e423f9 <unknown>\\n#19 0x559716e97848 <unknown>\\n#20 0x559716e979e5 <unknown>\\n#21 0x559716eaba43 <unknown>\\n#22 0x7f57f2a9cb84 <unknown>\\n#23 0x7f57f2b29ecc <unknown>\\n\"}",
+  "group": "forms-functional",
+  "htmlError": null,
+  "phaseEvidence": {
+    "startedAtUnixMs": 1794483515343,
+    "status": "running"
+  },
+  "screenshotError": null,
+  "snapshot": {
+    "fields": [
+      {
+        "id": "organization",
+        "value": "aurora"
+      },
+      {
+        "id": "table-search",
+        "value": ""
+      },
+      {
+        "id": "table-sort",
+        "value": "code"
+      },
+      {
+        "id": "table-direction",
+        "value": "asc"
+      },
+      {
+        "id": "table-page-size",
+        "value": "25"
+      },
+      {
+        "id": "select-page",
+        "value": "on"
+      },
+      {
+        "id": "select-row-1",
+        "value": "on"
+      },
+      {
+        "id": "select-row-2",
+        "value": "on"
+      },
+      {
+        "id": "select-row-3",
+        "value": "on"
+      },
+      {
+        "id": "select-row-4",
+        "value": "on"
+      },
+      {
+        "id": "select-row-5",
+        "value": "on"
+      },
+      {
+        "id": "select-row-6",
+        "value": "on"
+      },
+      {
+        "id": "select-row-7",
+        "value": "on"
+      },
+      {
+        "id": "select-row-8",
+        "value": "on"
+      },
+      {
+        "id": "select-row-9",
+        "value": "on"
+      },
+      {
+        "id": "select-row-10",
+        "value": "on"
+      },
+      {
+        "id": "select-row-11",
+        "value": "on"
+      },
+      {
+        "id": "select-row-12",
+        "value": "on"
+      },
+      {
+        "id": "select-row-13",
+        "value": "on"
+      },
+      {
+        "id": "select-row-14",
+        "value": "on"
+      },
+      {
+        "id": "select-row-15",
+        "value": "on"
+      },
+      {
+        "id": "select-row-16",
+        "value": "on"
+      },
+      {
+        "id": "select-row-17",
+        "value": "on"
+      },
+      {
+        "id": "select-row-18",
+        "value": "on"
+      },
+      {
+        "id": "select-row-19",
+        "value": "on"
+      },
+      {
+        "id": "select-row-20",
+        "value": "on"
+      },
+      {
+        "id": "select-row-21",
+        "value": "on"
+      },
+      {
+        "id": "select-row-22",
+        "value": "on"
+      },
+      {
+        "id": "select-row-23",
+        "value": "on"
+      },
+      {
+        "id": "select-row-24",
+        "value": "on"
+      },
+      {
+        "id": "select-row-25",
+        "value": "on"
+      },
+      {
+        "id": "density",
+        "value": "comfortable"
+      },
+      {
+        "id": "display-state",
+        "value": "content"
+      }
+    ],
+    "focus": {
+      "id": "clear-selection",
+      "tag": "BUTTON"
+    },
+    "formsReady": "true",
+    "openDialogs": [],
+    "title": "Planilha de medição | Escola Vila Nova | Canteiro 360",
+    "url": "http://127.0.0.1:42501/prototipo/aurora/planilha?page=1&page_size=25&search=&sort=code&direction=asc",
+    "visibleText": "Pular para o conteúdo\nC\nCanteiro 360\nEm desenvolvimento\n\nDemonstração com dados fictícios. Nada é gravado.\n\nEmpresa\nConstrutora Aurora\nObras Horizonte\nObra\nEscola Vila Nova\nContrato\nCT-014/2026\nVersão do orçamento\nRevisão 02\n\nDemonstração pronta para usar.\n\n◫\nPainel da obra\n≡\nOrçamento\n▤\nPreparar medição\n▦\nPlanilha de medição\n✓\nAprovações\n▱\nDocumentos\n\nROTINA DA OBRA\n\nConferir a planilha de medição\n\nConfira os acumulados de cada serviço e prepare seu rascunho com os valores do período.\n\nExemplo: passar de 20 para 35 m² representa 15 m² no período. A grade consulta uma base fictícia de 10.000 serviços; seus rascunhos ficam separados nesta aba.\n\nBuscar código ou serviço\nOrdenar por\nCódigo\nServiço\nAcumulado atual\nValor do período\nOrdem\nCrescente\nDecrescente\nServiços por página\n25\n50\n100\nConsultar serviços\n\nServiços 1 a 25 de 10000 · Página 1 de 400\nBase de referência\n\nOs valores da grade são a referência fictícia. Abrir uma edição não altera a base. Quantidades usam a unidade identificada em cada serviço.\n\nSelecionar somente esta página\nSelecionar os 10000 resultados da busca\nLimpar seleção\n\n0 serviço(s) selecionado(s) somente nesta página. Nenhum resultado de outra página está selecionado.\n\nPreparar dados para copiar\nServiços da medição. Anterior e atual são acumulados; diferença representa a quantidade do período. Cada quantidade usa a unidade da linha.\nSelecionar\tServiço, unidade e edição\tContratado (unid. da linha)\tAnterior acumulado (unid. da linha)\tAtual acumulado (unid. da linha)\tDiferença no período (unid. da linha)\tPreço unitário (R$)\tValor do período (R$)\tSaldo (unid. da linha)\tSaldo (R$)\n\t\nAUR-00001\nAlvenaria de vedação 00001\nUnidade: m²\nRascunho nesta aba\nEditar rascunho\n\t100\t20\t35\t15\t10\t150,00\t65\t650,00\n\t\nAUR-00002\nComponente demonstrativo 00002\nUnidade: un\nEditar rascunho\n\t100\t1\t2\t1\t0,335\t0,34\t98\t32,83\n\t\nAUR-00003\nConcreto de fundação 00003\nUnidade: m³\nEditar rascunho\n\t100\t20\t35\t15\t12\t180,00\t65\t780,00\n\t\nAUR-00004\nTubulação de água 00004\nUnidade: m\nEditar rascunho\n\t100\t20\t35\t15\t13\t195,00\t65\t845,00\n\t\nAUR-00005\nArmadura de aço 00005\nUnidade: kg\nEditar rascunho\n\t100\t20\t35\t15\t14\t210,00\t65\t910,00\n\t\nAUR-00006\nEquipe de apoio 00006\nUnidade: h\nEditar rascunho\n\t100\t20\t35\t15\t15\t225,00\t65\t975,00\n\t\nAUR-00007\nAlvenaria de vedação 00007\nUnidade: m²\nEditar rascunho\n\t100\t20\t35\t15\t16\t240,00\t65\t1.040,00\n\t\nAUR-00008\nComponente demonstrativo 00008\nUnidade: un\nEditar rascunho\n\t100\t20\t35\t15\t10\t150,00\t65\t650,00\n\t\nAUR-00009\nConcreto de fundação 00009\nUnidade: m³\nEditar rascunho\n\t100\t20\t35\t15\t11\t165,00\t65\t715,00\n\t\nAUR-00010\nTubulação de água 00010\nUnidade: m\nEditar rascunho\n\t100\t20\t35\t15\t12\t180,00\t65\t780,00\n\t\nAUR-00011\nArmadura de aço 00011\nUnidade: kg\nEditar rascunho\n\t100\t20\t35\t15\t13\t195,00\t65\t845,00\n\t\nAUR-00012\nEquipe de apoio 00012\nUnidade: h\nEditar rascunho\n\t100\t20\t35\t15\t14\t210,00\t65\t910,00\n\t\nAUR-00013\nAlvenaria de vedação 00013\nUnidade: m²\nEditar rascunho\n\t100\t20\t35\t15\t15\t225,00\t65\t975,00\n\t\nAUR-00014\nComponente demonstrativo 00014\nUnidade: un\nEditar rascunho\n\t100\t20\t35\t15\t16\t240,00\t65\t1.040,00\n\t\nAUR-00015\nConcreto de fundação 00015\nUnidade: m³\nEditar rascunho\n\t100\t20\t35\t15\t10\t150,00\t65\t650,00\n\t\nAUR-00016\nTubulação de água 00016\nUnidade: m\nEditar rascunho\n\t100\t20\t35\t15\t11\t165,00\t65\t715,00\n\t\nAUR-00017\nArmadura de aço 00017\nUnidade: kg\nEditar rascunho\n\t100\t20\t35\t15\t12\t180,00\t65\t780,00\n\t\nAUR-00018\nEquipe de apoio 00018\nUnidade: h\nEditar rascunho\n\t100\t20\t35\t15\t13\t195,00\t65\t845,00\n\t\nAUR-00019\nAlvenaria de vedação 00019\nUnidade: m²\nEditar rascunho\n\t100\t20\t35\t15\t14\t210,00\t65\t910,00\n\t\nAUR-00020\nComponente demonstrativo 00020\nUnidade: un\nEditar rascunho\n\t100\t20\t35\t15\t15\t225,00\t65\t975,00\n\t\nAUR-00021\nConcreto de fundação 00021\nUnidade: m³\nEditar rascunho\n\t100\t20\t35\t15\t16\t240,00\t65\t1.040,00\n\t\nAUR-00022\nTubulação de água 00022\nUnidade: m\nEditar rascunho\n\t100\t20\t35\t15\t10\t150,00\t65\t650,00\n\t\nAUR-00023\nArmadura de aço 00023\nUnidade: kg\nEditar rascunho\n\t100\t20\t35\t15\t11\t165,00\t65\t715,00\n\t\nAUR-00024\nEquipe de apoio 00024\nUnidade: h\nEditar rascunho\n\t100\t20\t35\t15\t12\t180,00\t65\t780,00\n\t\nAUR-00025\nAlvenaria de vedação 00025\nUnidade: m²\nEditar rascunho\n\t100\t20\t35\t15\t13\t195,00\t65\t845,00\nPágina anterior\nPágina 1 de 400\nPróxima página\nOpções da demonstração e ajuda\n\nCanteiro 360 · Gestão de obras e projetos privados\n\nUma solução da CONFENGE"
+  },
+  "snapshotError": null,
+  "status": "failed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  }
+}

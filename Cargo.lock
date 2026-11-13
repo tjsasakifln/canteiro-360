@@ -383,11 +383,17 @@ dependencies = [
 name = "canteiro-web"
 version = "0.1.0"
 dependencies = [
+ "canteiro-contracts",
  "console_error_panic_hook",
+ "js-sys",
  "leptos",
  "leptos_meta",
  "leptos_router",
+ "send_wrapper",
+ "serde",
+ "serde_json",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
  "web-sys",
 ]
 

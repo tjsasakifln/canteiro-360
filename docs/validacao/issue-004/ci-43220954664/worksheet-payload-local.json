@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "source_commit": "b6dc408221b0bc5a1e71da01947e277c2380f170",
+  "source_tree": "48046848edf6c004b91987c5eaee0f8b3e53b933",
+  "method": "Captura local de seis respostas HTTP completas do router Rust real via Tower::oneshot, com a configuração padrão e sem modificar o código rastreado da aplicação. Última página para 25, 50 e 100 serviços em ambas as empresas. HTMLParser conta linhas ativas e bytes UTF-8 do conteúdo de todos os scripts inline, sem compressão. A soma com arquivos externos comprimidos aguarda o budget.json da CI desta mesma revisão.",
+  "probe_sha256": "647bb411f7f9c3d5be0f0051ea00ae521bbf8646f2b5dd3ce161a475dd282af4",
+  "samples": [
+    {
+      "route": "/prototipo/aurora/planilha?page=100&page_size=100&sort=code&direction=asc",
+      "page_size": 100,
+      "active_rows": 100,
+      "inert_rows": 0,
+      "html_raw_bytes": 133742,
+      "html_sha256": "d5603bb963108675e779ef84654749fe4bbb980c9a3e40fa0d8df4d9761202b6",
+      "inline_javascript_raw_bytes": 29080,
+      "script_blocks": [
+        {
+          "src": null,
+          "type": "module",
+          "raw_content_bytes": 552
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 96
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 28409
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 23
+        }
+      ]
+    },
+    {
+      "route": "/prototipo/aurora/planilha?page=400&page_size=25&sort=code&direction=asc",
+      "page_size": 25,
+      "active_rows": 25,
+      "inert_rows": 0,
+      "html_raw_bytes": 41911,
+      "html_sha256": "bd8a2231b6d9d297c79e77405c3c8a67f52a0387937d8fd578ba52a92f297b7d",
+      "inline_javascript_raw_bytes": 7920,
+      "script_blocks": [
+        {
+          "src": null,
+          "type": "module",
+          "raw_content_bytes": 552
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 96
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 7249
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 23
+        }
+      ]
+    },
+    {
+      "route": "/prototipo/aurora/planilha?page=200&page_size=50&sort=code&direction=asc",
+      "page_size": 50,
+      "active_rows": 50,
+      "inert_rows": 0,
+      "html_raw_bytes": 72521,
+      "html_sha256": "7e29e849369d126cda041e78d4dd5c1dcf33128ed4327b24a089f98bf2c6447c",
+      "inline_javascript_raw_bytes": 14973,
+      "script_blocks": [
+        {
+          "src": null,
+          "type": "module",
+          "raw_content_bytes": 552
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 96
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 14302
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 23
+        }
+      ]
+    },
+    {
+      "route": "/prototipo/horizonte/planilha?page=100&page_size=100&sort=code&direction=asc",
+      "page_size": 100,
+      "active_rows": 100,
+      "inert_rows": 0,
+      "html_raw_bytes": 133780,
+      "html_sha256": "e3ff78d483b23720e8ca2687f6d0f8102d180a6e72c7ae002d58185bccb012dc",
+      "inline_javascript_raw_bytes": 29083,
+      "script_blocks": [
+        {
+          "src": null,
+          "type": "module",
+          "raw_content_bytes": 552
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 96
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 28412
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 23
+        }
+      ]
+    },
+    {
+      "route": "/prototipo/horizonte/planilha?page=400&page_size=25&sort=code&direction=asc",
+      "page_size": 25,
+      "active_rows": 25,
+      "inert_rows": 0,
+      "html_raw_bytes": 41949,
+      "html_sha256": "46d2abdb55275becf0d910effd5f4fa74ad2ed14374a74a04c2b28d7092f5654",
+      "inline_javascript_raw_bytes": 7923,
+      "script_blocks": [
+        {
+          "src": null,
+          "type": "module",
+          "raw_content_bytes": 552
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 96
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 7252
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 23
+        }
+      ]
+    },
+    {
+      "route": "/prototipo/horizonte/planilha?page=200&page_size=50&sort=code&direction=asc",
+      "page_size": 50,
+      "active_rows": 50,
+      "inert_rows": 0,
+      "html_raw_bytes": 72559,
+      "html_sha256": "3a2d2d5cfa5bd4ade549e11579e9f15cb5bc495fa5f5c2d27a3fc775d1fa79bc",
+      "inline_javascript_raw_bytes": 14976,
+      "script_blocks": [
+        {
+          "src": null,
+          "type": "module",
+          "raw_content_bytes": 552
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 96
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 14305
+        },
+        {
+          "src": null,
+          "type": null,
+          "raw_content_bytes": 23
+        }
+      ]
+    }
+  ]
+}

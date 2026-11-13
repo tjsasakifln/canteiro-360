@@ -1,0 +1,348 @@
+shell marks ready
+stable owner variant: false
+task render true
+fetch "AUR-00002"; loading true
+read loading aria-busy
+read loading hidden
+page render None
+read loading Effect
+fetch done; loading false
+read loading aria-busy
+read loading hidden
+read loading Effect
+page render Some(25)
+read checkbox 0
+read checkbox 1
+read checkbox 2
+read checkbox 3
+read checkbox 4
+read checkbox 5
+read checkbox 6
+read checkbox 7
+read checkbox 8
+read checkbox 9
+read checkbox 10
+read checkbox 11
+read checkbox 12
+read checkbox 13
+read checkbox 14
+read checkbox 15
+read checkbox 16
+read checkbox 17
+read checkbox 18
+read checkbox 19
+read checkbox 20
+read checkbox 21
+read checkbox 22
+read checkbox 23
+read checkbox 24
+--- query page2 ---
+shell marks ready
+clear all_results
+read checkbox 0
+read checkbox 1
+read checkbox 2
+read checkbox 3
+read checkbox 4
+read checkbox 5
+read checkbox 6
+read checkbox 7
+read checkbox 8
+read checkbox 9
+read checkbox 10
+read checkbox 11
+read checkbox 12
+read checkbox 13
+read checkbox 14
+read checkbox 15
+read checkbox 16
+read checkbox 17
+read checkbox 18
+read checkbox 19
+read checkbox 20
+read checkbox 21
+read checkbox 22
+read checkbox 23
+read checkbox 24
+fetch "page=2&search=AUR"; loading true
+read loading aria-busy
+read loading hidden
+read loading Effect
+fetch done; loading false
+read loading aria-busy
+read loading hidden
+read loading Effect
+page render Some(25)
+read checkbox 0
+read checkbox 1
+read checkbox 2
+read checkbox 3
+read checkbox 4
+read checkbox 5
+read checkbox 6
+read checkbox 7
+read checkbox 8
+read checkbox 9
+read checkbox 10
+read checkbox 11
+read checkbox 12
+read checkbox 13
+read checkbox 14
+read checkbox 15
+read checkbox 16
+read checkbox 17
+read checkbox 18
+read checkbox 19
+read checkbox 20
+read checkbox 21
+read checkbox 22
+read checkbox 23
+read checkbox 24
+--- navigate document ---
+shell marks ready
+cleanup Worksheet signals
+task render false
+read checkbox 0
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+read checkbox 1
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 2
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 3
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 4
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 5
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 6
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 7
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 8
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 9
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 10
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 11
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 12
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 13
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 14
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 15
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 16
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 17
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 18
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 19
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 20
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 21
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 22
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 23
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+read checkbox 24
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:49, you tried to access a reactive value which was defined at src/main.rs:38:23, but it has already been disposed.
+--- navigate history ---
+shell marks ready
+task render true
+fetch "AUR-00002"; loading true
+read loading aria-busy
+read loading hidden
+page render None
+read loading Effect
+fetch done; loading false
+read loading aria-busy
+read loading hidden
+read loading Effect
+page render Some(25)
+read checkbox 0
+read checkbox 1
+read checkbox 2
+read checkbox 3
+read checkbox 4
+read checkbox 5
+read checkbox 6
+read checkbox 7
+read checkbox 8
+read checkbox 9
+read checkbox 10
+read checkbox 11
+read checkbox 12
+read checkbox 13
+read checkbox 14
+read checkbox 15
+read checkbox 16
+read checkbox 17
+read checkbox 18
+read checkbox 19
+read checkbox 20
+read checkbox 21
+read checkbox 22
+read checkbox 23
+read checkbox 24
+--- navigate home ---
+shell marks ready
+cleanup Worksheet signals
+cleanup shell signals
+read checkbox 0
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 1
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 2
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 3
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 4
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 5
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 6
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 7
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 8
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 9
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 10
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 11
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 12
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 13
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 14
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 15
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 16
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 17
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 18
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 19
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 20
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 21
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 22
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 23
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+read checkbox 24
+
+thread 'main' (5) panicked at /home/agent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reactive_graph-0.2.16/src/traits.rs:394:39:
+At src/main.rs:91:28, you tried to access a reactive value which was defined at src/main.rs:112:21, but it has already been disposed.
+--- done ---

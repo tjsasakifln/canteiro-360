@@ -1,0 +1,18 @@
+{
+  "bounds": {
+    "bottom": -15.199996948242188,
+    "left": 16,
+    "right": 236.65625,
+    "top": -67.19999694824219
+  },
+  "focus": "form-money",
+  "position": "fixed",
+  "scrollY": 1258,
+  "skipLinkFocused": false,
+  "transform": "matrix(1, 0, 0, 1, 0, -83.2)",
+  "viewport": {
+    "height": 900,
+    "width": 1280
+  },
+  "visibility": "visible"
+}

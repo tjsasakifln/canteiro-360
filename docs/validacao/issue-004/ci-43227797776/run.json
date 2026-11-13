@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "run_id": 43227797776,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43227797776",
+  "source_commit": "5588b0c695c13259e6e19b0a5a1256e39112a6c8",
+  "source_tree": "ccdc477a623394a0af87450cc64a406f3f7821d1",
+  "checkout_commit": "7f4ad5576ac14c373c13de965a8822e19ae948be",
+  "checkout_tree": "ccdc477a623394a0af87450cc64a406f3f7821d1",
+  "base_commit": "2013cef3c5097c087c9e4a116c125d2dfb248596",
+  "merge_parents": [
+    "2013cef3c5097c087c9e4a116c125d2dfb248596",
+    "5588b0c695c13259e6e19b0a5a1256e39112a6c8"
+  ],
+  "tree_verification": "Árvore e pais do merge conferidos pela API do GitHub. O log do job confirma o checkout completo por git log -1 --format=%H.",
+  "job_id": 131215442189,
+  "artifact_id": 13950282541,
+  "artifact_url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43227797776/artifacts/13950282541",
+  "artifact_sha256": "dd1f884fed3739eb42848c12c3f14392c1a2fb35b8edc69f9bc488adbca7081f",
+  "artifact_bytes": 6688584,
+  "artifact_files": 106,
+  "conclusion": "success",
+  "format_policy_clippy_audit_build_budget": "passed",
+  "native_passed": 60,
+  "basic_command_ignored": 21,
+  "postgresql_passed": 15,
+  "foundation_browser_passed": 2,
+  "foundation_performance_navigations": 80,
+  "forms_browser_passed": 3,
+  "forms_browser_failed": 0,
+  "forms_groups": {
+    "forms_http_ssr_and_presentation": "passed",
+    "forms_local_selection_and_expansion_feedback": "passed",
+    "forms_drafts_tables_and_context": "passed"
+  },
+  "forms_local_response_observations": 80,
+  "forms_local_response_violations": 0,
+  "forms_local_response_maximum_ms": 40.699999999953434,
+  "forms_console_entries": {
+    "forms-functional": 0,
+    "forms-presentation": 0,
+    "forms-local-response": 0
+  },
+  "document_height_regression": {
+    "status": "passed",
+    "measurements": [
+      {
+        "viewport_css_px": 360,
+        "metrics_file": "forms-document-height-360.json",
+        "document_height_css_px": 3134,
+        "footer_bottom_css_px": 3134.171875,
+        "maximum_extent_css_px": 3166.171875,
+        "image_file": "forms-table-360.png",
+        "image_width_px": 345,
+        "image_height_px": 3134
+      },
+      {
+        "viewport_css_px": 1280,
+        "metrics_file": "forms-document-height-1280.json",
+        "document_height_css_px": 2077,
+        "footer_bottom_css_px": 2076.8125,
+        "maximum_extent_css_px": 2108.8125,
+        "image_file": "forms-table-1280.png",
+        "image_width_px": 1265,
+        "image_height_px": 2077
+      }
+    ]
+  },
+  "forms_pointer_preparation": "passed; original element click opened the editor",
+  "forms_keyboard_grid_regression": {
+    "status": "passed",
+    "widths_css_px": [
+      360,
+      1280
+    ],
+    "report": "forms-sticky-controls.json",
+    "method": "Tab até linha 25, Shift+Tab até linha 1, clique real e retorno do editor; sem preparação por roda neste cenário."
+  },
+  "forms_delayed_scenarios": {
+    "unmounted_editor": {
+      "status": "passed",
+      "duration_ms": 4007.09999999986,
+      "http_status": 200,
+      "report": "forms-unmounted-preview.json"
+    },
+    "changed_input": {
+      "status": "passed",
+      "duration_ms": 1213.6999999999534,
+      "http_status": 200,
+      "report": "forms-delayed-preview.json"
+    },
+    "table_focus": {
+      "status": "passed",
+      "duration_ms": 1205.7999999998135,
+      "report": "forms-delayed-table-focus.json",
+      "http_status_recorded": false,
+      "result": "Página 2 carregada, primeira linha 26, busy=false, entrada 38, nota e foco preservados."
+    }
+  },
+  "history_and_context": {
+    "status": "passed",
+    "report": "forms-functional.json",
+    "basis": "O relatório final aprovado registra os checks; o percurso sequencial da fonte contém asserções de histórico, cancelamento e confirmação de troca de empresa."
+  },
+  "prototype_browser_executed": true,
+  "prototype_browser_passed": 1,
+  "total_browser_passed": 6,
+  "total_browser_failed": 0,
+  "cargo_no_fail_fast": true,
+  "worksheet_javascript_budget_bytes": 37030,
+  "worksheet_budget_report": "worksheet-budget.json",
+  "job_log": {
+    "file": "job.log",
+    "sha256": "fa7eeba538c1c716c6a08d7ad46c2dae2838a78644510318c64e77f661bcf879",
+    "provenance": "Log original do job obtido separadamente; não pertence ao ZIP identificado por artifact_sha256."
+  },
+  "human_professionals": "Não executado; a issue 3 e a PR 75 continuam dependentes de pelo menos três profissionais reais.",
+  "screen_reader": "Não executado; automação de DOM e teclado não equivale a leitor de tela.",
+  "integration_status": "Sem merge nem fechamento de issue nesta consolidação. Aprovação técnica não constitui aceite comercial.",
+  "selection_note": "38 arquivos originais do ZIP, com 14 capturas da planilha e as 80 amostras brutas da fundação desta fonte. Log original do job obtido separadamente. Três provas locais da mesma árvore e orçamento derivado identificados separadamente. Não inclui HTML com scripts, código de terceiros, capturas repetidas do protótipo ou logs auxiliares duplicados."
+}

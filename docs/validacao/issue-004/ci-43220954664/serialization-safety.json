@@ -1,0 +1,263 @@
+{
+  "status": "passed",
+  "scope": "Fictitious user search serialized by the real router and Leptos Resource in SSR HTML; no browser execution or external navigation. HTML tokenization and double JSON decoding verify this specific escape path.",
+  "source_commit": "b6dc408221b0bc5a1e71da01947e277c2380f170",
+  "source_tree": "48046848edf6c004b91987c5eaee0f8b3e53b933",
+  "local_commit": "63775b893e5537548602b621b5da7fcf92a4ccd4",
+  "native_probe_tests_passed": 1,
+  "responses_inspected": 12,
+  "nonempty_attack_vectors": 5,
+  "dependency": {
+    "name": "hydration_context",
+    "version": "0.3.2",
+    "source_file": "src/ssr.rs",
+    "source_sha256": "880e4719362d84219c8be3ae8358ccda6033c3f7a2090b929d9aa412c7d1abc6",
+    "verified_paths": [
+      "AsyncDataStream::poll_next",
+      "ResolvedData::write_to_buf"
+    ],
+    "behavior": "Both serialized-resource paths replace each literal less-than character with a JavaScript Unicode escape before emitting the surrounding script."
+  },
+  "tracked_application_changes": false,
+  "temporary_test_removed": true,
+  "results": [
+    {
+      "organization": "aurora",
+      "vector_index": 0,
+      "vector_type": "baseline",
+      "vector_characters": 0,
+      "vector_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "html_sha256": "d54a59ac7e5f3d46a05c02607016a9493388a15e9316ec14f6dd47a01eb5259f",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "aurora",
+      "vector_index": 1,
+      "vector_type": "closing_script_and_new_script",
+      "vector_characters": 47,
+      "vector_sha256": "0ec3a365ed5feb44672a4a0054d8274b599c6384f372d5f5269f9bb518a2026a",
+      "html_sha256": "2057895e547f60208bf9dd63b9f225415c38370426218ea7ed11eea06c63e774",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "aurora",
+      "vector_index": 2,
+      "vector_type": "mixed_case_closing_script_and_svg_handler",
+      "vector_characters": 43,
+      "vector_sha256": "35f83d0c37c7a51fa4b26b08b2cfe434adf81726a5e968d1772abe85a45e9de1",
+      "html_sha256": "d7c7a27c1dc28720d864d03c4e50bca7ecb17614956c24db7e996d57456812e7",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "aurora",
+      "vector_index": 3,
+      "vector_type": "attribute_quote_and_svg_handler",
+      "vector_characters": 36,
+      "vector_sha256": "6b8076aef5f9af02edac7ed917d80d9d5d445ccd5f32e77e5c5ddd446a4e93ba",
+      "html_sha256": "b187b4013684843750f87dd5616a75c1374bf4ed3e6aea9fb3615e4d2ba133e1",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "aurora",
+      "vector_index": 4,
+      "vector_type": "html_comment_closing_script_and_element",
+      "vector_characters": 32,
+      "vector_sha256": "43a4b82557270da623902fe6f2c4ab9c54d9d97f636b89d130dd1894c8c28289",
+      "html_sha256": "082232baa15a31ab666637e9addb42fb9c25f65a158a133f62c020284143a8ab",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "aurora",
+      "vector_index": 5,
+      "vector_type": "literal_unicode_escape_and_script_tag",
+      "vector_characters": 52,
+      "vector_sha256": "19a0a8793f581abc993637bb3202241b3c8e7f39fcc64d12282e05c979e979a5",
+      "html_sha256": "213875ae8eb6f9aab55cf137793e212455de490397934f900dbf9ba37241dc8b",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "horizonte",
+      "vector_index": 0,
+      "vector_type": "baseline",
+      "vector_characters": 0,
+      "vector_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "html_sha256": "50284789fc13f7bbf2027e4b5277e79868fae0fa45a4b7e4547041a6a7c931f1",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "horizonte",
+      "vector_index": 1,
+      "vector_type": "closing_script_and_new_script",
+      "vector_characters": 47,
+      "vector_sha256": "0ec3a365ed5feb44672a4a0054d8274b599c6384f372d5f5269f9bb518a2026a",
+      "html_sha256": "40b69c1e5edefb763e06dcc9bbea2147cfed3c129d193d58d4976f4a1e54d0f8",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "horizonte",
+      "vector_index": 2,
+      "vector_type": "mixed_case_closing_script_and_svg_handler",
+      "vector_characters": 43,
+      "vector_sha256": "35f83d0c37c7a51fa4b26b08b2cfe434adf81726a5e968d1772abe85a45e9de1",
+      "html_sha256": "7594e2ad07b879e83d845f646e982d131f53e3943a12c33d1b5dac7304b34506",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "horizonte",
+      "vector_index": 3,
+      "vector_type": "attribute_quote_and_svg_handler",
+      "vector_characters": 36,
+      "vector_sha256": "6b8076aef5f9af02edac7ed917d80d9d5d445ccd5f32e77e5c5ddd446a4e93ba",
+      "html_sha256": "8f4f5d5ac9d50e12b9be122b9ce0a18e5ab677d2ba2d99d6cb80e257027492e0",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "horizonte",
+      "vector_index": 4,
+      "vector_type": "html_comment_closing_script_and_element",
+      "vector_characters": 32,
+      "vector_sha256": "43a4b82557270da623902fe6f2c4ab9c54d9d97f636b89d130dd1894c8c28289",
+      "html_sha256": "2fa066f6b36e9743ae25e3be8c2a10406f35bce8464ca55cba8953e8f7a59aac",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    },
+    {
+      "organization": "horizonte",
+      "vector_index": 5,
+      "vector_type": "literal_unicode_escape_and_script_tag",
+      "vector_characters": 52,
+      "vector_sha256": "19a0a8793f581abc993637bb3202241b3c8e7f39fcc64d12282e05c979e979a5",
+      "html_sha256": "be2be4d19424caa801a21b70fa89b59225c53a752392678e699cce8b3a313b57",
+      "script_elements": 4,
+      "resource_scripts": 1,
+      "checks": {
+        "no_injected_active_element": true,
+        "script_count_matches_baseline": true,
+        "no_literal_less_than_in_resource_script": true,
+        "query_round_trip_exact": true,
+        "input_attribute_round_trip_exact": true,
+        "organization_matches": true,
+        "no_out_of_order_template": true
+      }
+    }
+  ],
+  "limitations": [
+    "Focused inspection and native SSR probe, not a complete application security assessment.",
+    "Raw HTML and synthetic probe source remain outside the repository; no executable HTML evidence is proposed for publication."
+  ],
+  "nonempty_vector_responses": 10,
+  "baseline_responses": 2,
+  "probe_sha256": "ce08671c6662d789b3bc8b01d28b051b63c34c4823f7ce406a2498d19e71a691",
+  "analysis_sha256": "f1a06c15d8039cac761179b00a0cb867d297ba18ea1b96244dc4f49e98d59266",
+  "native_log_sha256": "1a847b799549f8fab2ac2c58997bc1d8b3cde1dbb13aed90e2e9b65c349b86a9",
+  "native_command": "cargo test --locked -p canteiro-api --test issue004_serialization_probe -- --nocapture"
+}

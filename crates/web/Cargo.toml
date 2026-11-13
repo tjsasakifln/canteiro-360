@@ -16,16 +16,25 @@ hydrate = [
     "dep:wasm-bindgen",
     "dep:console_error_panic_hook",
     "dep:web-sys",
+    "dep:wasm-bindgen-futures",
+    "dep:js-sys",
+    "dep:send_wrapper",
 ]
 ssr = ["leptos/ssr", "leptos_meta/ssr", "leptos_router/ssr"]
 
 [dependencies]
+canteiro-contracts = { path = "../contracts" }
+serde.workspace = true
+serde_json.workspace = true
 leptos.workspace = true
 leptos_meta.workspace = true
 leptos_router.workspace = true
 wasm-bindgen = { workspace = true, optional = true }
 console_error_panic_hook = { workspace = true, optional = true }
-web-sys = { version = "=0.3.107", optional = true, features = ["Window", "Document", "Element", "HtmlElement", "HtmlDialogElement", "HtmlSelectElement", "BeforeUnloadEvent"] }
+wasm-bindgen-futures = { version = "=0.4.80", optional = true }
+js-sys = { version = "=0.3.107", optional = true }
+send_wrapper = { version = "=0.6.0", features = ["futures"], optional = true }
+web-sys = { version = "=0.3.107", optional = true, features = ["Window", "Document", "Element", "HtmlElement", "HtmlDialogElement", "HtmlSelectElement", "HtmlDetailsElement", "HtmlTextAreaElement", "BeforeUnloadEvent", "Response", "Request", "RequestInit", "Headers", "AbortController", "AbortSignal"] }
 
 [lints]
 workspace = true

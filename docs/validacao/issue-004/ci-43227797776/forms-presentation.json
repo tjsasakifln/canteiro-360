@@ -1,0 +1,386 @@
+{
+  "checks": [
+    "server_page_bounded_with_10000_records",
+    "stable_server_search_and_sort",
+    "server_exact_decimal_canonicalization",
+    "server_ambiguous_value_rejected",
+    "server_20_to_35_means_15",
+    "server_cumulative_truncation_0_335",
+    "server_rendered_page_and_pagination_without_scripts",
+    "reflow_360_and_1280",
+    "table_and_controls_accessibly_named",
+    "initial_row_identity_and_edit_visible_without_horizontal_scroll",
+    "row_selection_and_edit_targets_44px",
+    "document_ends_at_footer_without_escaped_grid_content",
+    "sticky_grid_targets_remain_visible_and_clickable_after_keyboard_scroll"
+  ],
+  "console": [],
+  "environment": {
+    "apiBinaryBytes": 34699096,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 7763 64-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        8122984 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794491817782,
+    "wasmBinaryBytes": 21704910
+  },
+  "group": "forms-presentation",
+  "limits": "HTTP contracts, no-script navigation, rendered layout and keyboard navigation within the grid. Does not claim the independent draft/context journey, response-time group, assistive-technology use or professional-user trial.",
+  "server": {
+    "ambiguous": {
+      "canonical": {
+        "current": "35",
+        "date": "2026-11-12",
+        "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+        "percent": "5",
+        "unit": "m²"
+      },
+      "errors": [
+        {
+          "code": "ambiguous",
+          "field": "unit_price",
+          "message": "O ponto sozinho é ambíguo. Para milhar, escreva 1.234,00; para decimal, use vírgula, como 1,234."
+        }
+      ],
+      "preview": null
+    },
+    "cumulativePreview": {
+      "canonical": {
+        "current": "2",
+        "date": "2026-11-12",
+        "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+        "percent": "5",
+        "unit": "un",
+        "unit_price": "0.335"
+      },
+      "errors": [],
+      "preview": {
+        "balance": "98",
+        "balance_value": "32.83",
+        "code": "AUR-00002",
+        "contracted": "100",
+        "current": "2",
+        "description": "Componente demonstrativo 00002",
+        "difference": "1",
+        "id": 2,
+        "period_value": "0.34",
+        "previous": "1",
+        "unit": "un",
+        "unit_price": "0.335"
+      }
+    },
+    "descendingFirstId": 10000,
+    "exactPreview": {
+      "canonical": {
+        "current": "35",
+        "date": "2026-11-12",
+        "notes": "Conferência fictícia do pavimento 2, trecho entre os eixos A e B.",
+        "percent": "5",
+        "unit": "m²",
+        "unit_price": "1234.56"
+      },
+      "errors": [],
+      "preview": {
+        "balance": "65",
+        "balance_value": "80246.40",
+        "code": "AUR-00001",
+        "contracted": "100",
+        "current": "35",
+        "description": "Alvenaria de vedação 00001",
+        "difference": "15",
+        "id": 1,
+        "period_value": "18518.40",
+        "previous": "20",
+        "unit": "m²",
+        "unit_price": "1234.56"
+      }
+    },
+    "filteredTotal": 1,
+    "first": {
+      "balance": "65",
+      "balance_value": "650.00",
+      "code": "AUR-00001",
+      "contracted": "100",
+      "current": "35",
+      "description": "Alvenaria de vedação 00001",
+      "difference": "15",
+      "id": 1,
+      "period_value": "150.00",
+      "previous": "20",
+      "unit": "m²",
+      "unit_price": "10"
+    },
+    "fixtureTotal": 10000,
+    "pageSize": 25,
+    "pages": 400,
+    "secondPageFirstId": 26
+  },
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  },
+  "viewports": [
+    {
+      "firstRowGeometry": {
+        "clip": {
+          "left": 17,
+          "right": 313
+        },
+        "parts": [
+          {
+            "bounds": {
+              "bottom": 2261.390625,
+              "height": 44,
+              "left": 33,
+              "right": 97,
+              "top": 2217.390625,
+              "width": 64
+            },
+            "clientWidth": 64,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "checkbox",
+            "scrollWidth": 64,
+            "tag": "LABEL",
+            "text": "Selecionar serviço AUR-00001"
+          },
+          {
+            "bounds": {
+              "bottom": 2241.390625,
+              "height": 24,
+              "left": 125,
+              "right": 266,
+              "top": 2217.390625,
+              "width": 141
+            },
+            "clientWidth": 141,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "identity",
+            "scrollWidth": 141,
+            "tag": "STRONG",
+            "text": "AUR-00001"
+          },
+          {
+            "bounds": {
+              "bottom": 2289.390625,
+              "height": 48,
+              "left": 125,
+              "right": 266,
+              "top": 2241.390625,
+              "width": 141
+            },
+            "clientWidth": 141,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "description",
+            "scrollWidth": 141,
+            "tag": "SPAN",
+            "text": "Alvenaria de vedação 00001"
+          },
+          {
+            "bounds": {
+              "bottom": 2314.390625,
+              "height": 21,
+              "left": 125,
+              "right": 266,
+              "top": 2293.390625,
+              "width": 141
+            },
+            "clientWidth": 141,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "unit",
+            "scrollWidth": 141,
+            "tag": "SPAN",
+            "text": "Unidade: m²"
+          },
+          {
+            "bounds": {
+              "bottom": 2395.171875,
+              "height": 68.78125,
+              "left": 125,
+              "right": 266,
+              "top": 2326.390625,
+              "width": 141
+            },
+            "clientWidth": 139,
+            "horizontallyContained": true,
+            "id": "edit-row-1",
+            "name": "edit",
+            "scrollWidth": 139,
+            "tag": "BUTTON",
+            "text": "Editar rascunho"
+          }
+        ],
+        "scrollLeft": 0,
+        "viewport": 360
+      },
+      "metrics": {
+        "body": 345,
+        "caption": "Serviços da medição. Anterior e atual são acumulados; diferença representa a quantidade do período. Cada quantidade usa a unidade da linha.",
+        "columns": [
+          "Selecionar",
+          "Serviço, unidade e edição",
+          "Contratado (unid. da linha)",
+          "Anterior acumulado (unid. da linha)",
+          "Atual acumulado (unid. da linha)",
+          "Diferença no período (unid. da linha)",
+          "Preço unitário (R$)",
+          "Valor do período (R$)",
+          "Saldo (unid. da linha)",
+          "Saldo (R$)"
+        ],
+        "document": 345,
+        "rows": 25,
+        "unlabelled": [],
+        "viewport": 360
+      },
+      "verticalExtent": {
+        "bodyScrollHeight": 3134,
+        "cdpCssContentHeight": 3134,
+        "documentScrollHeight": 3134,
+        "footerBottom": 3134.171875,
+        "innerHeight": 900,
+        "largestExtent": 3134.0,
+        "maximumExtent": 3166.171875,
+        "trailingAllowancePx": 32
+      },
+      "width": 360
+    },
+    {
+      "firstRowGeometry": {
+        "clip": {
+          "left": 33.5,
+          "right": 1216.5
+        },
+        "parts": [
+          {
+            "bounds": {
+              "bottom": 1312.421875,
+              "height": 44,
+              "left": 49.5,
+              "right": 113.5,
+              "top": 1268.421875,
+              "width": 64
+            },
+            "clientWidth": 64,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "checkbox",
+            "scrollWidth": 64,
+            "tag": "LABEL",
+            "text": "Selecionar serviço AUR-00001"
+          },
+          {
+            "bounds": {
+              "bottom": 1292.421875,
+              "height": 24,
+              "left": 141.5,
+              "right": 362.5,
+              "top": 1268.421875,
+              "width": 221
+            },
+            "clientWidth": 221,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "identity",
+            "scrollWidth": 221,
+            "tag": "STRONG",
+            "text": "AUR-00001"
+          },
+          {
+            "bounds": {
+              "bottom": 1340.421875,
+              "height": 48,
+              "left": 141.5,
+              "right": 362.5,
+              "top": 1292.421875,
+              "width": 221
+            },
+            "clientWidth": 221,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "description",
+            "scrollWidth": 221,
+            "tag": "SPAN",
+            "text": "Alvenaria de vedação 00001"
+          },
+          {
+            "bounds": {
+              "bottom": 1365.421875,
+              "height": 21,
+              "left": 141.5,
+              "right": 362.5,
+              "top": 1344.421875,
+              "width": 221
+            },
+            "clientWidth": 221,
+            "horizontallyContained": true,
+            "id": "",
+            "name": "unit",
+            "scrollWidth": 221,
+            "tag": "SPAN",
+            "text": "Unidade: m²"
+          },
+          {
+            "bounds": {
+              "bottom": 1423.8125,
+              "height": 46.390625,
+              "left": 141.5,
+              "right": 362.5,
+              "top": 1377.421875,
+              "width": 221
+            },
+            "clientWidth": 219,
+            "horizontallyContained": true,
+            "id": "edit-row-1",
+            "name": "edit",
+            "scrollWidth": 219,
+            "tag": "BUTTON",
+            "text": "Editar rascunho"
+          }
+        ],
+        "scrollLeft": 0,
+        "viewport": 1280
+      },
+      "metrics": {
+        "body": 1265,
+        "caption": "Serviços da medição. Anterior e atual são acumulados; diferença representa a quantidade do período. Cada quantidade usa a unidade da linha.",
+        "columns": [
+          "Selecionar",
+          "Serviço, unidade e edição",
+          "Contratado (unid. da linha)",
+          "Anterior acumulado (unid. da linha)",
+          "Atual acumulado (unid. da linha)",
+          "Diferença no período (unid. da linha)",
+          "Preço unitário (R$)",
+          "Valor do período (R$)",
+          "Saldo (unid. da linha)",
+          "Saldo (R$)"
+        ],
+        "document": 1265,
+        "rows": 25,
+        "unlabelled": [],
+        "viewport": 1280
+      },
+      "verticalExtent": {
+        "bodyScrollHeight": 2077,
+        "cdpCssContentHeight": 2077,
+        "documentScrollHeight": 2077,
+        "footerBottom": 2076.8125,
+        "innerHeight": 900,
+        "largestExtent": 2077.0,
+        "maximumExtent": 2108.8125,
+        "trailingAllowancePx": 32
+      },
+      "width": 1280
+    }
+  ]
+}

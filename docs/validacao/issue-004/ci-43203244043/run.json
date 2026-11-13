@@ -1,0 +1,21 @@
+{
+  "run_id": 43203244043,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43203244043",
+  "source_commit": "0a81b3bcc41789a475e6ffe9277e3d99eb10d999",
+  "source_tree": "12c62c90e1dabe8a26ffda6d9a4563818e0c3de6",
+  "checkout_commit": "213cf6237f3be44a2957d6003e057ae811d5893c",
+  "checkout_tree": "12c62c90e1dabe8a26ffda6d9a4563818e0c3de6",
+  "base_commit": "2013cef3c5097c087c9e4a116c125d2dfb248596",
+  "job_id": 131131805931,
+  "artifact_id": 13939121418,
+  "artifact_sha256": "a363c904cd605829bae5ef61d0505c6381c326e3c61897e272224fd344caae43",
+  "conclusion": "failure",
+  "native_passed": 60,
+  "postgresql_passed": 15,
+  "foundation_browser_passed": 2,
+  "foundation_performance_navigations": 80,
+  "forms_browser_passed": 0,
+  "forms_browser_failed": 1,
+  "prototype_browser_executed": false,
+  "failure": "SSR sem scripts: zero linhas no DOM ativo; as 25 linhas estavam dentro de um template inerte."
+}

@@ -278,7 +278,13 @@ impl Browser {
             "return document.activeElement?.matches({});",
             serde_json::to_string(selector)?
         );
-        for _ in 0..60 {
+        if self.execute(&expression).await? == true {
+            return Ok(());
+        }
+        // A supported page of 100 services exposes up to 200 row controls,
+        // in addition to the editor, navigation and prototype options.
+        // Keep real keyboard traversal and a finite failure limit.
+        for _ in 0..320 {
             self.key(TAB).await?;
             if self.execute(&expression).await? == true {
                 return Ok(());
@@ -331,10 +337,44 @@ impl Browser {
     }
 
     pub async fn fill(&self, selector: &str, text: &str) -> TestResult {
+        // Use actual editing input. ChromeDriver's CLEAR atom assigns an empty
+        // value, dispatches change without input, then blurs the control.
+        // A controlled input can therefore restore its old value before typing.
+        let before = self.property(selector, "value").await?;
+        self.click(selector).await?;
+        let focused = format!(
+            "return document.activeElement?.matches({});",
+            serde_json::to_string(selector)?
+        );
+        assert_eq!(
+            self.execute(&focused).await?,
+            true,
+            "The field must hold focus before keyboard replacement: {selector}"
+        );
+        self.chord(&["\u{e009}"], "a").await?;
+        self.key("\u{e003}").await?;
+        assert_eq!(
+            self.property(selector, "value").await?,
+            "",
+            "Native keyboard clearing failed for {selector}; previous value: {before}"
+        );
+        assert_eq!(
+            self.execute(&focused).await?,
+            true,
+            "The field must keep focus after keyboard clearing: {selector}"
+        );
+        // Resolve again after the input event, so a legitimate reactive rebuild
+        // cannot leave the typing command with an obsolete element reference.
         let id = self.element(selector).await?;
-        self.post(&format!("element/{id}/clear"), json!({})).await?;
-        self.post(&format!("element/{id}/value"), json!({"text":text}))
-            .await?;
+        if !text.is_empty() {
+            self.post(&format!("element/{id}/value"), json!({"text":text}))
+                .await?;
+        }
+        assert_eq!(
+            self.property(selector, "value").await?,
+            text,
+            "Native keyboard replacement failed for {selector}; previous value: {before}"
+        );
         Ok(())
     }
 

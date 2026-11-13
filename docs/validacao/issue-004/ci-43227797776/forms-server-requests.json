@@ -1,0 +1,27 @@
+[
+  {
+    "encodedBodySize": 663,
+    "name": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes?page=2&page_size=25&search=&sort=code&direction=asc",
+    "transferSize": 963
+  },
+  {
+    "encodedBodySize": 691,
+    "name": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes?page=1&page_size=25&search=&sort=code&direction=asc",
+    "transferSize": 991
+  },
+  {
+    "encodedBodySize": 918,
+    "name": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes?page=1&page_size=50&search=&sort=code&direction=desc",
+    "transferSize": 1218
+  },
+  {
+    "encodedBodySize": 691,
+    "name": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes?page=1&page_size=25&search=&sort=code&direction=asc",
+    "transferSize": 991
+  },
+  {
+    "encodedBodySize": 241,
+    "name": "http://127.0.0.1:37697/api/prototipo/aurora/medicoes?page=1&page_size=25&search=AUR-00001&sort=code&direction=asc",
+    "transferSize": 541
+  }
+]

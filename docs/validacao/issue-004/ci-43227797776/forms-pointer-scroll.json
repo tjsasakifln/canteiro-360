@@ -1,0 +1,361 @@
+{
+  "method": "Native WebDriver wheel input prepares the pointer target after clearing selection. DOM scripts only observe bounds, focus, scroll offsets and hit-testing. The inspected ChromeDriver 156.0.8078.80 GET_LOCATION_IN_VIEW atom scrolls by direct offsets without consuming CSS scroll-padding/scroll-margin; this describes the inspected driver atom only; the separate keyboard regression verifies the application behavior. The original WebDriver element click remains after the visibility assertion. The separate Tab/Shift+Tab regression has no wheel preparation.",
+  "states": [
+    {
+      "bounds": {
+        "bottom": -3025,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": -3071.390625,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": false,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": null,
+        "id": null,
+        "tag": null
+      },
+      "hitIsButton": false,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 3931,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    },
+    {
+      "bounds": {
+        "bottom": -2385,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": -2431.390625,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": false,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": null,
+        "id": null,
+        "tag": null
+      },
+      "hitIsButton": false,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 3291,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    },
+    {
+      "bounds": {
+        "bottom": -1745,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": -1791.390625,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": false,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": null,
+        "id": null,
+        "tag": null
+      },
+      "hitIsButton": false,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 2651,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    },
+    {
+      "bounds": {
+        "bottom": -1105,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": -1151.390625,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": false,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": null,
+        "id": null,
+        "tag": null
+      },
+      "hitIsButton": false,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 2011,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    },
+    {
+      "bounds": {
+        "bottom": -465,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": -511.390625,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": false,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": null,
+        "id": null,
+        "tag": null
+      },
+      "hitIsButton": false,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 1371,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    },
+    {
+      "bounds": {
+        "bottom": 175,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": 128.609375,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": false,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": "",
+        "id": "table-search",
+        "tag": "INPUT"
+      },
+      "hitIsButton": false,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 731,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    },
+    {
+      "bounds": {
+        "bottom": 761,
+        "height": 46.390625,
+        "left": 141.5,
+        "right": 362.5,
+        "top": 714.609375,
+        "width": 221
+      },
+      "clip": {
+        "bottom": 900,
+        "left": 33.5,
+        "right": 1216.5,
+        "top": 698.421875
+      },
+      "focus": "clear-selection",
+      "fullyVisible": true,
+      "headerBottom": 698.421875,
+      "hit": {
+        "classes": "secondary-button",
+        "id": "edit-row-1",
+        "tag": "BUTTON"
+      },
+      "hitIsButton": true,
+      "outlineWidth": 3,
+      "scrollLeft": 0,
+      "scrollTop": 145,
+      "scroller": {
+        "bottom": 1240.421875,
+        "left": 32.5,
+        "right": 1232.5,
+        "top": 600.421875
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1280
+      },
+      "wheelOrigin": {
+        "x": 625,
+        "y": 799.2109375
+      }
+    }
+  ],
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  },
+  "wheelActions": [
+    {
+      "deltaX": 0,
+      "deltaY": -640,
+      "duration": 200,
+      "origin": "viewport",
+      "type": "scroll",
+      "x": 625,
+      "y": 799
+    },
+    {
+      "deltaX": 0,
+      "deltaY": -640,
+      "duration": 200,
+      "origin": "viewport",
+      "type": "scroll",
+      "x": 625,
+      "y": 799
+    },
+    {
+      "deltaX": 0,
+      "deltaY": -640,
+      "duration": 200,
+      "origin": "viewport",
+      "type": "scroll",
+      "x": 625,
+      "y": 799
+    },
+    {
+      "deltaX": 0,
+      "deltaY": -640,
+      "duration": 200,
+      "origin": "viewport",
+      "type": "scroll",
+      "x": 625,
+      "y": 799
+    },
+    {
+      "deltaX": 0,
+      "deltaY": -640,
+      "duration": 200,
+      "origin": "viewport",
+      "type": "scroll",
+      "x": 625,
+      "y": 799
+    },
+    {
+      "deltaX": 0,
+      "deltaY": -586,
+      "duration": 200,
+      "origin": "viewport",
+      "type": "scroll",
+      "x": 625,
+      "y": 799
+    }
+  ]
+}

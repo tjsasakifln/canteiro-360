@@ -1,0 +1,970 @@
+{
+  "conditions": {
+    "cpuThrottle": 4,
+    "downloadBytesPerSecond": 500000,
+    "networkLatencyMs": 150,
+    "uploadBytesPerSecond": 125000
+  },
+  "console": [],
+  "environment": {
+    "apiBinaryBytes": 34632296,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V74 80-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        8122976 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794488808690,
+    "wasmBinaryBytes": 21701730
+  },
+  "group": "forms-local-response",
+  "method": "Browser event.timeStamp to second requestAnimationFrame, with expected DOM effect observed. No WebDriver or tool round-trip latency is included. This is a conservative laboratory feedback proxy, not visitor INP or a hardware display measurement.",
+  "profiles": [
+    {
+      "profile": "desktop",
+      "samples": [
+        {
+          "dispatchedAtMs": 1885.5999999998603,
+          "effectObserved": true,
+          "eventTimeMs": 1880.8999999999069,
+          "expected": true,
+          "feedbackUpperBoundMs": 30.19999999995343,
+          "firstFrameAtMs": 1901,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 1911.0999999998603
+        },
+        {
+          "dispatchedAtMs": 1995.0999999998603,
+          "effectObserved": true,
+          "eventTimeMs": 1993.5,
+          "expected": false,
+          "feedbackUpperBoundMs": 17.5,
+          "firstFrameAtMs": 2005.5,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2011
+        },
+        {
+          "dispatchedAtMs": 2096.5,
+          "effectObserved": true,
+          "eventTimeMs": 2094.2999999998137,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.700000000186265,
+          "firstFrameAtMs": 2105.0999999998603,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2111
+        },
+        {
+          "dispatchedAtMs": 2189.1999999999534,
+          "effectObserved": true,
+          "eventTimeMs": 2187.2999999998137,
+          "expected": false,
+          "feedbackUpperBoundMs": 15.900000000139698,
+          "firstFrameAtMs": 2197.5999999998603,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2203.1999999999534
+        },
+        {
+          "dispatchedAtMs": 2279.7999999998137,
+          "effectObserved": true,
+          "eventTimeMs": 2278.1999999999534,
+          "expected": true,
+          "feedbackUpperBoundMs": 15.899999999906868,
+          "firstFrameAtMs": 2289.0999999998603,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2294.0999999998603
+        },
+        {
+          "dispatchedAtMs": 2369.0999999998603,
+          "effectObserved": true,
+          "eventTimeMs": 2368.1999999999534,
+          "expected": false,
+          "feedbackUpperBoundMs": 16,
+          "firstFrameAtMs": 2378.6999999999534,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2384.1999999999534
+        },
+        {
+          "dispatchedAtMs": 2457.0999999998603,
+          "effectObserved": true,
+          "eventTimeMs": 2454.7999999998137,
+          "expected": true,
+          "feedbackUpperBoundMs": 17.5,
+          "firstFrameAtMs": 2466.1999999999534,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2472.2999999998137
+        },
+        {
+          "dispatchedAtMs": 2548,
+          "effectObserved": true,
+          "eventTimeMs": 2546.2999999998137,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.4000000001397,
+          "firstFrameAtMs": 2556.899999999907,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2562.6999999999534
+        },
+        {
+          "dispatchedAtMs": 2637.5999999998603,
+          "effectObserved": true,
+          "eventTimeMs": 2635.899999999907,
+          "expected": true,
+          "feedbackUpperBoundMs": 17.600000000093132,
+          "firstFrameAtMs": 2647.2999999998137,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2653.5
+        },
+        {
+          "dispatchedAtMs": 2726.6999999999534,
+          "effectObserved": true,
+          "eventTimeMs": 2725.899999999907,
+          "expected": false,
+          "feedbackUpperBoundMs": 17.100000000093132,
+          "firstFrameAtMs": 2737.2999999998137,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2743
+        },
+        {
+          "dispatchedAtMs": 2818.399999999907,
+          "effectObserved": true,
+          "eventTimeMs": 2816.7999999998137,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.700000000186265,
+          "firstFrameAtMs": 2827.6999999999534,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2833.5
+        },
+        {
+          "dispatchedAtMs": 2906.6999999999534,
+          "effectObserved": true,
+          "eventTimeMs": 2905,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.399999999906868,
+          "firstFrameAtMs": 2916.399999999907,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2921.399999999907
+        },
+        {
+          "dispatchedAtMs": 2990.899999999907,
+          "effectObserved": true,
+          "eventTimeMs": 2989.6999999999534,
+          "expected": true,
+          "feedbackUpperBoundMs": 15.5,
+          "firstFrameAtMs": 3000,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3005.1999999999534
+        },
+        {
+          "dispatchedAtMs": 3081.5,
+          "effectObserved": true,
+          "eventTimeMs": 3079.6999999999534,
+          "expected": false,
+          "feedbackUpperBoundMs": 15.300000000046566,
+          "firstFrameAtMs": 3089.7999999998137,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3095
+        },
+        {
+          "dispatchedAtMs": 3168.399999999907,
+          "effectObserved": true,
+          "eventTimeMs": 3166.0999999998603,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.600000000093132,
+          "firstFrameAtMs": 3176.899999999907,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3182.6999999999534
+        },
+        {
+          "dispatchedAtMs": 3260.5,
+          "effectObserved": true,
+          "eventTimeMs": 3258.5,
+          "expected": false,
+          "feedbackUpperBoundMs": 18.899999999906868,
+          "firstFrameAtMs": 3269.6999999999534,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3277.399999999907
+        },
+        {
+          "dispatchedAtMs": 3347.399999999907,
+          "effectObserved": true,
+          "eventTimeMs": 3345.399999999907,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.100000000093132,
+          "firstFrameAtMs": 3356.1999999999534,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3361.5
+        },
+        {
+          "dispatchedAtMs": 3432.5999999998603,
+          "effectObserved": true,
+          "eventTimeMs": 3430.7999999998137,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.700000000186265,
+          "firstFrameAtMs": 3440.0999999998603,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3445.5
+        },
+        {
+          "dispatchedAtMs": 3520.899999999907,
+          "effectObserved": true,
+          "eventTimeMs": 3519,
+          "expected": true,
+          "feedbackUpperBoundMs": 15.099999999860302,
+          "firstFrameAtMs": 3529.6999999999534,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3534.0999999998603
+        },
+        {
+          "dispatchedAtMs": 3609.399999999907,
+          "effectObserved": true,
+          "eventTimeMs": 3607,
+          "expected": false,
+          "feedbackUpperBoundMs": 18.399999999906868,
+          "firstFrameAtMs": 3617.59999999986,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3625.399999999907
+        },
+        {
+          "dispatchedAtMs": 3960.7999999998137,
+          "effectObserved": true,
+          "eventTimeMs": 3954.7999999998137,
+          "expected": true,
+          "feedbackUpperBoundMs": 21.4000000001397,
+          "firstFrameAtMs": 3966.399999999907,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3976.1999999999534
+        },
+        {
+          "dispatchedAtMs": 4049.7999999998137,
+          "effectObserved": true,
+          "eventTimeMs": 4047.59999999986,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.600000000093132,
+          "firstFrameAtMs": 4055.399999999907,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4064.1999999999534
+        },
+        {
+          "dispatchedAtMs": 4140.09999999986,
+          "effectObserved": true,
+          "eventTimeMs": 4138.09999999986,
+          "expected": true,
+          "feedbackUpperBoundMs": 13.900000000139698,
+          "firstFrameAtMs": 4145.799999999814,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4152
+        },
+        {
+          "dispatchedAtMs": 4223.5,
+          "effectObserved": true,
+          "eventTimeMs": 4221.59999999986,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.900000000139698,
+          "firstFrameAtMs": 4229.09999999986,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4235.5
+        },
+        {
+          "dispatchedAtMs": 4310.299999999814,
+          "effectObserved": true,
+          "eventTimeMs": 4308.59999999986,
+          "expected": true,
+          "feedbackUpperBoundMs": 18.9000000001397,
+          "firstFrameAtMs": 4316,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4327.5
+        },
+        {
+          "dispatchedAtMs": 4395.699999999953,
+          "effectObserved": true,
+          "eventTimeMs": 4394.09999999986,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.100000000093132,
+          "firstFrameAtMs": 4401,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4410.199999999953
+        },
+        {
+          "dispatchedAtMs": 4488.5,
+          "effectObserved": true,
+          "eventTimeMs": 4485.199999999953,
+          "expected": true,
+          "feedbackUpperBoundMs": 24.399999999906868,
+          "firstFrameAtMs": 4494.799999999814,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4509.59999999986
+        },
+        {
+          "dispatchedAtMs": 4615.199999999953,
+          "effectObserved": true,
+          "eventTimeMs": 4613.5,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.299999999813735,
+          "firstFrameAtMs": 4621.09999999986,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4626.799999999814
+        },
+        {
+          "dispatchedAtMs": 4700.699999999953,
+          "effectObserved": true,
+          "eventTimeMs": 4699.09999999986,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.199999999953434,
+          "firstFrameAtMs": 4706.199999999953,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4713.299999999814
+        },
+        {
+          "dispatchedAtMs": 4786.09999999986,
+          "effectObserved": true,
+          "eventTimeMs": 4784,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.699999999953434,
+          "firstFrameAtMs": 4791.699999999953,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4797.699999999953
+        },
+        {
+          "dispatchedAtMs": 4869.799999999814,
+          "effectObserved": true,
+          "eventTimeMs": 4867.699999999953,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.099999999860302,
+          "firstFrameAtMs": 4875.59999999986,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4881.799999999814
+        },
+        {
+          "dispatchedAtMs": 4954,
+          "effectObserved": true,
+          "eventTimeMs": 4952.299999999814,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.700000000186265,
+          "firstFrameAtMs": 4960.299999999814,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4967
+        },
+        {
+          "dispatchedAtMs": 5041.299999999814,
+          "effectObserved": true,
+          "eventTimeMs": 5038.899999999907,
+          "expected": true,
+          "feedbackUpperBoundMs": 15,
+          "firstFrameAtMs": 5047.09999999986,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5053.899999999907
+        },
+        {
+          "dispatchedAtMs": 5128.699999999953,
+          "effectObserved": true,
+          "eventTimeMs": 5127.09999999986,
+          "expected": false,
+          "feedbackUpperBoundMs": 18.30000000004657,
+          "firstFrameAtMs": 5134.59999999986,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5145.399999999907
+        },
+        {
+          "dispatchedAtMs": 5217.899999999907,
+          "effectObserved": true,
+          "eventTimeMs": 5215.5,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.5999999998603,
+          "firstFrameAtMs": 5223.799999999814,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5232.09999999986
+        },
+        {
+          "dispatchedAtMs": 5307.799999999814,
+          "effectObserved": true,
+          "eventTimeMs": 5307.5,
+          "expected": false,
+          "feedbackUpperBoundMs": 13,
+          "firstFrameAtMs": 5313.199999999953,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5320.5
+        },
+        {
+          "dispatchedAtMs": 5388.399999999907,
+          "effectObserved": true,
+          "eventTimeMs": 5386.699999999953,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.5,
+          "firstFrameAtMs": 5393.5,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5401.199999999953
+        },
+        {
+          "dispatchedAtMs": 5474.09999999986,
+          "effectObserved": true,
+          "eventTimeMs": 5472.199999999953,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.399999999906868,
+          "firstFrameAtMs": 5479.399999999907,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5485.59999999986
+        },
+        {
+          "dispatchedAtMs": 5555.199999999953,
+          "effectObserved": true,
+          "eventTimeMs": 5553.299999999814,
+          "expected": true,
+          "feedbackUpperBoundMs": 13.800000000046566,
+          "firstFrameAtMs": 5561,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5567.09999999986
+        },
+        {
+          "dispatchedAtMs": 5644,
+          "effectObserved": true,
+          "eventTimeMs": 5642.09999999986,
+          "expected": false,
+          "feedbackUpperBoundMs": 17.699999999953434,
+          "firstFrameAtMs": 5650.199999999953,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5659.799999999814
+        }
+      ],
+      "summaries": [
+        {
+          "action": "selection",
+          "limitMs": 100,
+          "maximumMs": 30.19999999995343,
+          "minimumMs": 14.700000000186265,
+          "p75Ms": 17.5,
+          "samples": 20
+        },
+        {
+          "action": "expansion",
+          "limitMs": 100,
+          "maximumMs": 24.399999999906868,
+          "minimumMs": 13.0,
+          "p75Ms": 16.600000000093132,
+          "samples": 20
+        }
+      ],
+      "viewport": {
+        "height": 768,
+        "mobileEmulation": false,
+        "width": 1366
+      }
+    },
+    {
+      "profile": "mobile-css",
+      "samples": [
+        {
+          "dispatchedAtMs": 1783.4000000001397,
+          "effectObserved": true,
+          "eventTimeMs": 1780.1000000000931,
+          "expected": true,
+          "feedbackUpperBoundMs": 18,
+          "firstFrameAtMs": 1792.3000000000466,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 1798.1000000000931
+        },
+        {
+          "dispatchedAtMs": 1874.4000000001397,
+          "effectObserved": true,
+          "eventTimeMs": 1872.4000000001397,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.0999999998603,
+          "firstFrameAtMs": 1882.6000000000931,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 1888.5
+        },
+        {
+          "dispatchedAtMs": 1962.4000000001397,
+          "effectObserved": true,
+          "eventTimeMs": 1960.3000000000463,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.900000000139698,
+          "firstFrameAtMs": 1970.3000000000463,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 1975.2000000001865
+        },
+        {
+          "dispatchedAtMs": 2047,
+          "effectObserved": true,
+          "eventTimeMs": 2046.6000000000931,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.899999999906868,
+          "firstFrameAtMs": 2056.5,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2060.5
+        },
+        {
+          "dispatchedAtMs": 2130.8000000000466,
+          "effectObserved": true,
+          "eventTimeMs": 2129.100000000093,
+          "expected": true,
+          "feedbackUpperBoundMs": 15,
+          "firstFrameAtMs": 2138.2000000001863,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2144.100000000093
+        },
+        {
+          "dispatchedAtMs": 2217.7000000001863,
+          "effectObserved": true,
+          "eventTimeMs": 2215.8000000000466,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.699999999953434,
+          "firstFrameAtMs": 2225.4000000001397,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2230.5
+        },
+        {
+          "dispatchedAtMs": 2304.600000000093,
+          "effectObserved": true,
+          "eventTimeMs": 2302.7000000001863,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.199999999953434,
+          "firstFrameAtMs": 2312.9000000001397,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2318.9000000001397
+        },
+        {
+          "dispatchedAtMs": 2401.3000000000466,
+          "effectObserved": true,
+          "eventTimeMs": 2398.8000000000466,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.699999999953434,
+          "firstFrameAtMs": 2409.2000000001863,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2413.5
+        },
+        {
+          "dispatchedAtMs": 2483.4000000001397,
+          "effectObserved": true,
+          "eventTimeMs": 2481.4000000001397,
+          "expected": true,
+          "feedbackUpperBoundMs": 14,
+          "firstFrameAtMs": 2490.600000000093,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2495.4000000001397
+        },
+        {
+          "dispatchedAtMs": 2566.600000000093,
+          "effectObserved": true,
+          "eventTimeMs": 2565.2000000001863,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.299999999813735,
+          "firstFrameAtMs": 2574.9000000001397,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2579.5
+        },
+        {
+          "dispatchedAtMs": 2650.100000000093,
+          "effectObserved": true,
+          "eventTimeMs": 2648.3000000000466,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.300000000046566,
+          "firstFrameAtMs": 2657.8000000000466,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2662.600000000093
+        },
+        {
+          "dispatchedAtMs": 2732.600000000093,
+          "effectObserved": true,
+          "eventTimeMs": 2731.2000000001863,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.699999999953434,
+          "firstFrameAtMs": 2740.100000000093,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2744.9000000001397
+        },
+        {
+          "dispatchedAtMs": 2817.3000000000466,
+          "effectObserved": true,
+          "eventTimeMs": 2815.7000000001863,
+          "expected": true,
+          "feedbackUpperBoundMs": 15.5,
+          "firstFrameAtMs": 2826.2000000001863,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2831.2000000001863
+        },
+        {
+          "dispatchedAtMs": 2899.100000000093,
+          "effectObserved": true,
+          "eventTimeMs": 2897.8000000000466,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.199999999953434,
+          "firstFrameAtMs": 2906.8000000000466,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2912
+        },
+        {
+          "dispatchedAtMs": 2983.8000000000466,
+          "effectObserved": true,
+          "eventTimeMs": 2982.100000000093,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.800000000046566,
+          "firstFrameAtMs": 2991.5,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 2996.9000000001397
+        },
+        {
+          "dispatchedAtMs": 3067.7000000001863,
+          "effectObserved": true,
+          "eventTimeMs": 3065.8000000000466,
+          "expected": false,
+          "feedbackUpperBoundMs": 15.300000000046566,
+          "firstFrameAtMs": 3076.9000000001397,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3081.100000000093
+        },
+        {
+          "dispatchedAtMs": 3151.600000000093,
+          "effectObserved": true,
+          "eventTimeMs": 3150,
+          "expected": true,
+          "feedbackUpperBoundMs": 15.300000000046566,
+          "firstFrameAtMs": 3159.9000000001397,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3165.3000000000466
+        },
+        {
+          "dispatchedAtMs": 3235.4000000001397,
+          "effectObserved": true,
+          "eventTimeMs": 3233.600000000093,
+          "expected": false,
+          "feedbackUpperBoundMs": 15.600000000093132,
+          "firstFrameAtMs": 3243.4000000001397,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3249.2000000001863
+        },
+        {
+          "dispatchedAtMs": 3320.600000000093,
+          "effectObserved": true,
+          "eventTimeMs": 3319.100000000093,
+          "expected": true,
+          "feedbackUpperBoundMs": 15.699999999953434,
+          "firstFrameAtMs": 3329.3000000000466,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3334.8000000000466
+        },
+        {
+          "dispatchedAtMs": 3404.5,
+          "effectObserved": true,
+          "eventTimeMs": 3402.3000000000466,
+          "expected": false,
+          "feedbackUpperBoundMs": 15.900000000139698,
+          "firstFrameAtMs": 3413.2000000001863,
+          "kind": "selection",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3418.2000000001863
+        },
+        {
+          "dispatchedAtMs": 3639,
+          "effectObserved": true,
+          "eventTimeMs": 3635.7000000001863,
+          "expected": true,
+          "feedbackUpperBoundMs": 24,
+          "firstFrameAtMs": 3645.40000000014,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3659.7000000001863
+        },
+        {
+          "dispatchedAtMs": 3727.3000000000466,
+          "effectObserved": true,
+          "eventTimeMs": 3725.7000000001863,
+          "expected": false,
+          "feedbackUpperBoundMs": 14.099999999860302,
+          "firstFrameAtMs": 3732.40000000014,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3739.8000000000466
+        },
+        {
+          "dispatchedAtMs": 3807.8000000000466,
+          "effectObserved": true,
+          "eventTimeMs": 3805.90000000014,
+          "expected": true,
+          "feedbackUpperBoundMs": 18,
+          "firstFrameAtMs": 3814.90000000014,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3823.90000000014
+        },
+        {
+          "dispatchedAtMs": 3926.100000000093,
+          "effectObserved": true,
+          "eventTimeMs": 3924.2000000001863,
+          "expected": false,
+          "feedbackUpperBoundMs": 15,
+          "firstFrameAtMs": 3930.90000000014,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 3939.2000000001863
+        },
+        {
+          "dispatchedAtMs": 4007.5,
+          "effectObserved": true,
+          "eventTimeMs": 4005.7000000001863,
+          "expected": true,
+          "feedbackUpperBoundMs": 16.5,
+          "firstFrameAtMs": 4012.3000000000466,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4022.2000000001863
+        },
+        {
+          "dispatchedAtMs": 4089.90000000014,
+          "effectObserved": true,
+          "eventTimeMs": 4088.2000000001863,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.899999999906868,
+          "firstFrameAtMs": 4095,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4105.100000000093
+        },
+        {
+          "dispatchedAtMs": 4169.90000000014,
+          "effectObserved": true,
+          "eventTimeMs": 4167.600000000093,
+          "expected": true,
+          "feedbackUpperBoundMs": 14,
+          "firstFrameAtMs": 4175.5,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4181.600000000093
+        },
+        {
+          "dispatchedAtMs": 4252.600000000093,
+          "effectObserved": true,
+          "eventTimeMs": 4251,
+          "expected": false,
+          "feedbackUpperBoundMs": 12.400000000139698,
+          "firstFrameAtMs": 4256.800000000047,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4263.40000000014
+        },
+        {
+          "dispatchedAtMs": 4333.300000000047,
+          "effectObserved": true,
+          "eventTimeMs": 4332.100000000093,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.600000000093132,
+          "firstFrameAtMs": 4338.100000000093,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4346.700000000186
+        },
+        {
+          "dispatchedAtMs": 4416.200000000186,
+          "effectObserved": true,
+          "eventTimeMs": 4414.90000000014,
+          "expected": false,
+          "feedbackUpperBoundMs": 12.699999999953434,
+          "firstFrameAtMs": 4421.300000000047,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4427.600000000093
+        },
+        {
+          "dispatchedAtMs": 4494.800000000047,
+          "effectObserved": true,
+          "eventTimeMs": 4493.200000000186,
+          "expected": true,
+          "feedbackUpperBoundMs": 14.899999999906868,
+          "firstFrameAtMs": 4499.700000000186,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4508.100000000093
+        },
+        {
+          "dispatchedAtMs": 4576.40000000014,
+          "effectObserved": true,
+          "eventTimeMs": 4574.40000000014,
+          "expected": false,
+          "feedbackUpperBoundMs": 16.199999999953434,
+          "firstFrameAtMs": 4580.600000000093,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4590.600000000093
+        },
+        {
+          "dispatchedAtMs": 4654,
+          "effectObserved": true,
+          "eventTimeMs": 4653.40000000014,
+          "expected": true,
+          "feedbackUpperBoundMs": 11.800000000046566,
+          "firstFrameAtMs": 4659,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4665.200000000186
+        },
+        {
+          "dispatchedAtMs": 4733.100000000093,
+          "effectObserved": true,
+          "eventTimeMs": 4731.5,
+          "expected": false,
+          "feedbackUpperBoundMs": 12.900000000139698,
+          "firstFrameAtMs": 4738.300000000047,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4744.40000000014
+        },
+        {
+          "dispatchedAtMs": 4831.40000000014,
+          "effectObserved": true,
+          "eventTimeMs": 4829.90000000014,
+          "expected": true,
+          "feedbackUpperBoundMs": 12.5,
+          "firstFrameAtMs": 4835.800000000047,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4842.40000000014
+        },
+        {
+          "dispatchedAtMs": 4911.300000000047,
+          "effectObserved": true,
+          "eventTimeMs": 4910.100000000093,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.300000000046566,
+          "firstFrameAtMs": 4917.200000000186,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 4923.40000000014
+        },
+        {
+          "dispatchedAtMs": 4991.100000000093,
+          "effectObserved": true,
+          "eventTimeMs": 4989.700000000186,
+          "expected": true,
+          "feedbackUpperBoundMs": 19.299999999813735,
+          "firstFrameAtMs": 4997.300000000047,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5009
+        },
+        {
+          "dispatchedAtMs": 5073.800000000047,
+          "effectObserved": true,
+          "eventTimeMs": 5071.800000000047,
+          "expected": false,
+          "feedbackUpperBoundMs": 17.600000000093132,
+          "firstFrameAtMs": 5079.100000000093,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5089.40000000014
+        },
+        {
+          "dispatchedAtMs": 5153.800000000047,
+          "effectObserved": true,
+          "eventTimeMs": 5151.600000000093,
+          "expected": true,
+          "feedbackUpperBoundMs": 13.800000000046566,
+          "firstFrameAtMs": 5159.200000000186,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5165.40000000014
+        },
+        {
+          "dispatchedAtMs": 5237.5,
+          "effectObserved": true,
+          "eventTimeMs": 5235.40000000014,
+          "expected": false,
+          "feedbackUpperBoundMs": 13.5,
+          "firstFrameAtMs": 5242.600000000093,
+          "kind": "expansion",
+          "rowsInDom": 25,
+          "secondFrameAtMs": 5248.90000000014
+        }
+      ],
+      "summaries": [
+        {
+          "action": "selection",
+          "limitMs": 100,
+          "maximumMs": 18.0,
+          "minimumMs": 13.699999999953434,
+          "p75Ms": 15.600000000093132,
+          "samples": 20
+        },
+        {
+          "action": "expansion",
+          "limitMs": 100,
+          "maximumMs": 24.0,
+          "minimumMs": 11.800000000046566,
+          "p75Ms": 16.5,
+          "samples": 20
+        }
+      ],
+      "viewport": {
+        "height": 800,
+        "mobileEmulation": true,
+        "width": 360
+      }
+    }
+  ],
+  "scope": "20 selection toggles and 20 progressive-disclosure toggles per profile, after hydration, one fixture page of 25 rows. Does not claim 20 navigations per route, exclusive 4 vCPU allocation, physical Android or the full integrated 9.3 protocol.",
+  "status": "passed",
+  "versions": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "platform": "linux"
+  },
+  "violations": []
+}

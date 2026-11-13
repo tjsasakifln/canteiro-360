@@ -1,0 +1,95 @@
+{
+  "clip": {
+    "left": 17,
+    "right": 313
+  },
+  "parts": [
+    {
+      "bounds": {
+        "bottom": 2261.390625,
+        "height": 44,
+        "left": 33,
+        "right": 97,
+        "top": 2217.390625,
+        "width": 64
+      },
+      "clientWidth": 64,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "checkbox",
+      "scrollWidth": 64,
+      "tag": "LABEL",
+      "text": "Selecionar serviço AUR-00001"
+    },
+    {
+      "bounds": {
+        "bottom": 2241.390625,
+        "height": 24,
+        "left": 125,
+        "right": 266,
+        "top": 2217.390625,
+        "width": 141
+      },
+      "clientWidth": 141,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "identity",
+      "scrollWidth": 141,
+      "tag": "STRONG",
+      "text": "AUR-00001"
+    },
+    {
+      "bounds": {
+        "bottom": 2289.390625,
+        "height": 48,
+        "left": 125,
+        "right": 266,
+        "top": 2241.390625,
+        "width": 141
+      },
+      "clientWidth": 141,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "description",
+      "scrollWidth": 141,
+      "tag": "SPAN",
+      "text": "Alvenaria de vedação 00001"
+    },
+    {
+      "bounds": {
+        "bottom": 2314.390625,
+        "height": 21,
+        "left": 125,
+        "right": 266,
+        "top": 2293.390625,
+        "width": 141
+      },
+      "clientWidth": 141,
+      "horizontallyContained": true,
+      "id": "",
+      "name": "unit",
+      "scrollWidth": 141,
+      "tag": "SPAN",
+      "text": "Unidade: m²"
+    },
+    {
+      "bounds": {
+        "bottom": 2395.171875,
+        "height": 68.78125,
+        "left": 125,
+        "right": 266,
+        "top": 2326.390625,
+        "width": 141
+      },
+      "clientWidth": 139,
+      "horizontallyContained": true,
+      "id": "edit-row-1",
+      "name": "edit",
+      "scrollWidth": 139,
+      "tag": "BUTTON",
+      "text": "Editar rascunho"
+    }
+  ],
+  "scrollLeft": 0,
+  "viewport": 360
+}
