@@ -213,6 +213,14 @@ async fn paste_code(browser: &Browser, selector: &str, value: &str) -> TestResul
 
 async fn layout(browser: &Browser, h: &Harness, name: &str, width: u32) -> TestResult<Value> {
     browser.viewport(width, 1000, width == 360).await?;
+    ready(browser).await?;
+    browser.tab_to("#org-selection").await?;
+    assert_eq!(
+        browser
+            .execute("return document.activeElement?.id;")
+            .await?,
+        "org-selection"
+    );
     let metrics=browser.execute("return {width:innerWidth,scroll:document.documentElement.scrollWidth,labels:[...document.querySelectorAll('.organizations-page input,.organizations-page select,.organizations-page textarea')].filter(e=>e.getClientRects().length).map(e=>({id:e.id,label:!!document.querySelector('label[for=\"'+e.id+'\"]'),height:e.getBoundingClientRect().height})),privateCodes:!!document.querySelector('#org-invitation-code,#org-access-code')};").await?;
     assert!(
         metrics["scroll"].as_u64().unwrap() <= metrics["width"].as_u64().unwrap(),
@@ -475,6 +483,24 @@ async fn organization_membership_context_and_invitations_work_through_the_browse
     // An old administrator response must not reappear after login changes in
     // another tab. Fixture cookies arrange the identity change; WebDriver tab
     // switching triggers the same focus event used by normal account access.
+    let original_handle = browser
+        .request(reqwest::Method::GET, "window", None)
+        .await?
+        .as_str()
+        .ok_or("Window handle unavailable")?
+        .to_owned();
+    let tab = browser.post("window/new", json!({"type":"tab"})).await?;
+    let other_handle = tab["handle"].as_str().ok_or("New tab handle unavailable")?;
+    browser
+        .post("window", json!({"handle":other_handle}))
+        .await?;
+    browser.navigate(&h.app_url).await?;
+    browser.cdp("Page.bringToFront", json!({})).await?;
+    browser
+        .post("window", json!({"handle":original_handle}))
+        .await?;
+    browser.cdp("Page.bringToFront", json!({})).await?;
+    ready(&browser).await?;
     browser
         .fill("#org-invite-email", "late-response@example.invalid")
         .await?;
@@ -492,12 +518,9 @@ async fn organization_membership_context_and_invitations_work_through_the_browse
         .await?
         .as_f64()
         .ok_or("Clock unavailable")?;
-    let original_handle = browser
-        .request(reqwest::Method::GET, "window", None)
-        .await?
-        .as_str()
-        .ok_or("Window handle unavailable")?
-        .to_owned();
+    // Observation only: record actual browser lifecycle events, never dispatch
+    // synthetic focus or visibility events to make the product respond.
+    browser.execute("window.__orgLifecycle=[];for(const name of ['focus','blur','pageshow','pagehide'])window.addEventListener(name,()=>window.__orgLifecycle.push({name,time:performance.now(),visible:document.visibilityState}));document.addEventListener('visibilitychange',()=>window.__orgLifecycle.push({name:'visibilitychange',time:performance.now(),visible:document.visibilityState}));return true;").await?;
     browser.click("#org-invite-submit").await?;
     browser
         .wait(
@@ -505,12 +528,10 @@ async fn organization_membership_context_and_invitations_work_through_the_browse
             WAIT,
         )
         .await?;
-    let tab = browser.post("window/new", json!({"type":"tab"})).await?;
-    let other_handle = tab["handle"].as_str().ok_or("New tab handle unavailable")?;
     browser
         .post("window", json!({"handle":other_handle}))
         .await?;
-    browser.navigate(&h.app_url).await?;
+    browser.cdp("Page.bringToFront", json!({})).await?;
     browser
         .post(
             "cookie",
@@ -523,7 +544,12 @@ async fn organization_membership_context_and_invitations_work_through_the_browse
     browser
         .post("window", json!({"handle":original_handle}))
         .await?;
-    browser.wait("return document.querySelector('[data-org-ready]')?.dataset.orgReady === 'false' && !document.querySelector('#org-invite-heading');",WAIT).await?;
+    browser.cdp("Page.bringToFront", json!({})).await?;
+    if let Err(error) = browser.wait("return document.querySelector('[data-org-ready]')?.dataset.orgReady === 'false' && !document.querySelector('#org-invite-heading');",WAIT).await {
+        let observed = browser.execute("return {now:performance.now(),ready:document.querySelector('[data-org-ready]')?.dataset.orgReady,busy:document.querySelector('[data-org-busy]')?.dataset.orgBusy,admin:!!document.querySelector('#org-invite-heading'),visible:document.visibilityState,focused:document.hasFocus(),events:window.__orgLifecycle,resources:performance.getEntriesByType('resource').filter(e=>e.name.endsWith('/api/organizations/command')||e.name.endsWith('/api/organizations/context')).map(e=>({kind:e.name.endsWith('/context')?'context':'command',start:e.startTime,end:e.responseEnd}))};").await?;
+        write_json(&h.evidence.join("organizations-lifecycle-failure.json"), &observed)?;
+        return Err(error);
+    }
     ready(&browser).await?;
     let reauthorized = browser
         .execute("return performance.now();")
