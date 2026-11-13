@@ -1324,3 +1324,66 @@ dialog.prototype-dialog[open] {
 @media (max-width: 480px) {
     .calculation-columns .form-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Account access: shared controls, short forms and protected one-time views. */
+.site-account-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+.account-link { display: inline-flex; align-items: center; min-block-size: 44px; font-weight: 650; }
+.main-content:has(.access-page) { max-inline-size: 1120px; padding-block: 36px; }
+.access-heading { display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-block-end: 28px; }
+.access-heading h1 + p { margin-block-start: 12px; max-inline-size: 62ch; color: var(--c360-muted); }
+.access-heading > a { flex-shrink: 0; min-block-size: 44px; display: inline-flex; align-items: center; }
+.access-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.8fr); gap: 32px; align-items: start; }
+.access-workspace { min-inline-size: 0; }
+.access-card + .access-card { margin-block-start: 20px; }
+.access-card > form, .access-details > form { display: grid; gap: 20px; }
+.access-card > form > .primary-button, .access-details > form > .primary-button { justify-self: start; }
+.access-card .access-form-intro { margin-block-start: 12px; color: var(--c360-muted); }
+.access-input-row { display: flex; align-items: stretch; gap: 8px; }
+.access-input-row > input { flex: 1; }
+.access-input-row > .access-reveal { flex: 0 0 auto; min-block-size: 44px; min-inline-size: 64px; padding: 8px; border: 1px solid var(--c360-input-border); border-radius: 6px; font: inherit; color: var(--c360-text); background: var(--c360-surface-subtle); cursor: pointer; }
+.access-input-row > .access-reveal:disabled { color: var(--c360-muted); cursor: wait; }
+.access-links { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-block-start: 20px; }
+.access-text-button { display: inline-flex; align-items: center; min-block-size: 44px; padding: 8px 0; border: 0; font: inherit; font-weight: 600; color: var(--c360-primary); background: transparent; text-align: start; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.access-text-button:disabled { color: var(--c360-muted); cursor: wait; }
+.access-details { margin-block-start: 24px; padding-block-start: 16px; border-block-start: 1px solid var(--c360-border); }
+.access-details > summary { min-block-size: 44px; padding-block: 10px; font-weight: 600; cursor: pointer; }
+.access-details > p { margin-block: 8px 16px; }
+.access-details > form { margin-block-start: 16px; }
+.access-card > .access-small-note, .access-small-note { margin-block-start: 20px; font-size: .875rem; color: var(--c360-muted); }
+.access-feedback { margin-block-end: 20px; }
+.access-feedback:focus { outline: 3px solid var(--c360-primary); outline-offset: 4px; }
+.access-connection { margin-block-end: 20px; padding: 16px; border: 1px solid var(--c360-border); border-radius: 8px; background: var(--c360-surface); }
+.access-progress { min-block-size: 24px; margin-block-start: 8px; font-size: .875rem; color: var(--c360-muted); }
+.access-guidance { padding: 28px; border: 1px solid #bfdbfe; border-radius: 12px; background: #eff6ff; }
+.access-guidance-symbol { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 56px; block-size: 56px; margin-block-end: 20px; border: 1px solid #93c5fd; border-radius: 12px; color: #1e40af; font-size: 1.125rem; font-weight: 800; }
+.access-guidance ul { padding-inline-start: 22px; margin-block: 20px; color: #334155; }
+.access-guidance li + li { margin-block-start: 14px; }
+.access-development { padding-block-start: 20px; border-block-start: 1px solid #bfdbfe; font-size: .875rem; color: var(--c360-muted); }
+.access-development p { margin-block-start: 8px; }
+.access-account-heading { display: flex; align-items: start; flex-wrap: wrap; gap: 12px; }
+.access-account-email { margin-block: 16px; font-weight: 600; }
+.access-protected { color: var(--c360-success); }
+.access-secret { display: grid; gap: 12px; padding: 20px; margin-block: 20px; border: 1px solid #93c5fd; border-radius: 8px; background: #eff6ff; }
+.access-secret > label { font-weight: 600; }
+.access-secret textarea { min-block-size: 72px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.access-secret > button { justify-self: start; }
+.access-sessions { list-style: none; margin: 20px 0; padding: 0; }
+.access-sessions > li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 16px; border-block-end: 1px solid var(--c360-border); }
+.access-sessions > li p { margin-block-start: 4px; color: var(--c360-muted); font-size: .875rem; }
+.access-sessions > li > button { flex-shrink: 0; }
+@media (max-width: 800px) {
+  .access-layout { grid-template-columns: 1fr; gap: 24px; }
+  .access-guidance { padding: 24px; }
+  .access-heading { flex-direction: column; gap: 8px; }
+  .access-heading > a { align-self: flex-start; }
+}
+@media (max-width: 480px) {
+  .main-content:has(.access-page) { width: calc(100% - 32px); padding-block: 24px; }
+  .access-card { padding: 20px 16px; }
+  .access-sessions > li { align-items: flex-start; flex-direction: column; }
+  .access-card > form > .primary-button, .access-details > form > .primary-button { inline-size: 100%; }
+  .access-secret { padding: 16px 12px; }
+}
+@media print {
+  .access-secret, .access-field, .access-reveal { display: none !important; }
+}

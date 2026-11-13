@@ -1,4 +1,5 @@
 //! Servidor HTTP e fronteira de configuração da fundação.
+pub mod auth;
 mod calculations;
 pub mod config;
 pub mod error;
@@ -26,6 +27,7 @@ pub fn router(config: &Config) -> Router {
     let shell_options = options.clone();
     let fallback_options = options.clone();
     Router::new()
+        .merge(auth::routes())
         .route(
             "/api/prototipo/calculos/rateio",
             axum::routing::post(calculations::allocation)

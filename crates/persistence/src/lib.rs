@@ -1,5 +1,6 @@
 //! PostgreSQL transacional. Nenhum pool ou executor bruto atravessa esta fronteira.
 //! O chamador fornece contexto já autorizado no servidor; isto não autentica usuários.
+pub mod auth;
 mod error;
 mod migration;
 mod pool;

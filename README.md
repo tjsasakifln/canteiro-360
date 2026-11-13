@@ -4,6 +4,8 @@ Gestão de obras e projetos privados no Brasil, com a disciplina operacional doc
 
 **Situação atual:** fundação Rust e persistência PostgreSQL das issues 1 e 2 integradas. A implementação da issue 3 acrescenta sistema visual e percursos demonstrativos de painel, orçamento, medição, aprovação e documentos, com dados fictícios. O aceite integral da issue 3 permanece condicionado ao teste com três profissionais exigido no escopo. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
 
+Esta sequência de implementação inclui formulários e tabelas da issue 4, precisão e calendários da issue 5 e autenticação da issue 6. O [guia de acesso](docs/seguranca-acesso.md) descreve cadastro verificado, sessões, recuperação e segundo fator. As etapas 3 a 6 aguardam os aceites anteriores para integração em `main`.
+
 ## Compilar e executar
 
 Com Rustup e as ferramentas de compilação disponíveis:
@@ -14,14 +16,14 @@ cargo xtask setup
 cargo xtask build
 ```
 
-Para executar o servidor, provisione PostgreSQL e as duas identidades descritas no [guia de persistência](docs/persistencia.md). Injete a configuração de desenvolvimento e as conexões externas no processo de migração; depois inicie a API apenas com a conexão de execução:
+Para executar o servidor, provisione PostgreSQL e as duas identidades descritas no [guia de persistência](docs/persistencia.md). Injete a configuração de desenvolvimento, a chave externa `CANTEIRO_AUTH_KEY` e a origem pública conforme o [guia de acesso](docs/seguranca-acesso.md). O processo de migração recebe as duas conexões externas; a API recebe apenas a conexão de execução:
 
 ```sh
 target/release/canteiro-db migrate
 env -u CANTEIRO_MIGRATION_DATABASE_URL target/release/canteiro-api
 ```
 
-A API recusa inicialização sem banco migrado, com ambiente divergente ou com identidade privilegiada. Abrir `http://127.0.0.1:3000` após iniciar. A página inicial permanece informativa; cadastro, autenticação e operações de obras serão entregues nas etapas seguintes. O executável de processamento oferece apenas `--check` nesta etapa.
+A API recusa inicialização sem banco migrado, com ambiente divergente, chave de acesso ausente ou identidade de banco privilegiada. Abrir `http://127.0.0.1:3000/acesso` para cadastro, login, recuperação e gestão de sessões. O envio de e-mail usa a Resend com remetente e credencial externos; homologação exige essa configuração e HTTPS. O executável geral de processamento oferece apenas `--check`; a fila de mensagens de acesso desta etapa é consumida pela API.
 
 Para experimentar os percursos da issue 3, abra `http://127.0.0.1:3000/prototipo/aurora/painel`. O seletor permite alternar entre duas empresas fictícias. As opções da demonstração exibem estados vazio, carregando, erro e sem permissão, além da densidade. Consultas e links são renderizados no servidor; edição, confirmação e troca de contexto dependem da hidratação. Os rascunhos e as aprovações simuladas existem somente na aba atual e não produzem gravações comerciais.
 
@@ -34,6 +36,7 @@ O [guia de desenvolvimento](docs/desenvolvimento.md) detalha compilação, verif
 | [LEIAME](LEIAME.md) | Objetivo, escopo, decisões e orientação de execução |
 | [Desenvolvimento](docs/desenvolvimento.md) | Compilação reproduzível, execução e validação |
 | [Persistência](docs/persistencia.md) | PostgreSQL, migrações, identidades, limites e recuperação |
+| [Acesso e recuperação](docs/seguranca-acesso.md) | Cadastro verificado, sessões, segundo fator, e-mail e configuração |
 | [Sistema visual](docs/sistema-visual.md) | Componentes, contexto, teclado, estados e apresentação móvel |
 | [Verificação da issue 3](docs/validacao/ISSUE-003.md) | Evidência técnica, revisão e aceite humano ainda necessário |
 | [Aceite da issue 1](docs/validacao/ISSUE-001.md) | Versões compiladas, medidas, revisão e evidências |

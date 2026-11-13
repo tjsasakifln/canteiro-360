@@ -41,6 +41,12 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - name: Gerar chave temporária exclusiva da base de teste
+        run: |
+          set -euo pipefail
+          CANTEIRO_EPHEMERAL_KEY=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=\n')
+          echo "::add-mask::${CANTEIRO_EPHEMERAL_KEY}"
+          echo "CANTEIRO_AUTH_KEY=${CANTEIRO_EPHEMERAL_KEY}" >> "${GITHUB_ENV}"
       - name: Instalar toolchain fixada
         run: rustup show
       - name: Conferir formatação
@@ -63,6 +69,7 @@ jobs:
           unset CANTEIRO_FIXTURE_BOOTSTRAP
           mkdir -p target/evidence
           cargo test --locked -p canteiro-persistence -- --ignored --nocapture 2>&1 | tee target/evidence/persistence.log
+          cargo test --locked -p canteiro-application -- --ignored --nocapture --test-threads=1 2>&1 | tee target/evidence/auth-application.log
       - name: Provisionar identidades distintas para a aplicação de teste
         run: |
           docker exec --interactive "${{ job.services.postgres.id }}" psql --username canteiro_test_admin --dbname canteiro_test --set ON_ERROR_STOP=1 <<'SQL'
@@ -82,6 +89,14 @@ jobs:
           export CANTEIRO_MIGRATION_DATABASE_URL="${CANTEIRO_FIXTURE_MIGRATOR}"
           unset CANTEIRO_FIXTURE_RUNTIME CANTEIRO_FIXTURE_MIGRATOR
           cargo run --locked -p canteiro-persistence --bin canteiro-db -- migrate 2>&1 | tee target/evidence/migrations.log
+      - name: Verificar cookies, CSRF e recuperação por HTTP
+        env:
+          CANTEIRO_FIXTURE_RUNTIME: postgres://canteiro_development_runtime@127.0.0.1:5432/canteiro_development
+        run: |
+          set -euo pipefail
+          export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+          unset CANTEIRO_FIXTURE_RUNTIME
+          cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1 2>&1 | tee target/evidence/auth-http.log
       - name: Instalar ferramentas nas versões fixadas
         run: cargo xtask setup
       - name: Auditar dependências, origens e licenças

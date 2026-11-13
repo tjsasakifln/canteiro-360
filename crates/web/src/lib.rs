@@ -1,5 +1,4 @@
-//! Public presentation and accessible prototypes with fictitious data.
-//! Interactions never represent authentication, approval or a financial act.
+//! Account access and accessible previews. Prototype interactions remain fictitious.
 
 // Leptos composes nested HTML into Rust types; the form tree exceeds the
 // compiler's default query depth. This changes compilation only, not runtime.
@@ -13,6 +12,7 @@ use leptos_router::{
     path,
 };
 
+mod auth;
 mod calculations;
 pub mod form_components;
 mod prototype;
@@ -59,12 +59,13 @@ pub fn App() -> impl IntoView {
                         <span class="brand-symbol" aria-hidden="true">"C"</span>
                         <span>"Canteiro "<strong>"360"</strong></span>
                     </a>
-                    <span class="environment-label">"Em desenvolvimento"</span>
+                    <nav class="site-account-nav" aria-label="Conta"><a class="account-link" href="/acesso">"Entrar"</a><span class="environment-label">"Em desenvolvimento"</span></nav>
                 </div>
             </header>
             <main id="conteudo" class="page-width main-content" tabindex="-1">
                 <Routes fallback=NotFoundPage>
                     <Route path=path!("/") view=HomePage/>
+                    <Route path=path!("/acesso") view=auth::AccessPage/>
                     <Route path=path!("/conferencia") view=calculations::CalculationPage/>
                     // Resolve the page on the server before emitting its HTML.
                     // OutOfOrder streaming places suspended rows in an inert
@@ -110,7 +111,7 @@ fn HomePage() -> impl IntoView {
             </div>
             <p class="stage-description">
                 "Os exemplos de painel, orçamento, medição, aprovação e documentos já podem ser "
-                "experimentados. Cadastro, acesso a obras reais e registros financeiros ainda não estão disponíveis."
+                "experimentados. O acesso à conta está disponível para testes; obras reais e registros financeiros ainda estão em preparação."
             </p>
 
             <div class="scope-note">

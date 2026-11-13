@@ -91,13 +91,19 @@ async fn validate_runtime(
     let safe: bool = sqlx::query_scalar(
         "SELECT NOT EXISTS (SELECT 1 FROM pg_roles r WHERE pg_has_role(current_user, r.oid, 'MEMBER') \
           AND (r.rolsuper OR r.rolbypassrls OR r.rolcreaterole OR r.rolcreatedb OR r.rolreplication \
-            OR r.oid IN (SELECT relowner FROM pg_class WHERE relnamespace = 'canteiro'::regnamespace) \
-            OR r.oid IN (SELECT nspowner FROM pg_namespace WHERE nspname IN ('canteiro', 'canteiro_meta')) \
+            OR r.oid IN (SELECT relowner FROM pg_class WHERE relnamespace IN ('canteiro'::regnamespace, 'canteiro_auth'::regnamespace)) \
+            OR r.oid IN (SELECT nspowner FROM pg_namespace WHERE nspname IN ('canteiro', 'canteiro_meta', 'canteiro_auth')) \
             OR r.oid = (SELECT datdba FROM pg_database WHERE datname = current_database()) \
             OR r.rolname IN ('pg_read_all_data', 'pg_write_all_data', 'pg_execute_server_program', 'pg_read_server_files', 'pg_write_server_files'))) \
          AND NOT has_schema_privilege(current_user, 'canteiro', 'CREATE') \
          AND NOT has_schema_privilege(current_user, 'canteiro_meta', 'CREATE') \
          AND NOT has_schema_privilege(current_user, 'public', 'CREATE') \
+         AND NOT has_schema_privilege(current_user, 'canteiro_auth', 'CREATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro_auth.users', 'privileged', 'INSERT,UPDATE') \
+         AND NOT has_table_privilege(current_user, 'canteiro_auth.audit', 'UPDATE,DELETE,TRUNCATE') \
+         AND NOT has_any_column_privilege(current_user, 'canteiro_auth.audit', 'UPDATE') \
+         AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro_auth'::regnamespace \
+             AND relkind = 'r' AND has_table_privilege(current_user, oid, 'TRUNCATE')) \
          AND NOT has_table_privilege(current_user, 'canteiro.organizations', 'TRUNCATE') \
          AND NOT has_table_privilege(current_user, 'canteiro.organization_units', 'TRUNCATE') \
          AND NOT has_table_privilege(current_user, 'canteiro_meta.environment', 'UPDATE') \

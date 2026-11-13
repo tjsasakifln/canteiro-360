@@ -18,3 +18,4 @@ pub struct Liveness {
 pub enum ProcessStatus {
     Running,
 }
+pub mod auth;

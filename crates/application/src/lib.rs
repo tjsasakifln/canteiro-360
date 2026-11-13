@@ -1,4 +1,5 @@
-//! Casos de uso. A fundação não oferece comandos de negócio.
+//! Casos de uso e autenticação. Identidade não substitui autorização de obra.
+pub mod auth;
 use canteiro_contracts::{Liveness, ProcessStatus};
 
 /// Resposta deliberadamente mínima, sem ambiente, credenciais ou infraestrutura.

@@ -38,14 +38,22 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         TransactionLimits::default(),
     )
     .await?;
+    let authentication = canteiro_api::auth::AuthHttp::from_env(database.clone(), &config).await?;
+    let mail_worker = authentication.start_mail_worker(config.environment)?;
     let listener = TcpListener::bind(config.bind_addr).await?;
     tracing::info!(address = %listener.local_addr()?, environment = ?config.environment, "Canteiro 360 iniciado");
     axum::serve(
         listener,
-        router(&config).layer(axum::Extension(database.clone())),
+        router(&config)
+            .layer(axum::Extension(database.clone()))
+            .layer(axum::Extension(authentication))
+            .into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
     .with_graceful_shutdown(shutdown())
     .await?;
+    if let Some(worker) = mail_worker {
+        worker.abort();
+    }
     database.close().await;
     Ok(())
 }
