@@ -6,18 +6,24 @@ Este registro acompanha a [PR 79](https://github.com/tjsasakifln/canteiro-360/pu
 
 | Referência | Identificação |
 |---|---|
-| Base | PR 78, `feat/issue-6-autenticacao` |
-| Commit da base | `5b711d9c11c3c4f99c53f5ef05fa12e9c4a52a05` |
-| Árvore da base | `10782a0176e3cb643cfd4e652cbac633bbd638ab` |
+| Base original | PR 78, `feat/issue-6-autenticacao` |
+| Commit da base original | `5b711d9c11c3c4f99c53f5ef05fa12e9c4a52a05` |
+| Árvore da base original | `10782a0176e3cb643cfd4e652cbac633bbd638ab` |
 | Fonte da implementação | `c12e0e404212ecbe232bcd0e9a3f23a0e6443050` |
 | Complemento de prova da identidade | `c27688ef83fa7b347d88415eac2af59ccbcde9ce` |
 | Fonte final dos testes e da captura | `c1bc05b546d89bf0e5719007634d5a97ba67e34f` |
 | Árvore dessa fonte | `88260b90326ee2348c5696b02936929332f12256` |
+| Head da CI aprovada | `6a7dfce7e1378ca105237b637309c0e0f1f0a7ba` |
+| Merge temporário executado pela CI | `5c6d1af14afb9ceaa30af17833acbe833be5da98` |
+| Árvore executada pela CI | `6f78a7f0d3b49a4513de97c7f45b7f90be983981` |
+| Base atual após a integração anterior | `main`, `3a2bbb2957da639a926a45f4fcee81716f8c31b1` |
 | Migração | `0004_organizations_and_memberships.sql`, esquema na versão 4 |
 
 As duas revisões posteriores acrescentam a prova direta de aceitação por outra identidade e melhoram a preparação, a captura e o diagnóstico do teste de navegador. A produção permanece igual à fonte de implementação. O checkout local foi reconstruído a partir dos blobs remotos; seu identificador local não é apresentado como commit do GitHub. A [comparação de fontes](issue-007/local/source-correspondence.json) confere 109 arquivos de aplicação, testes, ferramentas, estilos e configuração, sem divergência em relação à fonte final. O [manifesto](issue-007/manifest.json) identifica comandos, alcance, arquivos e hashes. As evidências anteriores do repositório foram preservadas.
 
-**Resultados locais de 13/11/2026:** testes nativos, PostgreSQL, HTTP, análises estáticas e compilação otimizada aprovados. As quatro capturas foram abertas e conferidas pela revisão principal e por revisão independente. O caso completo de organizações no navegador não foi aprovado localmente, pela limitação de ativação de abas descrita na seção 4. O estado da CI e o commit correspondente devem ser consultados na descrição da [PR 79](https://github.com/tjsasakifln/canteiro-360/pull/79), separados dos ensaios locais; o caso permanece obrigatório nessa execução.
+**Resultado da CI de 13/11/2026:** a [execução 43422855788](https://github.com/tjsasakifln/canteiro-360/actions/runs/43422855788) concluiu com sucesso todas as 25 etapas e aprovou 188 funções de teste, sem reprovação. O cenário completo de organizações passou no Chrome em 46,35 s, inclusive a troca de conta durante uma alteração em andamento. O [resumo da CI](issue-007/ci/summary.json), o [log integral](issue-007/ci/workflow.log) e o [relatório do navegador](issue-007/ci/organizations-interface.json) preservam a comprovação. O resultado pertence ao head e ao merge temporário identificados acima; a atualização posterior de documentos é conferida separadamente na seção 9.
+
+**Resultados locais:** testes nativos, PostgreSQL, HTTP, análises estáticas e compilação otimizada aprovados. As quatro capturas foram abertas e conferidas pela revisão principal e por revisão independente. O caso completo de organizações no navegador não foi aprovado localmente, pela limitação de ativação de abas descrita na seção 4. Esse resultado local permanece registrado e não é reclassificado pelo sucesso posterior da CI.
 
 ## 2. Critérios próprios da issue
 
@@ -26,11 +32,15 @@ As duas revisões posteriores acrescentam a prova direta de aceitação por outr
 | A não lê nem altera B por API, ID, busca ou exportação | Referência cruzada, seleção indevida, busca, contagem, membro e TSV alheios são recusados sem devolver dados da outra empresa | Aplicação: `organizations_ids_search_export_and_private_members_never_cross` e `stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothing`; persistência: `organization_rls_hides_foreign_rows_ids_counts_and_identity_directory`; HTTP: `organization_http_requires_confirmed_mfa_and_serves_only_current_company_export` |
 | Conexão reutilizada não conserva contexto | A mesma conexão física volta sem a pessoa ou empresa anteriores; seleção pertence à sessão e tem geração | `organization_selection_is_session_owned_versioned_and_pool_context_is_local` e a regressão `one_connection_pool_clears_context_after_commit_rollback_failure_timeout_and_drop` |
 | Convite inválido não concede direitos | Expiração, revogação, outra identidade, finalidade incompatível, consumo e repetição são recusados; aceitação concorrente produz no máximo um efeito | `invitations_bind_identity_expiry_revocation_purpose_and_single_use`, `concurrent_invitation_acceptance_has_one_effect_and_revoke_is_serialized` e `organization_invites_and_requests_are_versioned_one_use_and_revocable` |
-| Troca de empresa limpa dados incompatíveis | A aplicação recusa contexto antigo; o modelo da interface vincula rascunhos à identidade e empresa e descarta respostas antigas | Testes de aplicação anteriores e dez unidades de organizações da UI aprovados; o cenário integrado `organization_membership_context_and_invitations_work_through_the_browser` é obrigatório na CI, com a distinção de ambiente da seção 4 |
+| Troca de empresa limpa dados incompatíveis | A aplicação recusa contexto antigo; o modelo da interface vincula rascunhos à identidade e empresa e descarta respostas antigas | Testes de aplicação anteriores e dez unidades de organizações da UI aprovados; o cenário integrado `organization_membership_context_and_invitations_work_through_the_browser` passou na CI, com a distinção de ambiente da seção 4 |
 
 Os testes da aplicação usam PostgreSQL real e uma fixture que prepara identidades e sessões para exercitar autorização e concorrência. Os testes HTTP percorrem cadastro, confirmação de e-mail, sessão e segunda etapa reais da aplicação. Os testes de persistência usam conexões reais, papéis distintos e políticas obrigatórias de segurança por linha.
 
 ## 3. Verificações executadas
+
+A CI aprovada executou 129 testes nativos, 23 de persistência com PostgreSQL, 20 de aplicação com PostgreSQL, seis HTTP e dez de navegador: 188 aprovados, zero reprovados. Os 59 testes externos ignorados no comando nativo foram executados nas etapas próprias. Repetições, amostras de desempenho e vetores de cálculo não aumentam essa contagem.
+
+A tabela abaixo conserva os resultados e tempos dos ensaios locais, distintos dos tempos da CI.
 
 | Verificação | Resultado observado |
 |---|---|
@@ -61,7 +71,7 @@ O percurso local `organization_membership_context_and_invitations_work_through_t
 | Administrador | [Captura](issue-007/local/organizations-administrator-360.png) | [Captura](issue-007/local/organizations-administrator-1280.png) |
 | Membro | [Captura](issue-007/local/organizations-member-360.png) | [Captura](issue-007/local/organizations-member-1280.png) |
 
-**O cenário completo não foi aprovado localmente.** O Chrome completo foi impedido de iniciar pela restrição de sockets deste executor. No Headless Shell 156, a ativação nativa de abas não produziu eventos de foco ou visibilidade, comportamento também observado em uma sonda independente da aplicação. O teste de troca de conta durante POST atrasado terminou por timeout e permanece obrigatório, sem exceção, na CI. A CI inicia o Chrome for Testing completo com `--headless=new`; sua conclusão e o commit testado ficam identificados na PR 79.
+**O cenário completo não foi aprovado localmente.** O Chrome completo foi impedido de iniciar pela restrição de sockets deste executor. No Headless Shell 156, a ativação nativa de abas não produziu eventos de foco ou visibilidade, comportamento também observado em uma sonda independente da aplicação. O teste local de troca de conta durante POST atrasado terminou por timeout. Na CI, o mesmo cenário obrigatório passou com Chrome for Testing completo e `--headless=new`. O relatório aprovado registra uma alteração atrasada em aproximadamente dez segundos e a consulta de identidade somente depois de sua conclusão, preservando o descarte da resposta antiga.
 
 O teste preserva a exigência de ocultação imediata, espera pela mutação em voo, descarte da resposta antiga e confirmação da identidade atual. Não há evento JavaScript fabricado, atalho, `skip` ou alteração de produção para acomodar o ambiente. A observação do teste registra eventos e tempos, sem códigos ou identidades.
 
@@ -78,7 +88,7 @@ O [orçamento dos arquivos servidos](issue-007/local/budget.json) registra 664.9
 | Limpeza da seleção usava categoria inadequada de auditoria | Seleção registra a operação no contexto da organização; cenário com uma conexão aprova criação, seleção e limpeza |
 | Segunda etapa anteriormente confirmada não bastava se a configuração do fator desaparecesse | Autorização confere sessão e configuração atual; teste de perda do fator recusa administração e limita os dados |
 | Mudança de acesso podia manter busca administrativa antiga na mesma empresa | Revalidação descarta resultados e códigos, mesmo sem mudança do identificador de empresa; unidades específicas aprovadas |
-| Resposta antiga de uma mutação podia chegar depois da troca de identidade | A tela oculta e invalida imediatamente; espera o POST terminar, descarta sua resposta e consulta o contexto atual; unidades aprovadas; o cenário completo de navegador permanece obrigatório na CI, sem aprovação local artificial |
+| Resposta antiga de uma mutação podia chegar depois da troca de identidade | A tela oculta e invalida imediatamente; espera o POST terminar, descarta sua resposta e consulta o contexto atual; unidades aprovadas; o cenário completo passou na CI, preservado o registro da limitação local |
 | Ocultações repetidas podiam substituir o rascunho suspenso por campos vazios | Suspensão conserva o primeiro rascunho vinculado; teste de ocultação antes de reselecionar a mesma empresa aprovado |
 | A prova da identidade do convite cobria a prévia, mas não a aceitação diretamente | Teste final também tenta aceitar com outra identidade, exige recusa e diretório vazio; executado com PostgreSQL real |
 
@@ -118,6 +128,16 @@ O teste de paridade no navegador exige o verificador WASM adicional, cujo comand
 
 ## 8. Situação de integração
 
-A PR 79 usa a PR 78 como base. As issues 3 a 6 dependem de aceite e integração na ordem prevista em `AGENTS.md`, incluindo o teste da issue 3 com pelo menos três profissionais reais. A execução automatizada não substitui esse critério. Esta entrega não realiza merge nem fecha automaticamente a issue 7.
+As PRs 75 a 78 foram integradas em `main` em 13/11/2026, conforme o [registro de integração das issues 3 a 6](INTEGRACAO-003-006.md). A PR 79 passa a usar `main` como base. A sincronização incorpora esse registro e a correção posterior do guia de acesso pela PR 80, preservando os arquivos de aplicação, testes e configuração já executados na CI.
+
+O teste da issue 3 com pelo menos três profissionais reais continua pendente, e a execução automatizada não substitui esse critério. As pendências de aceite registradas no guia de acesso também permanecem válidas. A autorização da integração anterior se refere às PRs 75 a 78. Esta entrega não realiza merge nem fecha automaticamente a issue 7.
 
 Participar da empresa não concede acesso automático a obras e contratos. Os papéis e permissões dos próximos módulos continuam sujeitos às respectivas etapas. A validação técnica registrada não representa implantação em produção, aceite comercial ou aceite da versão publicada, que permanece na issue 72.
+
+## 9. Correspondência da CI e atualização documental
+
+A CI executou o merge temporário `5c6d1af14afb9ceaa30af17833acbe833be5da98`, com árvore `6f78a7f0d3b49a4513de97c7f45b7f90be983981`. Comparada ao head `6a7dfce7e1378ca105237b637309c0e0f1f0a7ba`, essa árvore acrescenta somente `docs/validacao/INTEGRACAO-003-006.md`, já presente na base naquele momento. Os demais 563 arquivos são idênticos por caminho e SHA, inclusive aplicação, testes e workflow. A árvore completa do merge não é, portanto, igual à árvore do head.
+
+A atualização posterior acrescenta as evidências da CI e corrige a situação de integração nos documentos. O guia de acesso incorpora a versão de `main` em `3a2bbb2957da639a926a45f4fcee81716f8c31b1`, conservando a execução HTTP com uma thread. O registro anterior de integração é copiado sem alteração. A comparação dos 109 arquivos de aplicação, testes, ferramentas, estilos e configuração permanece sem divergências.
+
+Uma nova execução automática decorrente dessa sincronização tem seu próprio resultado e commit na PR. O sucesso da execução 43422855788 não é atribuído antecipadamente a essa nova execução.

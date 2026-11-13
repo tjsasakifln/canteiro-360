@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "run_id": 43422855788,
+  "job_id": 131877008414,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43422855788",
+  "conclusion": "success",
+  "steps_passed": 25,
+  "head_commit": "6a7dfce7e1378ca105237b637309c0e0f1f0a7ba",
+  "head_tree": "5ee7dca03223d1184be82b9c5fac0807b9568a9c",
+  "tested_merge_commit": "5c6d1af14afb9ceaa30af17833acbe833be5da98",
+  "tested_tree": "6f78a7f0d3b49a4513de97c7f45b7f90be983981",
+  "tree_difference_from_head": [
+    {
+      "path": "docs/validacao/INTEGRACAO-003-006.md",
+      "change": "added",
+      "blob_sha": "16c75d90386f9ec6ad7afe234292de3d29cf26cc"
+    }
+  ],
+  "test_functions": {
+    "native": 129,
+    "persistence_postgresql": 23,
+    "application_postgresql": 20,
+    "http_postgresql": 6,
+    "browser": 10,
+    "total_passed": 188,
+    "total_failed": 0
+  },
+  "native_ignored_executed_in_dedicated_steps": 59,
+  "organization_browser": {
+    "status": "passed",
+    "duration_seconds": 46.35,
+    "report": "organizations-interface.json"
+  },
+  "artifact": {
+    "id": 14036674729,
+    "archive_bytes": 9682106,
+    "archive_sha256": "7ddd21c764ac67f779a578236a0fd65ebd3ed4c34a7118205ef115fe6790def3",
+    "files": 140
+  },
+  "scope_note": "A aprovação pertence a esta execução e ao merge temporário informado; alterações documentais posteriores e novas execuções são conferidas separadamente."
+}

@@ -116,4 +116,4 @@ Referências técnicas consultadas: [bloqueios do PostgreSQL 17](https://www.pos
 
 ## 9. Integração
 
-Esta implementação segue a PR da issue #6. As issues #3 a #6 ainda dependem dos aceites e da integração na ordem prevista em `AGENTS.md`, incluindo o teste da issue #3 com pelo menos três profissionais reais. Esta entrega não elimina esse critério, não fecha automaticamente a issue #7 e não representa implantação em produção nem aceite comercial da issue #72.
+As PRs #75 a #78 foram integradas em `main` em 13/11/2026, conforme o [registro de integração](validacao/INTEGRACAO-003-006.md). A PR #79 passa a usar `main` como base e preserva o código aprovado na CI. O teste da issue #3 com pelo menos três profissionais reais continua pendente. A integração técnica anterior não elimina esse critério nem autoriza por si só o merge desta PR. Esta entrega não fecha automaticamente a issue #7 e não representa implantação em produção nem aceite comercial da issue #72.

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "issue": 7,
   "pull_request": "https://github.com/tjsasakifln/canteiro-360/pull/79",
-  "recorded_at_utc": "2026-11-13T12:06:41.868838+00:00",
+  "recorded_at_utc": "2026-11-13T12:57:47.120453+00:00",
   "base_commit": "5b711d9c11c3c4f99c53f5ef05fa12e9c4a52a05",
   "production_commit": "c12e0e404212ecbe232bcd0e9a3f23a0e6443050",
   "source_commit": "c1bc05b546d89bf0e5719007634d5a97ba67e34f",
@@ -18,7 +18,7 @@
     "webdriver": "156.0.8078.80",
     "ci_browser": "Chrome for Testing 156.0.8078.80 --headless=new"
   },
-  "ci_evidence": "O estado da CI e o commit correspondente devem ser consultados na descrição da PR 79; resultados locais não substituem o cenário completo obrigatório de organizações.",
+  "ci_evidence": "CI 43422855788 aprovada com 188 funções de teste. A evidência local de limitação do navegador permanece preservada; o caso completo passou no Chrome da CI. Atualização documental posterior não recebe aprovação antecipada de nova CI.",
   "visual_review": {
     "images": 4,
     "widths": [
@@ -165,6 +165,21 @@
   ],
   "files": [
     {
+      "path": "ci/organizations-interface.json",
+      "bytes": 6658,
+      "sha256": "b4d7f32568c0042e08df28f9a6c4e5d389537509c1d2920f859a833c6dfc1995"
+    },
+    {
+      "path": "ci/summary.json",
+      "bytes": 1401,
+      "sha256": "718740aa40a0d16410b5febf29742cd6d89dca4757832d2fc81fd51edb97010a"
+    },
+    {
+      "path": "ci/workflow.log",
+      "bytes": 461995,
+      "sha256": "078c08436cc307784cdfcfcc6cc5b0249abcaf9cfb34ac41685a02270b3b738c"
+    },
+    {
       "path": "local/application-organizations-final.log",
       "bytes": 1295,
       "sha256": "8d513bcf38b09f1db8ce8f5aabd0260ca4811a55cd895814bc022936e46c73dc"
@@ -305,5 +320,59 @@
       "sha256": "abcb075beab1ea1cfada763aa8bef0e0039131b3c2ad122b98fd6682eabe8f59"
     }
   ],
-  "command_note": "Comandos de reprodução dos conjuntos observados; no executor local, testes que usam PostgreSQL são iniciados junto ao banco descartável na mesma sessão. Os logs preservam os resultados reais."
+  "command_note": "Comandos de reprodução dos conjuntos observados; no executor local, testes que usam PostgreSQL são iniciados junto ao banco descartável na mesma sessão. Os logs preservam os resultados reais.",
+  "ci": {
+    "schema_version": 1,
+    "run_id": 43422855788,
+    "job_id": 131877008414,
+    "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43422855788",
+    "conclusion": "success",
+    "steps_passed": 25,
+    "head_commit": "6a7dfce7e1378ca105237b637309c0e0f1f0a7ba",
+    "head_tree": "5ee7dca03223d1184be82b9c5fac0807b9568a9c",
+    "tested_merge_commit": "5c6d1af14afb9ceaa30af17833acbe833be5da98",
+    "tested_tree": "6f78a7f0d3b49a4513de97c7f45b7f90be983981",
+    "tree_difference_from_head": [
+      {
+        "path": "docs/validacao/INTEGRACAO-003-006.md",
+        "change": "added",
+        "blob_sha": "16c75d90386f9ec6ad7afe234292de3d29cf26cc"
+      }
+    ],
+    "test_functions": {
+      "native": 129,
+      "persistence_postgresql": 23,
+      "application_postgresql": 20,
+      "http_postgresql": 6,
+      "browser": 10,
+      "total_passed": 188,
+      "total_failed": 0
+    },
+    "native_ignored_executed_in_dedicated_steps": 59,
+    "organization_browser": {
+      "status": "passed",
+      "duration_seconds": 46.35,
+      "report": "organizations-interface.json"
+    },
+    "artifact": {
+      "id": 14036674729,
+      "archive_bytes": 9682106,
+      "archive_sha256": "7ddd21c764ac67f779a578236a0fd65ebd3ed4c34a7118205ef115fe6790def3",
+      "files": 140
+    },
+    "scope_note": "A aprovação pertence a esta execução e ao merge temporário informado; alterações documentais posteriores e novas execuções são conferidas separadamente."
+  },
+  "documentation_sync": {
+    "base_branch": "main",
+    "base_commit": "3a2bbb2957da639a926a45f4fcee81716f8c31b1",
+    "production_test_and_workflow_changes": false,
+    "prior_prs_merged": [
+      75,
+      76,
+      77,
+      78
+    ],
+    "issue_3_three_real_professionals": "pending",
+    "issue_7_merge_performed": false
+  }
 }

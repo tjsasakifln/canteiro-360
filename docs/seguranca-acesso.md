@@ -170,6 +170,8 @@ Este guia descreve o comportamento e o procedimento de verificação. Os resulta
 
 ## 12. Ordem de integração e limite da entrega
 
-A issue 6 depende da aceitação e integração das issues 1 a 5. A implementação foi preparada sobre a PR da issue 5, preservando a sequência. Enquanto o aceite das issues 3, 4 e 5 não estiver resolvido, incluindo o teste com pelo menos três profissionais exigido pela issue 3, esta etapa permanece fora de `main`.
+A implementação foi preparada sobre a PR da issue 5. Em 13/11/2026, o responsável pelo produto autorizou a integração técnica das PRs #75, #76, #77 e #78 em ordem de dependência. A autenticação foi integrada em `main` pela [PR #78](https://github.com/tjsasakifln/canteiro-360/pull/78), no commit `7a2d971d119e30a85316ff41b4f94b28d2ccf910`, conforme o [registro de integração](validacao/INTEGRACAO-003-006.md).
+
+O teste da issue #3 com pelo menos três profissionais reais continua pendente, com seu critério preservado. Na issue #6, a compatibilidade com gerenciador de senhas ainda requer demonstração com um gerenciador real; os ensaios disponíveis verificaram atributos de preenchimento automático, colagem e navegação por teclado. A integração técnica não encerra essas pendências de aceite.
 
 Autenticação implementada e testes técnicos aprovados não equivalem a liberação comercial. A aplicação ainda requer os módulos, permissões, operação, pilotos e aceite de publicação previstos no [plano](BACKLOG.md). A prontidão comercial completa permanece na issue 72.
