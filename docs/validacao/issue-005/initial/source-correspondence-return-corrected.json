@@ -1,0 +1,525 @@
+{
+  "schema_version": 1,
+  "remote_commit": "983087cc406072c544f225791b9fa50038587876",
+  "remote_tree": "5650bcf435250174603e633a8838abee6185ce07",
+  "repository": "tjsasakifln/canteiro-360",
+  "remote_tree_source": "https://api.github.com/repos/tjsasakifln/canteiro-360/git/trees/983087cc406072c544f225791b9fa50038587876?recursive=1",
+  "remote_tree_truncated": false,
+  "local_checkout": "/workspace/scratch/0536b2902129/canteiro-360",
+  "observed_at_utc": "2026-11-12T22:29:45.315093+00:00",
+  "method": "For each selected remote blob, read the exact local bytes at local_checkout/path and compute SHA-1 of b\"blob \" + decimal byte length + one NUL byte + content. Compare this Git object identifier with the remote blob SHA returned by the GitHub tree endpoint. No source content is stored in this report.",
+  "scope": {
+    "prefixes": [
+      "crates/",
+      "tools/",
+      "style/",
+      ".github/",
+      ".cargo/"
+    ],
+    "individual_paths": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "deny.toml",
+      "docs/calculos-calendarios.md",
+      "docs/validacao/issue-005/reference-vectors.json",
+      "rust-toolchain.toml"
+    ]
+  },
+  "file_count": 82,
+  "equal_count": 82,
+  "status": "passed",
+  "files": [
+    {
+      "path": ".cargo/config.toml",
+      "local_git_blob_sha1": "f3ceca30085a9ebc44080b92b133d61cea48266e",
+      "remote_git_blob_sha1": "f3ceca30085a9ebc44080b92b133d61cea48266e",
+      "equal": true
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/defeito.md",
+      "local_git_blob_sha1": "f661a2bfe309d9b48ff9e82ffbcc44b4c31d6858",
+      "remote_git_blob_sha1": "f661a2bfe309d9b48ff9e82ffbcc44b4c31d6858",
+      "equal": true
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "local_git_blob_sha1": "449633910e97532cd1b9d94522afe9c2a53af659",
+      "remote_git_blob_sha1": "449633910e97532cd1b9d94522afe9c2a53af659",
+      "equal": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "local_git_blob_sha1": "7c1b9332757d64d17e92558b6d2f4f30d37aca81",
+      "remote_git_blob_sha1": "7c1b9332757d64d17e92558b6d2f4f30d37aca81",
+      "equal": true
+    },
+    {
+      "path": "Cargo.lock",
+      "local_git_blob_sha1": "f89a1bcdf151d8710c57c1758b98f38c9f70b2b4",
+      "remote_git_blob_sha1": "f89a1bcdf151d8710c57c1758b98f38c9f70b2b4",
+      "equal": true
+    },
+    {
+      "path": "Cargo.toml",
+      "local_git_blob_sha1": "00bfecd0bce3e5852c39ec01dc3531c7f7668427",
+      "remote_git_blob_sha1": "00bfecd0bce3e5852c39ec01dc3531c7f7668427",
+      "equal": true
+    },
+    {
+      "path": "crates/api/Cargo.toml",
+      "local_git_blob_sha1": "8d2ccdfbefb2fae969262a4a6a76d3720b51ebd5",
+      "remote_git_blob_sha1": "8d2ccdfbefb2fae969262a4a6a76d3720b51ebd5",
+      "equal": true
+    },
+    {
+      "path": "crates/api/src/calculations.rs",
+      "local_git_blob_sha1": "65b2bbfbe873b55f0a32db5c749798aa2ad95967",
+      "remote_git_blob_sha1": "65b2bbfbe873b55f0a32db5c749798aa2ad95967",
+      "equal": true
+    },
+    {
+      "path": "crates/api/src/config.rs",
+      "local_git_blob_sha1": "7a51fef7f11509b22b52f86c86faab3756c39846",
+      "remote_git_blob_sha1": "7a51fef7f11509b22b52f86c86faab3756c39846",
+      "equal": true
+    },
+    {
+      "path": "crates/api/src/error.rs",
+      "local_git_blob_sha1": "c60ac3592fc19a456a4c4178e4bdbe5cc476095c",
+      "remote_git_blob_sha1": "c60ac3592fc19a456a4c4178e4bdbe5cc476095c",
+      "equal": true
+    },
+    {
+      "path": "crates/api/src/forms.rs",
+      "local_git_blob_sha1": "a798dd0a1a1ef82b8adbb062784581b57093366f",
+      "remote_git_blob_sha1": "a798dd0a1a1ef82b8adbb062784581b57093366f",
+      "equal": true
+    },
+    {
+      "path": "crates/api/src/lib.rs",
+      "local_git_blob_sha1": "bd42ab7e362ba8dd9e8de9b35f7022b290a8e62b",
+      "remote_git_blob_sha1": "bd42ab7e362ba8dd9e8de9b35f7022b290a8e62b",
+      "equal": true
+    },
+    {
+      "path": "crates/api/src/main.rs",
+      "local_git_blob_sha1": "4002d8bb7fd01ad54fed7e8ca219fb5df92ec452",
+      "remote_git_blob_sha1": "4002d8bb7fd01ad54fed7e8ca219fb5df92ec452",
+      "equal": true
+    },
+    {
+      "path": "crates/api/tests/calculations.rs",
+      "local_git_blob_sha1": "5c1308504cbae340cfc83e2caaaf519512741502",
+      "remote_git_blob_sha1": "5c1308504cbae340cfc83e2caaaf519512741502",
+      "equal": true
+    },
+    {
+      "path": "crates/api/tests/forms.rs",
+      "local_git_blob_sha1": "95500950ab7424cd8c8ec4e3dfeea436b24f9d83",
+      "remote_git_blob_sha1": "95500950ab7424cd8c8ec4e3dfeea436b24f9d83",
+      "equal": true
+    },
+    {
+      "path": "crates/api/tests/http.rs",
+      "local_git_blob_sha1": "2b594847579d2f015991634c77512cd60bbf3da0",
+      "remote_git_blob_sha1": "2b594847579d2f015991634c77512cd60bbf3da0",
+      "equal": true
+    },
+    {
+      "path": "crates/application/Cargo.toml",
+      "local_git_blob_sha1": "df4f65258d6497f8ed88752865a9a4541dc4c507",
+      "remote_git_blob_sha1": "df4f65258d6497f8ed88752865a9a4541dc4c507",
+      "equal": true
+    },
+    {
+      "path": "crates/application/src/lib.rs",
+      "local_git_blob_sha1": "74c66ecb471bc69ca466b75e8503f7c9f8880450",
+      "remote_git_blob_sha1": "74c66ecb471bc69ca466b75e8503f7c9f8880450",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/Cargo.toml",
+      "local_git_blob_sha1": "bff1a2cfdf26b4a04085e72a449dde0677dde49a",
+      "remote_git_blob_sha1": "bff1a2cfdf26b4a04085e72a449dde0677dde49a",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/src/calculations.rs",
+      "local_git_blob_sha1": "6688e08e75a14686e2ecbbbcfca6f68bf31d9eb4",
+      "remote_git_blob_sha1": "6688e08e75a14686e2ecbbbcfca6f68bf31d9eb4",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/src/error.rs",
+      "local_git_blob_sha1": "715638332ad3ad561cbcfc4b6c49d83012def405",
+      "remote_git_blob_sha1": "715638332ad3ad561cbcfc4b6c49d83012def405",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/src/forms.rs",
+      "local_git_blob_sha1": "cdf35163fa9f7d2912dd26e6cfa5dea73d47c800",
+      "remote_git_blob_sha1": "cdf35163fa9f7d2912dd26e6cfa5dea73d47c800",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/src/forms/decimal.rs",
+      "local_git_blob_sha1": "e67661deb9cd8324b66ded42fc3ba8e76e0d93ad",
+      "remote_git_blob_sha1": "e67661deb9cd8324b66ded42fc3ba8e76e0d93ad",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/src/forms/measurement.rs",
+      "local_git_blob_sha1": "69117da93e9027657bc05aa7d5c2d9ffa5d580d6",
+      "remote_git_blob_sha1": "69117da93e9027657bc05aa7d5c2d9ffa5d580d6",
+      "equal": true
+    },
+    {
+      "path": "crates/contracts/src/lib.rs",
+      "local_git_blob_sha1": "1823095ac90b94d942a1f943a6a778fd7eb09f72",
+      "remote_git_blob_sha1": "1823095ac90b94d942a1f943a6a778fd7eb09f72",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/Cargo.toml",
+      "local_git_blob_sha1": "892a23cc26f4893826c896f63a34e56e361cb394",
+      "remote_git_blob_sha1": "892a23cc26f4893826c896f63a34e56e361cb394",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/src/calendar.rs",
+      "local_git_blob_sha1": "6d2bdb993f1a0b16436acce89d553a67defd8322",
+      "remote_git_blob_sha1": "6d2bdb993f1a0b16436acce89d553a67defd8322",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/src/decimal.rs",
+      "local_git_blob_sha1": "62ea952941b2eb535ecf8dcdd194b32bbc550f71",
+      "remote_git_blob_sha1": "62ea952941b2eb535ecf8dcdd194b32bbc550f71",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/src/lib.rs",
+      "local_git_blob_sha1": "2ad713a312a7b42f625deb4b23fb54ae7c80bef5",
+      "remote_git_blob_sha1": "2ad713a312a7b42f625deb4b23fb54ae7c80bef5",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/src/units.rs",
+      "local_git_blob_sha1": "21b24092db549bd5b0381415861f5850257a4637",
+      "remote_git_blob_sha1": "21b24092db549bd5b0381415861f5850257a4637",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/src/values.rs",
+      "local_git_blob_sha1": "cf7cb05ce1654a0d119c460440b49dae90a93971",
+      "remote_git_blob_sha1": "cf7cb05ce1654a0d119c460440b49dae90a93971",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/tests/calendar_rules.rs",
+      "local_git_blob_sha1": "ee7705631026e53da7f8577ddd41c02d3522b33c",
+      "remote_git_blob_sha1": "ee7705631026e53da7f8577ddd41c02d3522b33c",
+      "equal": true
+    },
+    {
+      "path": "crates/domain/tests/decimal_engine.rs",
+      "local_git_blob_sha1": "3540fec135a62369f9f4ae39b036eb3d06a09c81",
+      "remote_git_blob_sha1": "3540fec135a62369f9f4ae39b036eb3d06a09c81",
+      "equal": true
+    },
+    {
+      "path": "crates/jobs/Cargo.toml",
+      "local_git_blob_sha1": "89544d2a66c8f213c8199982cf0930b88774c8ce",
+      "remote_git_blob_sha1": "89544d2a66c8f213c8199982cf0930b88774c8ce",
+      "equal": true
+    },
+    {
+      "path": "crates/jobs/src/main.rs",
+      "local_git_blob_sha1": "3b09d9055ce069ce8f03de0b80eb1431e666aee3",
+      "remote_git_blob_sha1": "3b09d9055ce069ce8f03de0b80eb1431e666aee3",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/Cargo.toml",
+      "local_git_blob_sha1": "5dea29c2aefaa805393e896377a41d752cd76ab7",
+      "remote_git_blob_sha1": "5dea29c2aefaa805393e896377a41d752cd76ab7",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/build.rs",
+      "local_git_blob_sha1": "c58af200f8113a1617d3f758fd28ea2fc3075512",
+      "remote_git_blob_sha1": "c58af200f8113a1617d3f758fd28ea2fc3075512",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/migrations/0001_tenant_foundation.sql",
+      "local_git_blob_sha1": "c416f752d8e4b8db0980c69a923b73aabe3d69d6",
+      "remote_git_blob_sha1": "c416f752d8e4b8db0980c69a923b73aabe3d69d6",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/migrations/0002_civil_dates_and_indexes.sql",
+      "local_git_blob_sha1": "e109d6c4e81219754aa4e586c065f0b68835b4aa",
+      "remote_git_blob_sha1": "e109d6c4e81219754aa4e586c065f0b68835b4aa",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/bin/canteiro-db.rs",
+      "local_git_blob_sha1": "b9d6b7570701ee0cd47a772ce28f5b78eed66060",
+      "remote_git_blob_sha1": "b9d6b7570701ee0cd47a772ce28f5b78eed66060",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/database_tests.rs",
+      "local_git_blob_sha1": "e009fc54e4c93bd62830a15fc6ee11a7f5197b3f",
+      "remote_git_blob_sha1": "e009fc54e4c93bd62830a15fc6ee11a7f5197b3f",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/error.rs",
+      "local_git_blob_sha1": "ecdc1a708de26afd8967ba29f9796822e7376da5",
+      "remote_git_blob_sha1": "ecdc1a708de26afd8967ba29f9796822e7376da5",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/lib.rs",
+      "local_git_blob_sha1": "1388f6eb6dce6321cd198bd5e87770ea5e52736b",
+      "remote_git_blob_sha1": "1388f6eb6dce6321cd198bd5e87770ea5e52736b",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/migration.rs",
+      "local_git_blob_sha1": "eaf035550bc07c11b393a4c38e413e0bc0a77451",
+      "remote_git_blob_sha1": "eaf035550bc07c11b393a4c38e413e0bc0a77451",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/pool.rs",
+      "local_git_blob_sha1": "1fce4d1341bc321a4922aae22fdb6f7f7d903d49",
+      "remote_git_blob_sha1": "1fce4d1341bc321a4922aae22fdb6f7f7d903d49",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/settings.rs",
+      "local_git_blob_sha1": "da68cbd4ac975553c945d5ecec553a039d0cd4d7",
+      "remote_git_blob_sha1": "da68cbd4ac975553c945d5ecec553a039d0cd4d7",
+      "equal": true
+    },
+    {
+      "path": "crates/persistence/src/unit_of_work.rs",
+      "local_git_blob_sha1": "536d60caa04cf9de2e910ecf981f17a16aa7671d",
+      "remote_git_blob_sha1": "536d60caa04cf9de2e910ecf981f17a16aa7671d",
+      "equal": true
+    },
+    {
+      "path": "crates/web/Cargo.toml",
+      "local_git_blob_sha1": "bf9e763e3e0ed596cf6aa859466ed8d8d8c1ce6b",
+      "remote_git_blob_sha1": "bf9e763e3e0ed596cf6aa859466ed8d8d8c1ce6b",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/calculations.rs",
+      "local_git_blob_sha1": "0c5c1c58a245055f00064c6f78a40387546b1c47",
+      "remote_git_blob_sha1": "0c5c1c58a245055f00064c6f78a40387546b1c47",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/form_components.rs",
+      "local_git_blob_sha1": "d55a4b3caaff545526ef79a40a69c80a0a646bf0",
+      "remote_git_blob_sha1": "d55a4b3caaff545526ef79a40a69c80a0a646bf0",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/lib.rs",
+      "local_git_blob_sha1": "99a7e60a00ec55174edb4757d28d23bf2cdfce4a",
+      "remote_git_blob_sha1": "99a7e60a00ec55174edb4757d28d23bf2cdfce4a",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/components.rs",
+      "local_git_blob_sha1": "d3bcb4f6f5b09a57642f1c5b3b8a86a41d381821",
+      "remote_git_blob_sha1": "d3bcb4f6f5b09a57642f1c5b3b8a86a41d381821",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/mod.rs",
+      "local_git_blob_sha1": "eab31d0c2c9f0ce72c80f2f18ee29b0c6f4d7b50",
+      "remote_git_blob_sha1": "eab31d0c2c9f0ce72c80f2f18ee29b0c6f4d7b50",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/model.rs",
+      "local_git_blob_sha1": "a4b801dcbb30619981b78ff5888242a6b5ff79c6",
+      "remote_git_blob_sha1": "a4b801dcbb30619981b78ff5888242a6b5ff79c6",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/pages.rs",
+      "local_git_blob_sha1": "66ceb57b4a10c03d2627f932594073db0043d310",
+      "remote_git_blob_sha1": "66ceb57b4a10c03d2627f932594073db0043d310",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/worksheet/editor.rs",
+      "local_git_blob_sha1": "ca35c6ca3aeb1c5e5b0b5ad036458fc001dc49de",
+      "remote_git_blob_sha1": "ca35c6ca3aeb1c5e5b0b5ad036458fc001dc49de",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/worksheet/fields.rs",
+      "local_git_blob_sha1": "b4206455479655981163302ff0aab3c7a783ac31",
+      "remote_git_blob_sha1": "b4206455479655981163302ff0aab3c7a783ac31",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/worksheet/mod.rs",
+      "local_git_blob_sha1": "03b0893344c07690b3a8cc01aeaccc2fafed711d",
+      "remote_git_blob_sha1": "03b0893344c07690b3a8cc01aeaccc2fafed711d",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/worksheet/network.rs",
+      "local_git_blob_sha1": "8d93829075d4905f99dd3cbb4bd20b3e4992c4b9",
+      "remote_git_blob_sha1": "8d93829075d4905f99dd3cbb4bd20b3e4992c4b9",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/worksheet/state.rs",
+      "local_git_blob_sha1": "0ad75061c3649b2233cf2f2f9809bc2720fa58cb",
+      "remote_git_blob_sha1": "0ad75061c3649b2233cf2f2f9809bc2720fa58cb",
+      "equal": true
+    },
+    {
+      "path": "crates/web/src/prototype/worksheet/table.rs",
+      "local_git_blob_sha1": "0b24384bfa8895d9b6a782bfc4a3e4601646d9be",
+      "remote_git_blob_sha1": "0b24384bfa8895d9b6a782bfc4a3e4601646d9be",
+      "equal": true
+    },
+    {
+      "path": "deny.toml",
+      "local_git_blob_sha1": "94d70ee0f7234b66b9757a211b689ebd9a934fbc",
+      "remote_git_blob_sha1": "94d70ee0f7234b66b9757a211b689ebd9a934fbc",
+      "equal": true
+    },
+    {
+      "path": "docs/validacao/issue-005/reference-vectors.json",
+      "local_git_blob_sha1": "0c9347621b30a3954e9c75198336d62c628b53ea",
+      "remote_git_blob_sha1": "0c9347621b30a3954e9c75198336d62c628b53ea",
+      "equal": true
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "local_git_blob_sha1": "e527dfe8ab8692d092b4cbd615c65d2f7b35393e",
+      "remote_git_blob_sha1": "e527dfe8ab8692d092b4cbd615c65d2f7b35393e",
+      "equal": true
+    },
+    {
+      "path": "style/main.css",
+      "local_git_blob_sha1": "325120b732a0c2f9cff76484cc2aa623381d4c34",
+      "remote_git_blob_sha1": "325120b732a0c2f9cff76484cc2aa623381d4c34",
+      "equal": true
+    },
+    {
+      "path": "style/prototype.css",
+      "local_git_blob_sha1": "8da67bf70a1a7b7f7b9b3fad7b5984d87794916a",
+      "remote_git_blob_sha1": "8da67bf70a1a7b7f7b9b3fad7b5984d87794916a",
+      "equal": true
+    },
+    {
+      "path": "tools/calculation-verification/Cargo.toml",
+      "local_git_blob_sha1": "caec4ab03b258bd64bfe024cd4eda7c3dcdc2e7a",
+      "remote_git_blob_sha1": "caec4ab03b258bd64bfe024cd4eda7c3dcdc2e7a",
+      "equal": true
+    },
+    {
+      "path": "tools/calculation-verification/src/lib.rs",
+      "local_git_blob_sha1": "8a6629498a8ea33eb489e591cb412727c16022f4",
+      "remote_git_blob_sha1": "8a6629498a8ea33eb489e591cb412727c16022f4",
+      "equal": true
+    },
+    {
+      "path": "tools/calculation-verification/src/main.rs",
+      "local_git_blob_sha1": "bb5339ffc7a7bffe6fb1fa9fbac696d40c2faf1d",
+      "remote_git_blob_sha1": "bb5339ffc7a7bffe6fb1fa9fbac696d40c2faf1d",
+      "equal": true
+    },
+    {
+      "path": "tools/calculation-verification/tests/reference.rs",
+      "local_git_blob_sha1": "a67fddc7793e2176e565e58a8a1de2c33edbe11b",
+      "remote_git_blob_sha1": "a67fddc7793e2176e565e58a8a1de2c33edbe11b",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/Cargo.toml",
+      "local_git_blob_sha1": "972fdea294d98ebf978686b270790c4ea1664c60",
+      "remote_git_blob_sha1": "972fdea294d98ebf978686b270790c4ea1664c60",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/src/lib.rs",
+      "local_git_blob_sha1": "20d0bee33f1e4db375d00d58d31c3d9b70ffd9af",
+      "remote_git_blob_sha1": "20d0bee33f1e4db375d00d58d31c3d9b70ffd9af",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/tests/browser.rs",
+      "local_git_blob_sha1": "12562f867165577d3adc4004ca0d6e78ea029b94",
+      "remote_git_blob_sha1": "12562f867165577d3adc4004ca0d6e78ea029b94",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/tests/calculations.rs",
+      "local_git_blob_sha1": "19abf280cdb3dee560d82061fbb12ebea39511de",
+      "remote_git_blob_sha1": "19abf280cdb3dee560d82061fbb12ebea39511de",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/tests/forms.rs",
+      "local_git_blob_sha1": "ef9d188d6c8a9bdad3cf3c682b7a7af22f31e9d0",
+      "remote_git_blob_sha1": "ef9d188d6c8a9bdad3cf3c682b7a7af22f31e9d0",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/tests/prototype.rs",
+      "local_git_blob_sha1": "32bbec4c707362b065de5ef99983dcfddf76c75d",
+      "remote_git_blob_sha1": "32bbec4c707362b065de5ef99983dcfddf76c75d",
+      "equal": true
+    },
+    {
+      "path": "tools/e2e/tests/support/mod.rs",
+      "local_git_blob_sha1": "d4908524257dfc8bfdc1c6ef40e9881a6f861bdd",
+      "remote_git_blob_sha1": "d4908524257dfc8bfdc1c6ef40e9881a6f861bdd",
+      "equal": true
+    },
+    {
+      "path": "tools/xtask/Cargo.toml",
+      "local_git_blob_sha1": "ebaa0b1bad9ffad5e427fa77d71457547b1b0a09",
+      "remote_git_blob_sha1": "ebaa0b1bad9ffad5e427fa77d71457547b1b0a09",
+      "equal": true
+    },
+    {
+      "path": "tools/xtask/src/assets.rs",
+      "local_git_blob_sha1": "17f193374f769a6b38226552e832d6c3141a0378",
+      "remote_git_blob_sha1": "17f193374f769a6b38226552e832d6c3141a0378",
+      "equal": true
+    },
+    {
+      "path": "tools/xtask/src/main.rs",
+      "local_git_blob_sha1": "29cf3b12b3c58f68623f9596a07d12cef6398581",
+      "remote_git_blob_sha1": "29cf3b12b3c58f68623f9596a07d12cef6398581",
+      "equal": true
+    },
+    {
+      "path": "tools/xtask/src/plan.rs",
+      "local_git_blob_sha1": "dec9cba2aa389c8a50464e21e30a8f5cf4c66a2c",
+      "remote_git_blob_sha1": "dec9cba2aa389c8a50464e21e30a8f5cf4c66a2c",
+      "equal": true
+    },
+    {
+      "path": "tools/xtask/src/policy.rs",
+      "local_git_blob_sha1": "a5d2a5424e17531ee2aa56b300273fc24bb472a5",
+      "remote_git_blob_sha1": "a5d2a5424e17531ee2aa56b300273fc24bb472a5",
+      "equal": true
+    }
+  ]
+}

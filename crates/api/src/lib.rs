@@ -1,4 +1,5 @@
 //! Servidor HTTP e fronteira de configuração da fundação.
+mod calculations;
 pub mod config;
 pub mod error;
 mod forms;
@@ -25,6 +26,16 @@ pub fn router(config: &Config) -> Router {
     let shell_options = options.clone();
     let fallback_options = options.clone();
     Router::new()
+        .route(
+            "/api/prototipo/calculos/rateio",
+            axum::routing::post(calculations::allocation)
+                .layer(axum::extract::DefaultBodyLimit::max(4096)),
+        )
+        .route(
+            "/api/prototipo/calculos/calendario",
+            axum::routing::post(calculations::calendar)
+                .layer(axum::extract::DefaultBodyLimit::max(4096)),
+        )
         .route("/api/prototipo/{organization}/medicoes", get(forms::page))
         .route(
             "/api/prototipo/{organization}/medicoes/export",

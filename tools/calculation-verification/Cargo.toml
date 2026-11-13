@@ -1,0 +1,23 @@
+[package]
+name = "canteiro-calculation-verification"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[features]
+default = []
+wasm = ["dep:wasm-bindgen"]
+
+[dependencies]
+canteiro-domain = { path = "../../crates/domain" }
+serde.workspace = true
+serde_json.workspace = true
+wasm-bindgen = { workspace = true, optional = true }
+
+[lints]
+workspace = true

@@ -3,6 +3,7 @@ use super::{
     DecimalKind, FieldError, format_decimal_pt_br, parse_date_pt_br, parse_decimal_pt_br,
     parse_unit,
 };
+use canteiro_domain::decimal::{CalculationPolicy, unit_measurement};
 use serde::{Deserialize, Serialize};
 use std::{cmp::Ordering, collections::BTreeMap, sync::OnceLock};
 
@@ -30,6 +31,7 @@ impl Default for MeasurementQuery {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct MeasurementRow {
+    pub policy: CalculationPolicy,
     pub id: u32,
     pub code: String,
     pub description: String,
@@ -176,6 +178,7 @@ fn build_row(prefix: &str, id: u32) -> MeasurementRow {
     ];
     let (description, unit) = SERVICES[((id - 1) % SERVICES.len() as u32) as usize];
     let mut row = MeasurementRow {
+        policy: CalculationPolicy::default(),
         id,
         code: format!("{prefix}-{id:05}"),
         description: format!("{description} {id:05}"),
@@ -475,45 +478,18 @@ pub fn preview_measurement(
 }
 
 fn fill_preview_values(row: &mut MeasurementRow) -> Result<(), FieldError> {
-    let previous = Exact::parse(&row.previous)?;
-    let current = Exact::parse(&row.current)?;
-    let contracted = Exact::parse(&row.contracted)?;
-    let price = Exact::parse(&row.unit_price)?;
-    let difference = current
-        .scaled(6)?
-        .checked_sub(previous.scaled(6)?)
-        .ok_or_else(overflow_error)?;
-    let balance = contracted
-        .scaled(6)?
-        .checked_sub(current.scaled(6)?)
-        .ok_or_else(overflow_error)?;
-    let previous_cents = previous.cents_times(price)?;
-    let current_cents = current.cents_times(price)?;
-    let contracted_cents = contracted.cents_times(price)?;
-    row.difference = Exact {
-        coefficient: difference,
-        scale: 6,
-    }
-    .text(0);
-    row.balance = Exact {
-        coefficient: balance,
-        scale: 6,
-    }
-    .text(0);
-    row.period_value = Exact {
-        coefficient: current_cents
-            .checked_sub(previous_cents)
-            .ok_or_else(overflow_error)?,
-        scale: 2,
-    }
-    .text(2);
-    row.balance_value = Exact {
-        coefficient: contracted_cents
-            .checked_sub(current_cents)
-            .ok_or_else(overflow_error)?,
-        scale: 2,
-    }
-    .text(2);
+    let preview = unit_measurement(
+        row.contracted.parse().map_err(|_| overflow_error())?,
+        row.previous.parse().map_err(|_| overflow_error())?,
+        row.current.parse().map_err(|_| overflow_error())?,
+        row.unit_price.parse().map_err(|_| overflow_error())?,
+    )
+    .map_err(|_| overflow_error())?;
+    row.policy = preview.policy;
+    row.difference = preview.quantity.to_string();
+    row.balance = preview.remaining_quantity.to_string();
+    row.period_value = preview.period_value.to_string();
+    row.balance_value = preview.remaining_value.to_string();
     Ok(())
 }
 

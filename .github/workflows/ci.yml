@@ -90,6 +90,10 @@ jobs:
         run: cargo xtask build
       - name: Conferir orçamento dos arquivos servidos
         run: cargo xtask budget
+      - name: Compilar verificador independente para execução real em WASM
+        run: |
+          cargo build --locked -p canteiro-calculation-verification --lib --features wasm --target wasm32-unknown-unknown --profile wasm-release
+          wasm-bindgen --target web --no-typescript --out-name calculation-verification --out-dir target/site/pkg/verification target/wasm32-unknown-unknown/wasm-release/canteiro_calculation_verification.wasm
       - name: Preparar navegador e driver fixos
         run: |
           mkdir -p "${RUNNER_TEMP}/canteiro-browser"

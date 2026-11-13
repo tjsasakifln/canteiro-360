@@ -23,6 +23,7 @@ hydrate = [
 ssr = ["leptos/ssr", "leptos_meta/ssr", "leptos_router/ssr"]
 
 [dependencies]
+canteiro-domain = { path = "../domain" }
 canteiro-contracts = { path = "../contracts" }
 serde.workspace = true
 serde_json.workspace = true

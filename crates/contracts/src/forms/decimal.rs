@@ -1,4 +1,4 @@
-use canteiro_domain::CivilDate;
+use canteiro_domain::{CivilDate, decimal::ExactDecimal};
 use serde::{Deserialize, Serialize};
 
 /// Input limits describe the field, not a rounding instruction.
@@ -156,15 +156,21 @@ fn decimal_format_error() -> FieldError {
 /// Formats already canonical decimal text. Invalid input remains visible;
 /// formatting never silently turns it into a numerical zero.
 pub fn format_decimal_pt_br(canonical: &str) -> String {
-    let Ok(value) = Exact::parse(canonical) else {
+    let Ok(value) = canonical.parse::<ExactDecimal>() else {
         return canonical.to_owned();
     };
     let fraction_size = canonical
         .split_once('.')
         .map_or(0, |(_, value)| value.len());
-    let normalized = value.text(fraction_size);
-    let (integer, fraction) = normalized.split_once('.').unwrap_or((&normalized, ""));
+    let Ok(normalized) = value.fixed_text(fraction_size as u32) else {
+        return canonical.to_owned();
+    };
+    let (sign, unsigned) = normalized
+        .strip_prefix('-')
+        .map_or(("", normalized.as_str()), |value| ("-", value));
+    let (integer, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
     let mut formatted = String::with_capacity(normalized.len() + integer.len() / 3);
+    formatted.push_str(sign);
     for (index, ch) in integer.chars().enumerate() {
         if index > 0 && (integer.len() - index).is_multiple_of(3) {
             formatted.push('.');
@@ -224,8 +230,8 @@ pub fn parse_unit(input: &str) -> Result<String, FieldError> {
     }
 }
 
-/// Small checked fixed-point value used by previews only. It cannot round or
-/// saturate a user input, and does not replace the full calculation engine.
+/// Presentation helper for parsing, formatting and sorting the original fields.
+/// It does not calculate amounts; financial previews use the domain engine.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) struct Exact {
     pub coefficient: u128,
@@ -293,25 +299,6 @@ impl Exact {
             format!("{integer}.{fraction}")
         }
     }
-
-    pub fn cents_times(self, rhs: Self) -> Result<u128, FieldError> {
-        let coefficient = self
-            .coefficient
-            .checked_mul(rhs.coefficient)
-            .ok_or_else(overflow_error)?;
-        // At most 28 significant digits for this preliminary arithmetic.
-        if coefficient >= 10_u128.pow(28) {
-            return Err(overflow_error());
-        }
-        let scale = self.scale + rhs.scale;
-        if scale <= 2 {
-            coefficient
-                .checked_mul(10_u128.pow(2 - scale))
-                .ok_or_else(overflow_error)
-        } else {
-            Ok(coefficient / 10_u128.pow(scale - 2))
-        }
-    }
 }
 
 pub(super) fn overflow_error() -> FieldError {
@@ -324,6 +311,18 @@ pub(super) fn overflow_error() -> FieldError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn presentation_preserves_signed_corrections_and_factor_precision() {
+        assert_eq!(format_decimal_pt_br("-1234.56"), "-1.234,56");
+        assert_eq!(format_decimal_pt_br("1.1234567890"), "1,1234567890");
+        assert_eq!(format_decimal_pt_br("-0.01"), "-0,01");
+        assert_eq!(
+            format_decimal_pt_br("0.0000000000000000000000000001"),
+            "0,0000000000000000000000000001"
+        );
+        assert_eq!(format_decimal_pt_br("1e3"), "1e3");
+    }
 
     #[test]
     fn explicit_brazilian_values_preserve_precision_and_report_the_interpretation() {

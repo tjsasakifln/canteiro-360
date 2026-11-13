@@ -1,0 +1,31 @@
+    Blocking waiting for file lock on build directory
+    Checking canteiro-domain v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/domain)
+    Checking sync_wrapper v1.0.2
+    Checking try-lock v0.2.5
+    Checking want v0.3.2
+    Checking hyper v1.12.0
+    Checking tower v0.5.3
+    Checking ipnet v2.12.2
+    Checking base64 v0.23.1
+    Checking axum-core v0.5.6
+    Checking hyper-util v0.1.21
+    Checking tower-http v0.6.11
+    Checking axum v0.8.9
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/persistence)
+    Checking canteiro-contracts v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/contracts)
+    Checking canteiro-application v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/application)
+    Checking canteiro-calculation-verification v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/tools/calculation-verification)
+    Checking reqwest v0.13.5
+    Checking canteiro-e2e v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/tools/e2e)
+    Checking server_fn v0.8.13
+    Checking leptos_server v0.8.8
+    Checking leptos v0.8.23
+    Checking leptos_meta v0.8.7
+    Checking leptos_router v0.8.17
+    Checking canteiro-jobs v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/jobs)
+    Checking xtask v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/tools/xtask)
+    Checking leptos_integration_utils v0.8.9
+    Checking canteiro-web v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/web)
+    Checking leptos_axum v0.8.10
+    Checking canteiro-api v0.1.0 (/workspace/scratch/0536b2902129/canteiro-360/crates/api)
+    Finished `dev` profile [unoptimized] target(s) in 18.19s

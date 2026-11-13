@@ -1302,3 +1302,25 @@ dialog.prototype-dialog[open] {
 @media (max-width: 520px) {
   .measurement-grid .service-column { width: 165px; }
 }
+/* Checked calculation previews share the existing accessible field tokens. */
+.calculation-page { max-width: 100%; }
+.calculation-page h1 { margin-block: .5rem 1rem; }
+.calculation-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; margin-block: 2rem; }
+.calculation-columns > section { min-width: 0; }
+.calculation-columns .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.calculation-span { grid-column: 1 / -1; }
+.calculation-table { max-width: 100%; max-height: 24rem; overflow: auto; border: 1px solid var(--border, #c9d1db); border-radius: .5rem; }
+.calculation-table table { width: 100%; min-width: 24rem; border-collapse: collapse; }
+.calculation-table caption { text-align: left; padding: .75rem; font-weight: 600; }
+.calculation-table th, .calculation-table td { padding: .75rem; border-top: 1px solid var(--border, #c9d1db); text-align: left; vertical-align: top; }
+.calculation-table td.numeric { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.calculation-table thead { background: #eff3f8; }
+.calculation-total { font-size: 1.125rem; padding-block: .5rem; }
+.calculation-policy { margin-top: 1rem; font-size: .9375rem; line-height: 1.6; }
+.calculation-columns .field-error:empty { display: none; }
+@media (max-width: 900px) {
+    .calculation-columns { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+    .calculation-columns .form-grid { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,8 +1,8 @@
 //! Reusable presentation contracts for the forms and paginated demonstration.
 //!
 //! Decimal text is interpreted explicitly as pt-BR. The demonstration is not a
-//! persistence, permission or financial-command API. The complete calculation
-//! engine remains a separate implementation step.
+//! persistence, permission or financial-command API. Financial previews use the
+//! shared C360-DECIMAL-1 domain engine, including the server-side recomputation.
 
 mod decimal;
 mod measurement;

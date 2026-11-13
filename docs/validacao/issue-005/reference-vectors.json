@@ -1,0 +1,2317 @@
+{
+  "schema_version": 1,
+  "policy": "C360-DECIMAL-1",
+  "purpose": "Independent, fixed reference outputs for native and executed WebAssembly verification. Expected values were not generated from Canteiro functions.",
+  "reference_method": {
+    "runtime": "CPython 3.12.14",
+    "decimal_precision": 120,
+    "allocation": "fractions.Fraction on integer cents, largest remainder with stable position then identifier",
+    "calendar": "datetime.date + calendar.monthrange + timedelta",
+    "time_zone": "zoneinfo.ZoneInfo with round-trip checks for gap/fold local times",
+    "product_execution": false
+  },
+  "format": {
+    "expected": "An output object, or an object containing error with the stable error category. Decimal values are strings, except the deliberate invalid JSON-number input D010.",
+    "allocation_parts_order": "Sort result rows by id before comparison; allocation itself must use position then id for ties, never the input order.",
+    "amount_scale": 2,
+    "quantity_output_scale": 6,
+    "time_output": "RFC3339 with six microsecond digits and explicit offset",
+    "property_samples": "Each sample has the same request/expected schema as vectors and must be executed on both targets."
+  },
+  "scope_notes": [
+    "Numeric and calendar primitives only. These fixtures do not assert authorization, database concurrency, final financial postings or downstream business workflows.",
+    "The 50 determinant cases plus finite property samples are independent references, not a proof over all inputs. Runtime property tests should extend conservation, rejection and deterministic ordering.",
+    "Money can represent signed adjustments at the type boundary; ordinary workflows separately enforce permitted signs and approval requirements.",
+    "Regional time-zone fixtures depend on the pinned product zone database; any future rules/data update requires explicit review, not regeneration from the product under test.",
+    "The existing docs/validacao/vetores-calculo.json and its stateful future-consumer cases are preserved unchanged."
+  ],
+  "vectors": [
+    {
+      "id": "D001",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "quantity",
+        "value": "99999999999999.999999",
+        "output_scale": 6
+      },
+      "expected": {
+        "value": "99999999999999.999999"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "14 integer digits and six fractional digits are exactly the NUMERIC(20,6) upper bound.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D002",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "quantity",
+        "value": "100000000000000",
+        "output_scale": 6
+      },
+      "expected": {
+        "error": "Overflow"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "15 integer digits exceed NUMERIC(20,6), regardless of absent trailing zeros.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D003",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "quantity",
+        "value": "1.0000000",
+        "output_scale": 6
+      },
+      "expected": {
+        "error": "Scale"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Seven supplied fractional digits exceed the six-place input limit, even when the extra digit is zero.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D004",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "quantity",
+        "value": "-0.000001",
+        "output_scale": 6
+      },
+      "expected": {
+        "error": "Negative"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "An ordinary quantity is nonnegative; correction authorization is outside this primitive.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D005",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "money",
+        "value": "999999999999999999.99",
+        "output_scale": 2
+      },
+      "expected": {
+        "value": "999999999999999999.99"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "18 integer digits and two fractional digits are exactly the NUMERIC(20,2) upper bound.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D006",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "money",
+        "value": "1.001",
+        "output_scale": 2
+      },
+      "expected": {
+        "error": "Scale"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Money input may not silently discard the third decimal place.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D007",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "percent",
+        "value": "1000000",
+        "output_scale": 6
+      },
+      "expected": {
+        "error": "Overflow"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Seven integer digits exceed NUMERIC(12,6); functional percentage limits are also checked by consumers.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D008",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "index",
+        "value": "0",
+        "output_scale": 10
+      },
+      "expected": {
+        "error": "Range"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§7",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "An index must be strictly positive; zero is not a missing or valid index.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D009",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "money",
+        "value": "1,234",
+        "output_scale": 2
+      },
+      "expected": {
+        "error": "Format"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Canonical API decimal strings use a dot and no grouping; locale conversion must be explicit.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D010",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "money",
+        "value": 1234,
+        "output_scale": 2
+      },
+      "expected": {
+        "error": "Format"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "A JSON number is deliberately invalid; the real serde boundary must reject it instead of stringifying it.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D011",
+      "operation": "typed_parse",
+      "inputs": {
+        "kind": "exact",
+        "value": "9999999999999999999999999999",
+        "output_scale": 0
+      },
+      "expected": {
+        "value": "9999999999999999999999999999"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "An integer with exactly 28 significant digits is inside the intermediate limit.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D012",
+      "operation": "arithmetic",
+      "inputs": {
+        "method": "add",
+        "left": "9999999999999999999999999999",
+        "right": "1",
+        "output_scale": 0
+      },
+      "expected": {
+        "error": "Overflow"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Exact integer sum is 10000000000000000000000000000, which has 29 integer digits; do not exploit the wider Decimal mantissa.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D013",
+      "operation": "arithmetic",
+      "inputs": {
+        "method": "mul",
+        "left": "1.234567891234567891234567891",
+        "right": "1.234567891234567891234567891",
+        "output_scale": 28
+      },
+      "expected": {
+        "error": "Precision"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Exact rational multiplication has more than 28 significant digits; no multiplication step authorizes scale reduction.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D014",
+      "operation": "arithmetic",
+      "inputs": {
+        "method": "mul",
+        "left": "0.0000000000000000000000000001",
+        "right": "0.1",
+        "output_scale": 28
+      },
+      "expected": {
+        "error": "Precision"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "The exact nonzero product is 10^-29; rounding it to zero would hide precision loss.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D015",
+      "operation": "arithmetic",
+      "inputs": {
+        "method": "div_exact",
+        "left": "1",
+        "right": "0",
+        "output_scale": 2
+      },
+      "expected": {
+        "error": "DivisionByZero"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Zero divisor has no finite exact quotient.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D016",
+      "operation": "arithmetic",
+      "inputs": {
+        "method": "div_exact",
+        "left": "1",
+        "right": "3",
+        "output_scale": 28
+      },
+      "expected": {
+        "error": "Precision"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "One third is not a terminating decimal; this operation does not authorize rounding.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D017",
+      "operation": "quantize",
+      "inputs": {
+        "value": "-0.335",
+        "scale": 2,
+        "mode": "truncate"
+      },
+      "expected": {
+        "value": "-0.33"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§4",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "ROUND_DOWN removes digits toward zero, including negative operands.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D018",
+      "operation": "quantize",
+      "inputs": {
+        "value": "-0.335",
+        "scale": 2,
+        "mode": "round_away"
+      },
+      "expected": {
+        "value": "-0.34"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2; §3",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "The tie moves away from zero, so -0.335 rounds to -0.34.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D019",
+      "operation": "negotiated_price",
+      "inputs": {
+        "cost": "100",
+        "bdi": "20",
+        "discount": "10"
+      },
+      "expected": {
+        "value": "108.000000"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§3",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V04"
+      },
+      "algorithm": "100 × (1 + 20/100) × (1 - 10/100), rounded only to six final places.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D020",
+      "operation": "negotiated_price",
+      "inputs": {
+        "cost": "0.000005",
+        "bdi": "10",
+        "discount": "0"
+      },
+      "expected": {
+        "value": "0.000006"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§3",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Exact product 0.0000055 is a sixth-place tie and rounds away from zero.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D021",
+      "operation": "negotiated_price",
+      "inputs": {
+        "cost": "100",
+        "bdi": "1000.000001",
+        "discount": "0"
+      },
+      "expected": {
+        "error": "Range"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§3",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "BDI above 1000% is outside the stated product policy, even if storage can hold it.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D022",
+      "operation": "negotiated_price",
+      "inputs": {
+        "cost": "100",
+        "bdi": "0",
+        "discount": "100.000001"
+      },
+      "expected": {
+        "error": "Range"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§3",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Discount above 100% is prohibited; it must not create a negative unit price.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D023",
+      "operation": "arithmetic",
+      "inputs": {
+        "method": "divide_rounded",
+        "left": "1",
+        "right": "3",
+        "output_scale": 10
+      },
+      "expected": {
+        "value": "0.3333333333"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§7",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Index division explicitly rounds to ten decimal places, with ties away from zero.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D024",
+      "operation": "unit_measurement",
+      "inputs": {
+        "contracted": "100",
+        "previous": "20",
+        "current": "35",
+        "unit_price": "10"
+      },
+      "expected": {
+        "quantity": "15.000000",
+        "amount": "150.00"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§4",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V01"
+      },
+      "algorithm": "trunc2(35×10) - trunc2(20×10) = 150; quantity difference is 15.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D025",
+      "operation": "telescopic",
+      "inputs": {
+        "contracted": "3",
+        "accumulated": [
+          "1",
+          "2",
+          "3"
+        ],
+        "unit_price": "0.335"
+      },
+      "expected": {
+        "periods": [
+          "0.33",
+          "0.34",
+          "0.33"
+        ],
+        "total": "1.00"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§4",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V02"
+      },
+      "algorithm": "Subtract successive accumulated amounts, never independently truncate incremental quantity × price.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D026",
+      "operation": "unit_measurement",
+      "inputs": {
+        "contracted": "1",
+        "previous": "0.000001",
+        "current": "0.000003",
+        "unit_price": "12345.678901"
+      },
+      "expected": {
+        "quantity": "0.000002",
+        "amount": "0.02"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§4",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Accumulated amounts truncate from 0.012345678901 and 0.037037036703 to 0.01 and 0.03; difference is 0.02.",
+      "reference": {
+        "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+        "precision": 120
+      }
+    },
+    {
+      "id": "D027",
+      "operation": "unit_measurement",
+      "inputs": {
+        "contracted": "100",
+        "previous": "20",
+        "current": "15",
+        "unit_price": "10"
+      },
+      "expected": {
+        "error": "Decreasing"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§4",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "An ordinary measurement cannot introduce an implicit financial correction by reducing accumulated quantity.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D028",
+      "operation": "unit_measurement",
+      "inputs": {
+        "contracted": "100",
+        "previous": "20",
+        "current": "101",
+        "unit_price": "10"
+      },
+      "expected": {
+        "error": "InsufficientBalance"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§4",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V11"
+      },
+      "algorithm": "Accumulated quantity above the contracted amount is blocked before recognition.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D029",
+      "operation": "allocate_money",
+      "inputs": {
+        "total": "100.00",
+        "rows": [
+          {
+            "id": "a",
+            "position": 1,
+            "weight": "1"
+          },
+          {
+            "id": "b",
+            "position": 2,
+            "weight": "1"
+          },
+          {
+            "id": "c",
+            "position": 3,
+            "weight": "1"
+          }
+        ]
+      },
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§10",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V10"
+      },
+      "algorithm": "10000 cents divided into three equal rational shares; position 1 receives the one residual cent.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D030",
+      "operation": "allocate_money",
+      "inputs": {
+        "total": "100.00",
+        "rows": [
+          {
+            "id": "a",
+            "position": 1,
+            "weight": "1"
+          },
+          {
+            "id": "b",
+            "position": 2,
+            "weight": "2"
+          },
+          {
+            "id": "c",
+            "position": 3,
+            "weight": "3"
+          }
+        ]
+      },
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "16.67"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "50.00"
+          }
+        ],
+        "total": "100.00"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§10",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Floors are 1666,3333,5000 cents; highest fractional remainder gives the final cent to id a.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D031",
+      "operation": "allocate_money",
+      "inputs": {
+        "total": "0.02",
+        "rows": [
+          {
+            "id": "b",
+            "position": 2,
+            "weight": "1"
+          },
+          {
+            "id": "z",
+            "position": 1,
+            "weight": "1"
+          },
+          {
+            "id": "a",
+            "position": 1,
+            "weight": "1"
+          }
+        ]
+      },
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "0.01"
+          },
+          {
+            "id": "b",
+            "value": "0.00"
+          },
+          {
+            "id": "z",
+            "value": "0.01"
+          }
+        ],
+        "total": "0.02"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§10",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Equal remainders tie first on position, then stable identifier: a and z receive cents despite shuffled input.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D032",
+      "operation": "allocate_money",
+      "inputs": {
+        "total": "100.00",
+        "rows": [
+          {
+            "id": "a",
+            "position": 1,
+            "weight": "0"
+          },
+          {
+            "id": "b",
+            "position": 2,
+            "weight": "0"
+          },
+          {
+            "id": "c",
+            "position": 3,
+            "weight": "0"
+          }
+        ]
+      },
+      "expected": {
+        "error": "ZeroWeight"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§10",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "The weight sum is zero and cannot define a proportional split.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D033",
+      "operation": "allocate_percentages",
+      "inputs": {
+        "rows": [
+          {
+            "id": "a",
+            "position": 1,
+            "weight": "1"
+          },
+          {
+            "id": "b",
+            "position": 2,
+            "weight": "1"
+          },
+          {
+            "id": "c",
+            "position": 3,
+            "weight": "1"
+          }
+        ]
+      },
+      "expected": {
+        "parts": [
+          {
+            "id": "a",
+            "value": "33.34"
+          },
+          {
+            "id": "b",
+            "value": "33.33"
+          },
+          {
+            "id": "c",
+            "value": "33.33"
+          }
+        ],
+        "total": "100.00"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§10",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V27"
+      },
+      "algorithm": "Allocate exactly 10000 hundredths of a percent; this display reconciliation is not an added monetary posting.",
+      "reference": {
+        "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+      }
+    },
+    {
+      "id": "D034",
+      "operation": "unit_compatibility",
+      "inputs": {
+        "pairs": [
+          {
+            "left": "m²",
+            "right": "m²"
+          },
+          {
+            "left": "m",
+            "right": "m²"
+          },
+          {
+            "left": "kg",
+            "right": "m"
+          }
+        ]
+      },
+      "expected": {
+        "compatible": [
+          true,
+          false,
+          false
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§2; docs/regras/orcamentos-medicoes.md, MED quantity/unit rule",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Only like explicit units may be combined without an explicit authorized conversion.",
+      "reference": {
+        "method": "Manual grammar, SQL NUMERIC(p,s) digit limits and policy bounds; no product parser"
+      }
+    },
+    {
+      "id": "D035",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2027-01-31",
+        "policy": "civil",
+        "cadence": "monthly",
+        "periods": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-31"
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V13"
+      },
+      "algorithm": "Compute each month directly from the original anchor; clamp only the nonexistent day in that target month.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D036",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2028-01-31",
+        "policy": "civil",
+        "cadence": "monthly",
+        "periods": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2028-02-29",
+          "2028-03-31"
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V14"
+      },
+      "algorithm": "Compute each month directly from the original anchor; clamp only the nonexistent day in that target month.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D037",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2027-01-30",
+        "policy": "civil",
+        "cadence": "monthly",
+        "periods": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2027-02-28",
+          "2027-03-30"
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Compute each month directly from the original anchor; clamp only the nonexistent day in that target month.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D038",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2096-02-29",
+        "policy": "civil",
+        "cadence": "annual",
+        "periods": [
+          1,
+          4,
+          8
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2097-02-28",
+          "2100-02-28",
+          "2104-02-29"
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Gregorian century rule: 2100 is not leap; the original day 29 returns in leap year 2104.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D039",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2027-01-31",
+        "policy": "fixed_days",
+        "cadence": "monthly",
+        "periods": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2027-03-02",
+          "2027-04-01"
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; CR-02",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Fixed monthly cadence advances 30 days per period from the original anchor.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D040",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2028-01-31",
+        "policy": "fixed_days",
+        "cadence": "annual",
+        "periods": [
+          1
+        ]
+      },
+      "expected": {
+        "dates": [
+          "2029-01-30"
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; CR-02",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Fixed annual cadence is 365 days even across a leap year, distinct from a civil anniversary.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D041",
+      "operation": "schedule",
+      "inputs": {
+        "anchor": "2027-01-31",
+        "formal_end": "2027-02-28",
+        "policy": "fixed_days",
+        "cadence": "monthly"
+      },
+      "expected": {
+        "periods": [
+          {
+            "start": "2027-01-31",
+            "end": "2027-02-28",
+            "days": 28,
+            "residual": true
+          }
+        ]
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; docs/regras/contratos.md, CR-02",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V28"
+      },
+      "algorithm": "Formal end clips the nominal 30-day period and preserves the 28-day formal duration.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D042",
+      "operation": "execution_window",
+      "inputs": {
+        "start": "2027-03-01",
+        "days": 10,
+        "valid_from": "2027-03-01",
+        "valid_to": "2027-05-31"
+      },
+      "expected": {
+        "end": "2027-03-11",
+        "within_validity": true
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V16"
+      },
+      "algorithm": "Execution end equals start plus ten elapsed civil days; the first counted day is the day after the order.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D043",
+      "operation": "execution_window",
+      "inputs": {
+        "start": "2027-05-30",
+        "days": 10,
+        "valid_from": "2027-03-01",
+        "valid_to": "2027-05-31"
+      },
+      "expected": {
+        "end": "2027-06-09",
+        "within_validity": false
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V29"
+      },
+      "algorithm": "Compute the projected end but refuse containment when it exceeds the independent instrument validity.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D044",
+      "operation": "pause_days",
+      "inputs": {
+        "front": "A",
+        "intervals": [
+          {
+            "front": "A",
+            "start": "2027-03-10",
+            "restart": "2027-03-13"
+          }
+        ],
+        "as_of": null
+      },
+      "expected": {
+        "closed_days": 3,
+        "open_days": 0,
+        "total_days": 3,
+        "has_open_pause": false
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670",
+        "source_vector": "V15"
+      },
+      "algorithm": "Half-open interval [10 March,13 March) contains three civil days.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D045",
+      "operation": "pause_days",
+      "inputs": {
+        "front": "A",
+        "intervals": [
+          {
+            "front": "A",
+            "start": "2027-03-10",
+            "restart": "2027-03-13"
+          },
+          {
+            "front": "A",
+            "start": "2027-03-12",
+            "restart": "2027-03-14"
+          }
+        ],
+        "as_of": null
+      },
+      "expected": {
+        "error": "OverlappingPauses"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Same-front intervals intersect on 12 March and are rejected rather than double counted.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D046",
+      "operation": "pause_days",
+      "inputs": {
+        "front": "A",
+        "intervals": [
+          {
+            "front": "B",
+            "start": "2027-03-10",
+            "restart": "2027-03-20"
+          },
+          {
+            "front": "A",
+            "start": "2027-03-13",
+            "restart": "2027-03-15"
+          },
+          {
+            "front": "A",
+            "start": "2027-03-10",
+            "restart": "2027-03-13"
+          }
+        ],
+        "as_of": null
+      },
+      "expected": {
+        "closed_days": 5,
+        "open_days": 0,
+        "total_days": 5,
+        "has_open_pause": false
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Adjacent half-open intervals on A contribute 3+2 days; the independent B scope contributes no days to A.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    },
+    {
+      "id": "D047",
+      "operation": "utc_to_local",
+      "inputs": {
+        "instant": "2027-03-10T02:30:00.000000Z",
+        "zone": "America/Sao_Paulo"
+      },
+      "expected": {
+        "value": "2027-03-09T23:30:00.000000-03:00"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; docs/modelo-dados.md §1",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "An instant may display on the previous civil day in an explicit zone; an independent CivilDate is never converted this way.",
+      "reference": {
+        "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+      }
+    },
+    {
+      "id": "D048",
+      "operation": "local_to_utc",
+      "inputs": {
+        "local": "2018-11-04T00:30:00",
+        "zone": "America/Sao_Paulo"
+      },
+      "expected": {
+        "error": "NonexistentLocalDateTime"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; docs/modelo-dados.md §1",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Both possible offset folds fail UTC-to-local round trip because the 2018 spring transition skips this local wall time.",
+      "reference": {
+        "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+      }
+    },
+    {
+      "id": "D049",
+      "operation": "local_to_utc",
+      "inputs": {
+        "local": "2027-11-07T01:30:00",
+        "zone": "America/New_York"
+      },
+      "expected": {
+        "error": "AmbiguousLocalDateTime"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; docs/modelo-dados.md §1",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "Two valid UTC instants (05:30Z and 06:30Z) round trip to this wall time; choosing one silently is ambiguous.",
+      "reference": {
+        "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+      }
+    },
+    {
+      "id": "D050",
+      "operation": "calendar_sequence",
+      "inputs": {
+        "anchor": "2027-02-29",
+        "policy": "civil",
+        "cadence": "monthly",
+        "periods": [
+          1
+        ]
+      },
+      "expected": {
+        "error": "CivilDate"
+      },
+      "origin": {
+        "document": "docs/regras/calculos.md",
+        "section": "§9; BR04",
+        "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+      },
+      "algorithm": "2027 is not leap; reject the impossible original date instead of normalizing it to March.",
+      "reference": {
+        "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+      }
+    }
+  ],
+  "property_samples": [
+    {
+      "id": "telescopic_conservation_and_allowed_monotonicity",
+      "claim": "For these fixed-price, nondecreasing quantity chains, every period is nonnegative and the sum equals the final accumulated amount. This does not assert monotonic displayed percentages across changed denominators.",
+      "samples": [
+        {
+          "id": "P-TEL-1",
+          "operation": "telescopic",
+          "inputs": {
+            "contracted": "12",
+            "accumulated": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12"
+            ],
+            "unit_price": "0.335"
+          },
+          "expected": {
+            "periods": [
+              "0.33",
+              "0.34",
+              "0.33",
+              "0.34",
+              "0.33",
+              "0.34",
+              "0.33",
+              "0.34",
+              "0.33",
+              "0.34",
+              "0.33",
+              "0.34"
+            ],
+            "total": "4.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "For a nonnegative fixed PU, accumulated truncations are nondecreasing and the sum of all deltas exactly equals the final truncated accumulated value.",
+          "reference": {
+            "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+            "precision": 120
+          }
+        },
+        {
+          "id": "P-TEL-2",
+          "operation": "telescopic",
+          "inputs": {
+            "contracted": "12",
+            "accumulated": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12"
+            ],
+            "unit_price": "0.105"
+          },
+          "expected": {
+            "periods": [
+              "0.10",
+              "0.11",
+              "0.10",
+              "0.11",
+              "0.10",
+              "0.11",
+              "0.10",
+              "0.11",
+              "0.10",
+              "0.11",
+              "0.10",
+              "0.11"
+            ],
+            "total": "1.26"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "For a nonnegative fixed PU, accumulated truncations are nondecreasing and the sum of all deltas exactly equals the final truncated accumulated value.",
+          "reference": {
+            "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+            "precision": 120
+          }
+        },
+        {
+          "id": "P-TEL-3",
+          "operation": "telescopic",
+          "inputs": {
+            "contracted": "12",
+            "accumulated": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12"
+            ],
+            "unit_price": "17.999999"
+          },
+          "expected": {
+            "periods": [
+              "17.99",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00",
+              "18.00"
+            ],
+            "total": "215.99"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "For a nonnegative fixed PU, accumulated truncations are nondecreasing and the sum of all deltas exactly equals the final truncated accumulated value.",
+          "reference": {
+            "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+            "precision": 120
+          }
+        },
+        {
+          "id": "P-TEL-4",
+          "operation": "telescopic",
+          "inputs": {
+            "contracted": "12",
+            "accumulated": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12"
+            ],
+            "unit_price": "0.000001"
+          },
+          "expected": {
+            "periods": [
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00",
+              "0.00"
+            ],
+            "total": "0.00"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "For a nonnegative fixed PU, accumulated truncations are nondecreasing and the sum of all deltas exactly equals the final truncated accumulated value.",
+          "reference": {
+            "method": "CPython decimal.Decimal with precision 120 and integer/Fraction cross-checks; no Canteiro code imported or executed",
+            "precision": 120
+          }
+        }
+      ]
+    },
+    {
+      "id": "allocation_determinism_and_last_cent",
+      "claim": "All permutations give the same association of identifiers to monetary amounts; the sum always equals the input total.",
+      "samples": [
+        {
+          "id": "P-ALLOC-1",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.02",
+            "rows": [
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "1"
+              },
+              {
+                "id": "z",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "1"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.01"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "z",
+                "value": "0.01"
+              }
+            ],
+            "total": "0.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Permute all six input orders; preserve the same id-to-cent mapping by stable position/identifier, with exact sum two cents.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-2",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.02",
+            "rows": [
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "1"
+              },
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "z",
+                "position": 1,
+                "weight": "1"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.01"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "z",
+                "value": "0.01"
+              }
+            ],
+            "total": "0.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Permute all six input orders; preserve the same id-to-cent mapping by stable position/identifier, with exact sum two cents.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-3",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.02",
+            "rows": [
+              {
+                "id": "z",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "1"
+              },
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "1"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.01"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "z",
+                "value": "0.01"
+              }
+            ],
+            "total": "0.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Permute all six input orders; preserve the same id-to-cent mapping by stable position/identifier, with exact sum two cents.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-4",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.02",
+            "rows": [
+              {
+                "id": "z",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "1"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.01"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "z",
+                "value": "0.01"
+              }
+            ],
+            "total": "0.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Permute all six input orders; preserve the same id-to-cent mapping by stable position/identifier, with exact sum two cents.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-5",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.02",
+            "rows": [
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "1"
+              },
+              {
+                "id": "z",
+                "position": 1,
+                "weight": "1"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.01"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "z",
+                "value": "0.01"
+              }
+            ],
+            "total": "0.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Permute all six input orders; preserve the same id-to-cent mapping by stable position/identifier, with exact sum two cents.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-6",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.02",
+            "rows": [
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "z",
+                "position": 1,
+                "weight": "1"
+              },
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "1"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.01"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "z",
+                "value": "0.01"
+              }
+            ],
+            "total": "0.02"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Permute all six input orders; preserve the same id-to-cent mapping by stable position/identifier, with exact sum two cents.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-7",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.00",
+            "rows": [
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "0.25"
+              },
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "0.5"
+              },
+              {
+                "id": "c",
+                "position": 3,
+                "weight": "0.25"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.00"
+              },
+              {
+                "id": "b",
+                "value": "0.00"
+              },
+              {
+                "id": "c",
+                "value": "0.00"
+              }
+            ],
+            "total": "0.00"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Zero and last-cent cases conserve the closed monetary total; zero-weight-free allocation never creates a cent.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        },
+        {
+          "id": "P-ALLOC-8",
+          "operation": "allocate_money",
+          "inputs": {
+            "total": "0.01",
+            "rows": [
+              {
+                "id": "a",
+                "position": 1,
+                "weight": "0.25"
+              },
+              {
+                "id": "b",
+                "position": 2,
+                "weight": "0.5"
+              },
+              {
+                "id": "c",
+                "position": 3,
+                "weight": "0.25"
+              }
+            ]
+          },
+          "expected": {
+            "parts": [
+              {
+                "id": "a",
+                "value": "0.00"
+              },
+              {
+                "id": "b",
+                "value": "0.01"
+              },
+              {
+                "id": "c",
+                "value": "0.00"
+              }
+            ],
+            "total": "0.01"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Zero and last-cent cases conserve the closed monetary total; zero-weight-free allocation never creates a cent.",
+          "reference": {
+            "method": "CPython fractions.Fraction on integer cents; quotient/remainder, stable position and identifier tie break; no product code"
+          }
+        }
+      ]
+    },
+    {
+      "id": "civil_anchor_preservation",
+      "claim": "Zero periods is identity; February clamping never changes the original day used for March or a later year.",
+      "samples": [
+        {
+          "id": "P-CAL-2027-28",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2027-01-28",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2027-01-28",
+              "2027-02-28",
+              "2027-03-28",
+              "2028-01-28"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2027-29",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2027-01-29",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2027-01-29",
+              "2027-02-28",
+              "2027-03-29",
+              "2028-01-29"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2027-30",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2027-01-30",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2027-01-30",
+              "2027-02-28",
+              "2027-03-30",
+              "2028-01-30"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2027-31",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2027-01-31",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2027-01-31",
+              "2027-02-28",
+              "2027-03-31",
+              "2028-01-31"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2028-28",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2028-01-28",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2028-01-28",
+              "2028-02-28",
+              "2028-03-28",
+              "2029-01-28"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2028-29",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2028-01-29",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2028-01-29",
+              "2028-02-29",
+              "2028-03-29",
+              "2029-01-29"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2028-30",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2028-01-30",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2028-01-30",
+              "2028-02-29",
+              "2028-03-30",
+              "2029-01-30"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        },
+        {
+          "id": "P-CAL-2028-31",
+          "operation": "calendar_sequence",
+          "inputs": {
+            "anchor": "2028-01-31",
+            "policy": "civil",
+            "cadence": "monthly",
+            "periods": [
+              0,
+              1,
+              2,
+              12
+            ]
+          },
+          "expected": {
+            "dates": [
+              "2028-01-31",
+              "2028-02-29",
+              "2028-03-31",
+              "2029-01-31"
+            ]
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Clamp the target month to its actual Gregorian last day, always using the initial anchor rather than chaining a February clamp.",
+          "reference": {
+            "method": "CPython datetime.date, calendar.monthrange and timedelta; no product code"
+          }
+        }
+      ]
+    },
+    {
+      "id": "regional_offsets_at_transitions",
+      "claim": "UTC instants retain identity while their displayed offset follows the named regional zone; ambiguous local time is not resolved by a guessed offset.",
+      "samples": [
+        {
+          "id": "P-TZ-1",
+          "operation": "utc_to_local",
+          "inputs": {
+            "instant": "2018-11-04T02:59:00Z",
+            "zone": "America/Sao_Paulo"
+          },
+          "expected": {
+            "value": "2018-11-03T23:59:00.000000-03:00"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Convert an unambiguous UTC instant through the named regional zone; preserve explicit offset across gap/fold boundaries.",
+          "reference": {
+            "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+          }
+        },
+        {
+          "id": "P-TZ-2",
+          "operation": "utc_to_local",
+          "inputs": {
+            "instant": "2018-11-04T03:00:00Z",
+            "zone": "America/Sao_Paulo"
+          },
+          "expected": {
+            "value": "2018-11-04T01:00:00.000000-02:00"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Convert an unambiguous UTC instant through the named regional zone; preserve explicit offset across gap/fold boundaries.",
+          "reference": {
+            "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+          }
+        },
+        {
+          "id": "P-TZ-3",
+          "operation": "utc_to_local",
+          "inputs": {
+            "instant": "2027-11-07T05:30:00Z",
+            "zone": "America/New_York"
+          },
+          "expected": {
+            "value": "2027-11-07T01:30:00.000000-04:00"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Convert an unambiguous UTC instant through the named regional zone; preserve explicit offset across gap/fold boundaries.",
+          "reference": {
+            "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+          }
+        },
+        {
+          "id": "P-TZ-4",
+          "operation": "utc_to_local",
+          "inputs": {
+            "instant": "2027-11-07T06:30:00Z",
+            "zone": "America/New_York"
+          },
+          "expected": {
+            "value": "2027-11-07T01:30:00.000000-05:00"
+          },
+          "origin": {
+            "document": "docs/regras/calculos.md",
+            "section": "§11; generated finite property samples",
+            "revision": "a7f3b1ef1ab4bd654d2ce047b7bc4eb991488670"
+          },
+          "algorithm": "Convert an unambiguous UTC instant through the named regional zone; preserve explicit offset across gap/fold boundaries.",
+          "reference": {
+            "method": "CPython zoneinfo.ZoneInfo plus UTC round-trip validation of both fold alternatives; no product code"
+          }
+        }
+      ]
+    }
+  ]
+}
