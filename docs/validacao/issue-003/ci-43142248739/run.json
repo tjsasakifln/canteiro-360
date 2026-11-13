@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "repository": "tjsasakifln/canteiro-360",
+  "pull_request": 75,
+  "issue": 3,
+  "run": {
+    "id": 43142248739,
+    "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43142248739",
+    "name": "Rust e PostgreSQL",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-12T02:33:31Z",
+    "updated_at": "2026-11-12T02:52:41Z",
+    "head_sha": "61ed5b653f473e29eb90ec48d2230e17fa9298a5",
+    "event": "pull_request",
+    "attempt": 1
+  },
+  "checkout": {
+    "sha": "5c8871c23a41589f47f4075764267a5ab54c6ec7",
+    "tree": "fa495de7a66c1df9065e4564b717b20df9b76780",
+    "parents": [
+      "83c94e0938c09d7d30d9f97aad6de2840cfb50e6",
+      "61ed5b653f473e29eb90ec48d2230e17fa9298a5"
+    ],
+    "matches_head_tree": true
+  },
+  "artifact": {
+    "id": 13911196996,
+    "name": "evidencia-fundacao-5c8871c23a41589f47f4075764267a5ab54c6ec7",
+    "retention_days": 30
+  },
+  "jobs": [
+    {
+      "id": 130931736071,
+      "name": "Formatação, regras, PostgreSQL, SSR e WASM",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-12T02:33:34Z",
+      "completed_at": "2026-11-12T02:52:41Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:33:35Z",
+          "completed_at": "2026-11-12T02:33:36Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:33:36Z",
+          "completed_at": "2026-11-12T02:33:53Z"
+        },
+        {
+          "name": "Obter a revisão",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:33:53Z",
+          "completed_at": "2026-11-12T02:33:54Z"
+        },
+        {
+          "name": "Instalar toolchain fixada",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:33:54Z",
+          "completed_at": "2026-11-12T02:34:05Z"
+        },
+        {
+          "name": "Conferir formatação",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:34:05Z",
+          "completed_at": "2026-11-12T02:34:05Z"
+        },
+        {
+          "name": "Conferir plano, linguagens e segredos",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:34:05Z",
+          "completed_at": "2026-11-12T02:34:19Z"
+        },
+        {
+          "name": "Analisar Rust com avisos tratados como erro",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:34:19Z",
+          "completed_at": "2026-11-12T02:36:10Z"
+        },
+        {
+          "name": "Analisar também o código compilado para navegador",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:36:10Z",
+          "completed_at": "2026-11-12T02:36:49Z"
+        },
+        {
+          "name": "Executar testes positivos e negativos",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:36:49Z",
+          "completed_at": "2026-11-12T02:38:05Z"
+        },
+        {
+          "name": "Executar cenários com PostgreSQL real",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:38:05Z",
+          "completed_at": "2026-11-12T02:38:40Z"
+        },
+        {
+          "name": "Provisionar identidades distintas para a aplicação de teste",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:38:40Z",
+          "completed_at": "2026-11-12T02:38:40Z"
+        },
+        {
+          "name": "Aplicar migrações e validar a identidade de execução",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:38:40Z",
+          "completed_at": "2026-11-12T02:38:46Z"
+        },
+        {
+          "name": "Instalar ferramentas nas versões fixadas",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:38:46Z",
+          "completed_at": "2026-11-12T02:43:05Z"
+        },
+        {
+          "name": "Auditar dependências, origens e licenças",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:43:05Z",
+          "completed_at": "2026-11-12T02:43:07Z"
+        },
+        {
+          "name": "Compilar servidor, processamento e navegador",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:43:07Z",
+          "completed_at": "2026-11-12T02:49:48Z"
+        },
+        {
+          "name": "Conferir orçamento dos arquivos servidos",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:49:48Z",
+          "completed_at": "2026-11-12T02:49:48Z"
+        },
+        {
+          "name": "Preparar navegador e driver fixos",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:49:48Z",
+          "completed_at": "2026-11-12T02:49:52Z"
+        },
+        {
+          "name": "Verificar SSR, hidratação, falha e teclado em navegador real",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:49:52Z",
+          "completed_at": "2026-11-12T02:52:37Z"
+        },
+        {
+          "name": "Preservar medidas da revisão",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:52:37Z",
+          "completed_at": "2026-11-12T02:52:39Z"
+        },
+        {
+          "name": "Post Obter a revisão",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:52:39Z",
+          "completed_at": "2026-11-12T02:52:39Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:52:39Z",
+          "completed_at": "2026-11-12T02:52:39Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-11-12T02:52:39Z",
+          "completed_at": "2026-11-12T02:52:39Z"
+        }
+      ]
+    }
+  ]
+}

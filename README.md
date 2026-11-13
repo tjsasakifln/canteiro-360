@@ -2,7 +2,7 @@
 
 Gestão de obras e projetos privados no Brasil, com a disciplina operacional documentada nos manuais públicos do SICOP/SC e uma experiência de uso própria, rápida e intuitiva.
 
-**Situação atual:** fundação Rust e persistência PostgreSQL das issues 1 e 2 implementadas, com página inicial SSR/WASM, migrações, isolamento de dados por empresa, transações e erros públicos seguros. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
+**Situação atual:** fundação Rust e persistência PostgreSQL das issues 1 e 2 integradas. A implementação da issue 3 acrescenta sistema visual e percursos demonstrativos de painel, orçamento, medição, aprovação e documentos, com dados fictícios. O aceite integral da issue 3 permanece condicionado ao teste com três profissionais exigido no escopo. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
 
 ## Compilar e executar
 
@@ -23,6 +23,8 @@ env -u CANTEIRO_MIGRATION_DATABASE_URL target/release/canteiro-api
 
 A API recusa inicialização sem banco migrado, com ambiente divergente ou com identidade privilegiada. Abrir `http://127.0.0.1:3000` após iniciar. A página inicial permanece informativa; cadastro, autenticação e operações de obras serão entregues nas etapas seguintes. O executável de processamento oferece apenas `--check` nesta etapa.
 
+Para experimentar os percursos da issue 3, abra `http://127.0.0.1:3000/prototipo/aurora/painel`. O seletor permite alternar entre duas empresas fictícias. As opções da demonstração exibem estados vazio, carregando, erro e sem permissão, além da densidade. Consultas e links são renderizados no servidor; edição, confirmação e troca de contexto dependem da hidratação. Os rascunhos e as aprovações simuladas existem somente na aba atual e não produzem gravações comerciais.
+
 O [guia de desenvolvimento](docs/desenvolvimento.md) detalha compilação, verificações, ensaios do navegador e testes explícitos com banco real. A integração contínua executa esses cenários em PostgreSQL `17.7`, com identidades e dados fictícios descartáveis.
 
 ## Comece aqui
@@ -32,6 +34,8 @@ O [guia de desenvolvimento](docs/desenvolvimento.md) detalha compilação, verif
 | [LEIAME](LEIAME.md) | Objetivo, escopo, decisões e orientação de execução |
 | [Desenvolvimento](docs/desenvolvimento.md) | Compilação reproduzível, execução e validação |
 | [Persistência](docs/persistencia.md) | PostgreSQL, migrações, identidades, limites e recuperação |
+| [Sistema visual](docs/sistema-visual.md) | Componentes, contexto, teclado, estados e apresentação móvel |
+| [Verificação da issue 3](docs/validacao/ISSUE-003.md) | Evidência técnica, revisão e aceite humano ainda necessário |
 | [Aceite da issue 1](docs/validacao/ISSUE-001.md) | Versões compiladas, medidas, revisão e evidências |
 | [PRD](PRD.md) | Requisitos do produto e critérios de sucesso |
 | [Plano de implementação](docs/BACKLOG.md) | Issues 01 a 72, dependências e fases |

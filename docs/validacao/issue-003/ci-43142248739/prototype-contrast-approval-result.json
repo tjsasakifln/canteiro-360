@@ -1,0 +1,140 @@
+{
+  "limitation": "Computed text/solid-background colors of currently rendered samples. Does not certify all WCAG requirements, text in images, screen readers or physical devices. Inactive controls and decorative/hidden text are excluded.",
+  "measurements": [
+    {
+      "effectiveBackground": [
+        0.9411764705882353,
+        0.9921568627450981,
+        0.9568627450980393
+      ],
+      "effectiveForeground": [
+        0.08627450980392157,
+        0.396078431372549,
+        0.20392156862745098
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 6.811651629293788,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 700,
+        "foreground": "rgb(22, 101, 52)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(240, 253, 244)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "STRONG",
+        "text": "Simulação concluída nesta aba"
+      }
+    },
+    {
+      "effectiveBackground": [
+        0.9411764705882353,
+        0.9921568627450981,
+        0.9568627450980393
+      ],
+      "effectiveForeground": [
+        0.08627450980392157,
+        0.396078431372549,
+        0.20392156862745098
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 6.811651629293788,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 400,
+        "foreground": "rgb(22, 101, 52)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(240, 253, 244)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Nenhuma aprovação, fatura ou pagamento foi gravado. O exemplo serve para conferir o percurso da deci"
+      }
+    }
+  ],
+  "scope": "#approval-feedback",
+  "source": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+  "status": "passed"
+}

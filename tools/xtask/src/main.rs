@@ -294,6 +294,10 @@ fn build(root: &Path) -> Result<()> {
         root.join("style/main.css"),
         package.join("canteiro-web.css"),
     )?;
+    fs::copy(
+        root.join("style/prototype.css"),
+        package.join("prototype.css"),
+    )?;
     assets::compress_site(&root.join("target/site"))?;
     fs::create_dir_all(root.join("target/evidence"))?;
     let html = capture(root, "target/release/canteiro-api", &["--render-shell"])?;

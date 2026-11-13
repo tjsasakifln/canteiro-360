@@ -1,0 +1,191 @@
+{
+  "limitation": "Computed text/solid-background colors of currently rendered samples. Does not certify all WCAG requirements, text in images, screen readers or physical devices. Inactive controls and decorative/hidden text are excluded.",
+  "measurements": [
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 3.0,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 38,
+        "fontWeight": 700,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "H1",
+        "text": "Você não tem permissão para esta tarefa"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.2784313725490196,
+        0.3333333333333333,
+        0.4117647058823529
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 7.577663953533317,
+      "sample": {
+        "count": 2,
+        "fontSize": 16,
+        "fontWeight": 400,
+        "foreground": "rgb(71, 85, 105)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "P",
+        "text": "Solicite ao responsável da empresa o vínculo e o papel necessários nesta obra. Neste cenário, os reg"
+      }
+    },
+    {
+      "effectiveBackground": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveForeground": [
+        0.09019607843137255,
+        0.12549019607843137,
+        0.2
+      ],
+      "minimum": 4.5,
+      "passed": true,
+      "ratio": 16.268480224545662,
+      "sample": {
+        "count": 1,
+        "fontSize": 16,
+        "fontWeight": 650,
+        "foreground": "rgb(23, 32, 51)",
+        "id": "",
+        "layers": [
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(255, 255, 255)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgba(0, 0, 0, 0)",
+            "image": "none",
+            "opacity": 1
+          },
+          {
+            "background": "rgb(247, 249, 252)",
+            "image": "none",
+            "opacity": 1
+          }
+        ],
+        "tag": "BUTTON",
+        "text": "Voltar ao cenário com dados"
+      }
+    }
+  ],
+  "scope": "#state-forbidden",
+  "source": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+  "status": "passed"
+}

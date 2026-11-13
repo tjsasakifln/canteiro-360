@@ -1,0 +1,7 @@
+[1m[92m   Compiling[0m sqlx-core v0.9.0
+[1m[92m   Compiling[0m sqlx-postgres v0.9.0
+[1m[92m   Compiling[0m sqlx v0.9.0
+[1m[92m   Compiling[0m canteiro-persistence v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/persistence)
+[1m[92m    Finished[0m `dev` profile [unoptimized] target(s) in 5.23s
+[1m[92m     Running[0m `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.
