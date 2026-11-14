@@ -262,6 +262,13 @@ async fn journey(
     for width in [1280, 360] {
         layouts.insert(width.to_string(), capture(h, b, width, "conflict").await?);
     }
+    assert_eq!(
+        b.execute(
+            "return getComputedStyle(document.getElementById('history-draft-status')).overflowWrap;"
+        )
+        .await?,
+        "anywhere"
+    );
 
     // Rebase consciente, sem apagar o texto. Queda antes de encaminhar a
     // gravação deixa a tentativa pendente para consulta antes do reenvio.
@@ -449,7 +456,9 @@ impl LossOfReply {
             while let Ok((socket, _)) = listener.accept().await {
                 let state = state.clone();
                 tokio::spawn(async move {
-                    let _ = state.forward(socket).await;
+                    if let Err(error) = state.forward(socket).await {
+                        eprintln!("Falha no proxy local da evidência: {error}");
+                    }
                 });
             }
         });
@@ -526,7 +535,7 @@ impl ProxyState {
             match name.to_ascii_lowercase().as_str() {
                 "content-length" => length = value.parse::<usize>()?,
                 "origin" => request = request.header(name, &self.upstream),
-                "host" | "connection" => {}
+                "host" | "connection" | "accept-encoding" => {}
                 _ => request = request.header(name, value),
             }
         }

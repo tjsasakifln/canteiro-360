@@ -1436,7 +1436,8 @@ async fn authority_receipts_and_financial_effect_survive_retries_and_membership_
     );
 
     let request_id = Uuid::parse_str(&first.request_id).unwrap();
-    let history: Vec<(String, Option<i64>, i64, Option<String>, String, Uuid)> = sqlx::query_as(
+    type HistoryRow = (String, Option<i64>, i64, Option<String>, String, Uuid);
+    let history: Vec<HistoryRow> = sqlx::query_as(
         "SELECT h.event_kind,h.before_version,h.request_version,b.increase::text,
                 n.increase::text,h.actor_id
          FROM canteiro.authority_history h JOIN canteiro.access_request_versions n
