@@ -8,6 +8,8 @@ use canteiro_persistence::access::{
 use serde::de::DeserializeOwned;
 use std::collections::{BTreeMap, BTreeSet};
 
+mod authority;
+
 fn access_denied() -> AuthError {
     AuthError::new(
         AuthErrorKind::Forbidden,
@@ -61,7 +63,7 @@ fn parse<T: DeserializeOwned>(value: &str) -> Result<T, AuthError> {
 fn money(value: &str) -> Result<Money, AuthError> {
     value.parse().map_err(|_| AuthError::unavailable())
 }
-fn zero() -> Money {
+pub(super) fn zero() -> Money {
     "0".parse().expect("zero monetário válido")
 }
 fn instant(value: &str) -> Result<DateTime<Utc>, AuthError> {
@@ -71,15 +73,6 @@ fn instant(value: &str) -> Result<DateTime<Utc>, AuthError> {
         .map_err(|_| {
             invalid("Informe data e horário com fuso explícito e até seis casas de segundo.")
         })
-}
-fn title(value: &str) -> Result<String, AuthError> {
-    let value = value.trim();
-    if !(2..=200).contains(&value.chars().count()) || value.chars().any(char::is_control) {
-        return Err(invalid(
-            "Descreva o pedido com 2 a 200 caracteres, sem quebras de linha.",
-        ));
-    }
-    Ok(value.to_owned())
 }
 fn proposer_action(action: AccessAction) -> Result<AccessAction, AuthError> {
     match action {
@@ -93,9 +86,9 @@ fn proposer_action(action: AccessAction) -> Result<AccessAction, AuthError> {
     }
 }
 
-struct Snapshot {
+pub(super) struct Snapshot {
     tenant: Uuid,
-    scopes: Vec<StoredScope>,
+    pub(super) scopes: Vec<StoredScope>,
     grants: Vec<StoredGrant>,
     rights: Vec<rules::AccessGrant>,
     right_index: BTreeMap<Uuid, usize>,
@@ -105,6 +98,17 @@ struct Snapshot {
 }
 impl Snapshot {
     async fn load(tx: &mut AuthTransaction, tenant: Uuid) -> Result<Self, AuthError> {
+        let mut data = Self::load_permissions(tx, tenant).await?;
+        data.policies = tx.access_policies(tenant).await?;
+        data.requests = tx.access_requests(tenant).await?;
+        data.approvals = tx.access_approvals(tenant).await?;
+        Ok(data)
+    }
+
+    pub(super) async fn load_permissions(
+        tx: &mut AuthTransaction,
+        tenant: Uuid,
+    ) -> Result<Self, AuthError> {
         let scopes = tx.access_scopes(tenant).await?;
         let grants = tx.access_grants(tenant).await?;
         let mut data = Self {
@@ -113,9 +117,9 @@ impl Snapshot {
             grants,
             rights: vec![],
             right_index: BTreeMap::new(),
-            policies: tx.access_policies(tenant).await?,
-            requests: tx.access_requests(tenant).await?,
-            approvals: tx.access_approvals(tenant).await?,
+            policies: vec![],
+            requests: vec![],
+            approvals: vec![],
         };
         data.rights = data
             .grants
@@ -185,7 +189,7 @@ impl Snapshot {
             .and_then(|id| self.right_index.get(&id))
             .and_then(|i| self.rights.get(*i))
     }
-    fn permits(
+    pub(super) fn permits(
         &self,
         user: Uuid,
         scope: Uuid,
@@ -276,25 +280,6 @@ fn validate_actions(actions: &[AccessAction]) -> Result<(), AuthError> {
     }
     Ok(())
 }
-fn conflicts(
-    data: &Snapshot,
-    ids: &[String],
-    scope: Uuid,
-    now: DateTime<Utc>,
-) -> Result<Vec<Uuid>, AuthError> {
-    if ids.len() > 100 {
-        return Err(invalid("Confira a lista de pessoas impedidas de decidir."));
-    }
-    let mut result = BTreeSet::new();
-    for text in ids {
-        let user = id(text)?;
-        if !data.permits(user, scope, AccessAction::View, zero(), now) {
-            return Err(access_denied());
-        }
-        result.insert(user);
-    }
-    Ok(result.into_iter().collect())
-}
 
 impl AuthService {
     pub async fn access_context(&self, token: &str) -> Result<AccessResponse, AuthError> {
@@ -306,6 +291,7 @@ impl AuthService {
             state,
             csrf: self.csrf(token),
             message: String::new(),
+            receipt: None,
         })
     }
     pub async fn access_execute(
@@ -313,7 +299,22 @@ impl AuthService {
         token: &str,
         command: AccessCommand,
     ) -> Result<AccessResponse, AuthError> {
+        self.access_execute_with_key(token, command, None).await
+    }
+
+    pub async fn access_execute_with_key(
+        &self,
+        token: &str,
+        command: AccessCommand,
+        key: Option<&str>,
+    ) -> Result<AccessResponse, AuthError> {
         self.limit("access-command", token, 120, 60).await?;
+        if let Some(act) = command.authority_act() {
+            return authority::execute(self, token, command, act, key).await;
+        }
+        if key.is_some() {
+            return Err(invalid("Esta ação não recebe uma chave de operação."));
+        }
         let (mut tx, actor) = self.organization_transaction(token).await?;
         let admin = matches!(
             &command,
@@ -642,213 +643,10 @@ impl AuthService {
                     "Regra de aprovação salva. Pedidos pendentes que usavam outra versão precisam ser revisados antes da decisão.",
                 )
             }
-            AccessCommand::Propose {
-                scope_id,
-                action,
-                title: input,
-                increase,
-                decrease,
-                conflicted_user_ids,
-                ..
-            } => {
-                if data.requests.len() >= 1000 {
-                    return Err(invalid(
-                        "O limite desta etapa é de 1000 pedidos de decisão por empresa.",
-                    ));
-                }
-                let scope_id = id(&scope_id)?;
-                let impact = rules::MonetaryImpact::new(increase, decrease).map_err(rule_error)?;
-                if !data.permits(
-                    actor.id,
-                    scope_id,
-                    proposer_action(action)?,
-                    impact.authority_amount(),
-                    now,
-                ) {
-                    return Err(access_denied());
-                }
-                let policy = data.policy(scope_id, action)?;
-                let request = StoredRequest {
-                    id: Uuid::new_v4(),
-                    scope_id,
-                    version: 1,
-                    status: "pending".into(),
-                    valid_approvals: 0,
-                    proposer_id: actor.id,
-                    proposer_email: actor.email.clone(),
-                    title: title(&input)?,
-                    action: action.as_str().into(),
-                    increase: increase.to_string(),
-                    decrease: decrease.to_string(),
-                    policy_version: policy.version,
-                    threshold: policy.threshold.clone(),
-                    approvals_above_threshold: policy.approvals_above_threshold,
-                    segregate_proposer: policy.segregate_proposer,
-                    conflicted_users: conflicts(&data, &conflicted_user_ids, scope_id, now)?,
-                };
-                tx.access_save_request(tenant, &request, true).await?;
-                (
-                    "authority_requested",
-                    request.id,
-                    format!(
-                        "scope:{scope_id};act:{};increase:{increase};decrease:{decrease};policy:{}",
-                        action.as_str(),
-                        policy.version
-                    ),
-                    "Pedido registrado para decisão. Esse registro não executa pagamento nem altera o contrato.",
-                )
-            }
-            AccessCommand::ReviseRequest {
-                request_id,
-                request_version,
-                title: input,
-                increase,
-                decrease,
-                conflicted_user_ids,
-                ..
-            } => {
-                let request_id = id(&request_id)?;
-                let mut request = data
-                    .requests
-                    .iter()
-                    .find(|r| r.id == request_id && r.proposer_id == actor.id)
-                    .cloned()
-                    .ok_or_else(access_denied)?;
-                if request.version != request_version || request.status != "pending" {
-                    return Err(stale());
-                }
-                let action: AccessAction = parse(&request.action)?;
-                let impact = rules::MonetaryImpact::new(increase, decrease).map_err(rule_error)?;
-                if !data.permits(
-                    actor.id,
-                    request.scope_id,
-                    proposer_action(action)?,
-                    impact.authority_amount(),
-                    now,
-                ) {
-                    return Err(access_denied());
-                }
-                let policy = data.policy(request.scope_id, action)?;
-                request.version = request.version.checked_add(1).ok_or_else(stale)?;
-                request.title = title(&input)?;
-                request.increase = increase.to_string();
-                request.decrease = decrease.to_string();
-                request.policy_version = policy.version;
-                request.threshold = policy.threshold.clone();
-                request.approvals_above_threshold = policy.approvals_above_threshold;
-                request.segregate_proposer = policy.segregate_proposer;
-                request.conflicted_users =
-                    conflicts(&data, &conflicted_user_ids, request.scope_id, now)?;
-                tx.access_save_request(tenant, &request, false).await?;
-                (
-                    "authority_revised",
-                    request.id,
-                    format!(
-                        "version:{};increase:{increase};decrease:{decrease};policy:{}",
-                        request.version, policy.version
-                    ),
-                    "Nova versão registrada. As decisões anteriores permanecem no histórico e não aprovam esta versão.",
-                )
-            }
-            AccessCommand::Decide {
-                request_id,
-                request_version,
-                grant_id,
-                grant_version,
-                approve,
-                ..
-            } => {
-                require_mfa(&actor)?;
-                let request_id = id(&request_id)?;
-                let request = data
-                    .requests
-                    .iter()
-                    .find(|r| r.id == request_id)
-                    .ok_or_else(access_denied)?;
-                if !data.permits(actor.id, request.scope_id, AccessAction::View, zero(), now) {
-                    return Err(access_denied());
-                }
-                if request.version != request_version || request.status != "pending" {
-                    return Err(stale());
-                }
-                let policy = data.policy(request.scope_id, parse(&request.action)?)?;
-                if policy.version != request.policy_version {
-                    return Err(AuthError::new(
-                        AuthErrorKind::Conflict,
-                        "policy_changed",
-                        "A regra de aprovação mudou. O proponente precisa revisar o pedido antes de uma nova decisão.",
-                    ));
-                }
-                let grant_id = id(&grant_id)?;
-                let grant = data
-                    .grants
-                    .iter()
-                    .find(|g| g.id == grant_id && g.user_id == actor.id)
-                    .ok_or_else(access_denied)?;
-                if grant.version != grant_version {
-                    return Err(stale());
-                }
-                let right = data
-                    .right_index
-                    .get(&grant.id)
-                    .and_then(|i| data.rights.get(*i))
-                    .cloned()
-                    .ok_or_else(access_denied)?;
-                let context = data.approval_context(request)?;
-                rules::authorize_approval(&context, &right, data.source(&right), actor.id, now)
-                    .map_err(rule_error)?;
-                let approval = StoredApproval {
-                    request_id,
-                    request_version,
-                    actor_id: actor.id,
-                    email: actor.email.clone(),
-                    grant_id,
-                    grant_version,
-                    approved: approve,
-                    created_at: now,
-                };
-                if !tx.access_decide(tenant, &approval).await? {
-                    return Err(AuthError::new(
-                        AuthErrorKind::Conflict,
-                        "already_decided",
-                        "Sua decisão já foi registrada nesta versão. Atualize o pedido para conferir o resultado.",
-                    ));
-                }
-                let mut records = data.records();
-                if approve {
-                    records.push(rules::RecordedApproval {
-                        proposal_id: request_id,
-                        actor_id: actor.id,
-                        grant_id,
-                        version: request_version,
-                    });
-                }
-                let quorum = rules::approval_quorum(&context, &records, &data.rights, now)
-                    .map_err(rule_error)?;
-                let status = if !approve {
-                    "rejected"
-                } else if quorum.approved {
-                    "approved"
-                } else {
-                    "pending"
-                };
-                tx.access_request_status(tenant, request_id, status, quorum.valid)
-                    .await?;
-                (
-                    "authority_decided",
-                    request_id,
-                    format!(
-                        "version:{request_version};grant:{grant_id};grant_version:{grant_version};approve:{approve};status:{status};valid:{};required:{}",
-                        quorum.valid, quorum.required
-                    ),
-                    if !approve {
-                        "Pedido recusado. A decisão e a versão foram preservadas."
-                    } else if quorum.approved {
-                        "Alçada atendida para esta versão. A decisão não executa pagamento nem altera o contrato."
-                    } else {
-                        "Decisão registrada. Ainda falta outra aprovação independente e válida."
-                    },
-                )
+            AccessCommand::Propose { .. }
+            | AccessCommand::ReviseRequest { .. }
+            | AccessCommand::Decide { .. } => {
+                unreachable!("os atos de alçada usam o fluxo próprio")
             }
         };
         finish(&mut tx, &actor, &org, event, Some(subject), &detail).await?;
@@ -858,6 +656,7 @@ impl AuthService {
             state,
             csrf: self.csrf(token),
             message: message.into(),
+            receipt: None,
         })
     }
 }

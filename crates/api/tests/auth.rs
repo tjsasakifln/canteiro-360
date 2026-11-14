@@ -3,6 +3,8 @@
 mod access;
 #[path = "auth/organizations.rs"]
 mod organizations;
+#[path = "auth/reliability.rs"]
+mod reliability;
 
 use axum::{
     Extension, Router,

@@ -1,6 +1,6 @@
 # Desenvolvimento em Rust e PostgreSQL
 
-Este procedimento cobre a fundação, a persistência PostgreSQL e a sequência de interface, cálculos, autenticação e organizações até a issue 8. O aplicativo permanece em desenvolvimento. Cadastro verificado, sessões, recuperação, segundo fator e fila de e-mail de acesso estão descritos no [guia de segurança e acesso](seguranca-acesso.md). A rota `/organizacoes`, os convites, membros, pedidos de acesso e isolamento estão no [guia de empresas](organizacoes.md). A rota `/permissoes` e a política de direitos por obra e contrato estão no [guia de alçadas](permissoes-alcadas.md). Operações comerciais de obras e a fila geral de processamento acompanham as etapas seguintes.
+Este procedimento cobre a fundação, a persistência PostgreSQL e a sequência de interface, cálculos, autenticação e organizações até a issue 9. O aplicativo permanece em desenvolvimento. Cadastro verificado, sessões, recuperação, segundo fator e fila de e-mail de acesso estão descritos no [guia de segurança e acesso](seguranca-acesso.md). A rota `/organizacoes`, os convites, membros, pedidos de acesso e isolamento estão no [guia de empresas](organizacoes.md). A rota `/permissoes` e a política de direitos por obra e contrato estão no [guia de alçadas](permissoes-alcadas.md). A rota `/historico`, a recuperação de gravações e a fila de notificações internas estão no [guia de histórico e concorrência](historico-concorrencia.md).
 
 ## 1. Requisitos
 
@@ -69,7 +69,7 @@ Abrir `http://127.0.0.1:3000`. A página contém apresentação útil mesmo sem 
 target/release/canteiro-jobs --check
 ```
 
-O comando acima verifica o executável reservado ao processamento. Sem `--check`, ele termina com erro explicando que o consumidor ainda não foi implementado. Não permanece ativo simulando uma fila funcional.
+O comando acima verifica o executável. Depois de migrar a base, inicie `target/release/canteiro-jobs` em processo separado com `CANTEIRO_ENV` e `CANTEIRO_DATABASE_URL`. A [operação da fila](historico-concorrencia.md#consumidor-de-notificações) descreve retomada, tentativas e investigação.
 
 ## 4. Configuração e segredos
 

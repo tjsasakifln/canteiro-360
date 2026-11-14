@@ -10,7 +10,7 @@ Cada ambiente usa banco e identidades próprios. Não apontar desenvolvimento ou
 |---|---|---|
 | Administrador de provisionamento | Criar banco e identidades fora da aplicação | Administração da instância, restrita ao provisionamento |
 | Migrador | Executar `canteiro-db migrate` | Dono do banco e dos objetos da aplicação; sem superusuário ou `BYPASSRLS` |
-| Execução | API e futuras operações autorizadas | Conexão e privilégios concedidos explicitamente pelo migrador; sem propriedade de tabelas ou capacidade de assumir papéis privilegiados |
+| Execução | API e consumidor de notificações internas | Conexão e privilégios concedidos explicitamente pelo migrador; sem propriedade de tabelas ou capacidade de assumir papéis privilegiados |
 | Administrador de teste | Ensaios automatizados em instância descartável | Superusuário somente nessa instância, para criar e remover as bases e identidades exclusivas dos ensaios |
 
 Exemplo de provisionamento de desenvolvimento, executado pelo administrador em uma instância destinada a esse ambiente:
@@ -83,7 +83,7 @@ As entidades de cliente carregam `tenant_id`. A chave de uma unidade é `(tenant
 
 `UnitOfWork` mantém o conjunto de alterações até a confirmação. As consultas usam parâmetros preparados pelo SQLx. Erro de validação ou SQL interrompe a unidade, mesmo se o chamador ignorar o `Result`. A edição exige a versão esperada; duas alterações concorrentes não sobrescrevem silenciosamente a mesma versão. O valor entregue por uma consulta durante a unidade ainda é provisório. Somente `Committed<T>`, produzido após confirmação positiva do banco, representa o resultado confirmado.
 
-Falha anterior à tentativa de confirmação causa reversão. Descartar uma unidade não confirma suas alterações. Uma falha de conexão ou de tempo durante a confirmação exige tratamento distinto: o servidor pode não saber se o banco confirmou. Nesse caso, a resposta é `C360_OUTCOME_UNKNOWN`, sem repetição automática e sem afirmar que nada foi gravado. O identificador de operação deve acompanhar a investigação. A consulta pública de estado e os efeitos financeiros idempotentes pertencem às etapas posteriores; não há endpoint fictício de recuperação nesta fundação.
+Falha anterior à tentativa de confirmação causa reversão. Descartar uma unidade não confirma suas alterações. Uma falha de conexão ou de tempo durante a confirmação exige tratamento distinto: o servidor pode não saber se o banco confirmou. Nesse caso, a resposta é `C360_OUTCOME_UNKNOWN`, sem repetição automática e sem afirmar que nada foi gravado. O identificador de operação deve acompanhar a investigação. A unidade genérica não recupera esse resultado por conta própria. Os comandos de referência contratual e de alçada gravam recibos duráveis e fornecem consulta autorizada, conforme o [guia de histórico e concorrência](historico-concorrencia.md).
 
 ## 5. Tipos e limites
 

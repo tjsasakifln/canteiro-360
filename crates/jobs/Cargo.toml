@@ -7,8 +7,10 @@ publish.workspace = true
 license.workspace = true
 
 [dependencies]
-canteiro-application = { path = "../application" }
 canteiro-persistence = { path = "../persistence" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [lints]
 workspace = true

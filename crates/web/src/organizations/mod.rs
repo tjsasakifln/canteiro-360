@@ -1,6 +1,6 @@
 //! Company management uses authenticated, versioned responses from the server.
 mod model;
-mod network;
+pub(crate) mod network;
 mod views;
 
 use leptos::prelude::*;

@@ -2,20 +2,33 @@
 use super::*;
 use canteiro_contracts::{access::AccessResponse, organizations::OrganizationCommand};
 
-async fn access_request(
+pub(super) async fn access_request(
     f: &Fixture,
     session: Option<&Reply>,
     body: Option<Value>,
     origin: Option<&str>,
     csrf: Option<&str>,
 ) -> Reply {
+    let route = if body.is_some() {
+        "/api/access/command"
+    } else {
+        "/api/access/context"
+    };
+    access_request_at(f, session, route, origin, csrf, body, None).await
+}
+
+async fn access_request_at(
+    f: &Fixture,
+    session: Option<&Reply>,
+    route: &str,
+    origin: Option<&str>,
+    csrf: Option<&str>,
+    body: Option<Value>,
+    key: Option<&str>,
+) -> Reply {
     let mut request = Request::builder()
         .method(if body.is_some() { "POST" } else { "GET" })
-        .uri(if body.is_some() {
-            "/api/access/command"
-        } else {
-            "/api/access/context"
-        });
+        .uri(route);
     if let Some(s) = session {
         request = request.header(
             header::COOKIE,
@@ -27,6 +40,9 @@ async fn access_request(
     }
     if let Some(c) = csrf {
         request = request.header("x-csrf-token", c);
+    }
+    if let Some(key) = key {
+        request = request.header("idempotency-key", key);
     }
     let payload = if let Some(body) = body {
         request = request.header(header::CONTENT_TYPE, "application/json");
@@ -76,16 +92,16 @@ fn rejected(reply: &Reply, status: StatusCode, code: &str) {
         assert!(!reply.body.to_string().contains(secret));
     }
 }
-fn state(reply: &Reply) -> AccessResponse {
+pub(super) fn state(reply: &Reply) -> AccessResponse {
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     private(reply);
     serde_json::from_value(reply.body.clone()).unwrap()
 }
-fn context(response: &AccessResponse) -> Value {
+pub(super) fn context(response: &AccessResponse) -> Value {
     let org = response.state.organization.as_ref().unwrap();
     json!({"organization_id":org.id,"context_version":response.state.context_version,"organization_version":org.version})
 }
-async fn post(f: &Fixture, s: &Reply, body: Value) -> Reply {
+pub(super) async fn post(f: &Fixture, s: &Reply, body: Value) -> Reply {
     access_request(
         f,
         Some(s),
@@ -232,7 +248,42 @@ async fn scoped_access_http_mutations_require_explicit_current_rights_and_versio
     let policy=state(&post(&f,&session,json!({"command":"set_policy","context":context(&granted),"scope_id":scope_id,"action":"approve_change","threshold":"100.00","approvals_above_threshold":2,"segregate_proposer":true,"expected_version":null})).await);
     let mut propose = propose;
     propose["context"] = context(&policy);
-    let requested = state(&post(&f, &session, propose).await);
+    let key = Uuid::new_v4().to_string();
+    let requested = state(
+        &access_request_at(
+            &f,
+            Some(&session),
+            "/api/access/command",
+            Some(ORIGIN),
+            Some(&session.success().csrf),
+            Some(propose.clone()),
+            Some(&key),
+        )
+        .await,
+    );
+    let operation = format!(
+        "/api/access/operations/authority_propose/{key}?organization_id={}&context_version={}",
+        org.id, requested.state.context_version
+    );
+    let replayed =
+        state(&access_request_at(&f, Some(&session), &operation, None, None, None, None).await);
+    assert_eq!(requested.receipt, replayed.receipt);
+    let mut changed = propose;
+    changed["increase"] = json!("101.00");
+    rejected(
+        &access_request_at(
+            &f,
+            Some(&session),
+            "/api/access/command",
+            Some(ORIGIN),
+            Some(&session.success().csrf),
+            Some(changed),
+            Some(&key),
+        )
+        .await,
+        StatusCode::CONFLICT,
+        "idempotency_conflict",
+    );
     let request = &requested.state.requests[0];
     assert_eq!(request.authority_amount.to_string(), "100.00");
     assert!(request.contains_increase);

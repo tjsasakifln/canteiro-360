@@ -6,7 +6,7 @@ use canteiro_api::{config::Config, router};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn worksheet_html_contains_only_its_page_before_hydration() {
     let config = Config::from_lookup(|_| None).unwrap();
     for (organization, prefix) in [("aurora", "AUR"), ("horizonte", "HOR")] {
@@ -60,6 +60,48 @@ async fn worksheet_html_contains_only_its_page_before_hydration() {
             html.len() < 150_000,
             "SSR must contain a page, never all 10000 rows"
         );
+    }
+
+    // O executor SSR é compartilhado pelo binário de testes. As requisições
+    // concorrentes usam o mesmo runtime das verificações de paginação acima.
+    tokio::time::timeout(
+        std::time::Duration::from_secs(15),
+        concurrent_worksheet_ssr_preserves_title(&config),
+    )
+    .await
+    .expect("a renderização concorrente deve terminar com todos os títulos");
+}
+
+async fn concurrent_worksheet_ssr_preserves_title(config: &Config) {
+    let app = router(config);
+    let mut requests = tokio::task::JoinSet::new();
+    for _ in 0..16 {
+        for (company, expected) in [
+            ("aurora", "Escola Vila Nova"),
+            ("horizonte", "Galpão Horizonte"),
+        ] {
+            let app = app.clone();
+            requests.spawn(async move {
+                let response = app
+                    .oneshot(
+                        Request::get(format!("/prototipo/{company}/planilha"))
+                            .body(Body::empty())
+                            .unwrap(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(response.status(), StatusCode::OK);
+                let body = to_bytes(response.into_body(), 1_048_576).await.unwrap();
+                let body = std::str::from_utf8(&body).unwrap();
+                assert!(body.contains(&format!(
+                    "<title>Planilha de medição | {expected} | Canteiro 360</title>"
+                )));
+                assert_eq!(body.matches("data-row-id=").count(), 25);
+            });
+        }
+    }
+    while let Some(result) = requests.join_next().await {
+        result.unwrap();
     }
 }
 
