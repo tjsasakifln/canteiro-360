@@ -1,0 +1,9 @@
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/application)
+    Finished `test` profile [unoptimized] target(s) in 3.01s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_application-dfe921d7b9c4bb70)
+
+running 1 test
+test auth::organizations::tests::invitations_bind_identity_expiry_revocation_purpose_and_single_use ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 3.18s
+

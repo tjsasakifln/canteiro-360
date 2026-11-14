@@ -1,0 +1,42 @@
+[
+  {
+    "step": "original loaded",
+    "state": {
+      "events": [],
+      "focus": true,
+      "visible": "visible"
+    }
+  },
+  {
+    "step": "real tab activation",
+    "state": {
+      "events": [],
+      "focus": true,
+      "visible": "visible"
+    }
+  },
+  {
+    "step": "focus emulation disabled",
+    "state": {
+      "events": [],
+      "focus": true,
+      "visible": "visible"
+    }
+  },
+  {
+    "step": "focus emulation enabled",
+    "state": {
+      "events": [],
+      "focus": true,
+      "visible": "visible"
+    }
+  },
+  {
+    "step": "focus emulation restored",
+    "state": {
+      "events": [],
+      "focus": true,
+      "visible": "visible"
+    }
+  }
+]

@@ -23,7 +23,7 @@ const COOKIE_NAME: &str = "__Host-canteiro-session";
 #[derive(Clone)]
 pub struct AuthHttp {
     service: AuthService,
-    origin: String,
+    pub(crate) origin: String,
 }
 
 impl AuthHttp {
@@ -218,7 +218,7 @@ fn network(peer: Result<ConnectInfo<SocketAddr>, ExtensionRejection>) -> String 
         .unwrap_or_else(|_| "local-service".into())
 }
 
-fn session_cookie(headers: &HeaderMap) -> Result<Option<String>, ()> {
+pub(crate) fn session_cookie(headers: &HeaderMap) -> Result<Option<String>, ()> {
     let mut found = None;
     for header in headers.get_all(header::COOKIE) {
         for pair in header.to_str().map_err(|_| ())?.split(';') {
@@ -263,18 +263,19 @@ fn success(auth: &AuthHttp, result: AuthResult) -> Response {
     response
 }
 
-fn application_failure(error: AuthError) -> Response {
+pub(crate) fn application_failure(error: AuthError) -> Response {
     let status = match error.kind() {
         AuthErrorKind::InvalidInput => StatusCode::BAD_REQUEST,
         AuthErrorKind::Unauthorized => StatusCode::UNAUTHORIZED,
         AuthErrorKind::Forbidden => StatusCode::FORBIDDEN,
+        AuthErrorKind::Conflict => StatusCode::CONFLICT,
         AuthErrorKind::RateLimited => StatusCode::TOO_MANY_REQUESTS,
         AuthErrorKind::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
     };
     failure(status, error.code(), error.message())
 }
 
-fn unavailable() -> Response {
+pub(crate) fn unavailable() -> Response {
     failure(
         StatusCode::SERVICE_UNAVAILABLE,
         "unavailable",
@@ -282,7 +283,7 @@ fn unavailable() -> Response {
     )
 }
 
-fn failure(status: StatusCode, code: &str, message: &str) -> Response {
+pub(crate) fn failure(status: StatusCode, code: &str, message: &str) -> Response {
     let mut response = (
         status,
         Json(AuthFailure {
@@ -300,7 +301,7 @@ fn failure(status: StatusCode, code: &str, message: &str) -> Response {
     response
 }
 
-fn private_headers(response: &mut Response) {
+pub(crate) fn private_headers(response: &mut Response) {
     response
         .headers_mut()
         .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));

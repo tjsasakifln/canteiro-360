@@ -1,0 +1,19 @@
+    Blocking waiting for file lock on build directory
+   Compiling canteiro-web v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/web)
+    Finished `test` profile [unoptimized] target(s) in 43.32s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_web-1ef621d7b368a13a)
+
+running 10 tests
+test organizations::model::tests::civil_expiry_uses_brasilia_and_does_not_hide_invalid_input ... ok
+test organizations::model::tests::hiding_only_transient_codes_does_not_create_a_draft ... ok
+test organizations::model::tests::forbidden_identity_hides_private_context_and_preserves_only_bound_work ... ok
+test organizations::model::tests::mandatory_refresh_supersedes_an_in_flight_response ... ok
+test organizations::model::tests::expired_session_hides_work_until_same_identity_and_company_are_confirmed ... ok
+test organizations::model::tests::loss_of_administration_removes_cached_people_and_codes_without_company_change ... ok
+test organizations::model::tests::revoked_membership_clears_context_and_private_codes ... ok
+test organizations::model::tests::repeated_hiding_before_reselection_keeps_original_company_draft ... ok
+test organizations::network::tests::member_search_parameters_cannot_change_scope_or_path ... ok
+test organizations::model::tests::work_never_returns_to_another_identity_or_company ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

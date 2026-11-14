@@ -1,6 +1,7 @@
 //! Autenticação do servidor. A sessão identifica a pessoa; não concede acesso a
 //! qualquer organização ou obra. Esses vínculos são revalidados pelos módulos consumidores.
 mod crypto;
+pub mod organizations;
 
 use canteiro_contracts::auth::{AuthCommand, AuthContext, AuthState, SessionSummary};
 use canteiro_persistence::{
@@ -18,6 +19,7 @@ pub enum AuthErrorKind {
     InvalidInput,
     Unauthorized,
     Forbidden,
+    Conflict,
     RateLimited,
     Unavailable,
 }

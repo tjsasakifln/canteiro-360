@@ -102,7 +102,11 @@ async fn validate_runtime(
          AND NOT has_column_privilege(current_user, 'canteiro_auth.users', 'privileged', 'INSERT,UPDATE') \
          AND NOT has_table_privilege(current_user, 'canteiro_auth.audit', 'UPDATE,DELETE,TRUNCATE') \
          AND NOT has_any_column_privilege(current_user, 'canteiro_auth.audit', 'UPDATE') \
+         AND NOT has_table_privilege(current_user, 'canteiro.organization_audit', 'UPDATE,DELETE,TRUNCATE') \
+         AND NOT has_any_column_privilege(current_user, 'canteiro.organization_audit', 'UPDATE') \
          AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro_auth'::regnamespace \
+             AND relkind = 'r' AND has_table_privilege(current_user, oid, 'TRUNCATE')) \
+         AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro'::regnamespace \
              AND relkind = 'r' AND has_table_privilege(current_user, oid, 'TRUNCATE')) \
          AND NOT has_table_privilege(current_user, 'canteiro.organizations', 'TRUNCATE') \
          AND NOT has_table_privilege(current_user, 'canteiro.organization_units', 'TRUNCATE') \
@@ -112,7 +116,9 @@ async fn validate_runtime(
          AND NOT has_table_privilege(current_user, 'public._sqlx_migrations', 'INSERT,UPDATE,DELETE,TRUNCATE') \
          AND NOT has_any_column_privilege(current_user, 'public._sqlx_migrations', 'INSERT,UPDATE') \
          AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro'::regnamespace \
-             AND relkind = 'r' AND (NOT relrowsecurity OR NOT relforcerowsecurity))")
+             AND relkind = 'r' AND (NOT relrowsecurity OR NOT relforcerowsecurity)) \
+         AND (SELECT relrowsecurity AND relforcerowsecurity FROM pg_class \
+             WHERE oid='canteiro_auth.organization_selections'::regclass)")
         .fetch_one(&mut *connection).await?;
     let actual: String =
         sqlx::query_scalar("SELECT name FROM canteiro_meta.environment WHERE singleton")

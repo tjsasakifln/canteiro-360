@@ -4,6 +4,7 @@ mod calculations;
 pub mod config;
 pub mod error;
 mod forms;
+mod organizations;
 
 use axum::{
     Json, Router,
@@ -28,6 +29,7 @@ pub fn router(config: &Config) -> Router {
     let fallback_options = options.clone();
     Router::new()
         .merge(auth::routes())
+        .merge(organizations::routes())
         .route(
             "/api/prototipo/calculos/rateio",
             axum::routing::post(calculations::allocation)

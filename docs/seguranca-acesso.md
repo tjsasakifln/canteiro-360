@@ -159,7 +159,7 @@ Os testes unitários cobrem contratos, política de senha, vetores TOTP, proteç
 cargo test --locked --workspace
 cargo test --locked -p canteiro-persistence -- --ignored --nocapture
 cargo test --locked -p canteiro-application -- --ignored --nocapture
-cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture
+cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1
 ```
 
 Os ensaios de navegador exigem os artefatos compilados, banco de desenvolvimento migrado, chave externa de teste, Chrome e ChromeDriver fixados. Os comandos e condições gerais constam do [guia de desenvolvimento](desenvolvimento.md#6-ensaios-do-navegador).

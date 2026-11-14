@@ -25,6 +25,8 @@ ssr = ["leptos/ssr", "leptos_meta/ssr", "leptos_router/ssr"]
 [dependencies]
 canteiro-domain = { path = "../domain" }
 canteiro-contracts = { path = "../contracts" }
+chrono.workspace = true
+chrono-tz.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 leptos.workspace = true

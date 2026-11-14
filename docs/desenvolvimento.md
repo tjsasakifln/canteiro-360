@@ -1,6 +1,6 @@
 # Desenvolvimento em Rust e PostgreSQL
 
-Este procedimento cobre a fundação, a persistência PostgreSQL e a sequência de interface, cálculos e autenticação até a issue 6. O aplicativo permanece em desenvolvimento. Cadastro verificado, sessões, recuperação, segundo fator e fila de e-mail de acesso estão descritos no [guia de segurança e acesso](seguranca-acesso.md). Operações comerciais de obras e a fila geral de processamento acompanham as etapas seguintes.
+Este procedimento cobre a fundação, a persistência PostgreSQL e a sequência de interface, cálculos, autenticação e organizações até a issue 7. O aplicativo permanece em desenvolvimento. Cadastro verificado, sessões, recuperação, segundo fator e fila de e-mail de acesso estão descritos no [guia de segurança e acesso](seguranca-acesso.md). A rota `/organizacoes`, os convites, membros, pedidos de acesso e isolamento estão no [guia de empresas](organizacoes.md). Operações comerciais de obras e a fila geral de processamento acompanham as etapas seguintes.
 
 ## 1. Requisitos
 

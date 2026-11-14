@@ -1,0 +1,276 @@
+{
+  "delayedCommand": [
+    {
+      "end": 20715.399999999907,
+      "start": 10712.399999999909
+    }
+  ],
+  "delayedSearch": [
+    {
+      "end": 8938.5,
+      "start": 4935.699999999721
+    }
+  ],
+  "environment": {
+    "apiBinaryBytes": 62447208,
+    "architecture": "x86_64",
+    "availableParallelism": 2,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 7763 64-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:        8122984 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794574107239,
+    "wasmBinaryBytes": 3712467
+  },
+  "identityRevalidatedAt": 20786.299999999817,
+  "layouts": [
+    {
+      "labels": [
+        {
+          "height": 44,
+          "id": "org-selection",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-member-search",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-member-role-be884054-3ca0-4dfd-b0d9-f431cb588245",
+          "label": true
+        },
+        {
+          "height": 46.390625,
+          "id": "org-member-until-be884054-3ca0-4dfd-b0d9-f431cb588245",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-member-role-d7b74cba-5069-496c-9c5c-df8de88ea847",
+          "label": true
+        },
+        {
+          "height": 46.390625,
+          "id": "org-member-until-d7b74cba-5069-496c-9c5c-df8de88ea847",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invite-email",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-invite-role",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invite-hours",
+          "label": true
+        },
+        {
+          "height": 46.390625,
+          "id": "org-invite-until",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-rename-name",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invitation-token",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-request-code",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-request-role",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-create-name",
+          "label": true
+        }
+      ],
+      "privateCodes": false,
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "labels": [
+        {
+          "height": 44,
+          "id": "org-selection",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invitation-token",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-request-code",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-request-role",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-create-name",
+          "label": true
+        }
+      ],
+      "privateCodes": false,
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "labels": [
+        {
+          "height": 46.390625,
+          "id": "org-selection",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-member-search",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-member-role-be884054-3ca0-4dfd-b0d9-f431cb588245",
+          "label": true
+        },
+        {
+          "height": 46.390625,
+          "id": "org-member-until-be884054-3ca0-4dfd-b0d9-f431cb588245",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-member-role-d7b74cba-5069-496c-9c5c-df8de88ea847",
+          "label": true
+        },
+        {
+          "height": 46.390625,
+          "id": "org-member-until-d7b74cba-5069-496c-9c5c-df8de88ea847",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invite-email",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-invite-role",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invite-hours",
+          "label": true
+        },
+        {
+          "height": 46.390625,
+          "id": "org-invite-until",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-rename-name",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invitation-token",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-request-code",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-request-role",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-create-name",
+          "label": true
+        }
+      ],
+      "privateCodes": false,
+      "scroll": 1265,
+      "width": 1280
+    },
+    {
+      "labels": [
+        {
+          "height": 46.390625,
+          "id": "org-selection",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-invitation-token",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-request-code",
+          "label": true
+        },
+        {
+          "height": 44,
+          "id": "org-request-role",
+          "label": true
+        },
+        {
+          "height": 44.390625,
+          "id": "org-create-name",
+          "label": true
+        }
+      ],
+      "privateCodes": false,
+      "scroll": 1265,
+      "width": 1280
+    }
+  ],
+  "scenarios": [
+    "public SSR without private data",
+    "explicit company selection",
+    "MFA administration",
+    "invitation preview and acceptance",
+    "member scope",
+    "last administrator refused",
+    "network error retains email",
+    "dialog Escape and keyboard confirmation",
+    "context change clears drafts",
+    "late search cannot restore old company",
+    "access request and decision",
+    "membership removal applies on refresh",
+    "account change while old mutation response is delayed",
+    "no private browser storage"
+  ],
+  "selectionConfirmedAt": 5069.699999999721,
+  "status": "passed"
+}

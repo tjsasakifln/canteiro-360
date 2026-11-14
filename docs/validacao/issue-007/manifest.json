@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "issue": 7,
+  "pull_request": "https://github.com/tjsasakifln/canteiro-360/pull/79",
+  "recorded_at_utc": "2026-11-13T12:57:47.120453+00:00",
+  "base_commit": "5b711d9c11c3c4f99c53f5ef05fa12e9c4a52a05",
+  "production_commit": "c12e0e404212ecbe232bcd0e9a3f23a0e6443050",
+  "source_commit": "c1bc05b546d89bf0e5719007634d5a97ba67e34f",
+  "source_tree": "88260b90326ee2348c5696b02936929332f12256",
+  "source_files_checked": 109,
+  "source_mismatches": 0,
+  "environment": {
+    "rust": "1.99.1",
+    "postgresql": "17.7",
+    "wasm_bindgen": "0.2.130",
+    "cargo_deny": "0.20.2",
+    "local_browser": "Chrome Headless Shell 156.0.8078.80",
+    "webdriver": "156.0.8078.80",
+    "ci_browser": "Chrome for Testing 156.0.8078.80 --headless=new"
+  },
+  "ci_evidence": "CI 43422855788 aprovada com 188 funções de teste. A evidência local de limitação do navegador permanece preservada; o caso completo passou no Chrome da CI. Atualização documental posterior não recebe aprovação antecipada de nova CI.",
+  "visual_review": {
+    "images": 4,
+    "widths": [
+      360,
+      1280
+    ],
+    "roles": [
+      "administrator",
+      "member"
+    ],
+    "reviewed_by": [
+      "principal",
+      "independent_interface_reviewer"
+    ],
+    "private_codes_in_capture": false
+  },
+  "commands": [
+    {
+      "id": "native",
+      "result": "passed",
+      "passed": 129,
+      "failed": 0,
+      "ignored": 59,
+      "log": "local/native.log",
+      "source_note": "Produção congelada; complementos posteriores alteram somente os dois testes externos identificados.",
+      "reproduction_command": "cargo test --locked --workspace"
+    },
+    {
+      "id": "persistence",
+      "result": "passed",
+      "passed": 23,
+      "failed": 0,
+      "log": "local/persistence.log",
+      "reproduction_command": "cargo test --locked -p canteiro-persistence -- --ignored --nocapture --test-threads=4"
+    },
+    {
+      "id": "application",
+      "result": "passed",
+      "passed": 20,
+      "failed": 0,
+      "log": "local/application.log",
+      "source_note": "Após implementação; os oito casos de organizações foram repetidos após ajustes finais. Autenticação não mudou.",
+      "reproduction_command": "cargo test --locked -p canteiro-application -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "id": "application-final",
+      "result": "passed",
+      "passed": 8,
+      "failed": 0,
+      "log": "local/application-organizations-final.log",
+      "repetition_not_additional_tests": true,
+      "reproduction_command": "cargo test --locked -p canteiro-application auth::organizations::tests -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "id": "invitation-identity-complement",
+      "result": "passed",
+      "passed": 1,
+      "failed": 0,
+      "log": "local/invitation-identity-final.log",
+      "repetition_not_additional_tests": true,
+      "reproduction_command": "cargo test --locked -p canteiro-application invitations_bind_identity_expiry_revocation_purpose_and_single_use -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "id": "http-final",
+      "result": "passed",
+      "passed": 6,
+      "failed": 0,
+      "log": "local/http.log",
+      "reproduction_command": "cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "id": "ui-final",
+      "result": "passed",
+      "passed": 10,
+      "failed": 0,
+      "log": "local/ui-unit.log",
+      "included_in_native_count": true,
+      "reproduction_command": "cargo test --locked -p canteiro-web organizations::"
+    },
+    {
+      "id": "build-final",
+      "result": "passed",
+      "log": "local/build.log",
+      "measures": "local/build.json",
+      "reproduction_command": "cargo xtask build"
+    },
+    {
+      "id": "browser-regressions",
+      "result": "passed",
+      "passed": 9,
+      "failed": 0,
+      "log": "local/browser-regressions.log",
+      "browser": "Chrome Headless Shell 156.0.8078.80",
+      "reproduction_command": "cargo test --locked -p canteiro-e2e --test auth --test browser --test calculations --test forms --test prototype -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "id": "browser-organizations-local",
+      "result": "failed_environment_capability",
+      "passed": 0,
+      "failed": 1,
+      "log": "local/organizations-browser-attempt-4-native-activation.log",
+      "reason": "A distribuição Headless Shell local não produz foco ou visibilidade ao ativar abas; sonda sem aplicação reproduz o comportamento. Caso continua obrigatório no Chrome completo da CI, sem skip ou evento JS sintético.",
+      "probe": "local/headless-focus-probe.json",
+      "diagnostic": "local/organizations-lifecycle-failure.json",
+      "reproduction_command": "cargo test --locked -p canteiro-e2e --test organizations -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "id": "clippy-native",
+      "result": "passed",
+      "log": "local/clippy-native.log",
+      "reproduction_command": "cargo clippy --locked --workspace --all-targets -- -D warnings"
+    },
+    {
+      "id": "clippy-wasm",
+      "result": "passed",
+      "log": "local/clippy-wasm.log",
+      "reproduction_command": "cargo clippy --locked -p canteiro-web --no-default-features --features hydrate --target wasm32-unknown-unknown -- -D warnings"
+    },
+    {
+      "id": "clippy-e2e-final",
+      "result": "passed",
+      "log": "local/clippy-e2e.log",
+      "reproduction_command": "cargo clippy --locked -p canteiro-e2e --test organizations -- -D warnings"
+    },
+    {
+      "id": "dependencies",
+      "result": "passed",
+      "log": "local/dependencies.log",
+      "reproduction_command": "cargo deny --locked check",
+      "notes": "Exit 0 com advisories/bans/licenses/sources ok; avisos não bloqueantes de versões duplicadas e licenças permitidas não encontradas preservados integralmente no log."
+    },
+    {
+      "id": "format",
+      "result": "passed",
+      "log": "local/format.log",
+      "reproduction_command": "cargo fmt --all -- --check"
+    },
+    {
+      "id": "policy",
+      "result": "passed",
+      "log": "local/policy.log",
+      "reproduction_command": "cargo xtask check"
+    }
+  ],
+  "files": [
+    {
+      "path": "ci/organizations-interface.json",
+      "bytes": 6658,
+      "sha256": "b4d7f32568c0042e08df28f9a6c4e5d389537509c1d2920f859a833c6dfc1995"
+    },
+    {
+      "path": "ci/summary.json",
+      "bytes": 1401,
+      "sha256": "718740aa40a0d16410b5febf29742cd6d89dca4757832d2fc81fd51edb97010a"
+    },
+    {
+      "path": "ci/workflow.log",
+      "bytes": 461995,
+      "sha256": "078c08436cc307784cdfcfcc6cc5b0249abcaf9cfb34ac41685a02270b3b738c"
+    },
+    {
+      "path": "local/application-organizations-final.log",
+      "bytes": 1295,
+      "sha256": "8d513bcf38b09f1db8ce8f5aabd0260ca4811a55cd895814bc022936e46c73dc"
+    },
+    {
+      "path": "local/application.log",
+      "bytes": 2554,
+      "sha256": "bb30b1a601f8d188dd153d18038d404221a8f26dcaa40922540e48f4363a64a2"
+    },
+    {
+      "path": "local/browser-performance.json",
+      "bytes": 2590,
+      "sha256": "4a46fbccf945dc398151c06a55d7a54d087a3d5dc2e30aa2427c5517d5e5589c"
+    },
+    {
+      "path": "local/browser-regressions.log",
+      "bytes": 2856,
+      "sha256": "d83072d145dd52f0cdb1d7691ae5c656b2c6d32a83730813901a6657023095d2"
+    },
+    {
+      "path": "local/budget.json",
+      "bytes": 2026,
+      "sha256": "31d2c34aafec2ceb8aafc7a7f0a403790f331eafbe27b8c6cd26e340eb9d3ff0"
+    },
+    {
+      "path": "local/build.json",
+      "bytes": 2549,
+      "sha256": "ade9b4a0598314cbca792d1265df091db597822fe3b29cbd98d25636ddb583bf"
+    },
+    {
+      "path": "local/build.log",
+      "bytes": 1262,
+      "sha256": "008426d0dae3c30f2f4a07821908086759fd398550a542f314345da6e85ab835"
+    },
+    {
+      "path": "local/calculation-parity.json",
+      "bytes": 35069,
+      "sha256": "53f7115a27fd12810e849c2aeade3f63114aef19ee2bf153231d7679e375a6fa"
+    },
+    {
+      "path": "local/clippy-e2e.log",
+      "bytes": 150,
+      "sha256": "aad359248c2ef53c7925d535ce3674924c4c6e0f40d0d6bb8b97ae432c926d94"
+    },
+    {
+      "path": "local/clippy-native.log",
+      "bytes": 332,
+      "sha256": "87a4c58cd7b0cf98a21da7129ca919131ecce5c184b66d8f2cdff6feb5158f3d"
+    },
+    {
+      "path": "local/clippy-wasm.log",
+      "bytes": 151,
+      "sha256": "d0c0f4dc3106cbfd65871dc384feeb8e5f4d37fc75ee49b2bd2e8103c0daf8bd"
+    },
+    {
+      "path": "local/dependencies.log",
+      "bytes": 112638,
+      "sha256": "772e7b6bbb2fc839d304d427c314eae861e1a11c7eb9c7275db2aadc5a9a069f"
+    },
+    {
+      "path": "local/format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "local/headless-focus-probe.json",
+      "bytes": 678,
+      "sha256": "590395795a01bdeb00100a2815e3c31d5ffcea8df2b1b45dbcdf1b84b77e561e"
+    },
+    {
+      "path": "local/http.log",
+      "bytes": 1128,
+      "sha256": "ed73eb51426d6385770b6de35d3b721df079af8c35d099f7d2b15f6ea5c23573"
+    },
+    {
+      "path": "local/invitation-identity-final.log",
+      "bytes": 480,
+      "sha256": "a857f4ee4f39130a7cd4aee7b102e92b2dab76bd4c74d0bc01acc0231729238c"
+    },
+    {
+      "path": "local/native.log",
+      "bytes": 26396,
+      "sha256": "196ddf173ee9f5c2b3acb41b19586f2bb5fab8b7fdef3b55ea0106a98a4e75cd"
+    },
+    {
+      "path": "local/organizations-administrator-1280.png",
+      "bytes": 306163,
+      "sha256": "26d36f1291413634a42c33942d410dcef98973c47d333018b4a75fb7104f4e15"
+    },
+    {
+      "path": "local/organizations-administrator-360.png",
+      "bytes": 297184,
+      "sha256": "891efc727cf62249402c59ca34c9d5ffdfea0dda59f548bfc66adf2df2bd53cd"
+    },
+    {
+      "path": "local/organizations-browser-attempt-1-environment.log",
+      "bytes": 2427,
+      "sha256": "16e7296e0f7b52623f890acd41649e493b3e47b114f44a256d18973502d92ee9"
+    },
+    {
+      "path": "local/organizations-browser-attempt-4-native-activation.log",
+      "bytes": 963,
+      "sha256": "4d39dabbf443d99e5559406720608254c2059b22c2c3eeaaf9ed2e2fbef99989"
+    },
+    {
+      "path": "local/organizations-lifecycle-failure.json",
+      "bytes": 1842,
+      "sha256": "7d602b190b16485a94d12a9697a7027e67007389beee390a1077179966295aa9"
+    },
+    {
+      "path": "local/organizations-member-1280.png",
+      "bytes": 181638,
+      "sha256": "b7e33b2c51d62fa625074ae979b94770037c4a47286e5d8e36a8706bccae0675"
+    },
+    {
+      "path": "local/organizations-member-360.png",
+      "bytes": 176253,
+      "sha256": "ea79bb85dfdf48335b4554d9cc05aaf737e3acb287d9c74a7ae88a50f31c0366"
+    },
+    {
+      "path": "local/persistence.log",
+      "bytes": 3060,
+      "sha256": "6c910ed42dcba21c84de69c42d1148f61199d4ce07808269af96d0929e570892"
+    },
+    {
+      "path": "local/policy.log",
+      "bytes": 283,
+      "sha256": "42833b59d7a26baf9bf1839eb453abb96b54f04d9909ba7475c17adde7da1891"
+    },
+    {
+      "path": "local/source-correspondence.json",
+      "bytes": 33261,
+      "sha256": "1d5a9f85abeaa505353d3b493fd39d41977cfa313871d36fa9ec33cd42d56e20"
+    },
+    {
+      "path": "local/ui-unit.log",
+      "bytes": 1421,
+      "sha256": "abcb075beab1ea1cfada763aa8bef0e0039131b3c2ad122b98fd6682eabe8f59"
+    }
+  ],
+  "command_note": "Comandos de reprodução dos conjuntos observados; no executor local, testes que usam PostgreSQL são iniciados junto ao banco descartável na mesma sessão. Os logs preservam os resultados reais.",
+  "ci": {
+    "schema_version": 1,
+    "run_id": 43422855788,
+    "job_id": 131877008414,
+    "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/43422855788",
+    "conclusion": "success",
+    "steps_passed": 25,
+    "head_commit": "6a7dfce7e1378ca105237b637309c0e0f1f0a7ba",
+    "head_tree": "5ee7dca03223d1184be82b9c5fac0807b9568a9c",
+    "tested_merge_commit": "5c6d1af14afb9ceaa30af17833acbe833be5da98",
+    "tested_tree": "6f78a7f0d3b49a4513de97c7f45b7f90be983981",
+    "tree_difference_from_head": [
+      {
+        "path": "docs/validacao/INTEGRACAO-003-006.md",
+        "change": "added",
+        "blob_sha": "16c75d90386f9ec6ad7afe234292de3d29cf26cc"
+      }
+    ],
+    "test_functions": {
+      "native": 129,
+      "persistence_postgresql": 23,
+      "application_postgresql": 20,
+      "http_postgresql": 6,
+      "browser": 10,
+      "total_passed": 188,
+      "total_failed": 0
+    },
+    "native_ignored_executed_in_dedicated_steps": 59,
+    "organization_browser": {
+      "status": "passed",
+      "duration_seconds": 46.35,
+      "report": "organizations-interface.json"
+    },
+    "artifact": {
+      "id": 14036674729,
+      "archive_bytes": 9682106,
+      "archive_sha256": "7ddd21c764ac67f779a578236a0fd65ebd3ed4c34a7118205ef115fe6790def3",
+      "files": 140
+    },
+    "scope_note": "A aprovação pertence a esta execução e ao merge temporário informado; alterações documentais posteriores e novas execuções são conferidas separadamente."
+  },
+  "documentation_sync": {
+    "base_branch": "main",
+    "base_commit": "3a2bbb2957da639a926a45f4fcee81716f8c31b1",
+    "production_test_and_workflow_changes": false,
+    "prior_prs_merged": [
+      75,
+      76,
+      77,
+      78
+    ],
+    "issue_3_three_real_professionals": "pending",
+    "issue_7_merge_performed": false
+  }
+}

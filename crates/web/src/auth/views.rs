@@ -257,8 +257,9 @@ pub(super) fn Account() -> impl IntoView {
         <section class="section-card access-card" aria-labelledby="auth-account-title">
             <div class="access-account-heading"><h2 id="auth-account-title" tabindex="-1">"Você entrou na sua conta"</h2><span class="status-badge success">"Acesso ativo"</span></div>
             <p id="auth-account-email" class="access-account-email">{move || access.context.get().email.unwrap_or_default()}</p>
-            <p>"Confira a proteção da conta e as sessões abertas. O acesso às organizações e obras será disponibilizado nas próximas etapas."</p>
+            <p>"Confira a proteção da conta e as sessões abertas. Em Empresas, você pode administrar sua equipe e aceitar convites."</p>
             <div class="access-links"><button id="auth-refresh" type="button" class="secondary-button" disabled=move || access.busy.get() on:click=move |_| access.load()>"Atualizar sessões"</button>
+                <a id="auth-organizations" class="primary-button" href="/organizacoes">"Abrir empresas e equipe"</a>
                 <button id="auth-logout" type="button" class="secondary-button" disabled=move || access.blocked() on:click=move |_| access.submit(AuthCommand::Logout)>"Sair desta sessão"</button></div>
         </section>
         <section class="section-card access-card" aria-labelledby="auth-protection-title">

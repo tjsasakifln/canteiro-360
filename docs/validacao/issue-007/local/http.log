@@ -1,0 +1,18 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.37s
+     Running `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.
+   Compiling canteiro-web v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/web)
+   Compiling canteiro-api v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/crates/api)
+    Finished `test` profile [unoptimized] target(s) in 54.16s
+     Running tests/auth.rs (target/debug/deps/auth-161fc06370f05bdb)
+
+running 6 tests
+test csrf_origin_cookie_rotation_and_revocation_are_enforced_over_http ... ok
+test organizations::organization_http_enforces_origin_cookie_csrf_and_private_error_responses ... ok
+test organizations::organization_http_rejects_anonymous_invalid_inputs_and_revoked_identity ... ok
+test organizations::organization_http_requires_confirmed_mfa_and_serves_only_current_company_export ... ok
+test public_account_responses_and_recovery_timing_do_not_disclose_existence ... ok
+test reset_is_atomic_private_and_never_logs_in_over_http ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 100.87s
+

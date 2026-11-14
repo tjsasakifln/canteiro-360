@@ -1,0 +1,19 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.35s
+     Running `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.
+   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/5ad1896c8141/canteiro-360/tools/e2e)
+    Finished `test` profile [unoptimized] target(s) in 2.32s
+     Running tests/organizations.rs (target/debug/deps/organizations-95af4bd87f8e25a0)
+
+running 1 test
+test organization_membership_context_and_invitations_work_through_the_browser ... Error: "Browser condition timed out after 30s: return document.querySelector('[data-org-ready]')?.dataset.orgReady === 'false' && !document.querySelector('#org-invite-heading');"
+FAILED
+
+failures:
+
+failures:
+    organization_membership_context_and_invitations_work_through_the_browser
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 64.21s
+
+error: test failed, to rerun pass `-p canteiro-e2e --test organizations`
