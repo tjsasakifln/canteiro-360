@@ -79,6 +79,16 @@ pub enum AccessCommand {
 }
 
 impl AccessCommand {
+    /// Atos monetários que aceitam a identidade de operação no transporte.
+    pub fn authority_act(&self) -> Option<&'static str> {
+        match self {
+            Self::Propose { .. } => Some("authority_propose"),
+            Self::ReviseRequest { .. } => Some("authority_revise"),
+            Self::Decide { .. } => Some("authority_decide"),
+            _ => None,
+        }
+    }
+
     pub fn context(&self) -> &OrganizationScope {
         match self {
             Self::CreateScope { context, .. }
@@ -194,4 +204,16 @@ pub struct AccessResponse {
     pub state: AccessState,
     pub csrf: String,
     pub message: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub receipt: Option<AuthorityReceipt>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct AuthorityReceipt {
+    pub event_id: String,
+    pub request_id: String,
+    pub version: i64,
+    pub status: String,
+    pub valid_approvals: u8,
+    pub recorded_at: String,
 }

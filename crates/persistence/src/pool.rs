@@ -108,6 +108,16 @@ async fn validate_runtime(
          AND NOT has_any_column_privilege(current_user, 'canteiro.access_request_versions', 'UPDATE') \
          AND NOT has_table_privilege(current_user, 'canteiro.access_approvals', 'UPDATE,DELETE,TRUNCATE') \
          AND NOT has_any_column_privilege(current_user, 'canteiro.access_approvals', 'UPDATE') \
+         AND NOT EXISTS (SELECT 1 FROM pg_class WHERE oid IN ('canteiro.contract_history'::regclass, \
+                       'canteiro.operation_receipts'::regclass, 'canteiro.authority_history'::regclass, 'canteiro.contract_notifications'::regclass) \
+                       AND (has_table_privilege(current_user,oid,'UPDATE,DELETE,TRUNCATE') \
+                            OR has_any_column_privilege(current_user,oid,'UPDATE'))) \
+         AND NOT EXISTS (SELECT 1 FROM pg_class WHERE oid IN ('canteiro.contract_history'::regclass, \
+                       'canteiro.contract_notifications'::regclass) \
+                       AND has_any_column_privilege(current_user,oid,'INSERT')) \
+         AND NOT has_table_privilege(current_user,'canteiro_meta.contract_notification_outbox','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') \
+         AND NOT has_any_column_privilege(current_user,'canteiro_meta.contract_notification_outbox','SELECT,INSERT,UPDATE,REFERENCES') \
+         AND NOT has_function_privilege(current_user,'canteiro_meta.enqueue_contract_notification(uuid,uuid)','EXECUTE') \
          AND NOT has_any_column_privilege(current_user, 'canteiro.access_scopes', 'UPDATE') \
          AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'user_id', 'UPDATE') \
          AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'scope_id', 'UPDATE') \

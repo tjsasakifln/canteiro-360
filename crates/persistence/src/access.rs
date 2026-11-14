@@ -157,22 +157,39 @@ impl AuthTransaction {
         Ok(sqlx::query_as("SELECT r.id,r.scope_id,r.current_version AS version,r.status,r.valid_approvals,r.created_by AS proposer_id,u.email AS proposer_email,v.title,v.action,v.increase::text AS increase,v.decrease::text AS decrease,v.policy_version,v.threshold::text AS threshold,v.approvals_above_threshold,v.segregate_proposer,v.conflicted_users FROM canteiro.access_requests r JOIN canteiro.access_request_versions v ON v.tenant_id=r.tenant_id AND v.request_id=r.id AND v.version=r.current_version JOIN canteiro_auth.users u ON u.id=r.created_by WHERE r.tenant_id=$1 ORDER BY r.created_at DESC,r.id")
             .bind(tenant).fetch_all(&mut *self.tx).await?)
     }
+    pub async fn access_request_version(
+        &mut self,
+        tenant: Uuid,
+        request_id: Uuid,
+        version: i64,
+    ) -> Result<Option<StoredRequest>, AuthStoreError> {
+        Ok(sqlx::query_as("SELECT r.id,r.scope_id,v.version,r.status,r.valid_approvals,r.created_by AS proposer_id,u.email AS proposer_email,
+            v.title,v.action,v.increase::text AS increase,v.decrease::text AS decrease,v.policy_version,v.threshold::text AS threshold,
+            v.approvals_above_threshold,v.segregate_proposer,v.conflicted_users
+            FROM canteiro.access_requests r JOIN canteiro.access_request_versions v ON v.tenant_id=r.tenant_id AND v.request_id=r.id
+            JOIN canteiro_auth.users u ON u.id=r.created_by WHERE r.tenant_id=$1 AND r.id=$2 AND v.version=$3")
+            .bind(tenant).bind(request_id).bind(version).fetch_optional(&mut *self.tx).await?)
+    }
     pub async fn access_save_request(
         &mut self,
         tenant: Uuid,
         request: &StoredRequest,
-        new: bool,
-    ) -> Result<(), AuthStoreError> {
-        if new {
+        expected_version: Option<i64>,
+    ) -> Result<bool, AuthStoreError> {
+        if let Some(expected) = expected_version {
+            let changed=sqlx::query("UPDATE canteiro.access_requests SET current_version=$3,status='pending',valid_approvals=0,updated_at=clock_timestamp()
+                WHERE tenant_id=$1 AND id=$2 AND current_version=$4 AND status='pending'")
+                .bind(tenant).bind(request.id).bind(request.version).bind(expected).execute(&mut *self.tx).await?.rows_affected();
+            if changed != 1 {
+                return Ok(false);
+            }
+        } else {
             sqlx::query("INSERT INTO canteiro.access_requests(tenant_id,id,scope_id,created_by) VALUES($1,$2,$3,$4)")
                 .bind(tenant).bind(request.id).bind(request.scope_id).bind(request.proposer_id).execute(&mut *self.tx).await?;
-        } else {
-            sqlx::query("UPDATE canteiro.access_requests SET current_version=$3,status='pending',valid_approvals=0,updated_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2")
-                .bind(tenant).bind(request.id).bind(request.version).execute(&mut *self.tx).await?;
         }
         sqlx::query("INSERT INTO canteiro.access_request_versions(tenant_id,request_id,version,title,action,increase,decrease,policy_version,threshold,approvals_above_threshold,segregate_proposer,conflicted_users) VALUES($1,$2,$3,$4,$5,$6::text::numeric,$7::text::numeric,$8,$9::text::numeric,$10,$11,$12)")
             .bind(tenant).bind(request.id).bind(request.version).bind(&request.title).bind(&request.action).bind(&request.increase).bind(&request.decrease).bind(request.policy_version).bind(&request.threshold).bind(request.approvals_above_threshold).bind(request.segregate_proposer).bind(&request.conflicted_users).execute(&mut *self.tx).await?;
-        Ok(())
+        Ok(true)
     }
     pub async fn access_approvals(
         &mut self,
@@ -192,12 +209,13 @@ impl AuthTransaction {
     pub async fn access_request_status(
         &mut self,
         tenant: Uuid,
-        id: Uuid,
+        request: &StoredRequest,
         status: &str,
         count: u8,
-    ) -> Result<(), AuthStoreError> {
-        sqlx::query("UPDATE canteiro.access_requests SET status=$3,valid_approvals=$4,updated_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2 AND status='pending'")
-            .bind(tenant).bind(id).bind(status).bind(i16::from(count)).execute(&mut *self.tx).await?;
-        Ok(())
+    ) -> Result<bool, AuthStoreError> {
+        Ok(sqlx::query("UPDATE canteiro.access_requests SET status=$3,valid_approvals=$4,updated_at=clock_timestamp()
+            WHERE tenant_id=$1 AND id=$2 AND current_version=$5 AND status='pending'")
+            .bind(tenant).bind(request.id).bind(status).bind(i16::from(count)).bind(request.version)
+            .execute(&mut *self.tx).await?.rows_affected() == 1)
     }
 }

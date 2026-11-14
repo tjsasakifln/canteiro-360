@@ -10,6 +10,8 @@ use std::{str::FromStr, time::Duration as StdDuration};
 
 #[path = "access_tests.rs"]
 mod access_tests;
+#[path = "reliability_tests.rs"]
+mod reliability_tests;
 
 #[test]
 fn names_codes_deadlines_and_spreadsheet_cells_are_bounded() {

@@ -524,8 +524,10 @@ dependencies = [
 name = "canteiro-jobs"
 version = "0.1.0"
 dependencies = [
- "canteiro-application",
  "canteiro-persistence",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

@@ -4,7 +4,7 @@ Gestão de obras e projetos privados no Brasil, com a disciplina operacional doc
 
 **Situação atual:** fundação Rust e persistência PostgreSQL das issues 1 e 2 integradas. A implementação da issue 3 acrescenta sistema visual e percursos demonstrativos de painel, orçamento, medição, aprovação e documentos, com dados fictícios. O aceite integral da issue 3 permanece condicionado ao teste com três profissionais exigido no escopo. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
 
-Esta sequência de implementação inclui formulários e tabelas da issue 4, precisão e calendários da issue 5, autenticação da issue 6 e [empresas, convites e isolamento](docs/organizacoes.md) da issue 7. O [guia de acesso](docs/seguranca-acesso.md) descreve cadastro verificado, sessões, recuperação e segundo fator. A base técnica reúne as etapas 3 a 8, preservando as pendências humanas das issues 3 e 6. A issue 8 acrescenta [permissões por obra, contrato e orçamento, alçadas e substituições](docs/permissoes-alcadas.md).
+Esta sequência de implementação inclui formulários e tabelas da issue 4, precisão e calendários da issue 5, autenticação da issue 6 e [empresas, convites e isolamento](docs/organizacoes.md) da issue 7. O [guia de acesso](docs/seguranca-acesso.md) descreve cadastro verificado, sessões, recuperação e segundo fator. A base técnica reúne as etapas 3 a 9, preservando as pendências humanas das issues 3 e 6. A issue 8 acrescenta [permissões por obra, contrato e orçamento, alçadas e substituições](docs/permissoes-alcadas.md). A issue 9 acrescenta [histórico contratual, edição concorrente e recuperação de gravações](docs/historico-concorrencia.md).
 
 ## Compilar e executar
 
@@ -23,7 +23,7 @@ target/release/canteiro-db migrate
 env -u CANTEIRO_MIGRATION_DATABASE_URL target/release/canteiro-api
 ```
 
-A API recusa inicialização sem banco migrado, com ambiente divergente, chave de acesso ausente ou identidade de banco privilegiada. Abrir `http://127.0.0.1:3000/acesso` para cadastro, login, recuperação e gestão de sessões. O envio de e-mail usa a Resend com remetente e credencial externos; homologação exige essa configuração e HTTPS. O executável geral de processamento oferece apenas `--check`; a fila de mensagens de acesso desta etapa é consumida pela API.
+A API recusa inicialização sem banco migrado, com ambiente divergente, chave de acesso ausente ou identidade de banco privilegiada. Abrir `http://127.0.0.1:3000/acesso` para cadastro, login, recuperação e gestão de sessões. O envio de e-mail usa a Resend com remetente e credencial externos; homologação exige essa configuração e HTTPS. As [notificações internas do histórico](docs/historico-concorrencia.md#consumidor-de-notificações) são processadas por `target/release/canteiro-jobs` em processo separado. A API processa a fila de mensagens de acesso.
 
 Para experimentar os percursos da issue 3, abra `http://127.0.0.1:3000/prototipo/aurora/painel`. O seletor permite alternar entre duas empresas fictícias. As opções da demonstração exibem estados vazio, carregando, erro e sem permissão, além da densidade. Consultas e links são renderizados no servidor; edição, confirmação e troca de contexto dependem da hidratação. Os rascunhos e as aprovações simuladas existem somente na aba atual e não produzem gravações comerciais.
 
@@ -39,6 +39,7 @@ O [guia de desenvolvimento](docs/desenvolvimento.md) detalha compilação, verif
 | [Acesso e recuperação](docs/seguranca-acesso.md) | Cadastro verificado, sessões, segundo fator, e-mail e configuração |
 | [Empresas, equipe e convites](docs/organizacoes.md) | Seleção de empresa, vínculos, pedidos de acesso e isolamento |
 | [Permissões e alçadas](docs/permissoes-alcadas.md) | Funções por obra, contrato e orçamento, decisões, delegações e responsabilidades |
+| [Histórico e concorrência](docs/historico-concorrencia.md) | Versões, rascunhos, recibos e notificações internas |
 | [Sistema visual](docs/sistema-visual.md) | Componentes, contexto, teclado, estados e apresentação móvel |
 | [Verificação da issue 3](docs/validacao/ISSUE-003.md) | Evidência técnica, revisão e aceite humano ainda necessário |
 | [Aceite da issue 1](docs/validacao/ISSUE-001.md) | Versões compiladas, medidas, revisão e evidências |

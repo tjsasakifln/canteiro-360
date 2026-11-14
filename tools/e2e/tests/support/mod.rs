@@ -1,6 +1,10 @@
 //! Standalone WebDriver support for prototype acceptance. Product interaction is
 //! performed through WebDriver; script execution below is read-only observation.
 
+// Some test binaries only use the browser tools.
+#[allow(dead_code)]
+pub(crate) mod access_fixture;
+
 use base64::Engine;
 use reqwest::{Client, Method};
 use serde_json::{Value, json};

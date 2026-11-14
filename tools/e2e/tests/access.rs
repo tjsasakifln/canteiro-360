@@ -1,226 +1,13 @@
 #[allow(dead_code)]
 mod support;
 
-use base64::Engine;
-use canteiro_contracts::auth::AuthCommand;
-use canteiro_contracts::{access::*, organizations::*};
-use hmac::{Hmac, Mac};
+use canteiro_contracts::access::*;
 use serde_json::{Value, json};
-use sha1::Sha1;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use support::{Browser, ENTER, ESCAPE, HOME, Harness, TestResult, write_json};
+use std::time::Duration;
+use support::{Browser, ENTER, ESCAPE, HOME, Harness, TestResult, access_fixture::*, write_json};
 
 const WAIT: Duration = Duration::from_secs(30);
 
-struct AccountFixture {
-    email: String,
-    session: String,
-}
-
-fn totp(secret: &str) -> TestResult<String> {
-    let bytes = data_encoding::BASE32_NOPAD.decode(secret.as_bytes())?;
-    let counter = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() / 30;
-    let mut mac = <Hmac<Sha1> as Mac>::new_from_slice(&bytes)?;
-    mac.update(&counter.to_be_bytes());
-    let digest = mac.finalize().into_bytes();
-    let offset = usize::from(digest[19] & 15);
-    let value = u32::from_be_bytes(digest[offset..offset + 4].try_into()?) & 0x7fff_ffff;
-    Ok(format!("{:06}", value % 1_000_000))
-}
-
-async fn account(h: &Harness, label: &str, mfa: bool) -> TestResult<AccountFixture> {
-    let mut random = [0u8; 32];
-    getrandom::fill(&mut random).map_err(|_| "Unable to generate fixture credentials")?;
-    let nonce = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(random);
-    let email = format!(
-        "permissions-{label}-{}@example.invalid",
-        nonce.to_lowercase()
-    );
-    let password = format!("Acesso isolado {nonce}");
-    let mut result = h.auth.context(None).await?;
-    result = h
-        .auth
-        .execute(
-            &result.session_token,
-            AuthCommand::Register {
-                email: email.clone(),
-                password: password.clone(),
-            },
-            &email,
-        )
-        .await?;
-    let mut code = None;
-    for message in h.auth.pending_mail(25).await? {
-        if message.email == email && message.kind == "verify_email" {
-            code = Some(message.token.clone());
-        }
-        h.auth.mark_mail_delivered(&message.id).await?;
-    }
-    result = h
-        .auth
-        .execute(
-            &result.session_token,
-            AuthCommand::VerifyEmail {
-                token: code.ok_or("Missing verification fixture")?,
-                password: password.clone(),
-            },
-            &email,
-        )
-        .await?;
-    result = h
-        .auth
-        .execute(
-            &result.session_token,
-            AuthCommand::Login {
-                email: email.clone(),
-                password: password.clone(),
-            },
-            &email,
-        )
-        .await?;
-    if mfa {
-        result = h
-            .auth
-            .execute(
-                &result.session_token,
-                AuthCommand::StartMfa { password },
-                &email,
-            )
-            .await?;
-        let setup = result
-            .mfa_setup
-            .as_ref()
-            .ok_or("Missing MFA enrollment fixture")?;
-        let code = totp(setup)?;
-        result = h
-            .auth
-            .execute(
-                &result.session_token,
-                AuthCommand::ConfirmMfa { code },
-                &email,
-            )
-            .await?;
-    }
-    Ok(AccountFixture {
-        email,
-        session: result.session_token,
-    })
-}
-
-fn scope(state: &AccessState) -> OrganizationScope {
-    let org = state
-        .organization
-        .as_ref()
-        .expect("selected fixture company");
-    OrganizationScope {
-        organization_id: org.id.clone(),
-        organization_version: org.version,
-        context_version: state.context_version,
-    }
-}
-async fn company(h: &Harness, owner: &AccountFixture, name: &str) -> TestResult<String> {
-    let r = h
-        .auth
-        .organizations_execute(
-            &owner.session,
-            OrganizationCommand::Create { name: name.into() },
-        )
-        .await?;
-    let id = r
-        .state
-        .organizations
-        .into_iter()
-        .find(|o| o.name == name)
-        .ok_or("fixture company missing")?
-        .id;
-    h.auth
-        .organizations_execute(
-            &owner.session,
-            OrganizationCommand::Select {
-                organization_id: id.clone(),
-                expected_context_version: r.state.context_version,
-            },
-        )
-        .await?;
-    Ok(id)
-}
-async fn join(
-    h: &Harness,
-    owner: &AccountFixture,
-    person: &AccountFixture,
-    id: &str,
-) -> TestResult {
-    let state = h.auth.organizations_context(&owner.session).await?.state;
-    let org = state
-        .active
-        .ok_or("fixture company not selected")?
-        .organization;
-    let invitation = h
-        .auth
-        .organizations_execute(
-            &owner.session,
-            OrganizationCommand::Invite {
-                scope: OrganizationScope {
-                    organization_id: org.id,
-                    organization_version: org.version,
-                    context_version: state.context_version,
-                },
-                email: person.email.clone(),
-                role: OrganizationRole::Member,
-                valid_for_hours: 24,
-                membership_valid_until: None,
-            },
-        )
-        .await?;
-    let response = h
-        .auth
-        .organizations_execute(
-            &person.session,
-            OrganizationCommand::AcceptInvitation {
-                token: invitation
-                    .invitation_code
-                    .ok_or("fixture invitation missing")?,
-            },
-        )
-        .await?;
-    h.auth
-        .organizations_execute(
-            &person.session,
-            OrganizationCommand::Select {
-                organization_id: id.into(),
-                expected_context_version: response.state.context_version,
-            },
-        )
-        .await?;
-    Ok(())
-}
-async fn fixture_grant(
-    h: &Harness,
-    owner: &AccountFixture,
-    person: &AccountFixture,
-    scope_id: &str,
-    role: AccessRole,
-    actions: Vec<AccessAction>,
-) -> TestResult {
-    let r = h.auth.access_context(&owner.session).await?;
-    h.auth
-        .access_execute(
-            &owner.session,
-            AccessCommand::Grant {
-                context: scope(&r.state),
-                scope_id: scope_id.into(),
-                user_email: person.email.clone(),
-                role,
-                actions,
-                max_amount: "1000.00".parse()?,
-                valid_from: "2020-01-01T00:00:00Z".into(),
-                valid_until: Some("2090-01-01T00:00:00Z".into()),
-                required: false,
-            },
-        )
-        .await?;
-    Ok(())
-}
 async fn ready(browser: &Browser) -> TestResult {
     browser.wait("return document.querySelector('[data-perm-ready]')?.dataset.permReady==='true'&&document.querySelector('[data-perm-busy]')?.dataset.permBusy==='false';",WAIT).await
 }
@@ -542,8 +329,64 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
         .await?;
     browser.fill("#perm-request-increase", "100,00").await?;
     browser.fill("#perm-request-decrease", "100,00").await?;
+    // Execute the request against the real server and drop only its response.
+    browser.execute(r#"
+        window.fixtureFetch = window.fetch.bind(window);
+        window.fixtureAuthorityWrites = 0;
+        window.fixtureAuthorityQueries = 0;
+        window.fetch = async (...args) => {
+          const response = await window.fixtureFetch(...args);
+          const path = new URL(args[0] instanceof Request ? args[0].url : args[0], location.href).pathname;
+          if (path.startsWith('/api/access/operations/')) window.fixtureAuthorityQueries += 1;
+          if (path === '/api/access/command' && ++window.fixtureAuthorityWrites === 1 && response.ok) {
+            throw new TypeError('Fixture lost the response after the HTTP commit');
+          }
+          return response;
+        };
+        return true;
+    "#).await?;
     browser.click("#perm-request-submit").await?;
-    confirm(&browser).await?;
+    browser
+        .wait(
+            "return document.querySelector('#perm-confirm-dialog')?.open;",
+            WAIT,
+        )
+        .await?;
+    browser.tab_to("#perm-confirm-submit").await?;
+    browser.key(ENTER).await?;
+    browser.wait(
+        "return document.querySelector('#perm-feedback')?.textContent.includes('Não foi possível confirmar a resposta');",
+        WAIT,
+    ).await?;
+    browser.click("#perm-refresh").await?;
+    ready(&browser).await?;
+    expand(&browser, "#perm-request-panel").await?;
+    assert_eq!(
+        browser.property("#perm-request-title", "value").await?,
+        "Alteração mista do canteiro"
+    );
+    browser.tab_to("#perm-authority-retry").await?;
+    browser.key(ENTER).await?;
+    browser.wait(
+        "return document.querySelector('#perm-feedback')?.textContent.includes('Pedido registrado para decisão');",
+        WAIT,
+    ).await?;
+    assert_eq!(
+        browser.execute("const result = [window.fixtureAuthorityWrites, window.fixtureAuthorityQueries]; window.fetch = window.fixtureFetch; return result;").await?,
+        json!([1, 1]),
+        "A resposta perdida foi recuperada por consulta, sem repetir o POST"
+    );
+    browser
+        .wait(
+            "return document.activeElement?.id === 'perm-feedback';",
+            WAIT,
+        )
+        .await?;
+    assert_eq!(
+        browser.property("#perm-scope-selection", "value").await?,
+        work
+    );
+    assert_eq!(browser.property("#perm-request-title", "value").await?, "");
     let request = h
         .auth
         .access_context(&owner.session)
@@ -854,7 +697,7 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
     assert!(!logs.to_string().contains("panicked") && !logs.to_string().contains("Hydration"));
     write_json(
         &h.evidence.join("permissions-interface.json"),
-        &json!({"status":"passed","environment":h.environment,"layouts":layouts,"scenarios":["public SSR without private data","explicit work scope","administrator has no implicit proposing power","role grant and cancelled confirmation","threshold policy with segregation","policy switch cancelled with visual selection restored","revision switch requires explicit discard","delegation source switch requires explicit discard","mixed increase and decrease","proponent cannot approve","two independent approvers","reader cannot configure or decide","temporary substitution with lower authority","network failure preserves scoped draft","Router and history preserve identity-bound draft","another identity cannot restore suspended draft","identity change removes draft and admin controls","no private browser storage"]}),
+        &json!({"status":"passed","environment":h.environment,"layouts":layouts,"scenarios":["public SSR without private data","explicit work scope","administrator has no implicit proposing power","role grant and cancelled confirmation","threshold policy with segregation","policy switch cancelled with visual selection restored","revision switch requires explicit discard","delegation source switch requires explicit discard","mixed increase and decrease","authority recovery by keyboard after losing the confirmed HTTP response","proponent cannot approve","two independent approvers","reader cannot configure or decide","temporary substitution with lower authority","network failure preserves scoped draft","Router and history preserve identity-bound draft","another identity cannot restore suspended draft","identity change removes draft and admin controls","no private browser storage"]}),
     )?;
     browser.close().await?;
     reviewer.close().await?;

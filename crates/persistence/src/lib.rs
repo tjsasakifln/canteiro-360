@@ -2,10 +2,13 @@
 //! O chamador fornece contexto já autorizado no servidor; isto não autentica usuários.
 pub mod access;
 pub mod auth;
+pub mod authority_history;
 mod error;
 mod migration;
 pub mod organizations;
 mod pool;
+pub mod reliability;
+pub mod reliability_outbox;
 mod settings;
 mod unit_of_work;
 

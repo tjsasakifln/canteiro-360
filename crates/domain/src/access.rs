@@ -77,7 +77,7 @@ impl AccessRole {
         }
         match self {
             Self::Viewer | Self::Client | Self::Support => false,
-            Self::Manager => matches!(action, A::ProposeChange),
+            Self::Manager => matches!(action, A::ProposeChange | A::EditContractRecord),
             Self::Budgeter => {
                 matches!(action, A::EditBudget | A::ReviewBudget | A::ProposeChange)
             }
@@ -113,10 +113,11 @@ pub enum AccessAction {
     AuthorizePayment,
     RecordPayment,
     TechnicalAccept,
+    EditContractRecord,
 }
 
 impl AccessAction {
-    pub const ALL: [Self; 11] = [
+    pub const ALL: [Self; 12] = [
         Self::View,
         Self::EditBudget,
         Self::ReviewBudget,
@@ -128,6 +129,7 @@ impl AccessAction {
         Self::AuthorizePayment,
         Self::RecordPayment,
         Self::TechnicalAccept,
+        Self::EditContractRecord,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -143,6 +145,7 @@ impl AccessAction {
             Self::AuthorizePayment => "authorize_payment",
             Self::RecordPayment => "record_payment",
             Self::TechnicalAccept => "technical_accept",
+            Self::EditContractRecord => "edit_contract_record",
         }
     }
 
@@ -159,6 +162,7 @@ impl AccessAction {
             Self::AuthorizePayment => "Autorizar pagamento",
             Self::RecordPayment => "Registrar pagamento",
             Self::TechnicalAccept => "Dar aceite técnico",
+            Self::EditContractRecord => "Editar referência do contrato",
         }
     }
 
@@ -380,10 +384,11 @@ pub fn validate_grant(grant: &AccessGrant) -> Result<(), AccessError> {
     let distinct: BTreeSet<_> = grant.actions.iter().copied().collect();
     if distinct.is_empty()
         || distinct.len() != grant.actions.len()
-        || grant
-            .actions
-            .iter()
-            .any(|action| !grant.role.permits(*action))
+        || grant.actions.iter().any(|action| {
+            !grant.role.permits(*action)
+                || (*action == AccessAction::EditContractRecord
+                    && grant.scope.kind != ScopeKind::Contract)
+        })
     {
         return Err(AccessError::InvalidGrant);
     }

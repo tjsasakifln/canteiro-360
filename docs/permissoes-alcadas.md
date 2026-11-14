@@ -52,7 +52,7 @@ Gestor, responsável técnico ou aprovador podem ser necessários continuamente.
 
 ## Versões e histórico
 
-Cada comando confere empresa selecionada, versão do contexto e versão da organização. Delegações, revogações e decisões conferem também versões do vínculo e do pedido. A identidade vem da sessão, nunca do corpo enviado pelo navegador.
+Cada gravação nova confere empresa selecionada, versão do contexto e versão da organização. Para uma operação já confirmada, a recuperação revalida empresa, participação e direitos atuais e consulta o recibo pela chave da tentativa. Confira o [guia de histórico e concorrência](historico-concorrencia.md). Delegações, revogações e decisões conferem também versões do vínculo e do pedido. A identidade vem da sessão, nunca do corpo enviado pelo navegador.
 
 O pedido guarda proponente, versão, valores, conflitos e fotografia da política. Nos módulos consumidores, autores e conferentes devem ser identificados a partir dos registros do servidor e inseridos nos impedimentos exigidos pela política; uma lista enviada pelo cliente não pode omitir participantes efetivos. Revisar insere nova versão; decisões anteriores continuam no histórico, mas não aprovam a revisão. Política alterada exige revisar pedidos pendentes. Decisões definitivas permanecem históricas e não podem ser reescritas por revisão.
 

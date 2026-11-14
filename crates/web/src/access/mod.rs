@@ -53,6 +53,13 @@ pub fn PermissionsPage() -> impl IntoView {
             <div class="permission-toolbar">
                 <button id="perm-refresh" type="button" class="secondary-button" disabled=move || access.busy.get()
                     on:click=move |_| access.load(true)>"Atualizar acesso"</button>
+                <Show when=move || access.authority_pending() && !access.busy.get()>
+                    <button id="perm-authority-retry" type="button" class="secondary-button"
+                        disabled=move || access.blocked()
+                        on:click=move |_| access.retry_authority()>
+                        {move || if access.authority_checked() {"Reenviar os mesmos dados"} else {"Conferir resultado da operação"}}
+                    </button>
+                </Show>
                 <p role="status" aria-live="polite">{move || if access.busy.get(){"Aguarde a confirmação do servidor."}else{""}}</p>
             </div>
             <Show when=move || !access.ready.get()||access.validating.get()>

@@ -1207,3 +1207,401 @@ async fn access_external_budgeter_only_operates_the_granted_budget_during_curren
     assert!(f.access(&external).await.state.requests.is_empty());
     f.close().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn authority_receipts_and_financial_effect_survive_retries_and_membership_removal() {
+    use canteiro_contracts::reliability::ReliabilityScope;
+
+    let f = Fixture::new(5).await;
+    let owner = f.person("history-owner", true).await;
+    let proposer = f.person("history-proposer", false).await;
+    let approver = f.person("history-approver", true).await;
+    let alternate = f.person("history-alternate", true).await;
+    let (company, _) = f.create(&owner, "Empresa de efeitos concorrentes").await;
+    f.select(&owner, &company).await;
+    for person in [&proposer, &approver, &alternate] {
+        f.join_access_company(&owner, person, &company).await;
+    }
+    let work = f.access_scope(&owner, "Obra do recibo", None).await;
+    let contract = f
+        .access_scope(&owner, "Contrato do recibo", Some(&work))
+        .await;
+    let another = f.access_scope(&owner, "Outro contrato", Some(&work)).await;
+    for scope in [&contract, &another] {
+        f.access_policy(&owner, scope, "1000", 2, None).await;
+        f.give_access(&owner, &proposer, scope, Role::Inspector, "1000", false)
+            .await;
+    }
+    let approval = f
+        .give_access(&owner, &approver, &contract, Role::Approver, "1000", false)
+        .await;
+    f.give_access(&owner, &approver, &contract, Role::Viewer, "0", false)
+        .await;
+    let alternate_approval = f
+        .give_access(&owner, &alternate, &contract, Role::Approver, "1000", false)
+        .await;
+    let new_proposal = |context, scope: &str, label: &str, increase: &str| AccessCommand::Propose {
+        context,
+        scope_id: scope.into(),
+        action: Action::ApproveChange,
+        title: label.into(),
+        increase: money(increase),
+        decrease: money("16.13"),
+        conflicted_user_ids: vec![],
+    };
+    let original_context = f.current_scope(&proposer).await;
+    let scope = ReliabilityScope {
+        organization_id: company.clone(),
+        context_version: original_context.context_version,
+    };
+    let execute = |person: &Person, command, key: &str| {
+        let service = f.service.clone();
+        let token = person.token.clone();
+        let key = key.to_owned();
+        async move {
+            service
+                .access_execute_with_key(&token, command, Some(&key))
+                .await
+        }
+    };
+    let proposal_key = Uuid::new_v4().to_string();
+    let original = new_proposal(
+        original_context.clone(),
+        &contract,
+        " Mudança auditável ",
+        "100",
+    );
+    let equivalent = new_proposal(
+        original_context.clone(),
+        &contract,
+        "Mudança auditável",
+        "100.00",
+    );
+    let (first, second) = tokio::join!(
+        execute(&proposer, original, &proposal_key),
+        execute(&proposer, equivalent, &proposal_key)
+    );
+    let first = first.unwrap().receipt.unwrap();
+    assert_eq!(Some(first.clone()), second.unwrap().receipt);
+    assert_eq!(
+        f.service
+            .access_operation(&proposer.token, &scope, "authority_propose", &proposal_key)
+            .await
+            .unwrap()
+            .unwrap()
+            .receipt,
+        Some(first.clone())
+    );
+    for (target, amount) in [(&contract, "100.01"), (&another, "100.00")] {
+        let changed = new_proposal(
+            original_context.clone(),
+            target,
+            "Mudança auditável",
+            amount,
+        );
+        assert_eq!(
+            refused(execute(&proposer, changed, &proposal_key).await).code(),
+            "idempotency_conflict"
+        );
+    }
+    let foreign_scope = ReliabilityScope {
+        organization_id: company.clone(),
+        context_version: f.current_scope(&approver).await.context_version,
+    };
+    assert!(
+        f.service
+            .access_operation(
+                &approver.token,
+                &foreign_scope,
+                "authority_propose",
+                &proposal_key
+            )
+            .await
+            .unwrap()
+            .is_none(),
+        "a chave por si só não autoriza a consulta, mesmo dentro do contrato"
+    );
+
+    let revision_key = Uuid::new_v4().to_string();
+    let revision = AccessCommand::ReviseRequest {
+        context: f.current_scope(&proposer).await,
+        request_id: first.request_id.clone(),
+        request_version: first.version,
+        title: "Mudança revisada".into(),
+        increase: money("120.21"),
+        decrease: money("20.20"),
+        conflicted_user_ids: vec![],
+    };
+    let (saved, replayed) = tokio::join!(
+        execute(&proposer, revision.clone(), &revision_key),
+        execute(&proposer, revision, &revision_key)
+    );
+    let revised = saved.unwrap().receipt.unwrap();
+    assert_eq!(revised.version, 2);
+    assert_eq!(Some(revised.clone()), replayed.unwrap().receipt);
+    assert_eq!(
+        f.service
+            .access_operation(&proposer.token, &scope, "authority_propose", &proposal_key)
+            .await
+            .unwrap()
+            .unwrap()
+            .receipt,
+        Some(first.clone()),
+        "revisar depois não altera o recibo da versão original"
+    );
+
+    let decide = |context, grant: &GrantView, approve| AccessCommand::Decide {
+        context,
+        request_id: revised.request_id.clone(),
+        request_version: revised.version,
+        grant_id: grant.id.clone(),
+        grant_version: grant.version,
+        approve,
+    };
+    let approver_context = f.current_scope(&approver).await;
+    let alternate_context = f.current_scope(&alternate).await;
+    let key_a = Uuid::new_v4().to_string();
+    let key_b = Uuid::new_v4().to_string();
+    let (a, b) = tokio::join!(
+        execute(
+            &approver,
+            decide(approver_context.clone(), &approval, true),
+            &key_a
+        ),
+        execute(
+            &alternate,
+            decide(alternate_context.clone(), &alternate_approval, true),
+            &key_b
+        )
+    );
+    let (winning_actor, winning_grant, winning_context, winning_key, receipt) = match (a, b) {
+        (Ok(response), Err(error)) => {
+            assert_eq!(error.code(), "version_conflict");
+            (
+                &approver,
+                &approval,
+                approver_context,
+                key_a,
+                response.receipt.unwrap(),
+            )
+        }
+        (Err(error), Ok(response)) => {
+            assert_eq!(error.code(), "version_conflict");
+            (
+                &alternate,
+                &alternate_approval,
+                alternate_context,
+                key_b,
+                response.receipt.unwrap(),
+            )
+        }
+        _ => panic!("o pedido abaixo do limite deve ter uma única autorização final"),
+    };
+    assert_eq!(receipt.status, "approved");
+    assert_eq!(
+        execute(
+            winning_actor,
+            decide(winning_context.clone(), winning_grant, true),
+            &winning_key
+        )
+        .await
+        .unwrap()
+        .receipt,
+        Some(receipt.clone())
+    );
+    assert_eq!(
+        refused(
+            execute(
+                winning_actor,
+                decide(winning_context, winning_grant, false),
+                &winning_key
+            )
+            .await
+        )
+        .code(),
+        "idempotency_conflict"
+    );
+    assert_eq!(
+        refused(
+            execute(
+                winning_actor,
+                decide(f.current_scope(winning_actor).await, winning_grant, true),
+                &Uuid::new_v4().to_string()
+            )
+            .await
+        )
+        .code(),
+        "version_conflict"
+    );
+
+    let request_id = Uuid::parse_str(&first.request_id).unwrap();
+    let history: Vec<(String, Option<i64>, i64, Option<String>, String, Uuid)> = sqlx::query_as(
+        "SELECT h.event_kind,h.before_version,h.request_version,b.increase::text,
+                n.increase::text,h.actor_id
+         FROM canteiro.authority_history h JOIN canteiro.access_request_versions n
+           ON (n.tenant_id,n.request_id,n.version)=(h.tenant_id,h.request_id,h.request_version)
+         LEFT JOIN canteiro.access_request_versions b
+           ON (b.tenant_id,b.request_id,b.version)=(h.tenant_id,h.request_id,h.before_version)
+         WHERE h.request_id=$1 ORDER BY h.recorded_at,h.event_id",
+    )
+    .bind(request_id)
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(history.len(), 3);
+    assert_eq!(
+        history[0],
+        (
+            "proposed".into(),
+            None,
+            1,
+            None,
+            "100.00".into(),
+            proposer.id
+        )
+    );
+    assert_eq!(
+        history[1],
+        (
+            "revised".into(),
+            Some(1),
+            2,
+            Some("100.00".into()),
+            "120.21".into(),
+            proposer.id
+        )
+    );
+    assert_eq!(
+        history[2],
+        (
+            "decision".into(),
+            Some(2),
+            2,
+            Some("120.21".into()),
+            "120.21".into(),
+            winning_actor.id
+        )
+    );
+    let aggregate: (i64, String) = sqlx::query_as(
+        "SELECT count(*),sum(v.increase-v.decrease)::text FROM canteiro.authority_history h
+         JOIN canteiro.access_request_versions v ON (v.tenant_id,v.request_id,v.version)=(h.tenant_id,h.request_id,h.request_version)
+         WHERE h.request_id=$1 AND h.event_kind='decision' AND h.after_status='approved'"
+    ).bind(request_id).fetch_one(&f.admin).await.unwrap();
+    assert_eq!(
+        aggregate,
+        (1, "100.01".into()),
+        "efeito de autorização consolidado apenas uma vez"
+    );
+    let (other_actor, other_grant) = if winning_actor.id == approver.id {
+        (&alternate, &alternate_approval)
+    } else {
+        (&approver, &approval)
+    };
+    let forged = sqlx::query(
+        "INSERT INTO canteiro.authority_history
+        (tenant_id,event_id,scope_id,request_id,request_version,actor_id,event_kind,
+         before_version,before_status,before_valid_approvals,after_status,after_valid_approvals,grant_id,reason)
+        VALUES($1,$2,$3,$4,2,$5,'decision',2,'pending',0,'pending',1,$6,'approval_recorded')"
+    )
+    .bind(Uuid::parse_str(&company).unwrap())
+    .bind(Uuid::new_v4())
+    .bind(Uuid::parse_str(&contract).unwrap())
+    .bind(request_id)
+    .bind(other_actor.id)
+    .bind(Uuid::parse_str(&other_grant.id).unwrap())
+    .execute(&f.admin)
+    .await
+    .unwrap_err();
+    assert_eq!(
+        forged
+            .as_database_error()
+            .and_then(|error| error.code())
+            .as_deref(),
+        Some("23503"),
+        "a trilha não pode inventar a assinatura de uma pessoa com alçada"
+    );
+
+    f.access_command(
+        &owner,
+        AccessCommand::RevokeGrant {
+            context: f.current_scope(&owner).await,
+            grant_id: winning_grant.id.clone(),
+            grant_version: winning_grant.version,
+        },
+    )
+    .await
+    .unwrap();
+    let winner_scope = ReliabilityScope {
+        organization_id: company.clone(),
+        context_version: f.current_scope(winning_actor).await.context_version,
+    };
+    assert_eq!(
+        refused(
+            f.service
+                .access_operation(
+                    &winning_actor.token,
+                    &winner_scope,
+                    "authority_decide",
+                    &winning_key
+                )
+                .await
+        )
+        .kind(),
+        AuthErrorKind::Forbidden
+    );
+    let proposer_id = proposer.id;
+    let member_version: i64 = sqlx::query_scalar(
+        "SELECT version FROM canteiro.organization_members WHERE tenant_id=$1 AND user_id=$2",
+    )
+    .bind(Uuid::parse_str(&company).unwrap())
+    .bind(proposer_id)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    f.execute(
+        &owner,
+        OrganizationCommand::RemoveMember {
+            scope: f.current_scope(&owner).await,
+            user_id: proposer_id.to_string(),
+            member_version,
+        },
+    )
+    .await
+    .unwrap();
+    assert!(
+        f.service
+            .access_operation(&proposer.token, &scope, "authority_propose", &proposal_key)
+            .await
+            .is_err()
+    );
+    let historical_actors: Vec<Uuid> =
+        sqlx::query_scalar("SELECT actor_id FROM canteiro.authority_history WHERE request_id=$1")
+            .bind(request_id)
+            .fetch_all(&f.admin)
+            .await
+            .unwrap();
+    assert_eq!(
+        historical_actors
+            .iter()
+            .filter(|id| **id == proposer_id)
+            .count(),
+        2
+    );
+
+    let mut runtime = f.admin.begin().await.unwrap();
+    sqlx::raw_sql(sqlx::AssertSqlSafe(format!("SET LOCAL ROLE {}", f.runtime)))
+        .execute(&mut *runtime)
+        .await
+        .unwrap();
+    let error = sqlx::query("UPDATE canteiro.authority_history SET reason='request_revised'")
+        .execute(&mut *runtime)
+        .await
+        .unwrap_err();
+    assert_eq!(
+        error.as_database_error().and_then(|e| e.code()).as_deref(),
+        Some("42501")
+    );
+    runtime.rollback().await.unwrap();
+    f.close().await;
+}

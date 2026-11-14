@@ -2,9 +2,12 @@ use super::{close_dialog, focus, format, network};
 use canteiro_contracts::{access::*, auth::AuthFailure, organizations::OrganizationScope};
 use canteiro_domain::decimal::Money;
 use leptos::prelude::*;
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
+use std::{
+    collections::BTreeMap,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 
 pub(super) const ROLES: [AccessRole; 10] = AccessRole::ALL;
@@ -116,20 +119,58 @@ struct Suspended {
     draft: Draft,
 }
 
+#[derive(Clone)]
+struct PendingAuthority {
+    user_id: String,
+    command: AccessCommand,
+    key: String,
+    absence_checked: bool,
+}
+
+impl PendingAuthority {
+    fn matches(&self, state: &AccessState) -> bool {
+        self.user_id == state.current_user_id
+            && state
+                .organization
+                .as_ref()
+                .is_some_and(|o| o.id == self.command.context().organization_id)
+    }
+
+    fn retry(&self, context_version: i64) -> AccessCommand {
+        let mut command = self.command.clone();
+        if let AccessCommand::Propose { context, .. }
+        | AccessCommand::ReviseRequest { context, .. }
+        | AccessCommand::Decide { context, .. } = &mut command
+        {
+            context.context_version = context_version;
+        }
+        command
+    }
+}
+
 /// Only an identity-bound draft survives route changes. Server responses and
 /// CSRF material remain owned by the permission page and are fetched again.
 #[derive(Clone, Copy)]
-struct DraftStore(RwSignal<Option<Suspended>>);
+struct DraftStore {
+    suspended: RwSignal<Option<Suspended>>,
+    authority: RwSignal<BTreeMap<String, PendingAuthority>>,
+}
 
 pub(super) fn provide_draft_store() {
-    let store = DraftStore(RwSignal::new(None));
+    let store = DraftStore {
+        suspended: RwSignal::new(None),
+        authority: RwSignal::new(BTreeMap::new()),
+    };
     provide_context(store);
     #[cfg(feature = "hydrate")]
     {
         let leaving = window_event_listener(leptos::ev::beforeunload, move |event| {
             if store
-                .0
-                .with_untracked(|saved| saved.as_ref().is_some_and(|s| s.draft.changed))
+                .authority
+                .with_untracked(|attempts| !attempts.is_empty())
+                || store
+                    .suspended
+                    .with_untracked(|saved| saved.as_ref().is_some_and(|s| s.draft.changed))
             {
                 event.prevent_default();
                 event.set_return_value("");
@@ -154,12 +195,17 @@ pub(super) struct Access {
     mutation: RwSignal<bool>,
     refresh_after_mutation: RwSignal<bool>,
     suspended: RwSignal<Option<Suspended>>,
+    authority: RwSignal<BTreeMap<String, PendingAuthority>>,
     active: StoredValue<Arc<AtomicBool>>,
 }
 impl Access {
     pub fn new() -> Self {
         let active = Arc::new(AtomicBool::new(true));
         let cleanup_active = Arc::clone(&active);
+        let store = use_context::<DraftStore>().unwrap_or_else(|| DraftStore {
+            suspended: RwSignal::new(None),
+            authority: RwSignal::new(BTreeMap::new()),
+        });
         let access = Self {
             state: RwSignal::new(None),
             draft: RwSignal::new(Draft::default()),
@@ -173,9 +219,8 @@ impl Access {
             generation: RwSignal::new(0),
             mutation: RwSignal::new(false),
             refresh_after_mutation: RwSignal::new(false),
-            suspended: use_context::<DraftStore>()
-                .map(|store| store.0)
-                .unwrap_or_else(|| RwSignal::new(None)),
+            suspended: store.suspended,
+            authority: store.authority,
             active: StoredValue::new(active),
         };
         on_cleanup(move || {
@@ -202,7 +247,9 @@ impl Access {
         !self.ready.get() || self.busy.get() || self.validating.get()
     }
     pub fn dirty(self) -> bool {
-        self.draft.get_untracked().changed
+        self.authority
+            .with_untracked(|attempts| !attempts.is_empty())
+            || self.draft.get_untracked().changed
             || self
                 .suspended
                 .get_untracked()
@@ -383,6 +430,12 @@ impl Access {
     }
     fn accept(self, response: AccessResponse) {
         let next = &response.state;
+        self.authority.update(|attempts| {
+            attempts.retain(|_, attempt| attempt.user_id == next.current_user_id);
+            for attempt in attempts.values_mut() {
+                attempt.absence_checked = false;
+            }
+        });
         let mut draft = self.draft.get_untracked();
         if let Some(saved) = self.suspended.get_untracked() {
             if saved.user_id == next.current_user_id
@@ -416,7 +469,16 @@ impl Access {
             draft.delegate_email.clear();
             draft.delegate_actions.clear();
         }
-        if !draft.request_id.is_empty()
+        let awaiting_revision = next.organization.as_ref().is_some_and(|org| {
+            self.authority.with_untracked(|attempts| {
+                attempts.get(&org.id).is_some_and(|attempt| {
+                    matches!(&attempt.command,
+                        AccessCommand::ReviseRequest { request_id, .. } if request_id == &draft.request_id)
+                })
+            })
+        });
+        if !awaiting_revision
+            && !draft.request_id.is_empty()
             && !next
                 .requests
                 .iter()
@@ -446,6 +508,7 @@ impl Access {
                 | "conflict_of_interest"
                 | "insufficient_authority"
                 | "approval_conflict"
+                | "idempotency_conflict"
         ) {
             self.hide();
         }
@@ -1027,9 +1090,122 @@ impl Access {
             }
         }
     }
+    pub fn authority_pending(self) -> bool {
+        self.authority_attempt().is_some()
+    }
+
+    pub fn authority_checked(self) -> bool {
+        self.authority_attempt()
+            .is_some_and(|attempt| attempt.absence_checked)
+    }
+
+    fn authority_attempt(self) -> Option<PendingAuthority> {
+        self.state.with(|state| {
+            let state = state.as_ref()?;
+            let company = &state.organization.as_ref()?.id;
+            self.authority.with(|attempts| {
+                attempts
+                    .get(company)
+                    .filter(|attempt| attempt.matches(state))
+                    .cloned()
+            })
+        })
+    }
+
+    pub fn retry_authority(self) {
+        if self.blocked() {
+            return;
+        }
+        let Some((attempt, scope)) = self.authority_attempt().zip(self.context()) else {
+            return;
+        };
+        if attempt.absence_checked {
+            self.send(attempt.retry(scope.context_version), Some(attempt.key));
+            return;
+        }
+        self.busy.set(true);
+        self.error.set(None);
+        self.message.set(String::new());
+        let generation = self.generation.get_untracked();
+        let active = self.active.get_value();
+        leptos::task::spawn_local(async move {
+            let act = attempt.command.authority_act().expect("recibo de alçada");
+            let result = network::authority_result(&scope, act, &attempt.key).await;
+            if !active.load(Ordering::Acquire) || self.generation.get_untracked() != generation {
+                return;
+            }
+            self.busy.set(false);
+            match result {
+                Ok(Some(response)) => {
+                    self.complete(&attempt.command, response);
+                    self.clear_authority(&scope.organization_id);
+                }
+                Ok(None) => {
+                    self.authority.update(|attempts| {
+                        if let Some(attempt) = attempts.get_mut(&scope.organization_id) {
+                            attempt.absence_checked = true;
+                        }
+                    });
+                    self.message.set("A consulta não encontrou confirmação. Você pode reenviar os mesmos dados com segurança.".into());
+                }
+                Err(error) => {
+                    if definitive_authority_error(&error) {
+                        self.clear_authority(&scope.organization_id);
+                    }
+                    self.failed(error);
+                }
+            }
+            self.focus_feedback(active, generation);
+        });
+    }
+
     pub fn submit(self, command: AccessCommand) {
         if self.blocked() {
             return;
+        }
+        let key = if command.authority_act().is_some() {
+            if self.authority_pending() {
+                self.local_error(
+                    "Confira o resultado da operação anterior para iniciar outra decisão.",
+                    "perm-authority-retry",
+                );
+                return;
+            }
+            let Some(state) = self.state.get_untracked() else {
+                return;
+            };
+            let key = match crate::http::operation_id() {
+                Ok(key) => key,
+                Err(error) => {
+                    self.failed(error);
+                    return;
+                }
+            };
+            self.authority.update(|attempts| {
+                attempts.insert(
+                    command.context().organization_id.clone(),
+                    PendingAuthority {
+                        user_id: state.current_user_id,
+                        command: command.clone(),
+                        key: key.clone(),
+                        absence_checked: false,
+                    },
+                );
+            });
+            Some(key)
+        } else {
+            None
+        };
+        self.send(command, key);
+    }
+
+    fn send(self, command: AccessCommand, key: Option<String>) {
+        if key.is_some() {
+            self.authority.update(|attempts| {
+                if let Some(attempt) = attempts.get_mut(&command.context().organization_id) {
+                    attempt.absence_checked = false;
+                }
+            });
         }
         self.busy.set(true);
         self.mutation.set(true);
@@ -1040,7 +1216,7 @@ impl Access {
         let csrf = self.csrf.get_untracked();
         let active = self.active.get_value();
         leptos::task::spawn_local(async move {
-            let result = network::command(&command, &csrf).await;
+            let result = network::command(&command, &csrf, key.as_deref()).await;
             if !active.load(Ordering::Acquire) {
                 return;
             }
@@ -1057,50 +1233,120 @@ impl Access {
             self.busy.set(false);
             match result {
                 Ok(r) => {
-                    self.accept(r);
-                    let saved_policy = matches!(&command, AccessCommand::SetPolicy { .. });
-                    self.draft.update(|d| {
-                        match command {
-                            AccessCommand::CreateScope { .. } => {
-                                d.scope_name.clear();
-                                d.dirty_forms &= !1;
-                            }
-                            AccessCommand::Grant { .. } => {
-                                d.grant_email.clear();
-                                d.dirty_forms &= !2;
-                            }
-                            AccessCommand::Delegate { .. } => {
-                                d.delegate_email.clear();
-                                d.delegate_reason.clear();
-                                d.source_id.clear();
-                                d.dirty_forms &= !4;
-                            }
-                            AccessCommand::Propose { .. } | AccessCommand::ReviseRequest { .. } => {
-                                d.request_title.clear();
-                                d.request_id.clear();
-                                d.request_conflicts.clear();
-                                d.dirty_forms &= !16;
-                            }
-                            AccessCommand::SetPolicy { .. } => {
-                                d.dirty_forms &= !8;
-                            }
-                            _ => {}
-                        }
-                        d.changed = d.dirty_forms != 0;
-                    });
-                    if saved_policy {
-                        self.load_policy();
+                    self.complete(&command, r);
+                    if key.is_some() {
+                        self.clear_authority(&command.context().organization_id);
                     }
                 }
-                Err(e) => self.failed(e),
-            }
-            request_animation_frame(move || {
-                if active.load(Ordering::Acquire) && self.generation.get_untracked() == generation {
-                    focus("perm-feedback");
+                Err(e) => {
+                    if key.is_some() && definitive_authority_error(&e) {
+                        self.clear_authority(&command.context().organization_id);
+                    }
+                    self.failed(e);
                 }
-            });
+            }
+            self.focus_feedback(active, generation);
         });
     }
+
+    fn clear_authority(self, organization: &str) {
+        self.authority.update(|attempts| {
+            attempts.remove(organization);
+        });
+    }
+
+    fn focus_feedback(self, active: Arc<AtomicBool>, generation: u64) {
+        request_animation_frame(move || {
+            if active.load(Ordering::Acquire) && self.generation.get_untracked() == generation {
+                focus("perm-feedback");
+            }
+        });
+    }
+
+    fn complete(self, command: &AccessCommand, response: AccessResponse) {
+        let clear_proposal = authority_draft_matches(command, &self.draft.get_untracked());
+        self.accept(response);
+        self.draft.update(|draft| {
+            match command {
+                AccessCommand::CreateScope { .. } => {
+                    draft.scope_name.clear();
+                    draft.dirty_forms &= !1;
+                }
+                AccessCommand::Grant { .. } => {
+                    draft.grant_email.clear();
+                    draft.dirty_forms &= !2;
+                }
+                AccessCommand::Delegate { .. } => {
+                    draft.delegate_email.clear();
+                    draft.delegate_reason.clear();
+                    draft.source_id.clear();
+                    draft.dirty_forms &= !4;
+                }
+                AccessCommand::Propose { .. } | AccessCommand::ReviseRequest { .. }
+                    if clear_proposal =>
+                {
+                    draft.request_title.clear();
+                    draft.request_id.clear();
+                    draft.request_conflicts.clear();
+                    draft.dirty_forms &= !16;
+                }
+                AccessCommand::SetPolicy { .. } => draft.dirty_forms &= !8,
+                _ => {}
+            }
+            draft.changed = draft.dirty_forms != 0;
+        });
+        if matches!(command, AccessCommand::SetPolicy { .. }) {
+            self.load_policy();
+        }
+    }
+}
+
+fn authority_draft_matches(command: &AccessCommand, draft: &Draft) -> bool {
+    let (title, increase, decrease, people) = match command {
+        AccessCommand::Propose {
+            scope_id,
+            action,
+            title,
+            increase,
+            decrease,
+            conflicted_user_ids,
+            ..
+        } if *scope_id == draft.selected_scope
+            && *action == draft.request_action
+            && draft.request_id.is_empty() =>
+        {
+            (title, increase, decrease, conflicted_user_ids)
+        }
+        AccessCommand::ReviseRequest {
+            request_id,
+            request_version,
+            title,
+            increase,
+            decrease,
+            conflicted_user_ids,
+            ..
+        } if *request_id == draft.request_id && *request_version == draft.request_version => {
+            (title, increase, decrease, conflicted_user_ids)
+        }
+        _ => return false,
+    };
+    let amount = |value| format::money_input(value).ok()?.parse::<Money>().ok();
+    title.trim() == draft.request_title.trim()
+        && amount(&draft.request_increase) == Some(*increase)
+        && amount(&draft.request_decrease) == Some(*decrease)
+        && *people == draft.request_conflicts
+}
+
+fn definitive_authority_error(error: &AuthFailure) -> bool {
+    !matches!(
+        error.code.as_str(),
+        "network_unavailable"
+            | "unavailable"
+            | "session_expired"
+            | "context_changed"
+            | "csrf_invalid"
+            | "rate_limited"
+    )
 }
 
 #[cfg(test)]
@@ -1139,6 +1385,7 @@ mod tests {
             },
             csrf: "fixture-csrf".into(),
             message: String::new(),
+            receipt: None,
         }
     }
     fn grant(id: &str) -> GrantView {
@@ -1405,6 +1652,59 @@ mod tests {
             assert!(a.mutation.get_untracked());
         });
     }
+
+    #[test]
+    fn authority_attempt_recovers_only_in_its_company_and_does_not_clear_new_edits() {
+        Owner::new().with(|| {
+            let a = Access::new();
+            a.accept(response("pessoa-a", "empresa-a", true));
+            let command = AccessCommand::Propose {
+                context: a.context().unwrap(),
+                scope_id: "obra-a".into(),
+                action: AccessAction::ApproveChange,
+                title: "Pedido enviado".into(),
+                increase: "10.00".parse().unwrap(),
+                decrease: "0.00".parse().unwrap(),
+                conflicted_user_ids: vec![],
+            };
+            a.authority.update(|pending| {
+                pending.insert(
+                    "empresa-a".into(),
+                    PendingAuthority {
+                        user_id: "pessoa-a".into(),
+                        command: command.clone(),
+                        key: "chave-original".into(),
+                        absence_checked: true,
+                    },
+                );
+            });
+            a.accept(response("pessoa-a", "empresa-b", true));
+            assert!(!a.authority_pending());
+            a.accept(response("pessoa-a", "empresa-a", true));
+            assert!(a.authority_pending());
+            assert!(!a.authority_checked());
+            let attempt = a.authority_attempt().unwrap();
+            assert_eq!(attempt.key, "chave-original");
+            assert_eq!(attempt.retry(3).context().context_version, 3);
+            assert_eq!(attempt.retry(3).context().organization_version, 1);
+            a.draft
+                .update(|draft| draft.selected_scope = "obra-a".into());
+            a.edit(|draft| {
+                draft.request_increase = "10,00".into();
+                draft.request_title = "Novo rascunho em edição".into();
+            });
+            a.complete(&command, response("pessoa-a", "empresa-a", true));
+            assert_eq!(a.draft.get_untracked().selected_scope, "obra-a");
+            assert_eq!(
+                a.draft.get_untracked().request_title,
+                "Novo rascunho em edição"
+            );
+            a.accept(response("pessoa-b", "empresa-a", true));
+            assert!(!a.authority_pending());
+            assert!(!a.dirty());
+        });
+    }
+
     #[test]
     fn refreshing_does_not_upgrade_saved_policy_version() {
         Owner::new().with(|| {
