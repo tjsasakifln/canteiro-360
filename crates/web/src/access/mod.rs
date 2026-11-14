@@ -8,6 +8,10 @@ use leptos::prelude::*;
 use leptos_meta::Title;
 use model::Access;
 
+pub(crate) fn provide_draft_store() {
+    model::provide_draft_store();
+}
+
 #[component]
 pub fn PermissionsPage() -> impl IntoView {
     let access = Access::new();
@@ -88,6 +92,22 @@ pub(super) fn focus(id: &str) {
     #[cfg(not(feature = "hydrate"))]
     let _ = id;
 }
+pub(super) fn select_value(id: &str, value: &str) {
+    #[cfg(feature = "hydrate")]
+    {
+        use wasm_bindgen::JsCast;
+        if let Some(select) = web_sys::window()
+            .and_then(|w| w.document())
+            .and_then(|d| d.get_element_by_id(id))
+            .and_then(|e| e.dyn_into::<web_sys::HtmlSelectElement>().ok())
+        {
+            select.set_value(value);
+        }
+    }
+    #[cfg(not(feature = "hydrate"))]
+    let _ = (id, value);
+}
+#[cfg(feature = "hydrate")]
 fn open_dialog() {
     #[cfg(feature = "hydrate")]
     {
@@ -115,6 +135,7 @@ fn close_dialog() {
         }
     }
 }
+#[cfg(feature = "hydrate")]
 pub(super) fn open_details(id: &str) {
     #[cfg(feature = "hydrate")]
     {

@@ -33,19 +33,23 @@ Os resultados abaixo identificam rodadas efetivamente executadas. A confirmaçã
 | Verificação | Resultado observado | Cobertura ou limite da evidência |
 |---|---|---|
 | Domínio de acesso | 22 testes aprovados | Inclui escopo individual de orçamento, conferência separada, valores sem compensação líquida, delegação e independência das aprovações |
-| Aplicação com PostgreSQL | 6 testes aprovados | Permissões, empresa e escopo exatos, decisões concorrentes, revisões, motivo da delegação, continuidade de responsabilidade e orçamento externo com prazo |
-| Persistência com PostgreSQL | 9 testes aprovados na rodada final local | Isolamento, histórico imutável, motivo da delegação e concorrência em READ COMMITTED e REPEATABLE READ |
-| API HTTP | 2 testes aprovados após a migração final, em 19,57 segundos | Sessão, CSRF, origem, identidade, empresa, versões e direitos explícitos |
+| Aplicação com PostgreSQL | 26 testes aprovados no conjunto completo, incluindo os 6 novos percursos | Permissões, empresa e escopo exatos, decisões concorrentes, revisões, motivo da delegação, continuidade de responsabilidade, orçamento externo com prazo e percursos anteriores de organizações |
+| Persistência com PostgreSQL | 32 testes aprovados no conjunto completo, incluindo os 9 novos cenários | Isolamento, histórico imutável, motivo da delegação, concorrência em READ COMMITTED e REPEATABLE READ e recusa de histórico de migração futuro |
+| API HTTP | 8 testes aprovados após a migração final, em 87,00 segundos, incluindo os 2 novos percursos | Sessão, CSRF, origem, identidade, empresa, versões e direitos explícitos |
 | Limite de expiração | 1 teste aprovado | O vencimento da participação continua obrigatório entre a leitura do banco e a autorização, inclusive para a fonte delegante |
-| Interface | 7 testes aprovados | Formatação, identidade, empresa, preservação compatível de campos, renovação de contexto e início sugerido dentro da validade da fonte |
+| Interface | 11 testes aprovados | Formatação, identidade, empresa, preservação compatível de campos, troca de formulário, desmontagem e retorno de rota, renovação de contexto e início sugerido dentro da validade da fonte |
 | Clippy | Aprovado para SSR, WASM e e2e | Verificação estática; não substitui a execução dos percursos no navegador |
-| Conjunto nativo do projeto | 159 testes aprovados, zero falhas | Os 77 cenários que exigem PostgreSQL ou navegador são executados separadamente pela CI |
+| Conjunto nativo do projeto | 163 testes aprovados, zero falhas | Os 77 cenários que exigem PostgreSQL ou navegador são executados separadamente pela CI |
 
 As fontes dos cenários estão nos testes de [domínio](../../crates/domain/tests/access.rs), [aplicação](../../crates/application/src/auth/organizations/access_tests.rs), [persistência](../../crates/persistence/src/access_database_tests.rs), [HTTP](../../crates/api/tests/auth/access.rs), [expiração](../../crates/application/src/auth/organizations/access.rs) e interface, nos módulos de [formatação](../../crates/web/src/access/format.rs) e [estado](../../crates/web/src/access/model.rs).
 
 No ponto de controle anterior à publicação da PR, a conferência visual e a execução integral da CI da issue #8 estão pendentes. Os testes locais e o Clippy aprovados não antecipam esses resultados. As conclusões posteriores ficam registradas na PR e nas execuções descritas abaixo.
 
 ## Evidência da árvore final
+
+A [execução 43554310796](https://github.com/tjsasakifln/canteiro-360/actions/runs/43554310796) aprovou os 159 testes nativos e 31 testes de persistência, mas encontrou uma fixture antiga que usava a versão fixa 5 como migração futura. A migração 0005 desta etapa tornou esse número existente. A fixture foi corrigida para usar a maior versão de `MIGRATOR` mais um, mantendo as verificações de recusa de conexão, recusa de migração e preservação dos dados. O reteste completo de persistência aprovou os 32 cenários em 6,63 segundos. As etapas posteriores não foram executadas naquela rodada de CI.
+
+A revisão de experiência também identificou perdas de rascunho ao escolher outra regra, fonte de delegação ou pedido para revisão e ao navegar entre páginas. A correção aplica a proteção exigida no item 8 da seção 5 de [experiência](../experiencia.md), com restauração condicionada à identidade, à empresa e aos direitos atuais.
 
 A PR desta implementação e as execuções associadas no GitHub Actions preservam o commit exato, a configuração e o resultado de cada rodada. O resultado final deve ser conferido pelo commit de origem da execução, sem atribuir a uma revisão posterior o sucesso de uma árvore anterior.
 

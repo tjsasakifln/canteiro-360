@@ -261,6 +261,44 @@ async fn confirm(browser: &Browser) -> TestResult {
     browser.key(ENTER).await?;
     ready(browser).await
 }
+async fn cancel_confirmation(browser: &Browser) -> TestResult {
+    browser
+        .wait(
+            "return document.querySelector('#perm-confirm-dialog')?.open;",
+            WAIT,
+        )
+        .await?;
+    browser.key(ESCAPE).await?;
+    browser
+        .wait(
+            "return !document.querySelector('#perm-confirm-dialog')?.open;",
+            WAIT,
+        )
+        .await
+}
+async fn company_route(browser: &Browser) -> TestResult {
+    browser
+        .tab_to(".site-account-nav a[href='/organizacoes']")
+        .await?;
+    browser.key(ENTER).await?;
+    browser
+        .wait("return !!document.querySelector('#org-title');", WAIT)
+        .await?;
+    assert_eq!(
+        browser
+            .execute("return !document.querySelector('.permissions-page');")
+            .await?,
+        true
+    );
+    Ok(())
+}
+async fn permission_route(browser: &Browser) -> TestResult {
+    browser
+        .tab_to(".site-account-nav a[href='/permissoes']")
+        .await?;
+    browser.key(ENTER).await?;
+    ready(browser).await
+}
 async fn layout(browser: &Browser, h: &Harness, label: &str, width: u32) -> TestResult<Value> {
     browser.viewport(width, 1000, width == 360).await?;
     ready(browser).await?;
@@ -418,6 +456,38 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
     browser.fill("#perm-policy-threshold", "100,00").await?;
     browser.click("#perm-policy-submit").await?;
     confirm(&browser).await?;
+    browser.fill("#perm-policy-threshold", "500,00").await?;
+    browser
+        .click("#perm-policy-action option[value='authorize_payment']")
+        .await?;
+    cancel_confirmation(&browser).await?;
+    assert_eq!(
+        browser.property("#perm-policy-action", "value").await?,
+        "approve_change"
+    );
+    assert_eq!(
+        browser.property("#perm-policy-threshold", "value").await?,
+        "500,00"
+    );
+    browser
+        .click("#perm-policy-action option[value='authorize_payment']")
+        .await?;
+    confirm(&browser).await?;
+    assert_eq!(
+        browser.property("#perm-policy-action", "value").await?,
+        "authorize_payment"
+    );
+    assert_eq!(
+        browser.property("#perm-policy-threshold", "value").await?,
+        "0,00"
+    );
+    browser
+        .click("#perm-policy-action option[value='approve_change']")
+        .await?;
+    assert_eq!(
+        browser.property("#perm-policy-threshold", "value").await?,
+        "100,00"
+    );
     for person in [&owner, &first, &second] {
         fixture_grant(
             &h,
@@ -482,6 +552,61 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
             .await?,
         0
     );
+    let current = h.auth.access_context(&owner.session).await?;
+    let second_request = h
+        .auth
+        .access_execute(
+            &owner.session,
+            AccessCommand::Propose {
+                context: scope(&current.state),
+                scope_id: work.clone(),
+                action: AccessAction::ApproveChange,
+                title: "Pedido para revisão".into(),
+                increase: "10.00".parse()?,
+                decrease: "0.00".parse()?,
+                conflicted_user_ids: vec![],
+            },
+        )
+        .await?
+        .state
+        .requests
+        .into_iter()
+        .find(|r| r.title == "Pedido para revisão")
+        .ok_or("second request fixture missing")?;
+    browser.click("#perm-refresh").await?;
+    ready(&browser).await?;
+    browser
+        .click(&format!("#perm-revise-{}", request.id))
+        .await?;
+    browser
+        .fill("#perm-request-title", "Revisão ainda não enviada")
+        .await?;
+    browser.fill("#perm-request-increase", "150,00").await?;
+    browser
+        .click(&format!("#perm-revise-{}", second_request.id))
+        .await?;
+    cancel_confirmation(&browser).await?;
+    assert_eq!(
+        browser.property("#perm-request-title", "value").await?,
+        "Revisão ainda não enviada"
+    );
+    assert_eq!(
+        browser.property("#perm-request-increase", "value").await?,
+        "150,00"
+    );
+    browser
+        .click(&format!("#perm-revise-{}", second_request.id))
+        .await?;
+    confirm(&browser).await?;
+    assert_eq!(
+        browser.property("#perm-request-title", "value").await?,
+        "Pedido para revisão"
+    );
+    assert_eq!(
+        browser.property("#perm-request-increase", "value").await?,
+        "10,00"
+    );
+    browser.click("#perm-request-cancel").await?;
     let mut layouts = vec![];
     for width in [360, 1280] {
         layouts.push(layout(&browser, &h, "administrator", width).await?);
@@ -552,9 +677,55 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
                 && g.source_grant_id.is_none()
         })
         .ok_or("source grant missing")?;
+    let other_source = h
+        .auth
+        .access_context(&owner.session)
+        .await?
+        .state
+        .grants
+        .into_iter()
+        .find(|g| g.user_email == owner.email && g.role == AccessRole::Inspector && g.can_delegate)
+        .ok_or("second source grant missing")?;
     browser
         .click(&format!("#perm-grant-delegate-{}", source.id))
         .await?;
+    browser.fill("#perm-delegate-email", &first.email).await?;
+    browser.fill("#perm-delegate-limit", "50,00").await?;
+    browser
+        .fill(
+            "#perm-delegate-reason",
+            "Cobertura durante férias do titular",
+        )
+        .await?;
+    browser
+        .click(&format!("#perm-grant-delegate-{}", other_source.id))
+        .await?;
+    cancel_confirmation(&browser).await?;
+    assert_eq!(
+        browser.property("#perm-delegate-email", "value").await?,
+        first.email
+    );
+    assert_eq!(
+        browser.property("#perm-delegate-reason", "value").await?,
+        "Cobertura durante férias do titular"
+    );
+    assert_eq!(
+        browser.property("#perm-delegate-limit", "value").await?,
+        "50,00"
+    );
+    browser
+        .click(&format!("#perm-grant-delegate-{}", other_source.id))
+        .await?;
+    confirm(&browser).await?;
+    assert_eq!(browser.property("#perm-delegate-email", "value").await?, "");
+    assert_eq!(
+        browser.property("#perm-delegate-reason", "value").await?,
+        ""
+    );
+    browser
+        .click(&format!("#perm-grant-delegate-{}", source.id))
+        .await?;
+    confirm(&browser).await?;
     browser.fill("#perm-delegate-email", &first.email).await?;
     browser.fill("#perm-delegate-limit", "50,00").await?;
     browser
@@ -609,7 +780,46 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
         browser.property("#perm-grant-email", "value").await?,
         "rascunho@example.invalid"
     );
-    // Changing the authenticated identity invalidates even a saved draft in the same company.
+    // Router navigation and Back/Forward retain a bound draft without keeping
+    // the private AccessState or form in the other route's DOM.
+    company_route(&browser).await?;
+    permission_route(&browser).await?;
+    expand(&browser, "#perm-grant-panel").await?;
+    assert_eq!(
+        browser.property("#perm-grant-email", "value").await?,
+        "rascunho@example.invalid"
+    );
+    browser.history_back().await?;
+    browser
+        .wait("return !!document.querySelector('#org-title');", WAIT)
+        .await?;
+    browser.post("forward", json!({})).await?;
+    ready(&browser).await?;
+    expand(&browser, "#perm-grant-panel").await?;
+    assert_eq!(
+        browser.property("#perm-grant-email", "value").await?,
+        "rascunho@example.invalid"
+    );
+    company_route(&browser).await?;
+    // Another identity cannot restore the previous person's suspended draft.
+    browser.post("cookie",json!({"cookie":{"name":"__Host-canteiro-session","value":reader.session,"path":"/","secure":true,"httpOnly":true,"sameSite":"Strict"}})).await?;
+    permission_route(&browser).await?;
+    assert!(
+        !browser
+            .text(".permissions-page")
+            .await?
+            .contains("rascunho@example.invalid")
+    );
+    assert_eq!(browser.execute("return !document.querySelector('#perm-grant-panel')&&!document.querySelector('#perm-policy-submit');").await?,true);
+    // The explicit refresh also invalidates a draft without navigating away.
+    browser.post("cookie",json!({"cookie":{"name":"__Host-canteiro-session","value":owner.session,"path":"/","secure":true,"httpOnly":true,"sameSite":"Strict"}})).await?;
+    browser.click("#perm-refresh").await?;
+    ready(&browser).await?;
+    select(&browser, &work).await?;
+    expand(&browser, "#perm-grant-panel").await?;
+    browser
+        .fill("#perm-grant-email", "rascunho@example.invalid")
+        .await?;
     browser.post("cookie",json!({"cookie":{"name":"__Host-canteiro-session","value":reader.session,"path":"/","secure":true,"httpOnly":true,"sameSite":"Strict"}})).await?;
     browser.click("#perm-refresh").await?;
     ready(&browser).await?;
@@ -630,7 +840,7 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
     assert!(!logs.to_string().contains("panicked") && !logs.to_string().contains("Hydration"));
     write_json(
         &h.evidence.join("permissions-interface.json"),
-        &json!({"status":"passed","environment":h.environment,"layouts":layouts,"scenarios":["public SSR without private data","explicit work scope","administrator has no implicit proposing power","role grant and cancelled confirmation","threshold policy with segregation","mixed increase and decrease","proponent cannot approve","two independent approvers","reader cannot configure or decide","temporary substitution with lower authority","network failure preserves scoped draft","identity change removes draft and admin controls","no private browser storage"]}),
+        &json!({"status":"passed","environment":h.environment,"layouts":layouts,"scenarios":["public SSR without private data","explicit work scope","administrator has no implicit proposing power","role grant and cancelled confirmation","threshold policy with segregation","policy switch cancelled with visual selection restored","revision switch requires explicit discard","delegation source switch requires explicit discard","mixed increase and decrease","proponent cannot approve","two independent approvers","reader cannot configure or decide","temporary substitution with lower authority","network failure preserves scoped draft","Router and history preserve identity-bound draft","another identity cannot restore suspended draft","identity change removes draft and admin controls","no private browser storage"]}),
     )?;
     browser.close().await?;
     reviewer.close().await?;

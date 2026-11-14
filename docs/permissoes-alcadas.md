@@ -12,6 +12,8 @@ Implementação da issue [#8](https://github.com/tjsasakifln/canteiro-360/issues
 
 Concessão, delegação, encerramento de direitos e decisão exigem confirmação em duas etapas. Os comandos sensíveis apresentam uma conferência antes da gravação. Falhas preservam campos compatíveis da mesma pessoa e empresa. Após perda de resposta, confira os registros antes de repetir uma criação: a chave geral de idempotência pertence à issue #9.
 
+Campos ainda não gravados são protegidos nas trocas de formulário e na navegação interna. Retomar a página exige consultar novamente a sessão, a empresa e os direitos antes de restaurar o rascunho compatível. A conservação na memória da aba não representa gravação no servidor.
+
 ## Papéis e tarefas
 
 O papel delimita tarefas possíveis; cada vínculo concede expressamente um subconjunto, incluindo consulta. Um papel sem vínculo não concede direito.

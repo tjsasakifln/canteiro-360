@@ -45,6 +45,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 pub fn App() -> impl IntoView {
     provide_meta_context();
     prototype::provide_prototype_store();
+    access::provide_draft_store();
 
     view! {
         <Stylesheet id="canteiro-style" href="/pkg/canteiro-web.css"/>

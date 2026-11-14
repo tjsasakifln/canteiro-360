@@ -1,4 +1,4 @@
-use super::{close_dialog, focus, format, network, open_dialog};
+use super::{close_dialog, focus, format, network};
 use canteiro_contracts::{access::*, auth::AuthFailure, organizations::OrganizationScope};
 use canteiro_domain::decimal::Money;
 use leptos::prelude::*;
@@ -96,10 +96,17 @@ impl Default for Draft {
 #[derive(Clone)]
 pub(super) struct Confirmation {
     pub command: Option<AccessCommand>,
-    pub scope: Option<String>,
+    transition: Option<DraftTransition>,
     pub title: String,
     pub description: String,
     pub return_focus: String,
+}
+#[derive(Clone)]
+enum DraftTransition {
+    Scope(String),
+    Policy(AccessAction),
+    Delegation(Box<GrantView>),
+    Revision(Box<RequestView>),
 }
 #[derive(Clone)]
 struct Suspended {
@@ -107,6 +114,29 @@ struct Suspended {
     organization_id: Option<String>,
     can_manage: bool,
     draft: Draft,
+}
+
+/// Only an identity-bound draft survives route changes. Server responses and
+/// CSRF material remain owned by the permission page and are fetched again.
+#[derive(Clone, Copy)]
+struct DraftStore(RwSignal<Option<Suspended>>);
+
+pub(super) fn provide_draft_store() {
+    let store = DraftStore(RwSignal::new(None));
+    provide_context(store);
+    #[cfg(feature = "hydrate")]
+    {
+        let leaving = window_event_listener(leptos::ev::beforeunload, move |event| {
+            if store
+                .0
+                .with_untracked(|saved| saved.as_ref().is_some_and(|s| s.draft.changed))
+            {
+                event.prevent_default();
+                event.set_return_value("");
+            }
+        });
+        on_cleanup(move || leaving.remove());
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -129,11 +159,8 @@ pub(super) struct Access {
 impl Access {
     pub fn new() -> Self {
         let active = Arc::new(AtomicBool::new(true));
-        on_cleanup({
-            let active = Arc::clone(&active);
-            move || active.store(false, Ordering::Release)
-        });
-        Self {
+        let cleanup_active = Arc::clone(&active);
+        let access = Self {
             state: RwSignal::new(None),
             draft: RwSignal::new(Draft::default()),
             ready: RwSignal::new(false),
@@ -146,9 +173,17 @@ impl Access {
             generation: RwSignal::new(0),
             mutation: RwSignal::new(false),
             refresh_after_mutation: RwSignal::new(false),
-            suspended: RwSignal::new(None),
+            suspended: use_context::<DraftStore>()
+                .map(|store| store.0)
+                .unwrap_or_else(|| RwSignal::new(None)),
             active: StoredValue::new(active),
-        }
+        };
+        on_cleanup(move || {
+            cleanup_active.store(false, Ordering::Release);
+            access.generation.update(|g| *g = g.wrapping_add(1));
+            access.save_draft();
+        });
+        access
     }
     pub fn context(self) -> Option<OrganizationScope> {
         let s = self.state.get_untracked()?;
@@ -296,10 +331,7 @@ impl Access {
             }
         });
     }
-    pub fn hide(self) {
-        self.generation.update(|g| *g = g.wrapping_add(1));
-        close_dialog();
-        self.pending.set(None);
+    fn save_draft(self) {
         if let Some(state) = self.state.get_untracked() {
             self.suspended.set(Some(Suspended {
                 user_id: state.current_user_id,
@@ -308,6 +340,12 @@ impl Access {
                 draft: self.draft.get_untracked(),
             }));
         }
+    }
+    pub fn hide(self) {
+        self.generation.update(|g| *g = g.wrapping_add(1));
+        close_dialog();
+        self.pending.set(None);
+        self.save_draft();
         self.state.set(None);
         self.csrf.set(String::new());
         self.draft.set(Draft::default());
@@ -430,11 +468,44 @@ impl Access {
             return;
         }
         if self.dirty() {
-            self.pending.set(Some(Confirmation{command:None,scope:Some(id),title:"Trocar a obra ou o contrato?".into(),description:"Os campos ainda não enviados desta página serão limpos. Nenhuma alteração será gravada.".into(),return_focus:"perm-scope-selection".into()}));
-            request_animation_frame(open_dialog);
+            self.confirm_transition(
+                DraftTransition::Scope(id),
+                "Trocar a obra, o contrato ou o orçamento?",
+                "Os campos ainda não enviados desta página serão limpos. Nenhuma alteração será gravada.",
+                "perm-scope-selection",
+            );
         } else {
             self.change_scope(id);
         }
+    }
+    pub fn change_policy(self, action: AccessAction) {
+        if self.blocked() || self.draft.get_untracked().policy_action == action {
+            return;
+        }
+        if self.draft.get_untracked().dirty_forms & 8 != 0 {
+            // The browser changed the select before on:change. A binding with
+            // the same Rust value need not write it again, so restore the DOM.
+            super::select_value(
+                "perm-policy-action",
+                self.draft.get_untracked().policy_action.as_str(),
+            );
+            self.confirm_transition(
+                DraftTransition::Policy(action),
+                "Descartar a edição desta regra?",
+                "O limiar e as opções ainda não enviados desta regra serão descartados. A regra da decisão escolhida será carregada. Os demais formulários serão preservados.",
+                "perm-policy-action",
+            );
+        } else {
+            self.select_policy(action);
+        }
+    }
+    fn select_policy(self, action: AccessAction) {
+        self.draft.update(|d| {
+            d.policy_action = action;
+            d.dirty_forms &= !8;
+            d.changed = d.dirty_forms != 0;
+        });
+        self.load_policy();
     }
     pub fn load_policy(self) {
         let draft = self.draft.get_untracked();
@@ -572,6 +643,27 @@ impl Access {
         );
     }
     pub fn begin_delegation(self, grant: GrantView) {
+        if self.blocked() {
+            return;
+        }
+        let draft = self.draft.get_untracked();
+        if draft.source_id == grant.id && draft.source_version == grant.version {
+            Self::focus_delegation();
+            return;
+        }
+        if draft.dirty_forms & 4 != 0 {
+            let return_focus = format!("perm-grant-delegate-{}", grant.id);
+            self.confirm_transition(
+                DraftTransition::Delegation(Box::new(grant)),
+                "Descartar esta delegação em edição?",
+                "Os campos ainda não enviados da delegação serão descartados para usar o outro vínculo. Os demais formulários serão preservados. Nenhuma delegação será gravada nesta troca.",
+                &return_focus,
+            );
+        } else {
+            self.start_delegation(grant);
+        }
+    }
+    fn start_delegation(self, grant: GrantView) {
         self.draft.update(|d| {
             d.source_id = grant.id;
             d.source_version = grant.version;
@@ -590,6 +682,10 @@ impl Access {
             d.dirty_forms |= 4;
             d.changed = true;
         });
+        Self::focus_delegation();
+    }
+    fn focus_delegation() {
+        #[cfg(feature = "hydrate")]
         request_animation_frame(|| {
             super::open_details("perm-delegate-panel");
             focus("perm-delegate-email");
@@ -761,6 +857,27 @@ impl Access {
         );
     }
     pub fn begin_revision(self, request: RequestView) {
+        if self.blocked() {
+            return;
+        }
+        let draft = self.draft.get_untracked();
+        if draft.request_id == request.id && draft.request_version == request.version {
+            Self::focus_revision();
+            return;
+        }
+        if draft.dirty_forms & 16 != 0 {
+            let return_focus = format!("perm-revise-{}", request.id);
+            self.confirm_transition(
+                DraftTransition::Revision(Box::new(request)),
+                "Descartar este pedido em edição?",
+                "Os campos ainda não enviados deste pedido serão descartados para revisar o outro pedido. Os demais formulários serão preservados. Nenhuma revisão será gravada nesta troca.",
+                &return_focus,
+            );
+        } else {
+            self.start_revision(request);
+        }
+    }
+    fn start_revision(self, request: RequestView) {
         self.draft.update(|d| {
             d.request_id = request.id;
             d.request_version = request.version;
@@ -774,6 +891,10 @@ impl Access {
             d.dirty_forms |= 16;
             d.changed = true;
         });
+        Self::focus_revision();
+    }
+    fn focus_revision() {
+        #[cfg(feature = "hydrate")]
         request_animation_frame(|| {
             super::open_details("perm-request-panel");
             focus("perm-request-title");
@@ -830,21 +951,43 @@ impl Access {
         }
         self.pending.set(Some(Confirmation {
             command: Some(command),
-            scope: None,
+            transition: None,
             title: title.into(),
             description: description.into(),
             return_focus: return_focus.into(),
         }));
-        let generation = self.generation.get_untracked();
-        let active = self.active.get_value();
-        request_animation_frame(move || {
-            if active.load(Ordering::Acquire)
-                && self.generation.get_untracked() == generation
-                && self.pending.get_untracked().is_some()
-            {
-                open_dialog();
-            }
-        });
+        self.show_confirmation();
+    }
+    fn confirm_transition(
+        self,
+        transition: DraftTransition,
+        title: &str,
+        description: &str,
+        return_focus: &str,
+    ) {
+        self.pending.set(Some(Confirmation {
+            command: None,
+            transition: Some(transition),
+            title: title.into(),
+            description: description.into(),
+            return_focus: return_focus.into(),
+        }));
+        self.show_confirmation();
+    }
+    fn show_confirmation(self) {
+        #[cfg(feature = "hydrate")]
+        {
+            let generation = self.generation.get_untracked();
+            let active = self.active.get_value();
+            request_animation_frame(move || {
+                if active.load(Ordering::Acquire)
+                    && self.generation.get_untracked() == generation
+                    && self.pending.get_untracked().is_some()
+                {
+                    super::open_dialog();
+                }
+            });
+        }
     }
     pub fn dismiss(self) {
         let previous = self.pending.get_untracked();
@@ -859,6 +1002,9 @@ impl Access {
         }
     }
     pub fn confirm_pending(self) {
+        if self.blocked() {
+            return;
+        }
         let Some(p) = self.pending.get_untracked() else {
             return;
         };
@@ -866,9 +1012,19 @@ impl Access {
         self.pending.set(None);
         if let Some(command) = p.command {
             self.submit(command);
-        } else if let Some(scope) = p.scope {
-            self.change_scope(scope);
-            focus("perm-scope-selection");
+        } else if let Some(transition) = p.transition {
+            match transition {
+                DraftTransition::Scope(scope) => {
+                    self.change_scope(scope);
+                    focus("perm-scope-selection");
+                }
+                DraftTransition::Policy(action) => {
+                    self.select_policy(action);
+                    focus("perm-policy-action");
+                }
+                DraftTransition::Delegation(grant) => self.start_delegation(*grant),
+                DraftTransition::Revision(request) => self.start_revision(*request),
+            }
         }
     }
     pub fn submit(self, command: AccessCommand) {
@@ -984,6 +1140,214 @@ mod tests {
             csrf: "fixture-csrf".into(),
             message: String::new(),
         }
+    }
+    fn grant(id: &str) -> GrantView {
+        GrantView {
+            id: id.into(),
+            scope_id: "obra-a".into(),
+            user_id: "pessoa-a".into(),
+            user_email: "pessoa-a@example.invalid".into(),
+            role: AccessRole::Approver,
+            actions: vec![AccessAction::View, AccessAction::ApproveChange],
+            max_amount: "100.00".parse().unwrap(),
+            valid_from: "2020-01-01T00:00:00Z".into(),
+            valid_until: Some("2090-01-01T00:00:00Z".into()),
+            effective: true,
+            revoked: false,
+            source_grant_id: None,
+            substitution: false,
+            reason: String::new(),
+            required: false,
+            version: 3,
+            can_delegate: true,
+            can_revoke: true,
+        }
+    }
+    fn request(id: &str) -> RequestView {
+        RequestView {
+            id: id.into(),
+            scope_id: "obra-a".into(),
+            title: format!("Pedido {id}"),
+            action: AccessAction::ApproveChange,
+            proposer_id: "pessoa-a".into(),
+            proposer_email: "pessoa-a@example.invalid".into(),
+            conflicted_user_ids: vec![],
+            increase: "10.00".parse().unwrap(),
+            decrease: "0.00".parse().unwrap(),
+            authority_amount: "10.00".parse().unwrap(),
+            contains_increase: true,
+            status: "pending".into(),
+            version: 3,
+            policy_version: 2,
+            policy_changed: false,
+            required_approvals: 2,
+            valid_approvals: 0,
+            approvals: vec![],
+            allowed_grant_ids: vec![],
+            can_revise: true,
+            denial: None,
+        }
+    }
+    #[test]
+    fn dirty_policy_change_requires_a_decision_and_keeps_other_drafts() {
+        Owner::new().with(|| {
+            let a = Access::new();
+            a.accept(response("pessoa-a", "empresa-a", true));
+            a.edit(|d| {
+                d.policy_threshold = "500,00".into();
+                d.policy_version = Some(3);
+                d.grant_email = "outro-rascunho@example.invalid".into();
+            });
+            a.change_policy(AccessAction::AuthorizePayment);
+            assert!(a.pending.get_untracked().is_some());
+            assert_eq!(
+                a.draft.get_untracked().policy_action,
+                AccessAction::ApproveChange
+            );
+            a.dismiss();
+            assert_eq!(a.draft.get_untracked().policy_threshold, "500,00");
+            assert_eq!(a.draft.get_untracked().policy_version, Some(3));
+            a.change_policy(AccessAction::AuthorizePayment);
+            a.confirm_pending();
+            let draft = a.draft.get_untracked();
+            assert_eq!(draft.policy_action, AccessAction::AuthorizePayment);
+            assert_eq!(draft.policy_threshold, "0,00");
+            assert_eq!(draft.policy_version, None);
+            assert_eq!(draft.grant_email, "outro-rascunho@example.invalid");
+            assert_eq!(draft.dirty_forms, 2);
+            assert!(draft.changed);
+        });
+    }
+    #[test]
+    fn switching_delegation_keeps_the_draft_until_discard_is_confirmed() {
+        Owner::new().with(|| {
+            let a = Access::new();
+            a.accept(response("pessoa-a", "empresa-a", true));
+            a.begin_delegation(grant("fonte-a"));
+            a.edit(|d| {
+                d.delegate_email = "destino@example.invalid".into();
+                d.delegate_reason = "Cobertura de férias".into();
+                d.grant_email = "outro-rascunho@example.invalid".into();
+            });
+            a.begin_delegation(grant("fonte-a"));
+            assert!(a.pending.get_untracked().is_none());
+            assert_eq!(
+                a.draft.get_untracked().delegate_reason,
+                "Cobertura de férias"
+            );
+            a.begin_delegation(grant("fonte-b"));
+            assert!(a.pending.get_untracked().is_some());
+            a.dismiss();
+            assert_eq!(a.draft.get_untracked().source_id, "fonte-a");
+            assert_eq!(
+                a.draft.get_untracked().delegate_email,
+                "destino@example.invalid"
+            );
+            a.begin_delegation(grant("fonte-b"));
+            a.confirm_pending();
+            let draft = a.draft.get_untracked();
+            assert_eq!(draft.source_id, "fonte-b");
+            assert_eq!(draft.source_version, 3);
+            assert!(draft.delegate_email.is_empty() && draft.delegate_reason.is_empty());
+            assert_eq!(draft.grant_email, "outro-rascunho@example.invalid");
+            assert_eq!(draft.dirty_forms, 2 | 4);
+        });
+    }
+    #[test]
+    fn switching_revision_keeps_values_and_version_until_discard_is_confirmed() {
+        Owner::new().with(|| {
+            let a = Access::new();
+            a.accept(response("pessoa-a", "empresa-a", true));
+            a.begin_revision(request("pedido-a"));
+            a.edit(|d| {
+                d.request_title = "Revisão ainda não enviada".into();
+                d.request_increase = "125,00".into();
+                d.request_conflicts = vec!["pessoa-b".into()];
+                d.grant_email = "outro-rascunho@example.invalid".into();
+            });
+            a.begin_revision(request("pedido-a"));
+            assert!(a.pending.get_untracked().is_none());
+            a.begin_revision(request("pedido-b"));
+            assert!(a.pending.get_untracked().is_some());
+            a.dismiss();
+            assert_eq!(
+                a.draft.get_untracked().request_title,
+                "Revisão ainda não enviada"
+            );
+            assert_eq!(a.draft.get_untracked().request_conflicts, vec!["pessoa-b"]);
+            assert_eq!(a.draft.get_untracked().request_version, 3);
+            a.begin_revision(request("pedido-b"));
+            a.confirm_pending();
+            let draft = a.draft.get_untracked();
+            assert_eq!(draft.request_id, "pedido-b");
+            assert_eq!(draft.request_title, "Pedido pedido-b");
+            assert_eq!(draft.request_increase, "10,00");
+            assert!(draft.request_conflicts.is_empty());
+            assert_eq!(draft.grant_email, "outro-rascunho@example.invalid");
+            assert_eq!(draft.dirty_forms, 2 | 16);
+        });
+    }
+    #[test]
+    fn route_unmount_preserves_only_a_bound_draft_until_authenticated_return() {
+        for (user, company, manage, restore) in [
+            ("pessoa-a", "empresa-a", true, true),
+            ("pessoa-b", "empresa-a", true, false),
+            ("pessoa-a", "empresa-b", true, false),
+            ("pessoa-a", "empresa-a", false, false),
+        ] {
+            Owner::new().with(|| {
+                provide_draft_store();
+                let page = Owner::new();
+                let old_active = page.with(|| {
+                    let a = Access::new();
+                    a.accept(response("pessoa-a", "empresa-a", true));
+                    a.draft.update(|d| {
+                        d.selected_scope = "obra-a".into();
+                        d.policy_version = Some(3);
+                    });
+                    a.edit(|d| {
+                        d.grant_email = "privado@example.invalid".into();
+                        d.policy_threshold = "50,00".into();
+                    });
+                    // Leaving while a command is in flight must not keep an
+                    // active callback or replay it in the next page instance.
+                    a.mutation.set(true);
+                    a.active.get_value()
+                });
+                page.cleanup();
+                assert!(!old_active.load(Ordering::Acquire));
+                let next_page = Owner::new();
+                next_page.with(|| {
+                    let a = Access::new();
+                    assert!(a.state.get_untracked().is_none());
+                    assert!(a.csrf.get_untracked().is_empty());
+                    assert!(a.draft.get_untracked().grant_email.is_empty());
+                    assert!(a.blocked());
+                    assert!(!a.mutation.get_untracked());
+                    assert!(a.suspended.get_untracked().is_some());
+                    let mut fresh = response(user, company, manage);
+                    fresh.state.policies.push(PolicyView {
+                        scope_id: "obra-a".into(),
+                        action: AccessAction::ApproveChange,
+                        threshold: "80.00".parse().unwrap(),
+                        approvals_above_threshold: 2,
+                        segregate_proposer: true,
+                        version: 4,
+                    });
+                    a.accept(fresh);
+                    let draft = a.draft.get_untracked();
+                    assert_eq!(draft.grant_email == "privado@example.invalid", restore);
+                    assert_eq!(draft.policy_version, if restore { Some(3) } else { None });
+                    assert!(a.suspended.get_untracked().is_none());
+                });
+                next_page.cleanup();
+            });
+        }
+        // A different App/SSR owner receives a separate, empty store.
+        Owner::new().with(|| {
+            provide_draft_store();
+            assert!(Access::new().suspended.get_untracked().is_none());
+        });
     }
     #[test]
     fn network_failure_hides_private_data_but_resumes_same_identity_draft() {

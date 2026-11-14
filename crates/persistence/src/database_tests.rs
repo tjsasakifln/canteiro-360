@@ -423,8 +423,15 @@ async fn edited_or_future_migration_history_is_rejected_without_erasing_existing
         .execute(&fixture.admin)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO public._sqlx_migrations (version,description,success,checksum,execution_time) VALUES (5,'Versão futura fictícia',true,$1,0)")
-        .bind(vec![1_u8; 48]).execute(&fixture.admin).await.unwrap();
+    let future_version = MIGRATOR
+        .iter()
+        .map(|migration| migration.version)
+        .max()
+        .unwrap()
+        .checked_add(1)
+        .unwrap();
+    sqlx::query("INSERT INTO public._sqlx_migrations (version,description,success,checksum,execution_time) VALUES ($1,'Versão futura fictícia',true,$2,0)")
+        .bind(future_version).bind(vec![1_u8; 48]).execute(&fixture.admin).await.unwrap();
     assert!(
         Database::connect(&fixture.runtime, DatabaseEnvironment::Test, short)
             .await
