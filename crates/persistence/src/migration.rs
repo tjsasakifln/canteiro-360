@@ -54,6 +54,11 @@ pub async fn migrate(
         GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.organizations, canteiro.organization_units TO {role}; \
         GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.organization_members, canteiro.organization_invites, canteiro.organization_access_requests TO {role}; \
         GRANT SELECT, INSERT ON canteiro.organization_audit TO {role}; \
+        GRANT SELECT, INSERT ON canteiro.access_scopes, canteiro.access_grants, canteiro.access_requirements, canteiro.access_policies, canteiro.access_requests, canteiro.access_request_versions, canteiro.access_approvals TO {role}; \
+        GRANT UPDATE (revoked_at, version) ON canteiro.access_grants TO {role}; \
+        GRANT UPDATE (min_amount) ON canteiro.access_requirements TO {role}; \
+        GRANT UPDATE (threshold, approvals_above_threshold, segregate_proposer, version) ON canteiro.access_policies TO {role}; \
+        GRANT UPDATE (current_version, status, valid_approvals, updated_at) ON canteiro.access_requests TO {role}; \
         REVOKE UPDATE, DELETE, TRUNCATE ON canteiro.organization_audit FROM {role}; \
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA canteiro_auth TO {role}; \
         REVOKE UPDATE, DELETE ON canteiro_auth.audit FROM {role}; \

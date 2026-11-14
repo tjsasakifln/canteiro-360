@@ -15,7 +15,7 @@ use axum::{
 use canteiro_contracts::organizations::OrganizationCommand;
 use serde::Deserialize;
 
-struct HttpRejection(StatusCode, &'static str, &'static str);
+pub(crate) struct HttpRejection(StatusCode, &'static str, &'static str);
 
 impl IntoResponse for HttpRejection {
     fn into_response(self) -> Response {
@@ -32,7 +32,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .layer(DefaultBodyLimit::max(8_192))
 }
 
-fn authorize_http(
+pub(crate) fn authorize_http(
     auth: &AuthHttp,
     headers: &HeaderMap,
     mutation: bool,
@@ -54,7 +54,7 @@ fn authorize_http(
         return Err(HttpRejection(
             StatusCode::FORBIDDEN,
             "origin_invalid",
-            "Abra a página de empresas neste site e tente novamente.",
+            "Abra esta página neste site e tente novamente.",
         ));
     }
     let token = match session_cookie(headers) {
@@ -216,7 +216,7 @@ async fn export(
         Err(e) => application_failure(e),
     }
 }
-fn private_json<T: serde::Serialize>(value: T) -> Response {
+pub(crate) fn private_json<T: serde::Serialize>(value: T) -> Response {
     let mut response = Json(value).into_response();
     private_headers(&mut response);
     response

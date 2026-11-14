@@ -8,6 +8,9 @@ use sqlx::{
 };
 use std::{str::FromStr, time::Duration as StdDuration};
 
+#[path = "access_tests.rs"]
+mod access_tests;
+
 #[test]
 fn names_codes_deadlines_and_spreadsheet_cells_are_bounded() {
     assert_eq!(name("  Empresa Aurora  ").unwrap(), "Empresa Aurora");
