@@ -20,7 +20,7 @@ jobs:
   foundation:
     name: Formatação, regras, PostgreSQL, SSR e WASM
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:17.7-bookworm

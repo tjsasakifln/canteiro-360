@@ -104,6 +104,25 @@ async fn validate_runtime(
          AND NOT has_any_column_privilege(current_user, 'canteiro_auth.audit', 'UPDATE') \
          AND NOT has_table_privilege(current_user, 'canteiro.organization_audit', 'UPDATE,DELETE,TRUNCATE') \
          AND NOT has_any_column_privilege(current_user, 'canteiro.organization_audit', 'UPDATE') \
+         AND NOT has_table_privilege(current_user, 'canteiro.access_request_versions', 'UPDATE,DELETE,TRUNCATE') \
+         AND NOT has_any_column_privilege(current_user, 'canteiro.access_request_versions', 'UPDATE') \
+         AND NOT has_table_privilege(current_user, 'canteiro.access_approvals', 'UPDATE,DELETE,TRUNCATE') \
+         AND NOT has_any_column_privilege(current_user, 'canteiro.access_approvals', 'UPDATE') \
+         AND NOT has_any_column_privilege(current_user, 'canteiro.access_scopes', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'user_id', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'scope_id', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'role', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'actions', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'max_amount', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'reason', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'source_grant_id', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'valid_from', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'valid_until', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'substitution', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'id', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'tenant_id', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'created_by', 'UPDATE') \
+         AND NOT has_column_privilege(current_user, 'canteiro.access_grants', 'created_at', 'UPDATE') \
          AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro_auth'::regnamespace \
              AND relkind = 'r' AND has_table_privilege(current_user, oid, 'TRUNCATE')) \
          AND NOT EXISTS (SELECT 1 FROM pg_class WHERE relnamespace = 'canteiro'::regnamespace \

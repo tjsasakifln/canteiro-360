@@ -1,4 +1,6 @@
 //! Exercita a fronteira HTTP real com PostgreSQL, cookies e origens distintas.
+#[path = "auth/access.rs"]
+mod access;
 #[path = "auth/organizations.rs"]
 mod organizations;
 

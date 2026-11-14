@@ -21,6 +21,9 @@ use uuid::Uuid;
 #[path = "organization_database_tests.rs"]
 mod organizations;
 
+#[path = "access_database_tests.rs"]
+mod access;
+
 fn tenant() -> TenantId {
     TenantId::from_uuid(Uuid::new_v4()).unwrap()
 }
@@ -260,7 +263,7 @@ async fn blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges(
             .fetch_all(&fixture.admin)
             .await
             .unwrap();
-    assert_eq!(versions, vec![1, 2, 3, 4]);
+    assert_eq!(versions, vec![1, 2, 3, 4, 5]);
     let database = fixture.database(limits()).await;
     let mut connection = database.pool.acquire().await.unwrap();
     let (privileged, owns_schema): (bool, bool) = sqlx::query_as(
@@ -420,8 +423,15 @@ async fn edited_or_future_migration_history_is_rejected_without_erasing_existing
         .execute(&fixture.admin)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO public._sqlx_migrations (version,description,success,checksum,execution_time) VALUES (5,'Versão futura fictícia',true,$1,0)")
-        .bind(vec![1_u8; 48]).execute(&fixture.admin).await.unwrap();
+    let future_version = MIGRATOR
+        .iter()
+        .map(|migration| migration.version)
+        .max()
+        .unwrap()
+        .checked_add(1)
+        .unwrap();
+    sqlx::query("INSERT INTO public._sqlx_migrations (version,description,success,checksum,execution_time) VALUES ($1,'Versão futura fictícia',true,$2,0)")
+        .bind(future_version).bind(vec![1_u8; 48]).execute(&fixture.admin).await.unwrap();
     assert!(
         Database::connect(&fixture.runtime, DatabaseEnvironment::Test, short)
             .await

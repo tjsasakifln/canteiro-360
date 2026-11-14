@@ -405,7 +405,7 @@ async fn organization_http_rejects_anonymous_invalid_inputs_and_revoked_identity
     fixture.database.close().await;
 }
 
-fn authenticator_code(secret: &str) -> String {
+pub(super) fn authenticator_code(secret: &str) -> String {
     // Cálculo de referência RFC 6238 do cliente de teste, sem acesso ao segredo cifrado.
     let bytes = data_encoding::BASE32_NOPAD
         .decode(secret.as_bytes())

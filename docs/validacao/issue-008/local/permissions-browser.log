@@ -1,0 +1,10 @@
+REVOKE
+   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/508300450758/canteiro-360/tools/e2e)
+    Finished `test` profile [unoptimized] target(s) in 1.91s
+     Running tests/access.rs (target/debug/deps/access-7b060c76ce294441)
+
+running 1 test
+test scoped_roles_policies_and_independent_decisions_work_in_the_browser ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 42.61s
+

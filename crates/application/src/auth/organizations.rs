@@ -9,6 +9,7 @@ use canteiro_persistence::{
 };
 use chrono::{DateTime, Duration, Utc};
 use uuid::Uuid;
+mod access;
 
 struct Actor {
     id: Uuid,
@@ -648,6 +649,13 @@ impl AuthService {
                     ));
                 }
                 let expiry = deadline(valid_until.as_deref(), new_role, tx.now().await?)?;
+                if expiry.is_some()
+                    && tx
+                        .access_removal_blocked(org.tenant_id, Some(target_id), None)
+                        .await?
+                {
+                    return Err(access::responsibility_required());
+                }
                 protect_last_admin(
                     &mut tx,
                     &org,
@@ -714,6 +722,12 @@ impl AuthService {
                     return Err(stale());
                 }
                 protect_last_admin(&mut tx, &org, &target, false).await?;
+                if tx
+                    .access_removal_blocked(org.tenant_id, Some(target_id), None)
+                    .await?
+                {
+                    return Err(access::responsibility_required());
+                }
                 if !tx
                     .org_put_member(
                         org.tenant_id,

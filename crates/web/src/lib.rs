@@ -12,6 +12,7 @@ use leptos_router::{
     path,
 };
 
+mod access;
 mod auth;
 mod calculations;
 pub mod form_components;
@@ -44,6 +45,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 pub fn App() -> impl IntoView {
     provide_meta_context();
     prototype::provide_prototype_store();
+    access::provide_draft_store();
 
     view! {
         <Stylesheet id="canteiro-style" href="/pkg/canteiro-web.css"/>
@@ -60,7 +62,7 @@ pub fn App() -> impl IntoView {
                         <span class="brand-symbol" aria-hidden="true">"C"</span>
                         <span>"Canteiro "<strong>"360"</strong></span>
                     </a>
-                    <nav class="site-account-nav" aria-label="Conta"><a class="account-link" href="/organizacoes">"Empresas"</a><a class="account-link" href="/acesso">"Entrar"</a><span class="environment-label">"Em desenvolvimento"</span></nav>
+                    <nav class="site-account-nav" aria-label="Conta"><a class="account-link" href="/organizacoes">"Empresas"</a><a class="account-link" href="/permissoes">"Permissões"</a><a class="account-link" href="/acesso">"Entrar"</a><span class="environment-label">"Em desenvolvimento"</span></nav>
                 </div>
             </header>
             <main id="conteudo" class="page-width main-content" tabindex="-1">
@@ -68,6 +70,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/") view=HomePage/>
                     <Route path=path!("/acesso") view=auth::AccessPage/>
                     <Route path=path!("/organizacoes") view=organizations::OrganizationsPage/>
+                    <Route path=path!("/permissoes") view=access::PermissionsPage/>
                     <Route path=path!("/conferencia") view=calculations::CalculationPage/>
                     // Resolve the page on the server before emitting its HTML.
                     // OutOfOrder streaming places suspended rows in an inert

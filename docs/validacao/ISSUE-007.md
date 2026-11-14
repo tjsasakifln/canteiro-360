@@ -1,5 +1,11 @@
 # Verificação da issue 7
 
+## Atualização da integração em 14/11/2026
+
+A [CI final 43429818330](https://github.com/tjsasakifln/canteiro-360/actions/runs/43429818330) concluiu as 25 etapas com sucesso, incluindo 188 testes. O head `fc0912810a4a6f7c83f59e1de07345ede18bb098` e o merge temporário `a209d7c11151b8bc0514ae0b980815cb7d52ef94` compartilham a árvore `716eb2ecc5e2da18f772fb7f81363faa6539a8fe`. A informação histórica abaixo de que essa execução ainda estava em andamento fica superada por este resultado.
+
+Após revisão independente sem bloqueador técnico, a PR #79 foi integrada em `c623a8d1c58de52e89f19c39fcb4eba83a4b084d`, dando sequência à autorização anterior do responsável pelo produto para validar e integrar. As pendências humanas das issues #3 e #6 continuam preservadas. Esta integração não declara prontidão comercial.
+
 ## 1. Objeto e versão
 
 Este registro acompanha a [PR 79](https://github.com/tjsasakifln/canteiro-360/pull/79) e a [issue 7](../issues/007.md). O objeto é a organização do acesso por empresa: cadastro, seleção explícita, membros, convites, validade, pedidos de acesso, busca e exportação. O [guia de empresas](../organizacoes.md) descreve as políticas, os percursos e os limites.

@@ -4,7 +4,7 @@ Gestão de obras e projetos privados no Brasil, com a disciplina operacional doc
 
 **Situação atual:** fundação Rust e persistência PostgreSQL das issues 1 e 2 integradas. A implementação da issue 3 acrescenta sistema visual e percursos demonstrativos de painel, orçamento, medição, aprovação e documentos, com dados fictícios. O aceite integral da issue 3 permanece condicionado ao teste com três profissionais exigido no escopo. O produto permanece em desenvolvimento, sem liberação para clientes. A entrega comercial da versão 1.0 depende da execução e aprovação das **72 issues em ordem numérica**, incluindo os testes e pilotos exigidos na última etapa.
 
-Esta sequência de implementação inclui formulários e tabelas da issue 4, precisão e calendários da issue 5, autenticação da issue 6 e [empresas, convites e isolamento](docs/organizacoes.md) da issue 7. O [guia de acesso](docs/seguranca-acesso.md) descreve cadastro verificado, sessões, recuperação e segundo fator. As etapas 3 a 7 aguardam os aceites anteriores para integração em `main`.
+Esta sequência de implementação inclui formulários e tabelas da issue 4, precisão e calendários da issue 5, autenticação da issue 6 e [empresas, convites e isolamento](docs/organizacoes.md) da issue 7. O [guia de acesso](docs/seguranca-acesso.md) descreve cadastro verificado, sessões, recuperação e segundo fator. A base técnica reúne as etapas 3 a 8, preservando as pendências humanas das issues 3 e 6. A issue 8 acrescenta [permissões por obra, contrato e orçamento, alçadas e substituições](docs/permissoes-alcadas.md).
 
 ## Compilar e executar
 
@@ -38,6 +38,7 @@ O [guia de desenvolvimento](docs/desenvolvimento.md) detalha compilação, verif
 | [Persistência](docs/persistencia.md) | PostgreSQL, migrações, identidades, limites e recuperação |
 | [Acesso e recuperação](docs/seguranca-acesso.md) | Cadastro verificado, sessões, segundo fator, e-mail e configuração |
 | [Empresas, equipe e convites](docs/organizacoes.md) | Seleção de empresa, vínculos, pedidos de acesso e isolamento |
+| [Permissões e alçadas](docs/permissoes-alcadas.md) | Funções por obra, contrato e orçamento, decisões, delegações e responsabilidades |
 | [Sistema visual](docs/sistema-visual.md) | Componentes, contexto, teclado, estados e apresentação móvel |
 | [Verificação da issue 3](docs/validacao/ISSUE-003.md) | Evidência técnica, revisão e aceite humano ainda necessário |
 | [Aceite da issue 1](docs/validacao/ISSUE-001.md) | Versões compiladas, medidas, revisão e evidências |

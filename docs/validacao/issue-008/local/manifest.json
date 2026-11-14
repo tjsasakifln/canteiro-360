@@ -1,0 +1,99 @@
+{
+  "issue": 8,
+  "product_source_commit": "c2bd39e25da02a7b79ea636dcd619cc2ac7b91c1",
+  "product_source_tree": "f175e6e351fcdee427b606c99671a8c8688631c4",
+  "e2e_test_git_blob_sha": "dc8d6fc9cc5002b68f90b83ed6096125ae3a5df0",
+  "browser": "Chrome Headless Shell 156.0.8078.80",
+  "database": "PostgreSQL 17.11 local",
+  "ci_browser_requirement": "Chrome completo 156.0.8078.80; o resultado remoto pertence ao head e checkout indicados na PR",
+  "local_checks": {
+    "native": 163,
+    "persistence": 32,
+    "application": 26,
+    "http": 8,
+    "permissions_browser": 1
+  },
+  "visual_review": {
+    "viewports": [
+      360,
+      1280
+    ],
+    "roles": [
+      "administrator",
+      "reader"
+    ],
+    "reviewed_by": [
+      "root",
+      "access_ui",
+      "permissions_visual_review"
+    ],
+    "result": "passed"
+  },
+  "limits": [
+    "Dados inteiramente fictícios.",
+    "As capturas foram produzidas com entrada real de teclado no topo da página, sem ocultar elementos.",
+    "A prova local não substitui a CI completa nem as validações humanas das issues 3 e 6."
+  ],
+  "files": [
+    {
+      "path": "application.log",
+      "bytes": 3688,
+      "sha256": "939ce67f6d4c1189f7f7e4c234eeb8c2c3c4775b41ab8c8f994f2d5972a76d14"
+    },
+    {
+      "path": "budget.json",
+      "bytes": 2174,
+      "sha256": "fb7e750d39d1964263013bd9840b0b9494ba694c67904580dd23742d6d67fc8d"
+    },
+    {
+      "path": "build.json",
+      "bytes": 2712,
+      "sha256": "f135f9f15000da459ea2ed6d2084703264f129099da35a644b82a4c771367b0e"
+    },
+    {
+      "path": "http.log",
+      "bytes": 1145,
+      "sha256": "a0ddc3ee3d4ebbd8e14de91c9f6c40690bc91fa4f7c1088d59ad23cbcea47e24"
+    },
+    {
+      "path": "native-tests.log",
+      "bytes": 32783,
+      "sha256": "2d4686279d08eac6c4abc2d9356312dade6f069a14974d7dbe02379e57c21b3e"
+    },
+    {
+      "path": "permissions-administrator-1280.png",
+      "bytes": 665732,
+      "sha256": "22b9f8d47a6acbadb26af6724231ed9ab3ef6c7d40fd9774fb5ba014c71da127"
+    },
+    {
+      "path": "permissions-administrator-360.png",
+      "bytes": 684983,
+      "sha256": "2a1f1292cf189facd9acf929f44dd1f54603e686fa9efc2e315f265b188ff752"
+    },
+    {
+      "path": "permissions-browser.log",
+      "bytes": 424,
+      "sha256": "8a9a0d29f9525f6d4120b6900071f81f1279248ad2dd81512e821d7b5070dd54"
+    },
+    {
+      "path": "permissions-interface.json",
+      "bytes": 7952,
+      "sha256": "28bc3f754ac327236060dc40bd985e9bb18ead3f976e1c0b1891b440b0087c0a"
+    },
+    {
+      "path": "permissions-reader-1280.png",
+      "bytes": 456490,
+      "sha256": "dbd14278cba3d11b8d319a1c36b2843bab2358440299a6f988f5396fd9e96876"
+    },
+    {
+      "path": "permissions-reader-360.png",
+      "bytes": 468281,
+      "sha256": "5f59932684964c936707667365213d4813fee5706077db7c15d08ad3b59b06c1"
+    },
+    {
+      "path": "persistence.log",
+      "bytes": 4153,
+      "sha256": "40bf2af59f3e69e2acbed95f4397c11ec345e038b85c4bab196e05d2591a9a7a"
+    }
+  ]
+}
