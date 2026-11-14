@@ -6,7 +6,7 @@ use canteiro_api::{config::Config, router};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn worksheet_html_contains_only_its_page_before_hydration() {
     let config = Config::from_lookup(|_| None).unwrap();
     for (organization, prefix) in [("aurora", "AUR"), ("horizonte", "HOR")] {
@@ -61,11 +61,19 @@ async fn worksheet_html_contains_only_its_page_before_hydration() {
             "SSR must contain a page, never all 10000 rows"
         );
     }
+
+    // O executor SSR é compartilhado pelo binário de testes. As requisições
+    // concorrentes usam o mesmo runtime das verificações de paginação acima.
+    tokio::time::timeout(
+        std::time::Duration::from_secs(15),
+        concurrent_worksheet_ssr_preserves_title(&config),
+    )
+    .await
+    .expect("a renderização concorrente deve terminar com todos os títulos");
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn concurrent_worksheet_ssr_keeps_its_title_until_the_body_finishes() {
-    let app = router(&Config::from_lookup(|_| None).unwrap());
+async fn concurrent_worksheet_ssr_preserves_title(config: &Config) {
+    let app = router(config);
     let mut requests = tokio::task::JoinSet::new();
     for _ in 0..16 {
         for (company, expected) in [
