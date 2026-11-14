@@ -36,7 +36,7 @@ Valores usam `Money`, são transmitidos como texto e rejeitam mais de duas casas
 
 O limiar é inclusivo: ao atingir o valor configurado, vale a quantidade definida de uma ou duas aprovações. Abaixo dele, é necessária uma aprovação. Cada pessoa precisa de alçada suficiente para todo o valor; limites individuais não são somados.
 
-Conflitos explicitamente declarados sempre impedem a pessoa e o titular de sua delegação. A opção de segregação acrescenta o proponente ao impedimento. Delegar a própria alçada não permite aprovar a própria proposta por intermédio de outra pessoa.
+Conflitos explicitamente declarados sempre impedem a pessoa e o titular de sua delegação. A opção de segregação acrescenta o proponente ao impedimento. Quando a segregação é exigida, delegar a própria alçada não permite aprovar a própria proposta por intermédio de outra pessoa.
 
 Dupla aprovação exige pessoas com poderes independentes. Duas assinaturas da mesma pessoa, dois delegados do mesmo titular ou titular e delegado não atendem à exigência. Ao completar o quórum, são revalidadas as concessões atuais das assinaturas pendentes, inclusive fonte da delegação e participação na empresa.
 
