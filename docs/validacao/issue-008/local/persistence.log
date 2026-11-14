@@ -1,0 +1,53 @@
+REVOKE
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/508300450758/canteiro-360/crates/persistence)
+    Finished `test` profile [unoptimized] target(s) in 1.94s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_persistence-1fb9b8781c0b6eb6)
+
+running 32 tests
+test database_tests::access::access_contract_parent_is_a_work_and_cannot_become_a_contract_cycle ... ok
+test database_tests::access::access_composite_foreign_keys_reject_cross_tenant_references ... ok
+test database_tests::access::access_money_constraints_reject_excess_scale_range_and_nonfinite_without_rounding ... ok
+test database_tests::access::access_seven_tables_enforce_rls_even_with_repeated_ids_and_reused_connection ... ok
+test database_tests::access::access_successor_must_cover_required_action_amount_and_continuous_validity ... ok
+test database_tests::access::access_request_history_is_insert_only_for_runtime ... ok
+test database_tests::access::access_two_connections_cannot_remove_both_required_holders_and_rollback_releases_lock ... ok
+test database_tests::access::access_last_required_holder_survives_revocation_member_end_and_failed_transfer ... ok
+test database_tests::actual_database_error_is_redacted_in_diagnostics_and_public_persistence_error ... ok
+test database_tests::concurrent_expected_version_updates_have_one_winner_and_never_overflow ... ok
+test database_tests::cancelled_borrowed_write_cannot_later_be_committed ... ok
+test database_tests::edited_or_future_migration_history_is_rejected_without_erasing_existing_data ... ok
+test database_tests::cross_tenant_foreign_keys_reject_insert_and_update_even_for_superuser ... ok
+test database_tests::cancelled_task_rolls_back_pending_transaction_and_releases_clean_connection ... ok
+test database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges ... ok
+test database_tests::ignored_second_write_and_raw_sql_errors_cannot_commit_partial_work ... ok
+test database_tests::organizations::organization_creation_and_audit_failure_roll_back_without_orphan_or_secret_error ... ok
+test database_tests::organizations::organization_database_prevents_last_administrator_and_expiring_administrator ... ok
+test database_tests::failure_delayed_until_commit_is_never_reported_as_confirmed_or_safe_to_retry ... ok
+test database_tests::one_connection_pool_clears_context_after_commit_rollback_failure_timeout_and_drop ... ok
+test database_tests::organizations::organization_rls_hides_foreign_rows_ids_counts_and_identity_directory ... ok
+test database_tests::organizations::organization_last_admin_survives_two_connections_and_repeatable_read_snapshot ... ok
+test database_tests::organizations::organization_invites_and_requests_are_versioned_one_use_and_revocable ... ok
+test database_tests::organizations::organization_membership_fk_does_not_deadlock_two_authenticated_actors ... ok
+test database_tests::lock_pool_and_global_transaction_deadlines_abort_without_partial_writes ... ok
+test database_tests::organizations::organization_selection_is_session_owned_versioned_and_pool_context_is_local ... ok
+test database_tests::organizations::organization_runtime_rejects_audit_column_privilege_truncate_and_disabled_selection_rls ... ok
+test database_tests::version_one_data_survives_upgrade_with_composite_and_date_constraints ... ok
+test database_tests::runtime_rls_blocks_unscoped_reads_writes_and_wrong_tenant_mutations ... ok
+test database_tests::access::access_runtime_connection_refuses_history_column_privileges_and_disabled_rls ... ok
+test database_tests::environment_owner_and_inherited_privilege_mismatches_fail_closed ... ok
+test database_tests::migration_advisory_lock_has_a_bounded_wait_and_rolls_back_bootstrap ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 6.63s
+
+     Running unittests src/bin/canteiro-db.rs (target/debug/deps/canteiro_db-3168f01497884c53)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests canteiro_persistence
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

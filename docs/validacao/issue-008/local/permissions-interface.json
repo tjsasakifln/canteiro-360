@@ -1,0 +1,326 @@
+{
+  "environment": {
+    "apiBinaryBytes": 74107752,
+    "architecture": "x86_64",
+    "availableParallelism": 9,
+    "browserCommandVersion": "Google Chrome for Testing 156.0.8078.80",
+    "cpu": "model name\t: AMD EPYC 9V74 80-Core Processor",
+    "driverCommandVersion": "ChromeDriver 156.0.8078.80 (fb096c0011f9d50f0a264a9376420cdea9c421e3-refs/branch-heads/8078@{#1705})",
+    "executorNote": "Shared execution environment; this record does not assert exclusive CPU allocation or physical mobile testing.",
+    "memory": "MemTotal:       10206472 kB",
+    "os": "linux",
+    "startedAtUnixMs": 1794630272793,
+    "wasmBinaryBytes": 4430099
+  },
+  "layouts": [
+    {
+      "fields": [
+        {
+          "id": "perm-scope-selection",
+          "label": true
+        },
+        {
+          "id": "perm-scope-kind",
+          "label": true
+        },
+        {
+          "id": "perm-scope-name",
+          "label": true
+        },
+        {
+          "id": "perm-grant-email",
+          "label": true
+        },
+        {
+          "id": "perm-grant-role",
+          "label": true
+        },
+        {
+          "id": "perm-grant-limit",
+          "label": true
+        },
+        {
+          "id": "perm-grant-from",
+          "label": true
+        },
+        {
+          "id": "perm-grant-until",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-view",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-record_execution",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-review_measurement",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-propose_change",
+          "label": true
+        },
+        {
+          "id": "perm-policy-action",
+          "label": true
+        },
+        {
+          "id": "perm-policy-threshold",
+          "label": true
+        },
+        {
+          "id": "perm-policy-double",
+          "label": true
+        },
+        {
+          "id": "perm-policy-segregate",
+          "label": true
+        },
+        {
+          "id": "perm-request-action",
+          "label": true
+        },
+        {
+          "id": "perm-request-title",
+          "label": true
+        },
+        {
+          "id": "perm-request-increase",
+          "label": true
+        },
+        {
+          "id": "perm-request-decrease",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-db007ac7-4a96-4311-9172-91303804bddd",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-5a4d4bfe-154c-43a8-a57d-d844dcde9169",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-80176280-afc3-4679-a4bb-0a1694ac5773",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-0920b586-96ad-4e96-8636-05eb0900b57f",
+          "label": true
+        }
+      ],
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "fields": [
+        {
+          "id": "perm-scope-selection",
+          "label": true
+        },
+        {
+          "id": "perm-scope-kind",
+          "label": true
+        },
+        {
+          "id": "perm-scope-name",
+          "label": true
+        },
+        {
+          "id": "perm-grant-email",
+          "label": true
+        },
+        {
+          "id": "perm-grant-role",
+          "label": true
+        },
+        {
+          "id": "perm-grant-limit",
+          "label": true
+        },
+        {
+          "id": "perm-grant-from",
+          "label": true
+        },
+        {
+          "id": "perm-grant-until",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-view",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-record_execution",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-review_measurement",
+          "label": true
+        },
+        {
+          "id": "perm-grant-action-propose_change",
+          "label": true
+        },
+        {
+          "id": "perm-policy-action",
+          "label": true
+        },
+        {
+          "id": "perm-policy-threshold",
+          "label": true
+        },
+        {
+          "id": "perm-policy-double",
+          "label": true
+        },
+        {
+          "id": "perm-policy-segregate",
+          "label": true
+        },
+        {
+          "id": "perm-request-action",
+          "label": true
+        },
+        {
+          "id": "perm-request-title",
+          "label": true
+        },
+        {
+          "id": "perm-request-increase",
+          "label": true
+        },
+        {
+          "id": "perm-request-decrease",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-db007ac7-4a96-4311-9172-91303804bddd",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-5a4d4bfe-154c-43a8-a57d-d844dcde9169",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-80176280-afc3-4679-a4bb-0a1694ac5773",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-0920b586-96ad-4e96-8636-05eb0900b57f",
+          "label": true
+        }
+      ],
+      "scroll": 1265,
+      "width": 1280
+    },
+    {
+      "fields": [
+        {
+          "id": "perm-scope-selection",
+          "label": true
+        },
+        {
+          "id": "perm-request-action",
+          "label": true
+        },
+        {
+          "id": "perm-request-title",
+          "label": true
+        },
+        {
+          "id": "perm-request-increase",
+          "label": true
+        },
+        {
+          "id": "perm-request-decrease",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-0920b586-96ad-4e96-8636-05eb0900b57f",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-5a4d4bfe-154c-43a8-a57d-d844dcde9169",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-80176280-afc3-4679-a4bb-0a1694ac5773",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-db007ac7-4a96-4311-9172-91303804bddd",
+          "label": true
+        }
+      ],
+      "scroll": 360,
+      "width": 360
+    },
+    {
+      "fields": [
+        {
+          "id": "perm-scope-selection",
+          "label": true
+        },
+        {
+          "id": "perm-request-action",
+          "label": true
+        },
+        {
+          "id": "perm-request-title",
+          "label": true
+        },
+        {
+          "id": "perm-request-increase",
+          "label": true
+        },
+        {
+          "id": "perm-request-decrease",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-0920b586-96ad-4e96-8636-05eb0900b57f",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-5a4d4bfe-154c-43a8-a57d-d844dcde9169",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-80176280-afc3-4679-a4bb-0a1694ac5773",
+          "label": true
+        },
+        {
+          "id": "perm-conflict-db007ac7-4a96-4311-9172-91303804bddd",
+          "label": true
+        }
+      ],
+      "scroll": 1265,
+      "width": 1280
+    }
+  ],
+  "scenarios": [
+    "public SSR without private data",
+    "explicit work scope",
+    "administrator has no implicit proposing power",
+    "role grant and cancelled confirmation",
+    "threshold policy with segregation",
+    "policy switch cancelled with visual selection restored",
+    "revision switch requires explicit discard",
+    "delegation source switch requires explicit discard",
+    "mixed increase and decrease",
+    "proponent cannot approve",
+    "two independent approvers",
+    "reader cannot configure or decide",
+    "temporary substitution with lower authority",
+    "network failure preserves scoped draft",
+    "Router and history preserve identity-bound draft",
+    "another identity cannot restore suspended draft",
+    "identity change removes draft and admin controls",
+    "no private browser storage"
+  ],
+  "status": "passed"
+}

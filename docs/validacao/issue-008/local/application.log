@@ -1,0 +1,44 @@
+REVOKE
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/508300450758/canteiro-360/crates/persistence)
+   Compiling canteiro-contracts v0.1.0 (/workspace/scratch/508300450758/canteiro-360/crates/contracts)
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/508300450758/canteiro-360/crates/application)
+    Finished `test` profile [unoptimized] target(s) in 3.63s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_application-dfe921d7b9c4bb70)
+
+running 26 tests
+test auth::organizations::tests::access_requests_need_decision_and_rotation_invalidates_shared_code ... ok
+test auth::organizations::tests::access_tests::access_delegation_is_bounded_and_loses_effect_when_its_source_or_membership_ends ... ok
+test auth::organizations::tests::access_tests::access_external_budgeter_only_operates_the_granted_budget_during_current_validity ... ok
+test auth::organizations::tests::access_tests::access_mixed_amount_segregation_concurrent_approvals_and_revisions_preserve_history ... ok
+test auth::organizations::tests::access_tests::access_required_responsible_survives_member_changes_and_concurrent_revocations ... ok
+test auth::organizations::tests::access_tests::access_roles_exact_scope_and_organization_do_not_allow_direct_command_escalation ... ok
+test auth::organizations::tests::access_tests::access_stale_context_grant_policy_and_request_versions_leave_no_business_write ... ok
+test auth::organizations::tests::concurrent_invitation_acceptance_has_one_effect_and_revoke_is_serialized ... ok
+test auth::organizations::tests::invitations_bind_identity_expiry_revocation_purpose_and_single_use ... ok
+test auth::organizations::tests::last_administrator_survives_concurrent_removal_and_old_versions ... ok
+test auth::organizations::tests::membership_expiry_session_revocation_and_administrator_mfa_are_rechecked ... ok
+test auth::organizations::tests::organization_creation_mfa_single_connection_and_clear_selection ... ok
+test auth::organizations::tests::organizations_ids_search_export_and_private_members_never_cross ... ok
+test auth::organizations::tests::stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothing ... ok
+test auth::tests::email_owner_chooses_password_after_pre_registration_attack ... ok
+test auth::tests::execution_identity_rejects_privileged_insert_and_column_audit_updates ... ok
+test auth::tests::identity_verification_rotation_and_opaque_storage ... ok
+test auth::tests::idle_expiry_credential_version_and_runtime_privilege_are_enforced ... ok
+test auth::tests::mfa_configuration_is_bound_to_session_and_fresh_authentication ... ok
+test auth::tests::mfa_privilege_recovery_replay_and_reset_preservation ... ok
+test auth::tests::obsolete_mail_is_not_claimed_and_public_requests_have_a_uniform_floor ... ok
+test auth::tests::password_cost_is_measured_with_bounded_parallelism ... Argon2id m=65536 KiB, t=3, p=1: hash=2116ms, verificação=2001ms; máximo=2 operações simultâneas por processo (128 MiB de memória Argon2). Este ensaio mede o executor atual, sem representar capacidade de produção.
+ok
+test auth::tests::password_reset_is_single_use_expiring_revokes_and_does_not_authenticate ... ok
+test auth::tests::rate_limits_survive_new_service_and_mail_is_encrypted_and_leased ... ok
+test auth::tests::replacement_factor_requires_recent_mfa_and_invalidates_old_recovery_codes ... ok
+test auth::tests::revocation_is_scoped_and_next_command_checks_live_state ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 204.71s
+
+   Doc-tests canteiro_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

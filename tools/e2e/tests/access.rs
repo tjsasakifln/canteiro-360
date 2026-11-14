@@ -8,7 +8,7 @@ use hmac::{Hmac, Mac};
 use serde_json::{Value, json};
 use sha1::Sha1;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use support::{Browser, ENTER, ESCAPE, Harness, TestResult, write_json};
+use support::{Browser, ENTER, ESCAPE, HOME, Harness, TestResult, write_json};
 
 const WAIT: Duration = Duration::from_secs(30);
 
@@ -302,6 +302,20 @@ async fn permission_route(browser: &Browser) -> TestResult {
 async fn layout(browser: &Browser, h: &Harness, label: &str, width: u32) -> TestResult<Value> {
     browser.viewport(width, 1000, width == 360).await?;
     ready(browser).await?;
+    if label == "administrator" {
+        for panel in [
+            "#perm-create-panel",
+            "#perm-grant-panel",
+            "#perm-policy-panel",
+        ] {
+            expand(browser, panel).await?;
+        }
+    }
+    // Capture a real top-of-page viewport. A fixed skip link transformed above
+    // a scrolled viewport can otherwise appear inside a full-page CDP image.
+    browser.click("#perm-title").await?;
+    browser.chord(&["\u{e009}"], HOME).await?;
+    browser.wait("return scrollY===0;", WAIT).await?;
     let report=browser.execute("return {width:innerWidth,scroll:document.documentElement.scrollWidth,fields:[...document.querySelectorAll('.permissions-page input,.permissions-page select')].filter(e=>e.getClientRects().length).map(e=>({id:e.id,label:!!document.querySelector('label[for=\"'+e.id+'\"]')}))};").await?;
     assert!(
         report["scroll"].as_u64().unwrap() <= report["width"].as_u64().unwrap(),

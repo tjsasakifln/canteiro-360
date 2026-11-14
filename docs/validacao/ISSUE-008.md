@@ -24,7 +24,7 @@ Também se verificam último responsável, sucessor suficiente, concorrência, v
 
 Domínio, testes de banco e interface foram preparados em frentes separadas, com revisão independente de segurança e integração. Testes utilizam exclusivamente dados fictícios. PostgreSQL local 17.11; a configuração de CI usa PostgreSQL 17.7 e as versões fixadas no repositório.
 
-O Chrome completo não inicia neste executor por restrição de socket local. O Headless Shell da mesma versão pode servir para inspeção e capturas. Essa limitação não dispensa o Chrome integral na CI nem autoriza fabricar eventos de ativação de abas. A conferência visual permanece pendente neste registro.
+O Chrome completo não inicia neste executor por restrição de socket local. O percurso local foi executado no Chrome Headless Shell 156.0.8078.80. Essa limitação não dispensa o Chrome integral na CI nem autoriza fabricar eventos de ativação de abas. A revisão principal e a revisão independente abriram e conferiram as quatro capturas locais.
 
 ## Resultados locais comprovados
 
@@ -40,10 +40,21 @@ Os resultados abaixo identificam rodadas efetivamente executadas. A confirmaçã
 | Interface | 11 testes aprovados | Formatação, identidade, empresa, preservação compatível de campos, troca de formulário, desmontagem e retorno de rota, renovação de contexto e início sugerido dentro da validade da fonte |
 | Clippy | Aprovado para SSR, WASM e e2e | Verificação estática; não substitui a execução dos percursos no navegador |
 | Conjunto nativo do projeto | 163 testes aprovados, zero falhas | Os 77 cenários que exigem PostgreSQL ou navegador são executados separadamente pela CI |
+| Percurso local de permissões no navegador | 1 cenário completo aprovado em 42,61 segundos | Concessões, decisão independente, substituição, teclado, falha de rede, perda de identidade, confirmações de descarte e navegação com rascunho protegido |
+| Compilação otimizada e limite de arquivos | Aprovados sem alteração dos limites | [Compilação](issue-008/local/build.json) e [medidas de transferência](issue-008/local/budget.json) |
 
 As fontes dos cenários estão nos testes de [domínio](../../crates/domain/tests/access.rs), [aplicação](../../crates/application/src/auth/organizations/access_tests.rs), [persistência](../../crates/persistence/src/access_database_tests.rs), [HTTP](../../crates/api/tests/auth/access.rs), [expiração](../../crates/application/src/auth/organizations/access.rs) e interface, nos módulos de [formatação](../../crates/web/src/access/format.rs) e [estado](../../crates/web/src/access/model.rs).
 
-No ponto de controle anterior à publicação da PR, a conferência visual e a execução integral da CI da issue #8 estão pendentes. Os testes locais e o Clippy aprovados não antecipam esses resultados. As conclusões posteriores ficam registradas na PR e nas execuções descritas abaixo.
+O [manifesto local](issue-008/local/manifest.json) identifica a fonte do produto, o blob do teste de navegador, o ambiente e os hashes dos arquivos. Os logs preservam os resultados de [testes nativos](issue-008/local/native-tests.log), [persistência](issue-008/local/persistence.log), [aplicação](issue-008/local/application.log), [HTTP](issue-008/local/http.log) e [navegador](issue-008/local/permissions-browser.log). O [relatório do navegador](issue-008/local/permissions-interface.json) registra os percursos, as larguras e os rótulos.
+
+| Perfil | 360 px | 1280 px |
+|---|---|---|
+| Administrador | [Captura](issue-008/local/permissions-administrator-360.png) | [Captura](issue-008/local/permissions-administrator-1280.png) |
+| Leitor | [Captura](issue-008/local/permissions-reader-360.png) | [Captura](issue-008/local/permissions-reader-1280.png) |
+
+As capturas apresentam os painéis administrativos abertos. O posicionamento no topo usa entrada real de teclado antes da imagem longa, sem ocultar componentes. Foram conferidos 24 de 24 campos rotulados no administrador e 9 de 9 no leitor, sem rolagem horizontal ou colisão de componentes.
+
+No ponto de controle desta documentação, a execução integral da CI da issue #8 ainda está pendente. O percurso local e a inspeção visual aprovados não antecipam esse resultado. As conclusões posteriores ficam registradas na PR e nas execuções descritas abaixo.
 
 ## Evidência da árvore final
 
