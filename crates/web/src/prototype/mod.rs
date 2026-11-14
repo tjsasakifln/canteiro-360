@@ -5,7 +5,7 @@ mod pages;
 mod worksheet;
 
 use components::{close_dialog, focus, show_dialog, trap_dialog_tab};
-use leptos::prelude::*;
+use leptos::{prelude::*, text_prop::TextProp};
 use leptos_meta::Title;
 use leptos_router::{
     NavigateOptions,
@@ -200,8 +200,18 @@ fn PrototypeShell() -> impl IntoView {
         }
     };
 
+    // SSR finaliza os metadados depois de renderizar a rota. Conserve o
+    // título como valor próprio para que essa leitura sobreviva ao owner da rota.
+    let format_title = |task: Task, company: Company| {
+        format!("{} | {} | Canteiro 360", task.label(), company.work())
+    };
+    #[cfg(feature = "ssr")]
+    let title = TextProp::from(format_title(task.get_untracked(), company.get_untracked()));
+    #[cfg(not(feature = "ssr"))]
+    let title = TextProp::from(move || format_title(task.get(), company.get()));
+
     view! {
-        <Title text=move || format!("{} | {} | Canteiro 360", task.get().label(), company.get().work())/>
+        <Title text=title/>
         <section id="prototype-shell" class="prototype-shell"
             data-ready=move || ready.get().to_string()
             data-density=move || store.density.get()
