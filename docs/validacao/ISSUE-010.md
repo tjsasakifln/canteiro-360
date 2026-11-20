@@ -37,7 +37,7 @@ A migração `0009_documents.sql` mantém o conteúdo fora dos recursos público
 
 ## Verificações executadas
 
-Foram executados dois testes de domínio e onze testes da aplicação, incluindo quatro cenários com PostgreSQL 17 em banco isolado, usando o papel de execução restrito. Todos passaram, sem testes ignorados dentro desse recorte. Depois dessa rodada, o parser recebeu uma guarda adicional para conferir o rodapé final e um décimo segundo teste. A compilação dessa repetição foi interrompida para concentrar recursos na verificação integrada; o resultado do estado final depende da rodada centralizada.
+Foram executados dois testes de domínio e doze testes da aplicação, incluindo quatro cenários com PostgreSQL 17 em banco isolado, usando o papel de execução restrito. A rodada centralizada final aprovou os testes puros na suíte geral de 208 testes e os quatro cenários de banco no conjunto de 47 testes de aplicação. Essa rodada já inclui a guarda de rodapé final do PDF e o décimo segundo teste. Os resultados e a evidência de navegador são separados no [relatório integrado](ISSUES-010-014.md); a execução visual ainda depende da rodada de CI registrada ali.
 
 | Cenário | Resultado observado |
 |---|---|

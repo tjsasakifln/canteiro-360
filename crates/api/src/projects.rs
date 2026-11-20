@@ -5,7 +5,7 @@ use crate::{
 use axum::{
     Extension, Form, Json, Router,
     extract::{DefaultBodyLimit, Path, Query, rejection::JsonRejection},
-    http::{HeaderMap, HeaderValue, StatusCode},
+    http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{Html, IntoResponse, Redirect, Response},
     routing::{get, post},
 };
@@ -54,6 +54,13 @@ pub(crate) fn html_page(content: String, status: StatusCode) -> Response {
     let mut r = Html(content).into_response();
     *r.status_mut() = status;
     private_headers(&mut r);
+    // Fetch 3.2 transforma Origin em null para POST de navegação com
+    // no-referrer. A política abaixo permite o formulário interno e continua
+    // sem expor a referência entre sites; a validação de Origin permanece.
+    r.headers_mut().insert(
+        header::REFERRER_POLICY,
+        HeaderValue::from_static("same-origin"),
+    );
     r
 }
 pub(crate) fn bad_input() -> Response {

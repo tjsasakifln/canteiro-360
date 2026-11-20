@@ -180,6 +180,23 @@ async fn registry_documents_and_projects_work_with_real_authorization_and_keyboa
     set_cookie(&h, &b, &owner).await?;
     let result = journey(&h, &b, &owner, &reader, &work).await;
     if result.is_err() {
+        // Only route, response code and validity flags are printed in CI. Never
+        // export control values, cookies, request headers or the browser log.
+        if let Ok(diagnostic) = b
+            .execute(
+                r#"const flags = ['badInput','customError','patternMismatch','rangeOverflow','rangeUnderflow','stepMismatch','tooLong','tooShort','typeMismatch','valueMissing'];
+                let responseCode = null;
+                try { const body = JSON.parse(document.body.innerText); if (typeof body.code === 'string' && /^[a-z_]{1,64}$/.test(body.code)) responseCode = body.code; } catch (_) {}
+                return {path:location.pathname,responseCode,invalidControls:Array.from(document.querySelectorAll('input,select,textarea')).filter(e=>e.willValidate && !e.validity.valid).slice(0,32).map(e=>({id:e.id,name:e.name,type:e.type,flags:flags.filter(flag=>e.validity[flag])}))};"#,
+            )
+            .await
+        {
+            eprintln!("C360_REGISTRY_DIAGNOSTIC {diagnostic}");
+            let _ = write_json(
+                &h.evidence.join("registry-failure-diagnostic.json"),
+                &diagnostic,
+            );
+        }
         let _ = b
             .full_screenshot(&h.evidence.join("registry-failure.png"))
             .await;
@@ -375,7 +392,7 @@ async fn journey(
     .await?;
     b.click(&format!("#documents-scope option[value='{work}']"))
         .await?;
-    b.wait("return !!document.querySelector('#documents-file');", WAIT)
+    b.wait("return ['#documents-description','#documents-file'].every(selector => { const field = document.querySelector(selector); return field && !field.matches(':disabled'); });", WAIT)
         .await?;
     b.fill(
         "#documents-description",

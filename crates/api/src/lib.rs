@@ -94,7 +94,7 @@ pub fn router(config: &Config) -> Router {
             header::X_FRAME_OPTIONS,
             HeaderValue::from_static("DENY"),
         ))
-        .layer(SetResponseHeaderLayer::overriding(
+        .layer(SetResponseHeaderLayer::if_not_present(
             header::REFERRER_POLICY,
             HeaderValue::from_static("no-referrer"),
         ))

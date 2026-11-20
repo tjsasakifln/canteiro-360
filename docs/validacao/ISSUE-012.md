@@ -6,7 +6,7 @@ Carteira de empreendimentos, obras e ativos sobre a base da PR 82. Os módulos n
 
 ## Verificação executada
 
-O grupo `registry_` da aplicação passou com PostgreSQL 17.11 real e Rust 1.99.1: 9 aprovados, 0 falhas, 18,60 s em 20/11/2026. Três casos específicos da carteira e dois cenários compartilhados de contexto e expiração verificaram:
+O grupo `registry_` da aplicação passou com PostgreSQL 17.11 real e Rust 1.99.1: 9 aprovados, 0 falhas, 18,60 s em 19/11/2026 (horário de Brasília). Três casos específicos da carteira e dois cenários compartilhados de contexto e expiração verificaram:
 
 | Critério | Evidência executada |
 |---|---|
@@ -23,9 +23,11 @@ A primeira execução encontrou uma falha na função SQL de conferência do ví
 
 Comando executado: `cargo test -p canteiro-application registry_ --offline -- --ignored --test-threads=1`. A interface também compilou com `cargo check -p canteiro-web --features ssr --offline`.
 
-Os cinco testes puros de `canteiro-domain portfolio::` passaram em 20/11/2026, incluindo somas exatas, diferença faltante de percentual e dimensão, limites de coordenadas e vínculos repetidos.
+A verificação central também aprovou 47 testes de aplicação com PostgreSQL, incluindo os nove casos `registry_`. O [relatório integrado das issues 10 a 14](ISSUES-010-014.md#resultados-da-versão-integrada) acompanha a verificação da versão e as evidências.
 
-A revisão independente aprovou a correção dos quatro achados de autorização temporal, identidade de repetição, descarte de respostas após navegar e associação do histórico à obra selecionada. A evidência visual e o percurso por teclado devem ser conferidos na validação integrada do lote 10 a 14 antes do aceite técnico final. A grade do mapa não usa serviços externos e todas as operações também estão disponíveis pela lista e pelos campos de texto.
+Os cinco testes puros de `canteiro-domain portfolio::` passaram em 19/11/2026 (horário de Brasília), incluindo somas exatas, diferença faltante de percentual e dimensão, limites de coordenadas e vínculos repetidos.
+
+A revisão independente aprovou a correção dos quatro achados de autorização temporal, identidade de repetição, descarte de respostas após navegar e associação do histórico à obra selecionada. Na [CI 44648996986](https://github.com/tjsasakifln/canteiro-360/actions/runs/44648996986), o percurso de carteira executou criação e revisão da obra, autorização, coordenadas e verificações de largura antes de parar no formulário de projetos. A cota de artefatos impediu recuperar as capturas. A inspeção visual e a conclusão do percurso integrado permanecem pendentes de nova execução, conforme o [registro consolidado](ISSUES-010-014.md). A grade do mapa não usa serviços externos e todas as operações também estão disponíveis pela lista e pelos campos de texto.
 
 ## Limites preservados
 

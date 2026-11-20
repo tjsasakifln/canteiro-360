@@ -20,7 +20,7 @@ jobs:
   foundation:
     name: Formatação, regras, PostgreSQL, SSR e WASM
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 75
     services:
       postgres:
         image: postgres:17.7-bookworm
@@ -124,6 +124,13 @@ jobs:
           export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
           unset CANTEIRO_FIXTURE_RUNTIME
           cargo test --locked -p canteiro-e2e --no-fail-fast -- --ignored --nocapture
+      - name: Transmitir capturas e medições das jornadas sintéticas
+        if: ${{ !cancelled() }}
+        env:
+          CANTEIRO_SYNTHETIC_EVIDENCE: '1'
+          CANTEIRO_ENV: development
+          CANTEIRO_EVIDENCE_SOURCE: ${{ github.sha }}
+        run: cargo xtask evidence
       - name: Auditar dependências, origens e licenças
         if: ${{ !cancelled() }}
         run: cargo deny --locked check

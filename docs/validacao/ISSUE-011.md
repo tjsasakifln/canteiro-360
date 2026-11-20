@@ -6,7 +6,7 @@ Cadastros de clientes, fornecedores e profissionais, implementados sobre a base 
 
 ## Verificação executada
 
-Em 20/11/2026, o grupo `registry_` da aplicação foi executado com PostgreSQL 17.11 real, papéis de migração e operação separados, RLS forçada e Rust 1.99.1. Os nove testes do grupo passaram, incluindo três casos específicos da carteira e dois cenários compartilhados de contexto e expiração. Os casos de cadastro cobriram:
+Em 19/11/2026 (horário de Brasília), o grupo `registry_` da aplicação foi executado com PostgreSQL 17.11 real, papéis de migração e operação separados, RLS forçada e Rust 1.99.1. Os nove testes do grupo passaram, incluindo três casos específicos da carteira e dois cenários compartilhados de contexto e expiração. Os casos de cadastro cobriram:
 
 | Critério | Evidência executada |
 |---|---|
@@ -20,9 +20,11 @@ Em 20/11/2026, o grupo `registry_` da aplicação foi executado com PostgreSQL 1
 
 Comando executado: `cargo test -p canteiro-application registry_ --offline -- --ignored --test-threads=1`, com `CANTEIRO_TEST_DATABASE_URL` apontando exclusivamente ao PostgreSQL local de teste. Resultado do grupo: 9 aprovados, 0 falhas, 18,60 s na execução após as correções da revisão independente.
 
-Os três testes puros de `canteiro-domain parties::` passaram em 20/11/2026, incluindo vetores oficiais, máscaras inválidas e período profissional.
+A verificação central também aprovou 47 testes de aplicação com PostgreSQL, incluindo os nove casos `registry_`. O [relatório integrado das issues 10 a 14](ISSUES-010-014.md#resultados-da-versão-integrada) acompanha a verificação da versão e as evidências.
 
-A interface compilou para renderização no servidor com `cargo check -p canteiro-web --features ssr --offline`. A revisão independente conferiu autorização temporal, identidade da repetição, descarte de respostas após sair da tela e correspondência entre o histórico e o cadastro selecionado. Os quatro achados foram corrigidos, revistos e os testes de aplicação afetados passaram. A inspeção visual e a execução em navegador pertencem à validação integrada do lote 10 a 14 e devem ser vinculadas à versão publicada antes do aceite técnico final.
+Os três testes puros de `canteiro-domain parties::` passaram em 19/11/2026 (horário de Brasília), incluindo vetores oficiais, máscaras inválidas e período profissional.
+
+A interface compilou para renderização no servidor com `cargo check -p canteiro-web --features ssr --offline`. A revisão independente conferiu autorização temporal, identidade da repetição, descarte de respostas após sair da tela e correspondência entre o histórico e o cadastro selecionado. Os quatro achados foram corrigidos, revistos e os testes de aplicação afetados passaram. Na [CI 44648996986](https://github.com/tjsasakifln/canteiro-360/actions/runs/44648996986), o percurso de cadastros executou gravação pelo teclado, contato, recusa de CNPJ inválido com preservação dos campos e verificações de largura antes de parar no formulário de projetos. A cota de artefatos impediu recuperar as capturas. A inspeção visual e a conclusão do percurso integrado permanecem pendentes de nova execução, conforme o [registro consolidado](ISSUES-010-014.md).
 
 ## Limites preservados
 
