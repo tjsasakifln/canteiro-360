@@ -81,14 +81,14 @@ impl Fixture {
         maximum: &str,
         required: bool,
     ) -> GrantView {
-        let previous: Vec<_> = self
-            .access(owner)
-            .await
-            .state
-            .grants
-            .into_iter()
-            .map(|grant| grant.id)
-            .collect();
+        let state = self.access(owner).await.state;
+        let kind = state
+            .scopes
+            .iter()
+            .find(|scope| scope.id == scope_id)
+            .expect("fixture scope exists")
+            .kind;
+        let previous: Vec<_> = state.grants.into_iter().map(|grant| grant.id).collect();
         let response = self
             .access_command(
                 owner,
@@ -99,7 +99,7 @@ impl Fixture {
                     role,
                     actions: Action::ALL
                         .into_iter()
-                        .filter(|action| role.permits(*action))
+                        .filter(|action| role.permits(*action) && action.applies_to(kind))
                         .collect(),
                     max_amount: money(maximum),
                     valid_from: "2000-01-01T00:00:00Z".into(),

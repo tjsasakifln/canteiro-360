@@ -15,9 +15,16 @@ use leptos_router::{
 mod access;
 mod auth;
 mod calculations;
+mod documents;
 pub mod form_components;
 mod http;
+#[cfg(feature = "ssr")]
+pub mod obligations;
 mod organizations;
+mod parties;
+mod portfolio;
+#[cfg(feature = "ssr")]
+pub mod projects;
 mod prototype;
 mod reliability;
 pub use prototype::is_supported_prototype_route;
@@ -68,6 +75,13 @@ pub fn App() -> impl IntoView {
                     <nav class="site-account-nav" aria-label="Conta"><a class="account-link" href="/organizacoes">"Empresas"</a><a class="account-link" href="/permissoes">"Permissões"</a><a class="account-link" href="/historico">"Histórico"</a><a class="account-link" href="/acesso">"Entrar"</a><span class="environment-label">"Em desenvolvimento"</span></nav>
                 </div>
             </header>
+            <nav class="page-width workspace-navigation" aria-label="Rotina da empresa">
+                <a href="/carteira">"Carteira de obras"</a>
+                <a href="/projetos" rel="external">"Projetos e entregas"</a>
+                <a href="/documentos">"Documentos"</a>
+                <a href="/obrigacoes" rel="external">"Obrigações técnicas"</a>
+                <a href="/cadastros">"Pessoas e empresas"</a>
+            </nav>
             <main id="conteudo" class="page-width main-content" tabindex="-1">
                 <Routes fallback=NotFoundPage>
                     <Route path=path!("/") view=HomePage/>
@@ -75,6 +89,9 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/organizacoes") view=organizations::OrganizationsPage/>
                     <Route path=path!("/permissoes") view=access::PermissionsPage/>
                     <Route path=path!("/historico") view=reliability::HistoryPage/>
+                    <Route path=path!("/documentos") view=documents::DocumentsPage/>
+                    <Route path=path!("/cadastros") view=parties::PartiesPage/>
+                    <Route path=path!("/carteira") view=portfolio::PortfolioPage/>
                     <Route path=path!("/conferencia") view=calculations::CalculationPage/>
                     // Resolve the page on the server before emitting its HTML.
                     // OutOfOrder streaming places suspended rows in an inert

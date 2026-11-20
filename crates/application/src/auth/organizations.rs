@@ -10,6 +10,11 @@ use canteiro_persistence::{
 use chrono::{DateTime, Duration, Utc};
 use uuid::Uuid;
 mod access;
+pub mod documents;
+mod obligations;
+mod parties;
+mod portfolio;
+mod projects;
 mod reliability;
 
 struct Actor {

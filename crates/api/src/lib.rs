@@ -3,9 +3,14 @@ mod access;
 pub mod auth;
 mod calculations;
 pub mod config;
+mod documents;
 pub mod error;
 mod forms;
+mod obligations;
 mod organizations;
+mod parties;
+mod portfolio;
+mod projects;
 mod reliability;
 
 use axum::{
@@ -34,6 +39,11 @@ pub fn router(config: &Config) -> Router {
         .merge(organizations::routes())
         .merge(access::routes())
         .merge(reliability::routes())
+        .merge(documents::routes())
+        .merge(parties::routes())
+        .merge(portfolio::routes())
+        .merge(projects::routes())
+        .merge(obligations::routes())
         .route(
             "/api/prototipo/calculos/rateio",
             axum::routing::post(calculations::allocation)

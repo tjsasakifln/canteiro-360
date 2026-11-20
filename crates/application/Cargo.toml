@@ -7,6 +7,7 @@ publish.workspace = true
 license.workspace = true
 
 [dependencies]
+lopdf = { version = "=0.47.0", default-features = false }
 canteiro-domain = { path = "../domain" }
 canteiro-contracts = { path = "../contracts" }
 
@@ -25,6 +26,7 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 chrono.workspace = true
+chrono-tz.workspace = true
 uuid = { workspace = true, features = ["v4"] }
 thiserror.workspace = true
 
@@ -33,3 +35,4 @@ sqlx.workspace = true
 
 [lints]
 workspace = true
+

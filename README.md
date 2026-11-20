@@ -6,6 +6,8 @@ Gestão de obras e projetos privados no Brasil, com a disciplina operacional doc
 
 Esta sequência de implementação inclui formulários e tabelas da issue 4, precisão e calendários da issue 5, autenticação da issue 6 e [empresas, convites e isolamento](docs/organizacoes.md) da issue 7. O [guia de acesso](docs/seguranca-acesso.md) descreve cadastro verificado, sessões, recuperação e segundo fator. A base técnica reúne as etapas 3 a 9, preservando as pendências humanas das issues 3 e 6. A issue 8 acrescenta [permissões por obra, contrato e orçamento, alçadas e substituições](docs/permissoes-alcadas.md). A issue 9 acrescenta [histórico contratual, edição concorrente e recuperação de gravações](docs/historico-concorrencia.md).
 
+As issues 10 a 14 acrescentam [documentos privados e versões imutáveis](docs/validacao/ISSUE-010.md), [cadastros de pessoas, empresas e carteira de obras](docs/cadastros-carteira.md), projetos independentes de obra e obrigações técnicas com anexos verificáveis. As rotas de uso são `/documentos`, `/cadastros`, `/carteira`, `/projetos` e `/obrigacoes`. O [registro de validação integrado](docs/validacao/ISSUES-010-014.md) reúne testes, revisão e limites da entrega. Esta sequência depende da integração da PR 82 e preserva os aceites humanos anteriores.
+
 ## Compilar e executar
 
 Com Rustup e as ferramentas de compilação disponíveis:
@@ -62,3 +64,4 @@ Lógica de aplicação em **Rust**, inclusive a interface: **Leptos com renderiz
 Preservar as regras operacionais demonstradas pelas fontes e registrar toda adaptação privada. Contrato, execução, medição, aprovação, faturamento, pagamento, recebimento e aceite técnico têm registros próprios. Cálculos são decimais, alterações preservam o histórico e aprovações são verificadas no servidor.
 
 O Canteiro 360 é um produto independente. Os manuais servem de referência funcional; não há vínculo institucional, reutilização do código proprietário, identidade visual ou credenciais do SICOP.
+

@@ -39,7 +39,7 @@ fn grant(number: u128, user: u128, role: Role) -> AccessGrant {
         role,
         actions: Action::ALL
             .into_iter()
-            .filter(|action| role.permits(*action))
+            .filter(|action| role.permits(*action) && action.applies_to(scope().kind))
             .collect(),
         valid_from: time("2026-01-01T00:00:00Z"),
         valid_until: Some(time("2027-01-01T00:00:00Z")),
@@ -100,7 +100,12 @@ fn wire_names_remain_stable_and_distinguish_technical_and_financial_roles() {
         assert_eq!(serde_json::to_value(action).unwrap(), action.as_str());
         assert!(!action.label().is_empty());
     }
-    for kind in [ScopeKind::Work, ScopeKind::Contract, ScopeKind::Budget] {
+    for kind in [
+        ScopeKind::Work,
+        ScopeKind::Contract,
+        ScopeKind::Budget,
+        ScopeKind::Project,
+    ] {
         assert_eq!(serde_json::to_value(kind).unwrap(), kind.as_str());
         assert!(!kind.label().is_empty());
     }

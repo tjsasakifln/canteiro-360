@@ -80,6 +80,8 @@ fn proposer_action(action: AccessAction) -> Result<AccessAction, AuthError> {
         AccessAction::ApproveChange => Ok(AccessAction::ProposeChange),
         AccessAction::AuthorizePayment => Ok(AccessAction::RecordPayment),
         AccessAction::TechnicalAccept => Ok(AccessAction::ReviewMeasurement),
+        AccessAction::ApproveProjectScope => Ok(AccessAction::EditProject),
+        AccessAction::ApproveTechnicalException => Ok(AccessAction::ManageTechnicalObligations),
         _ => Err(invalid(
             "Selecione uma decisão de orçamento, alteração, pagamento ou aceite técnico.",
         )),
@@ -344,7 +346,7 @@ impl AuthService {
                 let name = name(&input)?;
                 let parent = parent_id.as_deref().map(id).transpose()?;
                 if match kind {
-                    ScopeKind::Work => parent.is_some(),
+                    ScopeKind::Work | ScopeKind::Project => parent.is_some(),
                     ScopeKind::Contract => parent
                         .is_none_or(|p| !data.scopes.iter().any(|s| s.id == p && s.kind == "work")),
                     ScopeKind::Budget => parent.is_none_or(|p| {

@@ -16,9 +16,11 @@ hmac = "=0.12.1"
 sha1 = "=0.10.7"
 data-encoding = "=2.9.0"
 base64.workspace = true
+uuid = { workspace = true, features = ["v4"] }
 tokio.workspace = true
 serde_json.workspace = true
 reqwest.workspace = true
 
 [lints]
 workspace = true
+
