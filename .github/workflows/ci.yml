@@ -99,8 +99,6 @@ jobs:
           cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1 2>&1 | tee target/evidence/auth-http.log
       - name: Instalar ferramentas nas versões fixadas
         run: cargo xtask setup
-      - name: Auditar dependências, origens e licenças
-        run: cargo deny --locked check
       - name: Compilar servidor, processamento e navegador
         run: cargo xtask build
       - name: Conferir orçamento dos arquivos servidos
@@ -126,6 +124,9 @@ jobs:
           export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
           unset CANTEIRO_FIXTURE_RUNTIME
           cargo test --locked -p canteiro-e2e --no-fail-fast -- --ignored --nocapture
+      - name: Auditar dependências, origens e licenças
+        if: ${{ !cancelled() }}
+        run: cargo deny --locked check
       - name: Preservar medidas da revisão
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -134,3 +135,4 @@ jobs:
           path: target/evidence/
           if-no-files-found: error
           retention-days: 30
+

@@ -158,8 +158,8 @@ async fn registry_documents_and_projects_work_with_real_authorization_and_keyboa
         Some(&scanner.address.to_string()),
     )
     .await?;
-    let owner = account(&h, "registry-owner", true).await?;
-    let reader = account(&h, "registry-reader", false).await?;
+    let owner = account(&h, "regown", true).await?;
+    let reader = account(&h, "regread", false).await?;
     let org = company(&h, &owner, "Construtora Vereda Fictícia").await?;
     join(&h, &owner, &reader, &org).await?;
     let work = create_scope(&h, &owner, "Obra de teste Vereda").await?;
