@@ -269,7 +269,17 @@ fn project_report(value: &Value) -> Result<Value> {
         .filter_map(|row| {
             let route = row["route"].as_str().filter(|r| ROUTES.contains(r))?;
             let width = row["width"].as_u64().filter(|w| [360, 1280].contains(w))?;
-            let geometry = unsigned_fields(&row["geometry"], &["width", "scroll", "headings"]);
+            let geometry = unsigned_fields(
+                &row["geometry"],
+                &[
+                    "width",
+                    "scroll",
+                    "headings",
+                    "controlCount",
+                    "minimumControlWidth",
+                    "minimumControlHeight",
+                ],
+            );
             Some(json!({"route":route,"width":width,"geometry":geometry}))
         })
         .collect::<Vec<_>>();

@@ -136,12 +136,48 @@ async fn capture(h: &Harness, b: &Browser, route: &str, selector: &str) -> TestR
             WAIT,
         )
         .await?;
-        let geometry = b.execute("return {width:innerWidth,scroll:document.documentElement.scrollWidth,headings:document.querySelectorAll('h1').length};").await?;
-        assert!(
-            geometry["scroll"].as_u64().unwrap() <= u64::from(width),
-            "page overflow: {route} {geometry}"
-        );
-        assert_eq!(geometry["headings"], 1);
+        let measured = b
+            .execute(
+                r#"const selectors = 'main button,main input,main select,main textarea,main summary,.record-navigation a,.workspace-navigation a';
+                const controls = Array.from(document.querySelectorAll(selectors)).flatMap(element => {
+                  if (element.type === 'hidden' || !element.getClientRects().length) return [];
+                  const style = getComputedStyle(element);
+                  if (style.visibility !== 'visible' || element.closest('[hidden], [inert]')) return [];
+                  const target = ['checkbox','radio'].includes(element.type) && element.labels?.length ? element.labels[0] : element;
+                  const rect = target.getBoundingClientRect();
+                  return [{tag:element.tagName.toLowerCase(),id:element.id,name:element.name || '',type:element.type || '',width:rect.width,height:rect.height}];
+                });
+                return {geometry:{width:innerWidth,scroll:document.documentElement.scrollWidth,headings:document.querySelectorAll('h1').length,controlCount:controls.length,minimumControlWidth:Math.round(Math.min(...controls.map(c=>c.width))),minimumControlHeight:Math.round(Math.min(...controls.map(c=>c.height)))},tooSmall:controls.filter(c=>c.width < 44 || c.height < 44)};"#,
+            )
+            .await?;
+        let geometry = &measured["geometry"];
+        if geometry["scroll"]
+            .as_u64()
+            .is_none_or(|scroll| scroll > u64::from(width))
+        {
+            return Err(format!("page overflow: {route} {geometry}").into());
+        }
+        if geometry["headings"] != 1 {
+            return Err(format!("expected one h1: {route} {geometry}").into());
+        }
+        if geometry["controlCount"]
+            .as_u64()
+            .is_none_or(|count| count == 0)
+        {
+            return Err(format!("no visible controls measured: {route} {measured}").into());
+        }
+        if !measured["tooSmall"].as_array().is_some_and(Vec::is_empty) {
+            return Err(format!(
+                "controls below 44 CSS pixels: {route} {width} {}",
+                measured["tooSmall"]
+            )
+            .into());
+        }
+        // The keyboard journey has already exercised the controls. Capture the
+        // neutral layout at the top, without a temporarily focused skip link
+        // covering a field in a full-page image taken after scrolling.
+        b.execute("document.activeElement?.blur(); window.scrollTo(0,0); return true;")
+            .await?;
         b.full_screenshot(&h.evidence.join(format!("registry-{route}-{width}.png")))
             .await?;
         records.push(json!({"route":route,"width":width,"geometry":geometry}));
