@@ -1,0 +1,16 @@
+CREATE ROLE
+CREATE ROLE
+CREATE DATABASE
+REVOKE
+    Finished `dev` profile [unoptimized] target(s) in 0.18s
+     Running `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.
+   Compiling canteiro-api v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/crates/api)
+    Finished `test` profile [unoptimized] target(s) in 5.87s
+     Running tests/auth.rs (target/debug/deps/auth-8fb4ee5da5adb5eb)
+
+running 1 test
+test native_forms::native_project_form_creates_independently_and_preserves_invalid_revision ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 6.95s
+

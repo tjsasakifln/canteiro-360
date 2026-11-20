@@ -1,0 +1,13 @@
+   Compiling xtask v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/tools/xtask)
+    Finished `test` profile [unoptimized] target(s) in 0.68s
+     Running unittests src/main.rs (target/debug/deps/xtask-9b45d433169c1e4e)
+
+running 5 tests
+test evidence::tests::evidence_requires_both_gates_and_a_complete_source_sha ... ok
+test evidence::tests::evidence_projection_discards_secrets_and_all_free_text ... ok
+test evidence::tests::evidence_rejects_file_and_directory_symlinks ... ok
+test evidence::tests::evidence_allowlist_frames_are_recoverable_and_missing_files_are_reported ... ok
+test evidence::tests::evidence_rejects_wrong_magic_regular_file_and_size_limits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.12s
+

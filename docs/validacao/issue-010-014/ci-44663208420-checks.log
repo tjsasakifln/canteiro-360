@@ -1,0 +1,37 @@
+Step 6: Conferir formatação: success
+
+Step 7: Conferir plano, linguagens e segredos: success
+2026-11-20T02:47:52.2238744Z     Finished `dev` profile [unoptimized] target(s) in 19.52s
+2026-11-20T02:47:53.2047291Z Política aprovada: 678 arquivos, sem lógica JS/TS própria ou credenciais embutidas detectadas.
+
+Step 8: Analisar Rust com avisos tratados como erro: success
+2026-11-20T02:51:20.8388181Z     Finished `dev` profile [unoptimized] target(s) in 3m 27s
+
+Step 9: Analisar também o código compilado para navegador: success
+2026-11-20T02:52:30.0514167Z     Finished `dev` profile [unoptimized] target(s) in 1m 09s
+
+Step 16: Compilar servidor, processamento e navegador: success
+2026-11-20T03:12:17.0497756Z     Finished `dev` profile [unoptimized] target(s) in 0.09s
+2026-11-20T03:12:18.1198999Z Política aprovada: 678 arquivos, sem lógica JS/TS própria ou credenciais embutidas detectadas.
+2026-11-20T03:25:03.6305026Z     Finished `release` profile [optimized] target(s) in 12m 45s
+2026-11-20T03:28:23.7564744Z     Finished `wasm-release` profile [optimized] target(s) in 3m 20s
+2026-11-20T03:29:39.6690442Z Orçamento inicial (.br servido + inline bruto): WASM 1036328/1048576 B, JS 8991/81920 B, CSS 12205/61440 B.
+
+Step 17: Conferir orçamento dos arquivos servidos: success
+2026-11-20T03:29:40.0223688Z     Finished `dev` profile [unoptimized] target(s) in 0.12s
+2026-11-20T03:29:40.2837489Z Orçamento inicial (.br servido + inline bruto): WASM 1036328/1048576 B, JS 8991/81920 B, CSS 12205/61440 B.
+
+Step 18: Compilar verificador independente para execução real em WASM: success
+2026-11-20T03:29:59.3199879Z     Finished `wasm-release` profile [optimized] target(s) in 18.95s
+
+Step 21: Transmitir capturas e medições das jornadas sintéticas: success
+2026-11-20T03:39:38.0759474Z     Finished `dev` profile [unoptimized] target(s) in 0.08s
+
+Step 22: Auditar dependências, origens e licenças: failure
+2026-11-20T03:39:43.2454215Z    ├ ID: RUSTSEC-2026-0543
+2026-11-20T03:39:43.2515977Z    ├ ID: RUSTSEC-2026-0555
+2026-11-20T03:39:43.3509908Z advisories FAILED, bans ok, licenses ok, sources ok
+
+Step 23: Preservar medidas da revisão: failure
+2026-11-20T03:39:44.0689919Z ##[error]Failed to CreateArtifact: Artifact storage quota has been hit. Unable to upload any new artifacts. Usage is recalculated every 6-12 hours.
+

@@ -1,0 +1,67 @@
+{
+  "files": [
+    {
+      "bytes": 188690,
+      "name": "registry-cadastros-360.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 197473,
+      "name": "registry-cadastros-1280.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 252912,
+      "name": "registry-carteira-360.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 271306,
+      "name": "registry-carteira-1280.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 199244,
+      "name": "registry-projetos-360.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 219182,
+      "name": "registry-projetos-1280.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 196737,
+      "name": "registry-documentos-360.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 199553,
+      "name": "registry-documentos-1280.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 328851,
+      "name": "registry-obrigacoes-360.png",
+      "status": "ready"
+    },
+    {
+      "bytes": 343236,
+      "name": "registry-obrigacoes-1280.png",
+      "status": "ready"
+    },
+    {
+      "name": "registry-failure.png",
+      "status": "missing"
+    },
+    {
+      "bytes": 1834,
+      "name": "registry-interface.json",
+      "status": "ready"
+    }
+  ],
+  "missing": 1,
+  "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a",
+  "source_bytes": 2401516,
+  "total_bytes": 2399018
+}

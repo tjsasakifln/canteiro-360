@@ -1,0 +1,16 @@
+   Compiling canteiro-e2e v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/tools/e2e)
+    Finished `test` profile [unoptimized] target(s) in 1.79s
+     Running tests/registry.rs (target/debug/deps/registry-e667c27045da6ef2)
+
+running 1 test
+Error: "WebDriver 500 Internal Server Error: {\"error\":\"session not created\",\"message\":\"session not created: Chrome instance exited. Examine ChromeDriver verbose log to determine the cause.\",\"stacktrace\":\"#0 0x562933dd90aa <unknown>\\n#1 0x56293370c875 <unknown>\\n#2 0x56293373ce86 <unknown>\\n#3 0x56293373ad44 <unknown>\\n#4 0x56293377af51 <unknown>\\n#5 0x56293377a9fc <unknown>\\n#6 0x562933745a07 <unknown>\\n#7 0x562933744d1e <unknown>\\n#8 0x5629337457f1 <unknown>\\n#9 0x562933d9bc5c <unknown>\\n#10 0x562933d9a475 <unknown>\\n#11 0x562933d857f8 <unknown>\\n#12 0x562933d9b0ca <unknown>\\n#13 0x562933d6e3f9 <unknown>\\n#14 0x562933dc3848 <unknown>\\n#15 0x562933dc39e5 <unknown>\\n#16 0x562933dd7a43 <unknown>\\n#17 0x7f9abedcb8bb <unknown>\\n\"}"
+test registry_documents_and_projects_work_with_real_authorization_and_keyboard ... FAILED
+
+failures:
+
+failures:
+    registry_documents_and_projects_work_with_real_authorization_and_keyboard
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.60s
+
+error: test failed, to rerun pass `-p canteiro-e2e --test registry`

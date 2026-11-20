@@ -1,0 +1,2324 @@
+warning[duplicate]: found 2 duplicate entries for crate 'aes'
+  ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:3:1
+  │  
+3 │ ╭ aes 0.8.4 registry+https://github.com/rust-lang/crates.io-index
+4 │ │ aes 0.9.4 registry+https://github.com/rust-lang/crates.io-index
+  │ ╰───────────────────────────────────────────────────────────────┘ lock entries
+  │  
+  ├ aes v0.8.4
+    └── aes-gcm v0.10.3
+        └── canteiro-application v0.1.0
+            ├── canteiro-api v0.1.0
+            └── (dev) canteiro-e2e v0.1.0
+  ├ aes v0.9.4
+    └── lopdf v0.47.0
+        └── canteiro-application v0.1.0
+            ├── canteiro-api v0.1.0
+            └── (dev) canteiro-e2e v0.1.0
+
+warning[duplicate]: found 2 duplicate entries for crate 'alloc-no-stdlib'
+  ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:7:1
+  │  
+7 │ ╭ alloc-no-stdlib 2.0.4 registry+https://github.com/rust-lang/crates.io-index
+8 │ │ alloc-no-stdlib 3.0.0 registry+https://github.com/rust-lang/crates.io-index
+  │ ╰───────────────────────────────────────────────────────────────────────────┘ lock entries
+  │  
+  ├ alloc-no-stdlib v2.0.4
+    ├── alloc-stdlib v0.2.4
+    │   └── brotli-decompressor v5.0.3
+    │       └── lopdf v0.47.0
+    │           └── canteiro-application v0.1.0
+    │               ├── canteiro-api v0.1.0
+    │               └── (dev) canteiro-e2e v0.1.0
+    └── brotli-decompressor v5.0.3 (*)
+  ├ alloc-no-stdlib v3.0.0
+    ├── alloc-stdlib v0.3.0
+    │   ├── brotli v9.1.1
+    │   │   ├── (dev) canteiro-api v0.1.0
+    │   │   ├── compression-codecs v0.4.47
+    │   │   │   └── async-compression v0.4.52
+    │   │   │       └── tower-http v0.7.1
+    │   │   │           └── canteiro-api v0.1.0 (*)
+    │   │   └── xtask v0.1.0
+    │   └── brotli-decompressor v6.3.1
+    │       └── brotli v9.1.1 (*)
+    ├── brotli v9.1.1 (*)
+    └── brotli-decompressor v6.3.1 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'alloc-stdlib'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:9:1
+   │  
+ 9 │ ╭ alloc-stdlib 0.2.4 registry+https://github.com/rust-lang/crates.io-index
+10 │ │ alloc-stdlib 0.3.0 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰────────────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ alloc-stdlib v0.2.4
+     └── brotli-decompressor v5.0.3
+         └── lopdf v0.47.0
+             └── canteiro-application v0.1.0
+                 ├── canteiro-api v0.1.0
+                 └── (dev) canteiro-e2e v0.1.0
+   ├ alloc-stdlib v0.3.0
+     ├── brotli v9.1.1
+     │   ├── (dev) canteiro-api v0.1.0
+     │   ├── compression-codecs v0.4.47
+     │   │   └── async-compression v0.4.52
+     │   │       └── tower-http v0.7.1
+     │   │           └── canteiro-api v0.1.0 (*)
+     │   └── xtask v0.1.0
+     └── brotli-decompressor v6.3.1
+         └── brotli v9.1.1 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'base64'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:30:1
+   │  
+30 │ ╭ base64 0.22.1 registry+https://github.com/rust-lang/crates.io-index
+31 │ │ base64 0.23.1 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰───────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ base64 v0.22.1
+     ├── axum v0.8.9
+     │   ├── canteiro-api v0.1.0
+     │   ├── leptos_axum v0.8.10
+     │   │   └── canteiro-api v0.1.0 (*)
+     │   └── server_fn v0.8.13
+     │       ├── leptos v0.8.23
+     │       │   ├── canteiro-api v0.1.0 (*)
+     │       │   ├── canteiro-web v0.1.0
+     │       │   │   └── canteiro-api v0.1.0 (*)
+     │       │   ├── leptos_axum v0.8.10 (*)
+     │       │   ├── leptos_integration_utils v0.8.9
+     │       │   │   └── leptos_axum v0.8.10 (*)
+     │       │   ├── leptos_meta v0.8.7
+     │       │   │   ├── canteiro-web v0.1.0 (*)
+     │       │   │   ├── leptos_axum v0.8.10 (*)
+     │       │   │   └── leptos_integration_utils v0.8.9 (*)
+     │       │   └── leptos_router v0.8.17
+     │       │       ├── canteiro-web v0.1.0 (*)
+     │       │       ├── leptos_axum v0.8.10 (*)
+     │       │       └── leptos_integration_utils v0.8.9 (*)
+     │       ├── leptos_axum v0.8.10 (*)
+     │       └── leptos_server v0.8.8
+     │           └── leptos v0.8.23 (*)
+     ├── canteiro-api v0.1.0 (*)
+     ├── canteiro-application v0.1.0
+     │   ├── canteiro-api v0.1.0 (*)
+     │   └── (dev) canteiro-e2e v0.1.0
+     ├── (dev) canteiro-e2e v0.1.0 (*)
+     ├── canteiro-web v0.1.0 (*)
+     ├── leptos v0.8.23 (*)
+     ├── leptos_server v0.8.8 (*)
+     ├── server_fn v0.8.13 (*)
+     ├── sqlx-core v0.9.0
+     │   ├── sqlx v0.9.0
+     │   │   ├── (dev) canteiro-application v0.1.0 (*)
+     │   │   └── canteiro-persistence v0.1.0
+     │   │       ├── canteiro-api v0.1.0 (*)
+     │   │       ├── canteiro-application v0.1.0 (*)
+     │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │       └── canteiro-jobs v0.1.0
+     │   ├── sqlx-macros v0.9.0
+     │   │   └── sqlx v0.9.0 (*)
+     │   ├── sqlx-macros-core v0.9.0
+     │   │   └── sqlx-macros v0.9.0 (*)
+     │   └── sqlx-postgres v0.9.0
+     │       ├── sqlx v0.9.0 (*)
+     │       └── sqlx-macros-core v0.9.0 (*)
+     └── sqlx-postgres v0.9.0 (*)
+   ├ base64 v0.23.1
+     ├── hyper-util v0.1.21
+     │   ├── axum v0.8.9
+     │   │   ├── canteiro-api v0.1.0
+     │   │   ├── leptos_axum v0.8.10
+     │   │   │   └── canteiro-api v0.1.0 (*)
+     │   │   └── server_fn v0.8.13
+     │   │       ├── leptos v0.8.23
+     │   │       │   ├── canteiro-api v0.1.0 (*)
+     │   │       │   ├── canteiro-web v0.1.0
+     │   │       │   │   └── canteiro-api v0.1.0 (*)
+     │   │       │   ├── leptos_axum v0.8.10 (*)
+     │   │       │   ├── leptos_integration_utils v0.8.9
+     │   │       │   │   └── leptos_axum v0.8.10 (*)
+     │   │       │   ├── leptos_meta v0.8.7
+     │   │       │   │   ├── canteiro-web v0.1.0 (*)
+     │   │       │   │   ├── leptos_axum v0.8.10 (*)
+     │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+     │   │       │   └── leptos_router v0.8.17
+     │   │       │       ├── canteiro-web v0.1.0 (*)
+     │   │       │       ├── leptos_axum v0.8.10 (*)
+     │   │       │       └── leptos_integration_utils v0.8.9 (*)
+     │   │       ├── leptos_axum v0.8.10 (*)
+     │   │       └── leptos_server v0.8.8
+     │   │           └── leptos v0.8.23 (*)
+     │   ├── hyper-rustls v0.27.10
+     │   │   └── reqwest v0.13.5
+     │   │       ├── canteiro-api v0.1.0 (*)
+     │   │       └── (dev) canteiro-e2e v0.1.0
+     │   └── reqwest v0.13.5 (*)
+     └── reqwest v0.13.5 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'block-buffer'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:35:1
+   │  
+35 │ ╭ block-buffer 0.10.4 registry+https://github.com/rust-lang/crates.io-index
+36 │ │ block-buffer 0.12.1 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰─────────────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ block-buffer v0.10.4
+     └── digest v0.10.7
+         ├── blake2 v0.10.6
+         │   └── argon2 v0.5.3
+         │       └── canteiro-application v0.1.0
+         │           ├── canteiro-api v0.1.0
+         │           └── (dev) canteiro-e2e v0.1.0
+         ├── hmac v0.12.1
+         │   ├── (dev) canteiro-api v0.1.0 (*)
+         │   ├── canteiro-application v0.1.0 (*)
+         │   └── (dev) canteiro-e2e v0.1.0 (*)
+         ├── sha1 v0.10.7
+         │   ├── axum v0.8.9
+         │   │   ├── canteiro-api v0.1.0 (*)
+         │   │   ├── leptos_axum v0.8.10
+         │   │   │   └── canteiro-api v0.1.0 (*)
+         │   │   └── server_fn v0.8.13
+         │   │       ├── leptos v0.8.23
+         │   │       │   ├── canteiro-api v0.1.0 (*)
+         │   │       │   ├── canteiro-web v0.1.0
+         │   │       │   │   └── canteiro-api v0.1.0 (*)
+         │   │       │   ├── leptos_axum v0.8.10 (*)
+         │   │       │   ├── leptos_integration_utils v0.8.9
+         │   │       │   │   └── leptos_axum v0.8.10 (*)
+         │   │       │   ├── leptos_meta v0.8.7
+         │   │       │   │   ├── canteiro-web v0.1.0 (*)
+         │   │       │   │   ├── leptos_axum v0.8.10 (*)
+         │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+         │   │       │   └── leptos_router v0.8.17
+         │   │       │       ├── canteiro-web v0.1.0 (*)
+         │   │       │       ├── leptos_axum v0.8.10 (*)
+         │   │       │       └── leptos_integration_utils v0.8.9 (*)
+         │   │       ├── leptos_axum v0.8.10 (*)
+         │   │       └── leptos_server v0.8.8
+         │   │           └── leptos v0.8.23 (*)
+         │   ├── (dev) canteiro-api v0.1.0 (*)
+         │   ├── canteiro-application v0.1.0 (*)
+         │   ├── (dev) canteiro-e2e v0.1.0 (*)
+         │   └── tungstenite v0.29.0
+         │       └── tokio-tungstenite v0.29.0
+         │           └── axum v0.8.9 (*)
+         └── sha2 v0.10.9
+             ├── canteiro-application v0.1.0 (*)
+             ├── sqlx-core v0.9.0
+             │   ├── sqlx v0.9.0
+             │   │   ├── (dev) canteiro-application v0.1.0 (*)
+             │   │   └── canteiro-persistence v0.1.0
+             │   │       ├── canteiro-api v0.1.0 (*)
+             │   │       ├── canteiro-application v0.1.0 (*)
+             │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+             │   │       └── canteiro-jobs v0.1.0
+             │   ├── sqlx-macros v0.9.0
+             │   │   └── sqlx v0.9.0 (*)
+             │   ├── sqlx-macros-core v0.9.0
+             │   │   └── sqlx-macros v0.9.0 (*)
+             │   └── sqlx-postgres v0.9.0
+             │       ├── sqlx v0.9.0 (*)
+             │       └── sqlx-macros-core v0.9.0 (*)
+             ├── sqlx-macros-core v0.9.0 (*)
+             └── wasm_split_macros v0.2.2
+                 └── wasm_split_helpers v0.2.3
+                     └── leptos v0.8.23 (*)
+   ├ block-buffer v0.12.1
+     └── digest v0.11.3
+         ├── hmac v0.13.0
+         │   ├── hkdf v0.13.0
+         │   │   └── sqlx-postgres v0.9.0
+         │   │       ├── sqlx v0.9.0
+         │   │       │   ├── (dev) canteiro-application v0.1.0
+         │   │       │   │   ├── canteiro-api v0.1.0
+         │   │       │   │   └── (dev) canteiro-e2e v0.1.0
+         │   │       │   └── canteiro-persistence v0.1.0
+         │   │       │       ├── canteiro-api v0.1.0 (*)
+         │   │       │       ├── canteiro-application v0.1.0 (*)
+         │   │       │       ├── (dev) canteiro-e2e v0.1.0 (*)
+         │   │       │       └── canteiro-jobs v0.1.0
+         │   │       └── sqlx-macros-core v0.9.0
+         │   │           └── sqlx-macros v0.9.0
+         │   │               └── sqlx v0.9.0 (*)
+         │   └── sqlx-postgres v0.9.0 (*)
+         ├── md-5 v0.11.0
+         │   ├── lopdf v0.47.0
+         │   │   └── canteiro-application v0.1.0 (*)
+         │   └── sqlx-postgres v0.9.0 (*)
+         └── sha2 v0.11.1
+             ├── lopdf v0.47.0 (*)
+             └── sqlx-postgres v0.9.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'brotli-decompressor'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:39:1
+   │  
+39 │ ╭ brotli-decompressor 5.0.3 registry+https://github.com/rust-lang/crates.io-index
+40 │ │ brotli-decompressor 6.3.1 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰───────────────────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ brotli-decompressor v5.0.3
+     └── lopdf v0.47.0
+         └── canteiro-application v0.1.0
+             ├── canteiro-api v0.1.0
+             └── (dev) canteiro-e2e v0.1.0
+   ├ brotli-decompressor v6.3.1
+     └── brotli v9.1.1
+         ├── (dev) canteiro-api v0.1.0
+         ├── compression-codecs v0.4.47
+         │   └── async-compression v0.4.52
+         │       └── tower-http v0.7.1
+         │           └── canteiro-api v0.1.0 (*)
+         └── xtask v0.1.0
+
+warning[duplicate]: found 2 duplicate entries for crate 'cipher'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:60:1
+   │  
+60 │ ╭ cipher 0.4.4 registry+https://github.com/rust-lang/crates.io-index
+61 │ │ cipher 0.5.2 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰──────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ cipher v0.4.4
+     ├── aes v0.8.4
+     │   └── aes-gcm v0.10.3
+     │       └── canteiro-application v0.1.0
+     │           ├── canteiro-api v0.1.0
+     │           └── (dev) canteiro-e2e v0.1.0
+     ├── aes-gcm v0.10.3 (*)
+     └── ctr v0.9.2
+         └── aes-gcm v0.10.3 (*)
+   ├ cipher v0.5.2
+     ├── aes v0.9.4
+     │   └── lopdf v0.47.0
+     │       └── canteiro-application v0.1.0
+     │           ├── canteiro-api v0.1.0
+     │           └── (dev) canteiro-e2e v0.1.0
+     ├── cbc v0.2.1
+     │   └── lopdf v0.47.0 (*)
+     └── ecb v0.2.1
+         └── lopdf v0.47.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'convert_case'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:75:1
+   │  
+75 │ ╭ convert_case 0.6.0 registry+https://github.com/rust-lang/crates.io-index
+76 │ │ convert_case 0.11.0 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰─────────────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ convert_case v0.6.0
+     └── config v0.15.27
+         └── leptos_config v0.8.10
+             ├── leptos v0.8.23
+             │   ├── canteiro-api v0.1.0
+             │   ├── canteiro-web v0.1.0
+             │   │   └── canteiro-api v0.1.0 (*)
+             │   ├── leptos_axum v0.8.10
+             │   │   └── canteiro-api v0.1.0 (*)
+             │   ├── leptos_integration_utils v0.8.9
+             │   │   └── leptos_axum v0.8.10 (*)
+             │   ├── leptos_meta v0.8.7
+             │   │   ├── canteiro-web v0.1.0 (*)
+             │   │   ├── leptos_axum v0.8.10 (*)
+             │   │   └── leptos_integration_utils v0.8.9 (*)
+             │   └── leptos_router v0.8.17
+             │       ├── canteiro-web v0.1.0 (*)
+             │       ├── leptos_axum v0.8.10 (*)
+             │       └── leptos_integration_utils v0.8.9 (*)
+             └── leptos_integration_utils v0.8.9 (*)
+   ├ convert_case v0.11.0
+     ├── convert_case_extras v0.2.0
+     │   └── leptos_macro v0.8.20
+     │       ├── leptos v0.8.23
+     │       │   ├── canteiro-api v0.1.0
+     │       │   ├── canteiro-web v0.1.0
+     │       │   │   └── canteiro-api v0.1.0 (*)
+     │       │   ├── leptos_axum v0.8.10
+     │       │   │   └── canteiro-api v0.1.0 (*)
+     │       │   ├── leptos_integration_utils v0.8.9
+     │       │   │   └── leptos_axum v0.8.10 (*)
+     │       │   ├── leptos_meta v0.8.7
+     │       │   │   ├── canteiro-web v0.1.0 (*)
+     │       │   │   ├── leptos_axum v0.8.10 (*)
+     │       │   │   └── leptos_integration_utils v0.8.9 (*)
+     │       │   └── leptos_router v0.8.17
+     │       │       ├── canteiro-web v0.1.0 (*)
+     │       │       ├── leptos_axum v0.8.10 (*)
+     │       │       └── leptos_integration_utils v0.8.9 (*)
+     │       └── leptos_axum v0.8.10 (*)
+     ├── leptos_macro v0.8.20 (*)
+     ├── reactive_stores_macro v0.4.4
+     │   └── reactive_stores v0.4.4
+     │       └── tachys v0.2.19
+     │           ├── leptos v0.8.23 (*)
+     │           ├── leptos_axum v0.8.10 (*)
+     │           ├── leptos_dom v0.8.8
+     │           │   └── leptos v0.8.23 (*)
+     │           ├── leptos_router v0.8.17 (*)
+     │           └── leptos_server v0.8.8
+     │               └── leptos v0.8.23 (*)
+     └── server_fn_macro v0.8.12
+         ├── leptos_macro v0.8.20 (*)
+         └── server_fn_macro_default v0.8.6
+             └── server_fn v0.8.13
+                 ├── leptos v0.8.23 (*)
+                 ├── leptos_axum v0.8.10 (*)
+                 └── leptos_server v0.8.8 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'cpufeatures'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:80:1
+   │  
+80 │ ╭ cpufeatures 0.2.17 registry+https://github.com/rust-lang/crates.io-index
+81 │ │ cpufeatures 0.3.1 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰───────────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ cpufeatures v0.2.17
+     ├── aes v0.8.4
+     │   └── aes-gcm v0.10.3
+     │       └── canteiro-application v0.1.0
+     │           ├── canteiro-api v0.1.0
+     │           └── (dev) canteiro-e2e v0.1.0
+     ├── argon2 v0.5.3
+     │   └── canteiro-application v0.1.0 (*)
+     ├── polyval v0.6.2
+     │   └── ghash v0.5.1
+     │       └── aes-gcm v0.10.3 (*)
+     ├── sha1 v0.10.7
+     │   ├── axum v0.8.9
+     │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   ├── leptos_axum v0.8.10
+     │   │   │   └── canteiro-api v0.1.0 (*)
+     │   │   └── server_fn v0.8.13
+     │   │       ├── leptos v0.8.23
+     │   │       │   ├── canteiro-api v0.1.0 (*)
+     │   │       │   ├── canteiro-web v0.1.0
+     │   │       │   │   └── canteiro-api v0.1.0 (*)
+     │   │       │   ├── leptos_axum v0.8.10 (*)
+     │   │       │   ├── leptos_integration_utils v0.8.9
+     │   │       │   │   └── leptos_axum v0.8.10 (*)
+     │   │       │   ├── leptos_meta v0.8.7
+     │   │       │   │   ├── canteiro-web v0.1.0 (*)
+     │   │       │   │   ├── leptos_axum v0.8.10 (*)
+     │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+     │   │       │   └── leptos_router v0.8.17
+     │   │       │       ├── canteiro-web v0.1.0 (*)
+     │   │       │       ├── leptos_axum v0.8.10 (*)
+     │   │       │       └── leptos_integration_utils v0.8.9 (*)
+     │   │       ├── leptos_axum v0.8.10 (*)
+     │   │       └── leptos_server v0.8.8
+     │   │           └── leptos v0.8.23 (*)
+     │   ├── (dev) canteiro-api v0.1.0 (*)
+     │   ├── canteiro-application v0.1.0 (*)
+     │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   └── tungstenite v0.29.0
+     │       └── tokio-tungstenite v0.29.0
+     │           └── axum v0.8.9 (*)
+     └── sha2 v0.10.9
+         ├── canteiro-application v0.1.0 (*)
+         ├── sqlx-core v0.9.0
+         │   ├── sqlx v0.9.0
+         │   │   ├── (dev) canteiro-application v0.1.0 (*)
+         │   │   └── canteiro-persistence v0.1.0
+         │   │       ├── canteiro-api v0.1.0 (*)
+         │   │       ├── canteiro-application v0.1.0 (*)
+         │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+         │   │       └── canteiro-jobs v0.1.0
+         │   ├── sqlx-macros v0.9.0
+         │   │   └── sqlx v0.9.0 (*)
+         │   ├── sqlx-macros-core v0.9.0
+         │   │   └── sqlx-macros v0.9.0 (*)
+         │   └── sqlx-postgres v0.9.0
+         │       ├── sqlx v0.9.0 (*)
+         │       └── sqlx-macros-core v0.9.0 (*)
+         ├── sqlx-macros-core v0.9.0 (*)
+         └── wasm_split_macros v0.2.2
+             └── wasm_split_helpers v0.2.3
+                 └── leptos v0.8.23 (*)
+   ├ cpufeatures v0.3.1
+     ├── aes v0.9.4
+     │   └── lopdf v0.47.0
+     │       └── canteiro-application v0.1.0
+     │           ├── canteiro-api v0.1.0
+     │           └── (dev) canteiro-e2e v0.1.0
+     ├── chacha20 v0.10.2
+     │   └── rand v0.10.3
+     │       ├── lopdf v0.47.0 (*)
+     │       └── sqlx-postgres v0.9.0
+     │           ├── sqlx v0.9.0
+     │           │   ├── (dev) canteiro-application v0.1.0 (*)
+     │           │   └── canteiro-persistence v0.1.0
+     │           │       ├── canteiro-api v0.1.0 (*)
+     │           │       ├── canteiro-application v0.1.0 (*)
+     │           │       ├── (dev) canteiro-e2e v0.1.0 (*)
+     │           │       └── canteiro-jobs v0.1.0
+     │           └── sqlx-macros-core v0.9.0
+     │               └── sqlx-macros v0.9.0
+     │                   └── sqlx v0.9.0 (*)
+     └── sha2 v0.11.1
+         ├── lopdf v0.47.0 (*)
+         └── sqlx-postgres v0.9.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'crypto-common'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:87:1
+   │  
+87 │ ╭ crypto-common 0.1.7 registry+https://github.com/rust-lang/crates.io-index
+88 │ │ crypto-common 0.2.2 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰─────────────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ crypto-common v0.1.7
+     ├── aead v0.5.2
+     │   └── aes-gcm v0.10.3
+     │       └── canteiro-application v0.1.0
+     │           ├── canteiro-api v0.1.0
+     │           └── (dev) canteiro-e2e v0.1.0
+     ├── cipher v0.4.4
+     │   ├── aes v0.8.4
+     │   │   └── aes-gcm v0.10.3 (*)
+     │   ├── aes-gcm v0.10.3 (*)
+     │   └── ctr v0.9.2
+     │       └── aes-gcm v0.10.3 (*)
+     ├── digest v0.10.7
+     │   ├── blake2 v0.10.6
+     │   │   └── argon2 v0.5.3
+     │   │       └── canteiro-application v0.1.0 (*)
+     │   ├── hmac v0.12.1
+     │   │   ├── (dev) canteiro-api v0.1.0 (*)
+     │   │   ├── canteiro-application v0.1.0 (*)
+     │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+     │   ├── sha1 v0.10.7
+     │   │   ├── axum v0.8.9
+     │   │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   │   ├── leptos_axum v0.8.10
+     │   │   │   │   └── canteiro-api v0.1.0 (*)
+     │   │   │   └── server_fn v0.8.13
+     │   │   │       ├── leptos v0.8.23
+     │   │   │       │   ├── canteiro-api v0.1.0 (*)
+     │   │   │       │   ├── canteiro-web v0.1.0
+     │   │   │       │   │   └── canteiro-api v0.1.0 (*)
+     │   │   │       │   ├── leptos_axum v0.8.10 (*)
+     │   │   │       │   ├── leptos_integration_utils v0.8.9
+     │   │   │       │   │   └── leptos_axum v0.8.10 (*)
+     │   │   │       │   ├── leptos_meta v0.8.7
+     │   │   │       │   │   ├── canteiro-web v0.1.0 (*)
+     │   │   │       │   │   ├── leptos_axum v0.8.10 (*)
+     │   │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+     │   │   │       │   └── leptos_router v0.8.17
+     │   │   │       │       ├── canteiro-web v0.1.0 (*)
+     │   │   │       │       ├── leptos_axum v0.8.10 (*)
+     │   │   │       │       └── leptos_integration_utils v0.8.9 (*)
+     │   │   │       ├── leptos_axum v0.8.10 (*)
+     │   │   │       └── leptos_server v0.8.8
+     │   │   │           └── leptos v0.8.23 (*)
+     │   │   ├── (dev) canteiro-api v0.1.0 (*)
+     │   │   ├── canteiro-application v0.1.0 (*)
+     │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │   └── tungstenite v0.29.0
+     │   │       └── tokio-tungstenite v0.29.0
+     │   │           └── axum v0.8.9 (*)
+     │   └── sha2 v0.10.9
+     │       ├── canteiro-application v0.1.0 (*)
+     │       ├── sqlx-core v0.9.0
+     │       │   ├── sqlx v0.9.0
+     │       │   │   ├── (dev) canteiro-application v0.1.0 (*)
+     │       │   │   └── canteiro-persistence v0.1.0
+     │       │   │       ├── canteiro-api v0.1.0 (*)
+     │       │   │       ├── canteiro-application v0.1.0 (*)
+     │       │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+     │       │   │       └── canteiro-jobs v0.1.0
+     │       │   ├── sqlx-macros v0.9.0
+     │       │   │   └── sqlx v0.9.0 (*)
+     │       │   ├── sqlx-macros-core v0.9.0
+     │       │   │   └── sqlx-macros v0.9.0 (*)
+     │       │   └── sqlx-postgres v0.9.0
+     │       │       ├── sqlx v0.9.0 (*)
+     │       │       └── sqlx-macros-core v0.9.0 (*)
+     │       ├── sqlx-macros-core v0.9.0 (*)
+     │       └── wasm_split_macros v0.2.2
+     │           └── wasm_split_helpers v0.2.3
+     │               └── leptos v0.8.23 (*)
+     └── universal-hash v0.5.1
+         └── polyval v0.6.2
+             └── ghash v0.5.1
+                 └── aes-gcm v0.10.3 (*)
+   ├ crypto-common v0.2.2
+     ├── cipher v0.5.2
+     │   ├── aes v0.9.4
+     │   │   └── lopdf v0.47.0
+     │   │       └── canteiro-application v0.1.0
+     │   │           ├── canteiro-api v0.1.0
+     │   │           └── (dev) canteiro-e2e v0.1.0
+     │   ├── cbc v0.2.1
+     │   │   └── lopdf v0.47.0 (*)
+     │   └── ecb v0.2.1
+     │       └── lopdf v0.47.0 (*)
+     └── digest v0.11.3
+         ├── hmac v0.13.0
+         │   ├── hkdf v0.13.0
+         │   │   └── sqlx-postgres v0.9.0
+         │   │       ├── sqlx v0.9.0
+         │   │       │   ├── (dev) canteiro-application v0.1.0 (*)
+         │   │       │   └── canteiro-persistence v0.1.0
+         │   │       │       ├── canteiro-api v0.1.0 (*)
+         │   │       │       ├── canteiro-application v0.1.0 (*)
+         │   │       │       ├── (dev) canteiro-e2e v0.1.0 (*)
+         │   │       │       └── canteiro-jobs v0.1.0
+         │   │       └── sqlx-macros-core v0.9.0
+         │   │           └── sqlx-macros v0.9.0
+         │   │               └── sqlx v0.9.0 (*)
+         │   └── sqlx-postgres v0.9.0 (*)
+         ├── md-5 v0.11.0
+         │   ├── lopdf v0.47.0 (*)
+         │   └── sqlx-postgres v0.9.0 (*)
+         └── sha2 v0.11.1
+             ├── lopdf v0.47.0 (*)
+             └── sqlx-postgres v0.9.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'digest'
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:93:1
+   │  
+93 │ ╭ digest 0.10.7 registry+https://github.com/rust-lang/crates.io-index
+94 │ │ digest 0.11.3 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰───────────────────────────────────────────────────────────────────┘ lock entries
+   │  
+   ├ digest v0.10.7
+     ├── blake2 v0.10.6
+     │   └── argon2 v0.5.3
+     │       └── canteiro-application v0.1.0
+     │           ├── canteiro-api v0.1.0
+     │           └── (dev) canteiro-e2e v0.1.0
+     ├── hmac v0.12.1
+     │   ├── (dev) canteiro-api v0.1.0 (*)
+     │   ├── canteiro-application v0.1.0 (*)
+     │   └── (dev) canteiro-e2e v0.1.0 (*)
+     ├── sha1 v0.10.7
+     │   ├── axum v0.8.9
+     │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   ├── leptos_axum v0.8.10
+     │   │   │   └── canteiro-api v0.1.0 (*)
+     │   │   └── server_fn v0.8.13
+     │   │       ├── leptos v0.8.23
+     │   │       │   ├── canteiro-api v0.1.0 (*)
+     │   │       │   ├── canteiro-web v0.1.0
+     │   │       │   │   └── canteiro-api v0.1.0 (*)
+     │   │       │   ├── leptos_axum v0.8.10 (*)
+     │   │       │   ├── leptos_integration_utils v0.8.9
+     │   │       │   │   └── leptos_axum v0.8.10 (*)
+     │   │       │   ├── leptos_meta v0.8.7
+     │   │       │   │   ├── canteiro-web v0.1.0 (*)
+     │   │       │   │   ├── leptos_axum v0.8.10 (*)
+     │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+     │   │       │   └── leptos_router v0.8.17
+     │   │       │       ├── canteiro-web v0.1.0 (*)
+     │   │       │       ├── leptos_axum v0.8.10 (*)
+     │   │       │       └── leptos_integration_utils v0.8.9 (*)
+     │   │       ├── leptos_axum v0.8.10 (*)
+     │   │       └── leptos_server v0.8.8
+     │   │           └── leptos v0.8.23 (*)
+     │   ├── (dev) canteiro-api v0.1.0 (*)
+     │   ├── canteiro-application v0.1.0 (*)
+     │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   └── tungstenite v0.29.0
+     │       └── tokio-tungstenite v0.29.0
+     │           └── axum v0.8.9 (*)
+     └── sha2 v0.10.9
+         ├── canteiro-application v0.1.0 (*)
+         ├── sqlx-core v0.9.0
+         │   ├── sqlx v0.9.0
+         │   │   ├── (dev) canteiro-application v0.1.0 (*)
+         │   │   └── canteiro-persistence v0.1.0
+         │   │       ├── canteiro-api v0.1.0 (*)
+         │   │       ├── canteiro-application v0.1.0 (*)
+         │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+         │   │       └── canteiro-jobs v0.1.0
+         │   ├── sqlx-macros v0.9.0
+         │   │   └── sqlx v0.9.0 (*)
+         │   ├── sqlx-macros-core v0.9.0
+         │   │   └── sqlx-macros v0.9.0 (*)
+         │   └── sqlx-postgres v0.9.0
+         │       ├── sqlx v0.9.0 (*)
+         │       └── sqlx-macros-core v0.9.0 (*)
+         ├── sqlx-macros-core v0.9.0 (*)
+         └── wasm_split_macros v0.2.2
+             └── wasm_split_helpers v0.2.3
+                 └── leptos v0.8.23 (*)
+   ├ digest v0.11.3
+     ├── hmac v0.13.0
+     │   ├── hkdf v0.13.0
+     │   │   └── sqlx-postgres v0.9.0
+     │   │       ├── sqlx v0.9.0
+     │   │       │   ├── (dev) canteiro-application v0.1.0
+     │   │       │   │   ├── canteiro-api v0.1.0
+     │   │       │   │   └── (dev) canteiro-e2e v0.1.0
+     │   │       │   └── canteiro-persistence v0.1.0
+     │   │       │       ├── canteiro-api v0.1.0 (*)
+     │   │       │       ├── canteiro-application v0.1.0 (*)
+     │   │       │       ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │       │       └── canteiro-jobs v0.1.0
+     │   │       └── sqlx-macros-core v0.9.0
+     │   │           └── sqlx-macros v0.9.0
+     │   │               └── sqlx v0.9.0 (*)
+     │   └── sqlx-postgres v0.9.0 (*)
+     ├── md-5 v0.11.0
+     │   ├── lopdf v0.47.0
+     │   │   └── canteiro-application v0.1.0 (*)
+     │   └── sqlx-postgres v0.9.0 (*)
+     └── sha2 v0.11.1
+         ├── lopdf v0.47.0 (*)
+         └── sqlx-postgres v0.9.0 (*)
+
+warning[duplicate]: found 3 duplicate entries for crate 'getrandom'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:124:1
+    │  
+124 │ ╭ getrandom 0.2.17 registry+https://github.com/rust-lang/crates.io-index
+125 │ │ getrandom 0.3.4 registry+https://github.com/rust-lang/crates.io-index
+126 │ │ getrandom 0.4.3 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰─────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ getrandom v0.2.17
+      ├── rand_core v0.6.4
+      │   ├── canteiro-application v0.1.0
+      │   │   ├── canteiro-api v0.1.0
+      │   │   └── (dev) canteiro-e2e v0.1.0
+      │   ├── crypto-common v0.1.7
+      │   │   ├── aead v0.5.2
+      │   │   │   └── aes-gcm v0.10.3
+      │   │   │       └── canteiro-application v0.1.0 (*)
+      │   │   ├── cipher v0.4.4
+      │   │   │   ├── aes v0.8.4
+      │   │   │   │   └── aes-gcm v0.10.3 (*)
+      │   │   │   ├── aes-gcm v0.10.3 (*)
+      │   │   │   └── ctr v0.9.2
+      │   │   │       └── aes-gcm v0.10.3 (*)
+      │   │   ├── digest v0.10.7
+      │   │   │   ├── blake2 v0.10.6
+      │   │   │   │   └── argon2 v0.5.3
+      │   │   │   │       └── canteiro-application v0.1.0 (*)
+      │   │   │   ├── hmac v0.12.1
+      │   │   │   │   ├── (dev) canteiro-api v0.1.0 (*)
+      │   │   │   │   ├── canteiro-application v0.1.0 (*)
+      │   │   │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   │   ├── sha1 v0.10.7
+      │   │   │   │   ├── axum v0.8.9
+      │   │   │   │   │   ├── canteiro-api v0.1.0 (*)
+      │   │   │   │   │   ├── leptos_axum v0.8.10
+      │   │   │   │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   │   │   │   └── server_fn v0.8.13
+      │   │   │   │   │       ├── leptos v0.8.23
+      │   │   │   │   │       │   ├── canteiro-api v0.1.0 (*)
+      │   │   │   │   │       │   ├── canteiro-web v0.1.0
+      │   │   │   │   │       │   │   └── canteiro-api v0.1.0 (*)
+      │   │   │   │   │       │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   │   │       │   ├── leptos_integration_utils v0.8.9
+      │   │   │   │   │       │   │   └── leptos_axum v0.8.10 (*)
+      │   │   │   │   │       │   ├── leptos_meta v0.8.7
+      │   │   │   │   │       │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   │   │   │       │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   │   │   │   │       │   └── leptos_router v0.8.17
+      │   │   │   │   │       │       ├── canteiro-web v0.1.0 (*)
+      │   │   │   │   │       │       ├── leptos_axum v0.8.10 (*)
+      │   │   │   │   │       │       └── leptos_integration_utils v0.8.9 (*)
+      │   │   │   │   │       ├── leptos_axum v0.8.10 (*)
+      │   │   │   │   │       └── leptos_server v0.8.8
+      │   │   │   │   │           └── leptos v0.8.23 (*)
+      │   │   │   │   ├── (dev) canteiro-api v0.1.0 (*)
+      │   │   │   │   ├── canteiro-application v0.1.0 (*)
+      │   │   │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   │   │   └── tungstenite v0.29.0
+      │   │   │   │       └── tokio-tungstenite v0.29.0
+      │   │   │   │           └── axum v0.8.9 (*)
+      │   │   │   └── sha2 v0.10.9
+      │   │   │       ├── canteiro-application v0.1.0 (*)
+      │   │   │       ├── sqlx-core v0.9.0
+      │   │   │       │   ├── sqlx v0.9.0
+      │   │   │       │   │   ├── (dev) canteiro-application v0.1.0 (*)
+      │   │   │       │   │   └── canteiro-persistence v0.1.0
+      │   │   │       │   │       ├── canteiro-api v0.1.0 (*)
+      │   │   │       │   │       ├── canteiro-application v0.1.0 (*)
+      │   │   │       │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   │       │   │       └── canteiro-jobs v0.1.0
+      │   │   │       │   ├── sqlx-macros v0.9.0
+      │   │   │       │   │   └── sqlx v0.9.0 (*)
+      │   │   │       │   ├── sqlx-macros-core v0.9.0
+      │   │   │       │   │   └── sqlx-macros v0.9.0 (*)
+      │   │   │       │   └── sqlx-postgres v0.9.0
+      │   │   │       │       ├── sqlx v0.9.0 (*)
+      │   │   │       │       └── sqlx-macros-core v0.9.0 (*)
+      │   │   │       ├── sqlx-macros-core v0.9.0 (*)
+      │   │   │       └── wasm_split_macros v0.2.2
+      │   │   │           └── wasm_split_helpers v0.2.3
+      │   │   │               └── leptos v0.8.23 (*)
+      │   │   └── universal-hash v0.5.1
+      │   │       └── polyval v0.6.2
+      │   │           └── ghash v0.5.1
+      │   │               └── aes-gcm v0.10.3 (*)
+      │   └── password-hash v0.5.0
+      │       └── argon2 v0.5.3 (*)
+      └── ring v0.17.14
+          ├── rustls v0.23.46
+          │   ├── hyper-rustls v0.27.10
+          │   │   └── reqwest v0.13.5
+          │   │       ├── canteiro-api v0.1.0 (*)
+          │   │       └── (dev) canteiro-e2e v0.1.0 (*)
+          │   ├── reqwest v0.13.5 (*)
+          │   ├── rustls-platform-verifier v0.7.1
+          │   │   └── reqwest v0.13.5 (*)
+          │   ├── sqlx-core v0.9.0 (*)
+          │   └── tokio-rustls v0.26.6
+          │       ├── hyper-rustls v0.27.10 (*)
+          │       └── reqwest v0.13.5 (*)
+          └── rustls-webpki v0.103.16
+              ├── rustls v0.23.46 (*)
+              └── rustls-platform-verifier v0.7.1 (*)
+    ├ getrandom v0.3.4
+      └── rand_core v0.9.5
+          ├── rand v0.9.5
+          │   ├── leptos v0.8.23
+          │   │   ├── canteiro-api v0.1.0
+          │   │   ├── canteiro-web v0.1.0
+          │   │   │   └── canteiro-api v0.1.0 (*)
+          │   │   ├── leptos_axum v0.8.10
+          │   │   │   └── canteiro-api v0.1.0 (*)
+          │   │   ├── leptos_integration_utils v0.8.9
+          │   │   │   └── leptos_axum v0.8.10 (*)
+          │   │   ├── leptos_meta v0.8.7
+          │   │   │   ├── canteiro-web v0.1.0 (*)
+          │   │   │   ├── leptos_axum v0.8.10 (*)
+          │   │   │   └── leptos_integration_utils v0.8.9 (*)
+          │   │   └── leptos_router v0.8.17
+          │   │       ├── canteiro-web v0.1.0 (*)
+          │   │       ├── leptos_axum v0.8.10 (*)
+          │   │       └── leptos_integration_utils v0.8.9 (*)
+          │   └── tungstenite v0.29.0
+          │       └── tokio-tungstenite v0.29.0
+          │           └── axum v0.8.9
+          │               ├── canteiro-api v0.1.0 (*)
+          │               ├── leptos_axum v0.8.10 (*)
+          │               └── server_fn v0.8.13
+          │                   ├── leptos v0.8.23 (*)
+          │                   ├── leptos_axum v0.8.10 (*)
+          │                   └── leptos_server v0.8.8
+          │                       └── leptos v0.8.23 (*)
+          └── rand_chacha v0.9.0
+              └── rand v0.9.5 (*)
+    ├ getrandom v0.4.3
+      ├── (dev) canteiro-api v0.1.0
+      ├── (dev) canteiro-e2e v0.1.0
+      ├── leptos v0.8.23
+      │   ├── canteiro-api v0.1.0 (*)
+      │   ├── canteiro-web v0.1.0
+      │   │   └── canteiro-api v0.1.0 (*)
+      │   ├── leptos_axum v0.8.10
+      │   │   └── canteiro-api v0.1.0 (*)
+      │   ├── leptos_integration_utils v0.8.9
+      │   │   └── leptos_axum v0.8.10 (*)
+      │   ├── leptos_meta v0.8.7
+      │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   └── leptos_router v0.8.17
+      │       ├── canteiro-web v0.1.0 (*)
+      │       ├── leptos_axum v0.8.10 (*)
+      │       └── leptos_integration_utils v0.8.9 (*)
+      ├── lopdf v0.47.0
+      │   └── canteiro-application v0.1.0
+      │       ├── canteiro-api v0.1.0 (*)
+      │       └── (dev) canteiro-e2e v0.1.0 (*)
+      ├── rand v0.10.3
+      │   ├── lopdf v0.47.0 (*)
+      │   └── sqlx-postgres v0.9.0
+      │       ├── sqlx v0.9.0
+      │       │   ├── (dev) canteiro-application v0.1.0 (*)
+      │       │   └── canteiro-persistence v0.1.0
+      │       │       ├── canteiro-api v0.1.0 (*)
+      │       │       ├── canteiro-application v0.1.0 (*)
+      │       │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       │       └── canteiro-jobs v0.1.0
+      │       └── sqlx-macros-core v0.9.0
+      │           └── sqlx-macros v0.9.0
+      │               └── sqlx v0.9.0 (*)
+      └── uuid v1.29.2
+          ├── (dev) canteiro-api v0.1.0 (*)
+          ├── canteiro-application v0.1.0 (*)
+          ├── canteiro-domain v0.1.0
+          │   ├── canteiro-api v0.1.0 (*)
+          │   ├── canteiro-application v0.1.0 (*)
+          │   ├── canteiro-calculation-verification v0.1.0
+          │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+          │   ├── canteiro-contracts v0.1.0
+          │   │   ├── canteiro-api v0.1.0 (*)
+          │   │   ├── canteiro-application v0.1.0 (*)
+          │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+          │   │   └── canteiro-web v0.1.0 (*)
+          │   ├── canteiro-persistence v0.1.0 (*)
+          │   └── canteiro-web v0.1.0 (*)
+          ├── (dev) canteiro-e2e v0.1.0 (*)
+          ├── canteiro-persistence v0.1.0 (*)
+          ├── leptos_macro v0.8.20
+          │   ├── leptos v0.8.23 (*)
+          │   └── leptos_axum v0.8.10 (*)
+          ├── sqlx-core v0.9.0
+          │   ├── sqlx v0.9.0 (*)
+          │   ├── sqlx-macros v0.9.0 (*)
+          │   ├── sqlx-macros-core v0.9.0 (*)
+          │   └── sqlx-postgres v0.9.0 (*)
+          └── sqlx-postgres v0.9.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'hashbrown'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:131:1
+    │  
+131 │ ╭ hashbrown 0.16.1 registry+https://github.com/rust-lang/crates.io-index
+132 │ │ hashbrown 0.17.1 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ hashbrown v0.16.1
+      ├── hashlink v0.11.1
+      │   └── sqlx-core v0.9.0
+      │       ├── sqlx v0.9.0
+      │       │   ├── (dev) canteiro-application v0.1.0
+      │       │   │   ├── canteiro-api v0.1.0
+      │       │   │   └── (dev) canteiro-e2e v0.1.0
+      │       │   └── canteiro-persistence v0.1.0
+      │       │       ├── canteiro-api v0.1.0 (*)
+      │       │       ├── canteiro-application v0.1.0 (*)
+      │       │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       │       └── canteiro-jobs v0.1.0
+      │       ├── sqlx-macros v0.9.0
+      │       │   └── sqlx v0.9.0 (*)
+      │       ├── sqlx-macros-core v0.9.0
+      │       │   └── sqlx-macros v0.9.0 (*)
+      │       └── sqlx-postgres v0.9.0
+      │           ├── sqlx v0.9.0 (*)
+      │           └── sqlx-macros-core v0.9.0 (*)
+      └── sqlx-core v0.9.0 (*)
+    ├ hashbrown v0.17.1
+      └── indexmap v2.14.2
+          ├── leptos_hot_reload v0.8.7
+          │   ├── leptos v0.8.23
+          │   │   ├── canteiro-api v0.1.0
+          │   │   ├── canteiro-web v0.1.0
+          │   │   │   └── canteiro-api v0.1.0 (*)
+          │   │   ├── leptos_axum v0.8.10
+          │   │   │   └── canteiro-api v0.1.0 (*)
+          │   │   ├── leptos_integration_utils v0.8.9
+          │   │   │   └── leptos_axum v0.8.10 (*)
+          │   │   ├── leptos_meta v0.8.7
+          │   │   │   ├── canteiro-web v0.1.0 (*)
+          │   │   │   ├── leptos_axum v0.8.10 (*)
+          │   │   │   └── leptos_integration_utils v0.8.9 (*)
+          │   │   └── leptos_router v0.8.17
+          │   │       ├── canteiro-web v0.1.0 (*)
+          │   │       ├── leptos_axum v0.8.10 (*)
+          │   │       └── leptos_integration_utils v0.8.9 (*)
+          │   └── leptos_macro v0.8.20
+          │       ├── leptos v0.8.23 (*)
+          │       └── leptos_axum v0.8.10 (*)
+          ├── leptos_meta v0.8.7 (*)
+          ├── lopdf v0.47.0
+          │   └── canteiro-application v0.1.0
+          │       ├── canteiro-api v0.1.0 (*)
+          │       └── (dev) canteiro-e2e v0.1.0
+          ├── reactive_graph v0.2.16
+          │   ├── leptos v0.8.23 (*)
+          │   ├── leptos_dom v0.8.8
+          │   │   └── leptos v0.8.23 (*)
+          │   ├── leptos_integration_utils v0.8.9 (*)
+          │   ├── leptos_router v0.8.17 (*)
+          │   ├── leptos_server v0.8.8
+          │   │   └── leptos v0.8.23 (*)
+          │   ├── reactive_stores v0.4.4
+          │   │   └── tachys v0.2.19
+          │   │       ├── leptos v0.8.23 (*)
+          │   │       ├── leptos_axum v0.8.10 (*)
+          │   │       ├── leptos_dom v0.8.8 (*)
+          │   │       ├── leptos_router v0.8.17 (*)
+          │   │       └── leptos_server v0.8.8 (*)
+          │   └── tachys v0.2.19 (*)
+          ├── reactive_stores v0.4.4 (*)
+          ├── sqlx-core v0.9.0
+          │   ├── sqlx v0.9.0
+          │   │   ├── (dev) canteiro-application v0.1.0 (*)
+          │   │   └── canteiro-persistence v0.1.0
+          │   │       ├── canteiro-api v0.1.0 (*)
+          │   │       ├── canteiro-application v0.1.0 (*)
+          │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+          │   │       └── canteiro-jobs v0.1.0
+          │   ├── sqlx-macros v0.9.0
+          │   │   └── sqlx v0.9.0 (*)
+          │   ├── sqlx-macros-core v0.9.0
+          │   │   └── sqlx-macros v0.9.0 (*)
+          │   └── sqlx-postgres v0.9.0
+          │       ├── sqlx v0.9.0 (*)
+          │       └── sqlx-macros-core v0.9.0 (*)
+          └── tachys v0.2.19 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'hmac'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:137:1
+    │  
+137 │ ╭ hmac 0.12.1 registry+https://github.com/rust-lang/crates.io-index
+138 │ │ hmac 0.13.0 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰─────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ hmac v0.12.1
+      ├── (dev) canteiro-api v0.1.0
+      ├── canteiro-application v0.1.0
+      │   ├── canteiro-api v0.1.0 (*)
+      │   └── (dev) canteiro-e2e v0.1.0
+      └── (dev) canteiro-e2e v0.1.0 (*)
+    ├ hmac v0.13.0
+      ├── hkdf v0.13.0
+      │   └── sqlx-postgres v0.9.0
+      │       ├── sqlx v0.9.0
+      │       │   ├── (dev) canteiro-application v0.1.0
+      │       │   │   ├── canteiro-api v0.1.0
+      │       │   │   └── (dev) canteiro-e2e v0.1.0
+      │       │   └── canteiro-persistence v0.1.0
+      │       │       ├── canteiro-api v0.1.0 (*)
+      │       │       ├── canteiro-application v0.1.0 (*)
+      │       │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       │       └── canteiro-jobs v0.1.0
+      │       └── sqlx-macros-core v0.9.0
+      │           └── sqlx-macros v0.9.0
+      │               └── sqlx v0.9.0 (*)
+      └── sqlx-postgres v0.9.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'inout'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:162:1
+    │  
+162 │ ╭ inout 0.1.4 registry+https://github.com/rust-lang/crates.io-index
+163 │ │ inout 0.2.6 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰─────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ inout v0.1.4
+      └── cipher v0.4.4
+          ├── aes v0.8.4
+          │   └── aes-gcm v0.10.3
+          │       └── canteiro-application v0.1.0
+          │           ├── canteiro-api v0.1.0
+          │           └── (dev) canteiro-e2e v0.1.0
+          ├── aes-gcm v0.10.3 (*)
+          └── ctr v0.9.2
+              └── aes-gcm v0.10.3 (*)
+    ├ inout v0.2.6
+      └── cipher v0.5.2
+          ├── aes v0.9.4
+          │   └── lopdf v0.47.0
+          │       └── canteiro-application v0.1.0
+          │           ├── canteiro-api v0.1.0
+          │           └── (dev) canteiro-e2e v0.1.0
+          ├── cbc v0.2.1
+          │   └── lopdf v0.47.0 (*)
+          └── ecb v0.2.1
+              └── lopdf v0.47.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'rand'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:236:1
+    │  
+236 │ ╭ rand 0.9.5 registry+https://github.com/rust-lang/crates.io-index
+237 │ │ rand 0.10.3 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰─────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ rand v0.9.5
+      ├── leptos v0.8.23
+      │   ├── canteiro-api v0.1.0
+      │   ├── canteiro-web v0.1.0
+      │   │   └── canteiro-api v0.1.0 (*)
+      │   ├── leptos_axum v0.8.10
+      │   │   └── canteiro-api v0.1.0 (*)
+      │   ├── leptos_integration_utils v0.8.9
+      │   │   └── leptos_axum v0.8.10 (*)
+      │   ├── leptos_meta v0.8.7
+      │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   └── leptos_router v0.8.17
+      │       ├── canteiro-web v0.1.0 (*)
+      │       ├── leptos_axum v0.8.10 (*)
+      │       └── leptos_integration_utils v0.8.9 (*)
+      └── tungstenite v0.29.0
+          └── tokio-tungstenite v0.29.0
+              └── axum v0.8.9
+                  ├── canteiro-api v0.1.0 (*)
+                  ├── leptos_axum v0.8.10 (*)
+                  └── server_fn v0.8.13
+                      ├── leptos v0.8.23 (*)
+                      ├── leptos_axum v0.8.10 (*)
+                      └── leptos_server v0.8.8
+                          └── leptos v0.8.23 (*)
+    ├ rand v0.10.3
+      ├── lopdf v0.47.0
+      │   └── canteiro-application v0.1.0
+      │       ├── canteiro-api v0.1.0
+      │       └── (dev) canteiro-e2e v0.1.0
+      └── sqlx-postgres v0.9.0
+          ├── sqlx v0.9.0
+          │   ├── (dev) canteiro-application v0.1.0 (*)
+          │   └── canteiro-persistence v0.1.0
+          │       ├── canteiro-api v0.1.0 (*)
+          │       ├── canteiro-application v0.1.0 (*)
+          │       ├── (dev) canteiro-e2e v0.1.0 (*)
+          │       └── canteiro-jobs v0.1.0
+          └── sqlx-macros-core v0.9.0
+              └── sqlx-macros v0.9.0
+                  └── sqlx v0.9.0 (*)
+
+warning[duplicate]: found 3 duplicate entries for crate 'rand_core'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:239:1
+    │  
+239 │ ╭ rand_core 0.6.4 registry+https://github.com/rust-lang/crates.io-index
+240 │ │ rand_core 0.9.5 registry+https://github.com/rust-lang/crates.io-index
+241 │ │ rand_core 0.10.1 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ rand_core v0.6.4
+      ├── canteiro-application v0.1.0
+      │   ├── canteiro-api v0.1.0
+      │   └── (dev) canteiro-e2e v0.1.0
+      ├── crypto-common v0.1.7
+      │   ├── aead v0.5.2
+      │   │   └── aes-gcm v0.10.3
+      │   │       └── canteiro-application v0.1.0 (*)
+      │   ├── cipher v0.4.4
+      │   │   ├── aes v0.8.4
+      │   │   │   └── aes-gcm v0.10.3 (*)
+      │   │   ├── aes-gcm v0.10.3 (*)
+      │   │   └── ctr v0.9.2
+      │   │       └── aes-gcm v0.10.3 (*)
+      │   ├── digest v0.10.7
+      │   │   ├── blake2 v0.10.6
+      │   │   │   └── argon2 v0.5.3
+      │   │   │       └── canteiro-application v0.1.0 (*)
+      │   │   ├── hmac v0.12.1
+      │   │   │   ├── (dev) canteiro-api v0.1.0 (*)
+      │   │   │   ├── canteiro-application v0.1.0 (*)
+      │   │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   ├── sha1 v0.10.7
+      │   │   │   ├── axum v0.8.9
+      │   │   │   │   ├── canteiro-api v0.1.0 (*)
+      │   │   │   │   ├── leptos_axum v0.8.10
+      │   │   │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   │   │   └── server_fn v0.8.13
+      │   │   │   │       ├── leptos v0.8.23
+      │   │   │   │       │   ├── canteiro-api v0.1.0 (*)
+      │   │   │   │       │   ├── canteiro-web v0.1.0
+      │   │   │   │       │   │   └── canteiro-api v0.1.0 (*)
+      │   │   │   │       │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   │       │   ├── leptos_integration_utils v0.8.9
+      │   │   │   │       │   │   └── leptos_axum v0.8.10 (*)
+      │   │   │   │       │   ├── leptos_meta v0.8.7
+      │   │   │   │       │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   │   │       │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   │       │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   │   │   │       │   └── leptos_router v0.8.17
+      │   │   │   │       │       ├── canteiro-web v0.1.0 (*)
+      │   │   │   │       │       ├── leptos_axum v0.8.10 (*)
+      │   │   │   │       │       └── leptos_integration_utils v0.8.9 (*)
+      │   │   │   │       ├── leptos_axum v0.8.10 (*)
+      │   │   │   │       └── leptos_server v0.8.8
+      │   │   │   │           └── leptos v0.8.23 (*)
+      │   │   │   ├── (dev) canteiro-api v0.1.0 (*)
+      │   │   │   ├── canteiro-application v0.1.0 (*)
+      │   │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   │   └── tungstenite v0.29.0
+      │   │   │       └── tokio-tungstenite v0.29.0
+      │   │   │           └── axum v0.8.9 (*)
+      │   │   └── sha2 v0.10.9
+      │   │       ├── canteiro-application v0.1.0 (*)
+      │   │       ├── sqlx-core v0.9.0
+      │   │       │   ├── sqlx v0.9.0
+      │   │       │   │   ├── (dev) canteiro-application v0.1.0 (*)
+      │   │       │   │   └── canteiro-persistence v0.1.0
+      │   │       │   │       ├── canteiro-api v0.1.0 (*)
+      │   │       │   │       ├── canteiro-application v0.1.0 (*)
+      │   │       │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │       │   │       └── canteiro-jobs v0.1.0
+      │   │       │   ├── sqlx-macros v0.9.0
+      │   │       │   │   └── sqlx v0.9.0 (*)
+      │   │       │   ├── sqlx-macros-core v0.9.0
+      │   │       │   │   └── sqlx-macros v0.9.0 (*)
+      │   │       │   └── sqlx-postgres v0.9.0
+      │   │       │       ├── sqlx v0.9.0 (*)
+      │   │       │       └── sqlx-macros-core v0.9.0 (*)
+      │   │       ├── sqlx-macros-core v0.9.0 (*)
+      │   │       └── wasm_split_macros v0.2.2
+      │   │           └── wasm_split_helpers v0.2.3
+      │   │               └── leptos v0.8.23 (*)
+      │   └── universal-hash v0.5.1
+      │       └── polyval v0.6.2
+      │           └── ghash v0.5.1
+      │               └── aes-gcm v0.10.3 (*)
+      └── password-hash v0.5.0
+          └── argon2 v0.5.3 (*)
+    ├ rand_core v0.9.5
+      ├── rand v0.9.5
+      │   ├── leptos v0.8.23
+      │   │   ├── canteiro-api v0.1.0
+      │   │   ├── canteiro-web v0.1.0
+      │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   ├── leptos_axum v0.8.10
+      │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   ├── leptos_integration_utils v0.8.9
+      │   │   │   └── leptos_axum v0.8.10 (*)
+      │   │   ├── leptos_meta v0.8.7
+      │   │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   │   └── leptos_router v0.8.17
+      │   │       ├── canteiro-web v0.1.0 (*)
+      │   │       ├── leptos_axum v0.8.10 (*)
+      │   │       └── leptos_integration_utils v0.8.9 (*)
+      │   └── tungstenite v0.29.0
+      │       └── tokio-tungstenite v0.29.0
+      │           └── axum v0.8.9
+      │               ├── canteiro-api v0.1.0 (*)
+      │               ├── leptos_axum v0.8.10 (*)
+      │               └── server_fn v0.8.13
+      │                   ├── leptos v0.8.23 (*)
+      │                   ├── leptos_axum v0.8.10 (*)
+      │                   └── leptos_server v0.8.8
+      │                       └── leptos v0.8.23 (*)
+      └── rand_chacha v0.9.0
+          └── rand v0.9.5 (*)
+    ├ rand_core v0.10.1
+      ├── chacha20 v0.10.2
+      │   └── rand v0.10.3
+      │       ├── lopdf v0.47.0
+      │       │   └── canteiro-application v0.1.0
+      │       │       ├── canteiro-api v0.1.0
+      │       │       └── (dev) canteiro-e2e v0.1.0
+      │       └── sqlx-postgres v0.9.0
+      │           ├── sqlx v0.9.0
+      │           │   ├── (dev) canteiro-application v0.1.0 (*)
+      │           │   └── canteiro-persistence v0.1.0
+      │           │       ├── canteiro-api v0.1.0 (*)
+      │           │       ├── canteiro-application v0.1.0 (*)
+      │           │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │           │       └── canteiro-jobs v0.1.0
+      │           └── sqlx-macros-core v0.9.0
+      │               └── sqlx-macros v0.9.0
+      │                   └── sqlx v0.9.0 (*)
+      ├── getrandom v0.4.3
+      │   ├── (dev) canteiro-api v0.1.0 (*)
+      │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   ├── leptos v0.8.23
+      │   │   ├── canteiro-api v0.1.0 (*)
+      │   │   ├── canteiro-web v0.1.0
+      │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   ├── leptos_axum v0.8.10
+      │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   ├── leptos_integration_utils v0.8.9
+      │   │   │   └── leptos_axum v0.8.10 (*)
+      │   │   ├── leptos_meta v0.8.7
+      │   │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   │   └── leptos_router v0.8.17
+      │   │       ├── canteiro-web v0.1.0 (*)
+      │   │       ├── leptos_axum v0.8.10 (*)
+      │   │       └── leptos_integration_utils v0.8.9 (*)
+      │   ├── lopdf v0.47.0 (*)
+      │   ├── rand v0.10.3 (*)
+      │   └── uuid v1.29.2
+      │       ├── (dev) canteiro-api v0.1.0 (*)
+      │       ├── canteiro-application v0.1.0 (*)
+      │       ├── canteiro-domain v0.1.0
+      │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   ├── canteiro-application v0.1.0 (*)
+      │       │   ├── canteiro-calculation-verification v0.1.0
+      │       │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+      │       │   ├── canteiro-contracts v0.1.0
+      │       │   │   ├── canteiro-api v0.1.0 (*)
+      │       │   │   ├── canteiro-application v0.1.0 (*)
+      │       │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       │   │   └── canteiro-web v0.1.0 (*)
+      │       │   ├── canteiro-persistence v0.1.0 (*)
+      │       │   └── canteiro-web v0.1.0 (*)
+      │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       ├── canteiro-persistence v0.1.0 (*)
+      │       ├── leptos_macro v0.8.20
+      │       │   ├── leptos v0.8.23 (*)
+      │       │   └── leptos_axum v0.8.10 (*)
+      │       ├── sqlx-core v0.9.0
+      │       │   ├── sqlx v0.9.0 (*)
+      │       │   ├── sqlx-macros v0.9.0 (*)
+      │       │   ├── sqlx-macros-core v0.9.0 (*)
+      │       │   └── sqlx-postgres v0.9.0 (*)
+      │       └── sqlx-postgres v0.9.0 (*)
+      └── rand v0.10.3 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'sha2'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:278:1
+    │  
+278 │ ╭ sha2 0.10.9 registry+https://github.com/rust-lang/crates.io-index
+279 │ │ sha2 0.11.1 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰─────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ sha2 v0.10.9
+      ├── canteiro-application v0.1.0
+      │   ├── canteiro-api v0.1.0
+      │   └── (dev) canteiro-e2e v0.1.0
+      ├── sqlx-core v0.9.0
+      │   ├── sqlx v0.9.0
+      │   │   ├── (dev) canteiro-application v0.1.0 (*)
+      │   │   └── canteiro-persistence v0.1.0
+      │   │       ├── canteiro-api v0.1.0 (*)
+      │   │       ├── canteiro-application v0.1.0 (*)
+      │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │       └── canteiro-jobs v0.1.0
+      │   ├── sqlx-macros v0.9.0
+      │   │   └── sqlx v0.9.0 (*)
+      │   ├── sqlx-macros-core v0.9.0
+      │   │   └── sqlx-macros v0.9.0 (*)
+      │   └── sqlx-postgres v0.9.0
+      │       ├── sqlx v0.9.0 (*)
+      │       └── sqlx-macros-core v0.9.0 (*)
+      ├── sqlx-macros-core v0.9.0 (*)
+      └── wasm_split_macros v0.2.2
+          └── wasm_split_helpers v0.2.3
+              └── leptos v0.8.23
+                  ├── canteiro-api v0.1.0 (*)
+                  ├── canteiro-web v0.1.0
+                  │   └── canteiro-api v0.1.0 (*)
+                  ├── leptos_axum v0.8.10
+                  │   └── canteiro-api v0.1.0 (*)
+                  ├── leptos_integration_utils v0.8.9
+                  │   └── leptos_axum v0.8.10 (*)
+                  ├── leptos_meta v0.8.7
+                  │   ├── canteiro-web v0.1.0 (*)
+                  │   ├── leptos_axum v0.8.10 (*)
+                  │   └── leptos_integration_utils v0.8.9 (*)
+                  └── leptos_router v0.8.17
+                      ├── canteiro-web v0.1.0 (*)
+                      ├── leptos_axum v0.8.10 (*)
+                      └── leptos_integration_utils v0.8.9 (*)
+    ├ sha2 v0.11.1
+      ├── lopdf v0.47.0
+      │   └── canteiro-application v0.1.0
+      │       ├── canteiro-api v0.1.0
+      │       └── (dev) canteiro-e2e v0.1.0
+      └── sqlx-postgres v0.9.0
+          ├── sqlx v0.9.0
+          │   ├── (dev) canteiro-application v0.1.0 (*)
+          │   └── canteiro-persistence v0.1.0
+          │       ├── canteiro-api v0.1.0 (*)
+          │       ├── canteiro-application v0.1.0 (*)
+          │       ├── (dev) canteiro-e2e v0.1.0 (*)
+          │       └── canteiro-jobs v0.1.0
+          └── sqlx-macros-core v0.9.0
+              └── sqlx-macros v0.9.0
+                  └── sqlx v0.9.0 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'syn'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:299:1
+    │  
+299 │ ╭ syn 2.0.119 registry+https://github.com/rust-lang/crates.io-index
+300 │ │ syn 3.0.10 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ syn v2.0.119
+      ├── leptos_router_macro v0.8.7
+      │   └── leptos_router v0.8.17
+      │       ├── canteiro-web v0.1.0
+      │       │   └── canteiro-api v0.1.0
+      │       ├── leptos_axum v0.8.10
+      │       │   └── canteiro-api v0.1.0 (*)
+      │       └── leptos_integration_utils v0.8.9
+      │           └── leptos_axum v0.8.10 (*)
+      ├── pin-project-internal v1.1.13
+      │   └── pin-project v1.1.13
+      │       └── gloo-net v0.6.0
+      │           ├── leptos_router v0.8.17 (*)
+      │           └── server_fn v0.8.13
+      │               ├── leptos v0.8.23
+      │               │   ├── canteiro-api v0.1.0 (*)
+      │               │   ├── canteiro-web v0.1.0 (*)
+      │               │   ├── leptos_axum v0.8.10 (*)
+      │               │   ├── leptos_integration_utils v0.8.9 (*)
+      │               │   ├── leptos_meta v0.8.7
+      │               │   │   ├── canteiro-web v0.1.0 (*)
+      │               │   │   ├── leptos_axum v0.8.10 (*)
+      │               │   │   └── leptos_integration_utils v0.8.9 (*)
+      │               │   └── leptos_router v0.8.17 (*)
+      │               ├── leptos_axum v0.8.10 (*)
+      │               └── leptos_server v0.8.8
+      │                   └── leptos v0.8.23 (*)
+      ├── reactive_stores_macro v0.4.4
+      │   └── reactive_stores v0.4.4
+      │       └── tachys v0.2.19
+      │           ├── leptos v0.8.23 (*)
+      │           ├── leptos_axum v0.8.10 (*)
+      │           ├── leptos_dom v0.8.8
+      │           │   └── leptos v0.8.23 (*)
+      │           ├── leptos_router v0.8.17 (*)
+      │           └── leptos_server v0.8.8 (*)
+      ├── sqlx-macros v0.9.0
+      │   └── sqlx v0.9.0
+      │       ├── (dev) canteiro-application v0.1.0
+      │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   └── (dev) canteiro-e2e v0.1.0
+      │       └── canteiro-persistence v0.1.0
+      │           ├── canteiro-api v0.1.0 (*)
+      │           ├── canteiro-application v0.1.0 (*)
+      │           ├── (dev) canteiro-e2e v0.1.0 (*)
+      │           └── canteiro-jobs v0.1.0
+      ├── sqlx-macros-core v0.9.0
+      │   └── sqlx-macros v0.9.0 (*)
+      ├── thiserror-impl v1.0.69
+      │   └── thiserror v1.0.69
+      │       └── gloo-net v0.6.0 (*)
+      ├── tracing-attributes v0.1.31
+      │   └── tracing v0.1.44
+      │       ├── axum v0.8.9
+      │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_axum v0.8.10 (*)
+      │       │   └── server_fn v0.8.13 (*)
+      │       ├── axum-core v0.5.6
+      │       │   └── axum v0.8.9 (*)
+      │       ├── canteiro-api v0.1.0 (*)
+      │       ├── canteiro-jobs v0.1.0 (*)
+      │       ├── canteiro-persistence v0.1.0 (*)
+      │       ├── hyper-util v0.1.21
+      │       │   ├── axum v0.8.9 (*)
+      │       │   ├── hyper-rustls v0.27.10
+      │       │   │   └── reqwest v0.13.5
+      │       │   │       ├── canteiro-api v0.1.0 (*)
+      │       │   │       └── (dev) canteiro-e2e v0.1.0 (*)
+      │       │   └── reqwest v0.13.5 (*)
+      │       ├── sqlx-core v0.9.0
+      │       │   ├── sqlx v0.9.0 (*)
+      │       │   ├── sqlx-macros v0.9.0 (*)
+      │       │   ├── sqlx-macros-core v0.9.0 (*)
+      │       │   └── sqlx-postgres v0.9.0
+      │       │       ├── sqlx v0.9.0 (*)
+      │       │       └── sqlx-macros-core v0.9.0 (*)
+      │       ├── sqlx-postgres v0.9.0 (*)
+      │       ├── tower v0.5.3
+      │       │   ├── axum v0.8.9 (*)
+      │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_axum v0.8.10 (*)
+      │       │   ├── reqwest v0.13.5 (*)
+      │       │   ├── server_fn v0.8.13 (*)
+      │       │   └── tower-http v0.6.11
+      │       │       ├── leptos_axum v0.8.10 (*)
+      │       │       └── reqwest v0.13.5 (*)
+      │       └── tracing-subscriber v0.3.23
+      │           ├── canteiro-api v0.1.0 (*)
+      │           ├── canteiro-jobs v0.1.0 (*)
+      │           └── (dev) canteiro-persistence v0.1.0 (*)
+      ├── typed-builder-macro v0.23.2
+      │   ├── leptos v0.8.23 (*)
+      │   └── typed-builder v0.23.2
+      │       ├── leptos v0.8.23 (*)
+      │       └── leptos_config v0.8.10
+      │           ├── leptos v0.8.23 (*)
+      │           └── leptos_integration_utils v0.8.9 (*)
+      └── wasm_split_macros v0.2.2
+          └── wasm_split_helpers v0.2.3
+              └── leptos v0.8.23 (*)
+    ├ syn v3.0.10
+      ├── async-trait v0.1.92
+      │   └── tachys v0.2.19
+      │       ├── leptos v0.8.23
+      │       │   ├── canteiro-api v0.1.0
+      │       │   ├── canteiro-web v0.1.0
+      │       │   │   └── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_axum v0.8.10
+      │       │   │   └── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_integration_utils v0.8.9
+      │       │   │   └── leptos_axum v0.8.10 (*)
+      │       │   ├── leptos_meta v0.8.7
+      │       │   │   ├── canteiro-web v0.1.0 (*)
+      │       │   │   ├── leptos_axum v0.8.10 (*)
+      │       │   │   └── leptos_integration_utils v0.8.9 (*)
+      │       │   └── leptos_router v0.8.17
+      │       │       ├── canteiro-web v0.1.0 (*)
+      │       │       ├── leptos_axum v0.8.10 (*)
+      │       │       └── leptos_integration_utils v0.8.9 (*)
+      │       ├── leptos_axum v0.8.10 (*)
+      │       ├── leptos_dom v0.8.8
+      │       │   └── leptos v0.8.23 (*)
+      │       ├── leptos_router v0.8.17 (*)
+      │       └── leptos_server v0.8.8
+      │           └── leptos v0.8.23 (*)
+      ├── attribute-derive v0.11.0
+      │   └── leptos_macro v0.8.20
+      │       ├── leptos v0.8.23 (*)
+      │       └── leptos_axum v0.8.10 (*)
+      ├── attribute-derive-macro v0.11.0
+      │   └── attribute-derive v0.11.0 (*)
+      ├── derive-where v1.7.0
+      │   └── rstml v0.13.1
+      │       ├── leptos_hot_reload v0.8.7
+      │       │   ├── leptos v0.8.23 (*)
+      │       │   └── leptos_macro v0.8.20 (*)
+      │       └── leptos_macro v0.8.20 (*)
+      ├── displaydoc v0.2.7
+      │   ├── icu_collections v2.4.0
+      │   │   ├── icu_normalizer v2.4.0
+      │   │   │   └── idna_adapter v1.2.2
+      │   │   │       └── idna v1.1.0
+      │   │   │           └── url v2.5.8
+      │   │   │               ├── leptos_router v0.8.17 (*)
+      │   │   │               ├── reqwest v0.13.5
+      │   │   │               │   ├── canteiro-api v0.1.0 (*)
+      │   │   │               │   └── (dev) canteiro-e2e v0.1.0
+      │   │   │               ├── server_fn v0.8.13
+      │   │   │               │   ├── leptos v0.8.23 (*)
+      │   │   │               │   ├── leptos_axum v0.8.10 (*)
+      │   │   │               │   └── leptos_server v0.8.8 (*)
+      │   │   │               ├── sqlx-core v0.9.0
+      │   │   │               │   ├── sqlx v0.9.0
+      │   │   │               │   │   ├── (dev) canteiro-application v0.1.0
+      │   │   │               │   │   │   ├── canteiro-api v0.1.0 (*)
+      │   │   │               │   │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   │               │   │   └── canteiro-persistence v0.1.0
+      │   │   │               │   │       ├── canteiro-api v0.1.0 (*)
+      │   │   │               │   │       ├── canteiro-application v0.1.0 (*)
+      │   │   │               │   │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   │               │   │       └── canteiro-jobs v0.1.0
+      │   │   │               │   ├── sqlx-macros v0.9.0
+      │   │   │               │   │   └── sqlx v0.9.0 (*)
+      │   │   │               │   ├── sqlx-macros-core v0.9.0
+      │   │   │               │   │   └── sqlx-macros v0.9.0 (*)
+      │   │   │               │   └── sqlx-postgres v0.9.0
+      │   │   │               │       ├── sqlx v0.9.0 (*)
+      │   │   │               │       └── sqlx-macros-core v0.9.0 (*)
+      │   │   │               ├── sqlx-macros-core v0.9.0 (*)
+      │   │   │               └── tower-http v0.6.11
+      │   │   │                   ├── leptos_axum v0.8.10 (*)
+      │   │   │                   └── reqwest v0.13.5 (*)
+      │   │   └── icu_properties v2.4.0
+      │   │       └── idna_adapter v1.2.2 (*)
+      │   ├── icu_locale_core v2.4.0
+      │   │   ├── icu_properties v2.4.0 (*)
+      │   │   └── icu_provider v2.4.0
+      │   │       ├── icu_normalizer v2.4.0 (*)
+      │   │       └── icu_properties v2.4.0 (*)
+      │   ├── icu_properties v2.4.0 (*)
+      │   ├── icu_provider v2.4.0 (*)
+      │   ├── tinystr v0.8.5
+      │   │   └── icu_locale_core v2.4.0 (*)
+      │   └── zerotrie v0.2.5
+      │       ├── icu_properties v2.4.0 (*)
+      │       └── icu_provider v2.4.0 (*)
+      ├── futures-macro v0.3.34
+      │   └── futures-util v0.3.34
+      │       ├── axum v0.8.9
+      │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_axum v0.8.10 (*)
+      │       │   └── server_fn v0.8.13 (*)
+      │       ├── futures v0.3.34
+      │       │   ├── any_spawner v0.3.0
+      │       │   │   ├── leptos v0.8.23 (*)
+      │       │   │   ├── leptos_axum v0.8.10 (*)
+      │       │   │   ├── leptos_router v0.8.17 (*)
+      │       │   │   ├── leptos_server v0.8.8 (*)
+      │       │   │   ├── reactive_graph v0.2.16
+      │       │   │   │   ├── leptos v0.8.23 (*)
+      │       │   │   │   ├── leptos_dom v0.8.8 (*)
+      │       │   │   │   ├── leptos_integration_utils v0.8.9 (*)
+      │       │   │   │   ├── leptos_router v0.8.17 (*)
+      │       │   │   │   ├── leptos_server v0.8.8 (*)
+      │       │   │   │   ├── reactive_stores v0.4.4
+      │       │   │   │   │   └── tachys v0.2.19 (*)
+      │       │   │   │   └── tachys v0.2.19 (*)
+      │       │   │   └── tachys v0.2.19 (*)
+      │       │   ├── hydration_context v0.3.2
+      │       │   │   ├── leptos v0.8.23 (*)
+      │       │   │   ├── leptos_axum v0.8.10 (*)
+      │       │   │   ├── leptos_integration_utils v0.8.9 (*)
+      │       │   │   ├── leptos_server v0.8.8 (*)
+      │       │   │   └── reactive_graph v0.2.16 (*)
+      │       │   ├── leptos v0.8.23 (*)
+      │       │   ├── leptos_axum v0.8.10 (*)
+      │       │   ├── leptos_integration_utils v0.8.9 (*)
+      │       │   ├── leptos_meta v0.8.7 (*)
+      │       │   ├── leptos_router v0.8.17 (*)
+      │       │   ├── leptos_server v0.8.8 (*)
+      │       │   ├── reactive_graph v0.2.16 (*)
+      │       │   ├── server_fn v0.8.13 (*)
+      │       │   └── tachys v0.2.19 (*)
+      │       ├── futures-executor v0.3.34
+      │       │   └── futures v0.3.34 (*)
+      │       ├── hyper-util v0.1.21
+      │       │   ├── axum v0.8.9 (*)
+      │       │   ├── hyper-rustls v0.27.10
+      │       │   │   └── reqwest v0.13.5 (*)
+      │       │   └── reqwest v0.13.5 (*)
+      │       ├── js-sys v0.3.107
+      │       │   ├── canteiro-web v0.1.0 (*)
+      │       │   ├── gloo-net v0.6.0
+      │       │   │   ├── leptos_router v0.8.17 (*)
+      │       │   │   └── server_fn v0.8.13 (*)
+      │       │   ├── gloo-utils v0.2.0
+      │       │   │   └── gloo-net v0.6.0 (*)
+      │       │   ├── hydration_context v0.3.2 (*)
+      │       │   ├── iana-time-zone v0.1.65
+      │       │   │   └── chrono v0.4.42
+      │       │   │       ├── canteiro-application v0.1.0 (*)
+      │       │   │       ├── canteiro-domain v0.1.0
+      │       │   │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   │       │   ├── canteiro-application v0.1.0 (*)
+      │       │   │       │   ├── canteiro-calculation-verification v0.1.0
+      │       │   │       │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+      │       │   │       │   ├── canteiro-contracts v0.1.0
+      │       │   │       │   │   ├── canteiro-api v0.1.0 (*)
+      │       │   │       │   │   ├── canteiro-application v0.1.0 (*)
+      │       │   │       │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       │   │       │   │   └── canteiro-web v0.1.0 (*)
+      │       │   │       │   ├── canteiro-persistence v0.1.0 (*)
+      │       │   │       │   └── canteiro-web v0.1.0 (*)
+      │       │   │       ├── canteiro-persistence v0.1.0 (*)
+      │       │   │       ├── canteiro-web v0.1.0 (*)
+      │       │   │       ├── chrono-tz v0.10.4
+      │       │   │       │   ├── canteiro-application v0.1.0 (*)
+      │       │   │       │   ├── canteiro-domain v0.1.0 (*)
+      │       │   │       │   └── canteiro-web v0.1.0 (*)
+      │       │   │       ├── sqlx-core v0.9.0 (*)
+      │       │   │       └── sqlx-postgres v0.9.0 (*)
+      │       │   ├── leptos_dom v0.8.8 (*)
+      │       │   ├── leptos_router v0.8.17 (*)
+      │       │   ├── reqwest v0.13.5 (*)
+      │       │   ├── server_fn v0.8.13 (*)
+      │       │   ├── tachys v0.2.19 (*)
+      │       │   ├── wasm-bindgen-futures v0.4.80
+      │       │   │   ├── any_spawner v0.3.0 (*)
+      │       │   │   ├── canteiro-web v0.1.0 (*)
+      │       │   │   ├── gloo-net v0.6.0 (*)
+      │       │   │   ├── leptos v0.8.23 (*)
+      │       │   │   ├── reqwest v0.13.5 (*)
+      │       │   │   ├── server_fn v0.8.13 (*)
+      │       │   │   └── wasm-streams v0.5.0
+      │       │   │       └── server_fn v0.8.13 (*)
+      │       │   ├── wasm-streams v0.5.0 (*)
+      │       │   └── web-sys v0.3.107
+      │       │       ├── canteiro-web v0.1.0 (*)
+      │       │       ├── gloo-net v0.6.0 (*)
+      │       │       ├── gloo-utils v0.2.0 (*)
+      │       │       ├── leptos v0.8.23 (*)
+      │       │       ├── leptos_dom v0.8.8 (*)
+      │       │       ├── leptos_meta v0.8.7 (*)
+      │       │       ├── leptos_router v0.8.17 (*)
+      │       │       ├── reactive_graph v0.2.16 (*)
+      │       │       ├── reqwest v0.13.5 (*)
+      │       │       ├── server_fn v0.8.13 (*)
+      │       │       ├── tachys v0.2.19 (*)
+      │       │       └── wasm-streams v0.5.0 (*)
+      │       ├── multer v3.1.0
+      │       │   └── axum v0.8.9 (*)
+      │       ├── sqlx-core v0.9.0 (*)
+      │       ├── sqlx-postgres v0.9.0 (*)
+      │       ├── tokio-tungstenite v0.29.0
+      │       │   └── axum v0.8.9 (*)
+      │       ├── tower v0.5.3
+      │       │   ├── axum v0.8.9 (*)
+      │       │   ├── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_axum v0.8.10 (*)
+      │       │   ├── reqwest v0.13.5 (*)
+      │       │   ├── server_fn v0.8.13 (*)
+      │       │   └── tower-http v0.6.11 (*)
+      │       ├── tower-http v0.6.11 (*)
+      │       ├── tower-http v0.7.1
+      │       │   └── canteiro-api v0.1.0 (*)
+      │       └── wasm-streams v0.5.0 (*)
+      ├── leptos_hot_reload v0.8.7 (*)
+      ├── leptos_macro v0.8.20 (*)
+      ├── manyhow v0.14.1
+      │   ├── attribute-derive v0.11.0 (*)
+      │   └── attribute-derive-macro v0.11.0 (*)
+      ├── prettyplease v0.3.0
+      │   └── leptos_macro v0.8.20 (*)
+      ├── proc-macro2-diagnostics v0.11.0
+      │   └── rstml v0.13.1 (*)
+      ├── quote-use-macros v0.9.0
+      │   └── quote-use v0.9.0
+      │       └── attribute-derive-macro v0.11.0 (*)
+      ├── rstml v0.13.1 (*)
+      ├── serde_derive v1.0.229
+      │   └── serde v1.0.229
+      │       ├── canteiro-api v0.1.0 (*)
+      │       ├── canteiro-application v0.1.0 (*)
+      │       ├── canteiro-calculation-verification v0.1.0 (*)
+      │       ├── canteiro-contracts v0.1.0 (*)
+      │       ├── canteiro-domain v0.1.0 (*)
+      │       ├── canteiro-web v0.1.0 (*)
+      │       ├── chrono v0.4.42 (*)
+      │       ├── codee v0.3.5
+      │       │   └── leptos_server v0.8.8 (*)
+      │       ├── either v1.19.0
+      │       │   ├── itertools v0.14.0
+      │       │   │   ├── leptos_macro v0.8.20 (*)
+      │       │   │   ├── reactive_stores v0.4.4 (*)
+      │       │   │   └── tachys v0.2.19 (*)
+      │       │   ├── sqlx-core v0.9.0 (*)
+      │       │   └── sqlx-macros-core v0.9.0 (*)
+      │       ├── gloo-net v0.6.0 (*)
+      │       ├── gloo-utils v0.2.0 (*)
+      │       ├── hydration_context v0.3.2 (*)
+      │       ├── leptos v0.8.23 (*)
+      │       ├── leptos_config v0.8.10
+      │       │   ├── leptos v0.8.23 (*)
+      │       │   └── leptos_integration_utils v0.8.9 (*)
+      │       ├── leptos_hot_reload v0.8.7 (*)
+      │       ├── leptos_server v0.8.8 (*)
+      │       ├── oco_ref v0.2.1
+      │       │   ├── leptos v0.8.23 (*)
+      │       │   └── tachys v0.2.19 (*)
+      │       ├── reactive_graph v0.2.16 (*)
+      │       ├── reqwest v0.13.5 (*)
+      │       ├── serde_qs v0.15.0
+      │       │   ├── leptos v0.8.23 (*)
+      │       │   └── server_fn v0.8.13 (*)
+      │       ├── serde_urlencoded v0.7.1
+      │       │   └── axum v0.8.9 (*)
+      │       ├── server_fn v0.8.13 (*)
+      │       ├── smallvec v1.16.5
+      │       │   ├── hyper v1.12.0
+      │       │   │   ├── axum v0.8.9 (*)
+      │       │   │   ├── hyper-rustls v0.27.10 (*)
+      │       │   │   ├── hyper-util v0.1.21 (*)
+      │       │   │   ├── reqwest v0.13.5 (*)
+      │       │   │   └── server_fn v0.8.13 (*)
+      │       │   ├── icu_normalizer v2.4.0 (*)
+      │       │   ├── idna v1.1.0 (*)
+      │       │   ├── parking_lot_core v0.9.12
+      │       │   │   └── parking_lot v0.12.5
+      │       │   │       └── futures-intrusive v0.5.0
+      │       │   │           └── sqlx-core v0.9.0 (*)
+      │       │   ├── proc-macro-utils v0.10.0
+      │       │   │   ├── attribute-derive-macro v0.11.0 (*)
+      │       │   │   ├── manyhow-macros v0.14.1
+      │       │   │   │   └── manyhow v0.14.1 (*)
+      │       │   │   └── quote-use-macros v0.9.0 (*)
+      │       │   ├── sqlx-core v0.9.0 (*)
+      │       │   ├── sqlx-postgres v0.9.0 (*)
+      │       │   └── tracing-subscriber v0.3.23
+      │       │       ├── canteiro-api v0.1.0 (*)
+      │       │       ├── canteiro-jobs v0.1.0 (*)
+      │       │       └── (dev) canteiro-persistence v0.1.0 (*)
+      │       ├── sqlx-core v0.9.0 (*)
+      │       ├── sqlx-macros-core v0.9.0 (*)
+      │       ├── sqlx-postgres v0.9.0 (*)
+      │       └── xtask v0.1.0
+      ├── server_fn_macro v0.8.12
+      │   ├── leptos_macro v0.8.20 (*)
+      │   └── server_fn_macro_default v0.8.6
+      │       └── server_fn v0.8.13 (*)
+      ├── server_fn_macro_default v0.8.6 (*)
+      ├── synstructure v0.14.0
+      │   ├── yoke-derive v0.8.4
+      │   │   └── yoke v0.8.4
+      │   │       ├── icu_collections v2.4.0 (*)
+      │   │       ├── icu_provider v2.4.0 (*)
+      │   │       ├── zerotrie v0.2.5 (*)
+      │   │       └── zerovec v0.11.9
+      │   │           ├── icu_collections v2.4.0 (*)
+      │   │           ├── icu_locale_core v2.4.0 (*)
+      │   │           ├── icu_normalizer v2.4.0 (*)
+      │   │           ├── icu_properties v2.4.0 (*)
+      │   │           ├── icu_provider v2.4.0 (*)
+      │   │           ├── potential_utf v0.1.6
+      │   │           │   └── icu_collections v2.4.0 (*)
+      │   │           └── tinystr v0.8.5 (*)
+      │   └── zerofrom-derive v0.1.8
+      │       └── zerofrom v0.1.8
+      │           ├── icu_collections v2.4.0 (*)
+      │           ├── icu_provider v2.4.0 (*)
+      │           ├── yoke v0.8.4 (*)
+      │           ├── zerotrie v0.2.5 (*)
+      │           └── zerovec v0.11.9 (*)
+      ├── thiserror-impl v2.0.21
+      │   └── thiserror v2.0.21
+      │       ├── any_spawner v0.3.0 (*)
+      │       ├── canteiro-api v0.1.0 (*)
+      │       ├── canteiro-application v0.1.0 (*)
+      │       ├── canteiro-domain v0.1.0 (*)
+      │       ├── canteiro-persistence v0.1.0 (*)
+      │       ├── codee v0.3.5 (*)
+      │       ├── leptos v0.8.23 (*)
+      │       ├── leptos_config v0.8.10 (*)
+      │       ├── leptos_router v0.8.17 (*)
+      │       ├── lopdf v0.47.0
+      │       │   └── canteiro-application v0.1.0 (*)
+      │       ├── oco_ref v0.2.1 (*)
+      │       ├── reactive_graph v0.2.16 (*)
+      │       ├── rstml v0.13.1 (*)
+      │       ├── serde_qs v0.15.0 (*)
+      │       ├── server_fn v0.8.13 (*)
+      │       ├── sqlx-core v0.9.0 (*)
+      │       ├── sqlx-macros-core v0.9.0 (*)
+      │       ├── sqlx-postgres v0.9.0 (*)
+      │       └── tungstenite v0.29.0
+      │           └── tokio-tungstenite v0.29.0 (*)
+      ├── tokio-macros v2.7.2
+      │   └── tokio v1.54.1
+      │       ├── any_spawner v0.3.0 (*)
+      │       ├── async-compression v0.4.52
+      │       │   └── tower-http v0.7.1 (*)
+      │       ├── axum v0.8.9 (*)
+      │       ├── canteiro-api v0.1.0 (*)
+      │       ├── canteiro-application v0.1.0 (*)
+      │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │       ├── canteiro-jobs v0.1.0 (*)
+      │       ├── canteiro-persistence v0.1.0 (*)
+      │       ├── hyper v1.12.0 (*)
+      │       ├── hyper-rustls v0.27.10 (*)
+      │       ├── hyper-util v0.1.21 (*)
+      │       ├── leptos_axum v0.8.10 (*)
+      │       ├── reqwest v0.13.5 (*)
+      │       ├── server_fn v0.8.13 (*)
+      │       ├── sqlx-core v0.9.0 (*)
+      │       ├── sqlx-macros-core v0.9.0 (*)
+      │       ├── tokio-rustls v0.26.6
+      │       │   ├── hyper-rustls v0.27.10 (*)
+      │       │   └── reqwest v0.13.5 (*)
+      │       ├── tokio-stream v0.1.19
+      │       │   └── sqlx-core v0.9.0 (*)
+      │       ├── tokio-tungstenite v0.29.0 (*)
+      │       ├── tokio-util v0.7.20
+      │       │   ├── tower-http v0.6.11 (*)
+      │       │   └── tower-http v0.7.1 (*)
+      │       ├── tower v0.5.3 (*)
+      │       ├── tower-http v0.6.11 (*)
+      │       └── tower-http v0.7.1 (*)
+      ├── wasm-bindgen-macro-support v0.2.130
+      │   └── wasm-bindgen-macro v0.2.130
+      │       └── wasm-bindgen v0.2.130
+      │           ├── canteiro-calculation-verification v0.1.0 (*)
+      │           ├── canteiro-web v0.1.0 (*)
+      │           ├── console_error_panic_hook v0.1.7
+      │           │   └── canteiro-web v0.1.0 (*)
+      │           ├── getrandom v0.4.3
+      │           │   ├── (dev) canteiro-api v0.1.0 (*)
+      │           │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │           │   ├── leptos v0.8.23 (*)
+      │           │   ├── lopdf v0.47.0 (*)
+      │           │   ├── rand v0.10.3
+      │           │   │   ├── lopdf v0.47.0 (*)
+      │           │   │   └── sqlx-postgres v0.9.0 (*)
+      │           │   └── uuid v1.29.2
+      │           │       ├── (dev) canteiro-api v0.1.0 (*)
+      │           │       ├── canteiro-application v0.1.0 (*)
+      │           │       ├── canteiro-domain v0.1.0 (*)
+      │           │       ├── (dev) canteiro-e2e v0.1.0 (*)
+      │           │       ├── canteiro-persistence v0.1.0 (*)
+      │           │       ├── leptos_macro v0.8.20 (*)
+      │           │       ├── sqlx-core v0.9.0 (*)
+      │           │       └── sqlx-postgres v0.9.0 (*)
+      │           ├── gloo-net v0.6.0 (*)
+      │           ├── gloo-utils v0.2.0 (*)
+      │           ├── hydration_context v0.3.2 (*)
+      │           ├── iana-time-zone v0.1.65 (*)
+      │           ├── js-sys v0.3.107 (*)
+      │           ├── leptos v0.8.23 (*)
+      │           ├── leptos_dom v0.8.8 (*)
+      │           ├── leptos_meta v0.8.7 (*)
+      │           ├── leptos_router v0.8.17 (*)
+      │           ├── reqwest v0.13.5 (*)
+      │           ├── server_fn v0.8.13 (*)
+      │           ├── tachys v0.2.19 (*)
+      │           ├── wasm-bindgen-futures v0.4.80 (*)
+      │           ├── wasm-streams v0.5.0 (*)
+      │           └── web-sys v0.3.107 (*)
+      ├── yoke-derive v0.8.4 (*)
+      ├── zerofrom-derive v0.1.8 (*)
+      └── zerovec-derive v0.11.7
+          └── zerovec v0.11.9 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'thiserror'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:304:1
+    │  
+304 │ ╭ thiserror 1.0.69 registry+https://github.com/rust-lang/crates.io-index
+305 │ │ thiserror 2.0.21 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ thiserror v1.0.69
+      └── gloo-net v0.6.0
+          ├── leptos_router v0.8.17
+          │   ├── canteiro-web v0.1.0
+          │   │   └── canteiro-api v0.1.0
+          │   ├── leptos_axum v0.8.10
+          │   │   └── canteiro-api v0.1.0 (*)
+          │   └── leptos_integration_utils v0.8.9
+          │       └── leptos_axum v0.8.10 (*)
+          └── server_fn v0.8.13
+              ├── leptos v0.8.23
+              │   ├── canteiro-api v0.1.0 (*)
+              │   ├── canteiro-web v0.1.0 (*)
+              │   ├── leptos_axum v0.8.10 (*)
+              │   ├── leptos_integration_utils v0.8.9 (*)
+              │   ├── leptos_meta v0.8.7
+              │   │   ├── canteiro-web v0.1.0 (*)
+              │   │   ├── leptos_axum v0.8.10 (*)
+              │   │   └── leptos_integration_utils v0.8.9 (*)
+              │   └── leptos_router v0.8.17 (*)
+              ├── leptos_axum v0.8.10 (*)
+              └── leptos_server v0.8.8
+                  └── leptos v0.8.23 (*)
+    ├ thiserror v2.0.21
+      ├── any_spawner v0.3.0
+      │   ├── leptos v0.8.23
+      │   │   ├── canteiro-api v0.1.0
+      │   │   ├── canteiro-web v0.1.0
+      │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   ├── leptos_axum v0.8.10
+      │   │   │   └── canteiro-api v0.1.0 (*)
+      │   │   ├── leptos_integration_utils v0.8.9
+      │   │   │   └── leptos_axum v0.8.10 (*)
+      │   │   ├── leptos_meta v0.8.7
+      │   │   │   ├── canteiro-web v0.1.0 (*)
+      │   │   │   ├── leptos_axum v0.8.10 (*)
+      │   │   │   └── leptos_integration_utils v0.8.9 (*)
+      │   │   └── leptos_router v0.8.17
+      │   │       ├── canteiro-web v0.1.0 (*)
+      │   │       ├── leptos_axum v0.8.10 (*)
+      │   │       └── leptos_integration_utils v0.8.9 (*)
+      │   ├── leptos_axum v0.8.10 (*)
+      │   ├── leptos_router v0.8.17 (*)
+      │   ├── leptos_server v0.8.8
+      │   │   └── leptos v0.8.23 (*)
+      │   ├── reactive_graph v0.2.16
+      │   │   ├── leptos v0.8.23 (*)
+      │   │   ├── leptos_dom v0.8.8
+      │   │   │   └── leptos v0.8.23 (*)
+      │   │   ├── leptos_integration_utils v0.8.9 (*)
+      │   │   ├── leptos_router v0.8.17 (*)
+      │   │   ├── leptos_server v0.8.8 (*)
+      │   │   ├── reactive_stores v0.4.4
+      │   │   │   └── tachys v0.2.19
+      │   │   │       ├── leptos v0.8.23 (*)
+      │   │   │       ├── leptos_axum v0.8.10 (*)
+      │   │   │       ├── leptos_dom v0.8.8 (*)
+      │   │   │       ├── leptos_router v0.8.17 (*)
+      │   │   │       └── leptos_server v0.8.8 (*)
+      │   │   └── tachys v0.2.19 (*)
+      │   └── tachys v0.2.19 (*)
+      ├── canteiro-api v0.1.0 (*)
+      ├── canteiro-application v0.1.0
+      │   ├── canteiro-api v0.1.0 (*)
+      │   └── (dev) canteiro-e2e v0.1.0
+      ├── canteiro-domain v0.1.0
+      │   ├── canteiro-api v0.1.0 (*)
+      │   ├── canteiro-application v0.1.0 (*)
+      │   ├── canteiro-calculation-verification v0.1.0
+      │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+      │   ├── canteiro-contracts v0.1.0
+      │   │   ├── canteiro-api v0.1.0 (*)
+      │   │   ├── canteiro-application v0.1.0 (*)
+      │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   └── canteiro-web v0.1.0 (*)
+      │   ├── canteiro-persistence v0.1.0
+      │   │   ├── canteiro-api v0.1.0 (*)
+      │   │   ├── canteiro-application v0.1.0 (*)
+      │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+      │   │   └── canteiro-jobs v0.1.0
+      │   └── canteiro-web v0.1.0 (*)
+      ├── canteiro-persistence v0.1.0 (*)
+      ├── codee v0.3.5
+      │   └── leptos_server v0.8.8 (*)
+      ├── leptos v0.8.23 (*)
+      ├── leptos_config v0.8.10
+      │   ├── leptos v0.8.23 (*)
+      │   └── leptos_integration_utils v0.8.9 (*)
+      ├── leptos_router v0.8.17 (*)
+      ├── lopdf v0.47.0
+      │   └── canteiro-application v0.1.0 (*)
+      ├── oco_ref v0.2.1
+      │   ├── leptos v0.8.23 (*)
+      │   └── tachys v0.2.19 (*)
+      ├── reactive_graph v0.2.16 (*)
+      ├── rstml v0.13.1
+      │   ├── leptos_hot_reload v0.8.7
+      │   │   ├── leptos v0.8.23 (*)
+      │   │   └── leptos_macro v0.8.20
+      │   │       ├── leptos v0.8.23 (*)
+      │   │       └── leptos_axum v0.8.10 (*)
+      │   └── leptos_macro v0.8.20 (*)
+      ├── serde_qs v0.15.0
+      │   ├── leptos v0.8.23 (*)
+      │   └── server_fn v0.8.13
+      │       ├── leptos v0.8.23 (*)
+      │       ├── leptos_axum v0.8.10 (*)
+      │       └── leptos_server v0.8.8 (*)
+      ├── server_fn v0.8.13 (*)
+      ├── sqlx-core v0.9.0
+      │   ├── sqlx v0.9.0
+      │   │   ├── (dev) canteiro-application v0.1.0 (*)
+      │   │   └── canteiro-persistence v0.1.0 (*)
+      │   ├── sqlx-macros v0.9.0
+      │   │   └── sqlx v0.9.0 (*)
+      │   ├── sqlx-macros-core v0.9.0
+      │   │   └── sqlx-macros v0.9.0 (*)
+      │   └── sqlx-postgres v0.9.0
+      │       ├── sqlx v0.9.0 (*)
+      │       └── sqlx-macros-core v0.9.0 (*)
+      ├── sqlx-macros-core v0.9.0 (*)
+      ├── sqlx-postgres v0.9.0 (*)
+      └── tungstenite v0.29.0
+          └── tokio-tungstenite v0.29.0
+              └── axum v0.8.9
+                  ├── canteiro-api v0.1.0 (*)
+                  ├── leptos_axum v0.8.10 (*)
+                  └── server_fn v0.8.13 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'thiserror-impl'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:306:1
+    │  
+306 │ ╭ thiserror-impl 1.0.69 registry+https://github.com/rust-lang/crates.io-index
+307 │ │ thiserror-impl 2.0.21 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰───────────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ thiserror-impl v1.0.69
+      └── thiserror v1.0.69
+          └── gloo-net v0.6.0
+              ├── leptos_router v0.8.17
+              │   ├── canteiro-web v0.1.0
+              │   │   └── canteiro-api v0.1.0
+              │   ├── leptos_axum v0.8.10
+              │   │   └── canteiro-api v0.1.0 (*)
+              │   └── leptos_integration_utils v0.8.9
+              │       └── leptos_axum v0.8.10 (*)
+              └── server_fn v0.8.13
+                  ├── leptos v0.8.23
+                  │   ├── canteiro-api v0.1.0 (*)
+                  │   ├── canteiro-web v0.1.0 (*)
+                  │   ├── leptos_axum v0.8.10 (*)
+                  │   ├── leptos_integration_utils v0.8.9 (*)
+                  │   ├── leptos_meta v0.8.7
+                  │   │   ├── canteiro-web v0.1.0 (*)
+                  │   │   ├── leptos_axum v0.8.10 (*)
+                  │   │   └── leptos_integration_utils v0.8.9 (*)
+                  │   └── leptos_router v0.8.17 (*)
+                  ├── leptos_axum v0.8.10 (*)
+                  └── leptos_server v0.8.8
+                      └── leptos v0.8.23 (*)
+    ├ thiserror-impl v2.0.21
+      └── thiserror v2.0.21
+          ├── any_spawner v0.3.0
+          │   ├── leptos v0.8.23
+          │   │   ├── canteiro-api v0.1.0
+          │   │   ├── canteiro-web v0.1.0
+          │   │   │   └── canteiro-api v0.1.0 (*)
+          │   │   ├── leptos_axum v0.8.10
+          │   │   │   └── canteiro-api v0.1.0 (*)
+          │   │   ├── leptos_integration_utils v0.8.9
+          │   │   │   └── leptos_axum v0.8.10 (*)
+          │   │   ├── leptos_meta v0.8.7
+          │   │   │   ├── canteiro-web v0.1.0 (*)
+          │   │   │   ├── leptos_axum v0.8.10 (*)
+          │   │   │   └── leptos_integration_utils v0.8.9 (*)
+          │   │   └── leptos_router v0.8.17
+          │   │       ├── canteiro-web v0.1.0 (*)
+          │   │       ├── leptos_axum v0.8.10 (*)
+          │   │       └── leptos_integration_utils v0.8.9 (*)
+          │   ├── leptos_axum v0.8.10 (*)
+          │   ├── leptos_router v0.8.17 (*)
+          │   ├── leptos_server v0.8.8
+          │   │   └── leptos v0.8.23 (*)
+          │   ├── reactive_graph v0.2.16
+          │   │   ├── leptos v0.8.23 (*)
+          │   │   ├── leptos_dom v0.8.8
+          │   │   │   └── leptos v0.8.23 (*)
+          │   │   ├── leptos_integration_utils v0.8.9 (*)
+          │   │   ├── leptos_router v0.8.17 (*)
+          │   │   ├── leptos_server v0.8.8 (*)
+          │   │   ├── reactive_stores v0.4.4
+          │   │   │   └── tachys v0.2.19
+          │   │   │       ├── leptos v0.8.23 (*)
+          │   │   │       ├── leptos_axum v0.8.10 (*)
+          │   │   │       ├── leptos_dom v0.8.8 (*)
+          │   │   │       ├── leptos_router v0.8.17 (*)
+          │   │   │       └── leptos_server v0.8.8 (*)
+          │   │   └── tachys v0.2.19 (*)
+          │   └── tachys v0.2.19 (*)
+          ├── canteiro-api v0.1.0 (*)
+          ├── canteiro-application v0.1.0
+          │   ├── canteiro-api v0.1.0 (*)
+          │   └── (dev) canteiro-e2e v0.1.0
+          ├── canteiro-domain v0.1.0
+          │   ├── canteiro-api v0.1.0 (*)
+          │   ├── canteiro-application v0.1.0 (*)
+          │   ├── canteiro-calculation-verification v0.1.0
+          │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+          │   ├── canteiro-contracts v0.1.0
+          │   │   ├── canteiro-api v0.1.0 (*)
+          │   │   ├── canteiro-application v0.1.0 (*)
+          │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+          │   │   └── canteiro-web v0.1.0 (*)
+          │   ├── canteiro-persistence v0.1.0
+          │   │   ├── canteiro-api v0.1.0 (*)
+          │   │   ├── canteiro-application v0.1.0 (*)
+          │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+          │   │   └── canteiro-jobs v0.1.0
+          │   └── canteiro-web v0.1.0 (*)
+          ├── canteiro-persistence v0.1.0 (*)
+          ├── codee v0.3.5
+          │   └── leptos_server v0.8.8 (*)
+          ├── leptos v0.8.23 (*)
+          ├── leptos_config v0.8.10
+          │   ├── leptos v0.8.23 (*)
+          │   └── leptos_integration_utils v0.8.9 (*)
+          ├── leptos_router v0.8.17 (*)
+          ├── lopdf v0.47.0
+          │   └── canteiro-application v0.1.0 (*)
+          ├── oco_ref v0.2.1
+          │   ├── leptos v0.8.23 (*)
+          │   └── tachys v0.2.19 (*)
+          ├── reactive_graph v0.2.16 (*)
+          ├── rstml v0.13.1
+          │   ├── leptos_hot_reload v0.8.7
+          │   │   ├── leptos v0.8.23 (*)
+          │   │   └── leptos_macro v0.8.20
+          │   │       ├── leptos v0.8.23 (*)
+          │   │       └── leptos_axum v0.8.10 (*)
+          │   └── leptos_macro v0.8.20 (*)
+          ├── serde_qs v0.15.0
+          │   ├── leptos v0.8.23 (*)
+          │   └── server_fn v0.8.13
+          │       ├── leptos v0.8.23 (*)
+          │       ├── leptos_axum v0.8.10 (*)
+          │       └── leptos_server v0.8.8 (*)
+          ├── server_fn v0.8.13 (*)
+          ├── sqlx-core v0.9.0
+          │   ├── sqlx v0.9.0
+          │   │   ├── (dev) canteiro-application v0.1.0 (*)
+          │   │   └── canteiro-persistence v0.1.0 (*)
+          │   ├── sqlx-macros v0.9.0
+          │   │   └── sqlx v0.9.0 (*)
+          │   ├── sqlx-macros-core v0.9.0
+          │   │   └── sqlx-macros v0.9.0 (*)
+          │   └── sqlx-postgres v0.9.0
+          │       ├── sqlx v0.9.0 (*)
+          │       └── sqlx-macros-core v0.9.0 (*)
+          ├── sqlx-macros-core v0.9.0 (*)
+          ├── sqlx-postgres v0.9.0 (*)
+          └── tungstenite v0.29.0
+              └── tokio-tungstenite v0.29.0
+                  └── axum v0.8.9
+                      ├── canteiro-api v0.1.0 (*)
+                      ├── leptos_axum v0.8.10 (*)
+                      └── server_fn v0.8.13 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'toml'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:318:1
+    │  
+318 │ ╭ toml 0.9.8 registry+https://github.com/rust-lang/crates.io-index
+319 │ │ toml 1.2.1+spec-1.1.0 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰───────────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ toml v0.9.8
+      ├── canteiro-api v0.1.0
+      └── xtask v0.1.0
+    ├ toml v1.2.1+spec-1.1.0
+      └── config v0.15.27
+          └── leptos_config v0.8.10
+              ├── leptos v0.8.23
+              │   ├── canteiro-api v0.1.0
+              │   ├── canteiro-web v0.1.0
+              │   │   └── canteiro-api v0.1.0 (*)
+              │   ├── leptos_axum v0.8.10
+              │   │   └── canteiro-api v0.1.0 (*)
+              │   ├── leptos_integration_utils v0.8.9
+              │   │   └── leptos_axum v0.8.10 (*)
+              │   ├── leptos_meta v0.8.7
+              │   │   ├── canteiro-web v0.1.0 (*)
+              │   │   ├── leptos_axum v0.8.10 (*)
+              │   │   └── leptos_integration_utils v0.8.9 (*)
+              │   └── leptos_router v0.8.17
+              │       ├── canteiro-web v0.1.0 (*)
+              │       ├── leptos_axum v0.8.10 (*)
+              │       └── leptos_integration_utils v0.8.9 (*)
+              └── leptos_integration_utils v0.8.9 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'toml_datetime'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:320:1
+    │  
+320 │ ╭ toml_datetime 0.7.5+spec-1.1.0 registry+https://github.com/rust-lang/crates.io-index
+321 │ │ toml_datetime 1.1.3+spec-1.1.0 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰────────────────────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ toml_datetime v0.7.5+spec-1.1.0
+      └── toml v0.9.8
+          ├── canteiro-api v0.1.0
+          └── xtask v0.1.0
+    ├ toml_datetime v1.1.3+spec-1.1.0
+      └── toml v1.2.1+spec-1.1.0
+          └── config v0.15.27
+              └── leptos_config v0.8.10
+                  ├── leptos v0.8.23
+                  │   ├── canteiro-api v0.1.0
+                  │   ├── canteiro-web v0.1.0
+                  │   │   └── canteiro-api v0.1.0 (*)
+                  │   ├── leptos_axum v0.8.10
+                  │   │   └── canteiro-api v0.1.0 (*)
+                  │   ├── leptos_integration_utils v0.8.9
+                  │   │   └── leptos_axum v0.8.10 (*)
+                  │   ├── leptos_meta v0.8.7
+                  │   │   ├── canteiro-web v0.1.0 (*)
+                  │   │   ├── leptos_axum v0.8.10 (*)
+                  │   │   └── leptos_integration_utils v0.8.9 (*)
+                  │   └── leptos_router v0.8.17
+                  │       ├── canteiro-web v0.1.0 (*)
+                  │       ├── leptos_axum v0.8.10 (*)
+                  │       └── leptos_integration_utils v0.8.9 (*)
+                  └── leptos_integration_utils v0.8.9 (*)
+
+warning[duplicate]: found 2 duplicate entries for crate 'tower-http'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:325:1
+    │  
+325 │ ╭ tower-http 0.6.11 registry+https://github.com/rust-lang/crates.io-index
+326 │ │ tower-http 0.7.1 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ tower-http v0.6.11
+      ├── leptos_axum v0.8.10
+      │   └── canteiro-api v0.1.0
+      └── reqwest v0.13.5
+          ├── canteiro-api v0.1.0 (*)
+          └── (dev) canteiro-e2e v0.1.0
+    ├ tower-http v0.7.1
+      └── canteiro-api v0.1.0
+
+warning[license-not-encountered]: license was not encountered
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/deny.toml:15:6
+   │
+15 │     "Apache-2.0 WITH LLVM-exception",
+   │      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ unmatched license allowance
+
+warning[license-not-encountered]: license was not encountered
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/deny.toml:23:6
+   │
+23 │     "MPL-2.0",
+   │      ━━━━━━━ unmatched license allowance
+
+warning[duplicate]: found 2 duplicate entries for crate 'winnow'
+    ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:368:1
+    │  
+368 │ ╭ winnow 0.7.15 registry+https://github.com/rust-lang/crates.io-index
+369 │ │ winnow 1.0.5 registry+https://github.com/rust-lang/crates.io-index
+    │ ╰──────────────────────────────────────────────────────────────────┘ lock entries
+    │  
+    ├ winnow v0.7.15
+      └── toml v0.9.8
+          ├── canteiro-api v0.1.0
+          └── xtask v0.1.0
+    ├ winnow v1.0.5
+      ├── config v0.15.27
+      │   └── leptos_config v0.8.10
+      │       ├── leptos v0.8.23
+      │       │   ├── canteiro-api v0.1.0
+      │       │   ├── canteiro-web v0.1.0
+      │       │   │   └── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_axum v0.8.10
+      │       │   │   └── canteiro-api v0.1.0 (*)
+      │       │   ├── leptos_integration_utils v0.8.9
+      │       │   │   └── leptos_axum v0.8.10 (*)
+      │       │   ├── leptos_meta v0.8.7
+      │       │   │   ├── canteiro-web v0.1.0 (*)
+      │       │   │   ├── leptos_axum v0.8.10 (*)
+      │       │   │   └── leptos_integration_utils v0.8.9 (*)
+      │       │   └── leptos_router v0.8.17
+      │       │       ├── canteiro-web v0.1.0 (*)
+      │       │       ├── leptos_axum v0.8.10 (*)
+      │       │       └── leptos_integration_utils v0.8.9 (*)
+      │       └── leptos_integration_utils v0.8.9 (*)
+      ├── toml v1.2.1+spec-1.1.0
+      │   └── config v0.15.27 (*)
+      └── toml_parser v1.1.5+spec-1.1.0
+          ├── toml v0.9.8
+          │   ├── canteiro-api v0.1.0 (*)
+          │   └── xtask v0.1.0
+          └── toml v1.2.1+spec-1.1.0 (*)
+
+error[unmaintained]: chrono is unmaintained
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:58:1
+   │
+58 │ chrono 0.4.42 registry+https://github.com/rust-lang/crates.io-index
+   │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ unmaintained advisory detected
+   │
+   ├ ID: RUSTSEC-2026-0543
+   ├ Advisory: https://rustsec.org/advisories/RUSTSEC-2026-0543
+   ├ The chrono crate is unmaintained; all versions are affected.
+     
+     Recommended alternatives:
+     
+     - [jiff](https://crates.io/crates/jiff)
+     - [time](https://crates.io/crates/time)
+   ├ Announcement: https://github.com/chronotope/chrono/issues/1768
+   ├ Solution: No safe upgrade is available!
+   ├ chrono v0.4.42
+     ├── canteiro-application v0.1.0
+     │   ├── canteiro-api v0.1.0
+     │   └── (dev) canteiro-e2e v0.1.0
+     ├── canteiro-domain v0.1.0
+     │   ├── canteiro-api v0.1.0 (*)
+     │   ├── canteiro-application v0.1.0 (*)
+     │   ├── canteiro-calculation-verification v0.1.0
+     │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+     │   ├── canteiro-contracts v0.1.0
+     │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   ├── canteiro-application v0.1.0 (*)
+     │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │   └── canteiro-web v0.1.0
+     │   │       └── canteiro-api v0.1.0 (*)
+     │   ├── canteiro-persistence v0.1.0
+     │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   ├── canteiro-application v0.1.0 (*)
+     │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │   └── canteiro-jobs v0.1.0
+     │   └── canteiro-web v0.1.0 (*)
+     ├── canteiro-persistence v0.1.0 (*)
+     ├── canteiro-web v0.1.0 (*)
+     ├── chrono-tz v0.10.4
+     │   ├── canteiro-application v0.1.0 (*)
+     │   ├── canteiro-domain v0.1.0 (*)
+     │   └── canteiro-web v0.1.0 (*)
+     ├── sqlx-core v0.9.0
+     │   ├── sqlx v0.9.0
+     │   │   ├── (dev) canteiro-application v0.1.0 (*)
+     │   │   └── canteiro-persistence v0.1.0 (*)
+     │   ├── sqlx-macros v0.9.0
+     │   │   └── sqlx v0.9.0 (*)
+     │   ├── sqlx-macros-core v0.9.0
+     │   │   └── sqlx-macros v0.9.0 (*)
+     │   └── sqlx-postgres v0.9.0
+     │       ├── sqlx v0.9.0 (*)
+     │       └── sqlx-macros-core v0.9.0 (*)
+     └── sqlx-postgres v0.9.0 (*)
+
+error[unmaintained]: chrono-tz is unmaintained
+   ┌─ /workspace/scratch/371d5bee48a0/canteiro-360/Cargo.lock:59:1
+   │
+59 │ chrono-tz 0.10.4 registry+https://github.com/rust-lang/crates.io-index
+   │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ unmaintained advisory detected
+   │
+   ├ ID: RUSTSEC-2026-0555
+   ├ Advisory: https://rustsec.org/advisories/RUSTSEC-2026-0555
+   ├ The chrono-tz crate is unmaintained; all versions are affected.
+   ├ Announcement: https://github.com/chronotope/chrono/issues/1768
+   ├ Solution: No safe upgrade is available!
+   ├ chrono-tz v0.10.4
+     ├── canteiro-application v0.1.0
+     │   ├── canteiro-api v0.1.0
+     │   └── (dev) canteiro-e2e v0.1.0
+     ├── canteiro-domain v0.1.0
+     │   ├── canteiro-api v0.1.0 (*)
+     │   ├── canteiro-application v0.1.0 (*)
+     │   ├── canteiro-calculation-verification v0.1.0
+     │   │   └── (dev) canteiro-e2e v0.1.0 (*)
+     │   ├── canteiro-contracts v0.1.0
+     │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   ├── canteiro-application v0.1.0 (*)
+     │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │   └── canteiro-web v0.1.0
+     │   │       └── canteiro-api v0.1.0 (*)
+     │   ├── canteiro-persistence v0.1.0
+     │   │   ├── canteiro-api v0.1.0 (*)
+     │   │   ├── canteiro-application v0.1.0 (*)
+     │   │   ├── (dev) canteiro-e2e v0.1.0 (*)
+     │   │   └── canteiro-jobs v0.1.0
+     │   └── canteiro-web v0.1.0 (*)
+     └── canteiro-web v0.1.0 (*)
+
+advisories FAILED, bans ok, licenses ok, sources ok

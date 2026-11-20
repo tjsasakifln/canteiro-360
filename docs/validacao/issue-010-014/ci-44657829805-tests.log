@@ -1,0 +1,1235 @@
+## Executar testes positivos e negativos
+2026-11-20T02:05:21.1689441Z     Finished `dev` profile [unoptimized] target(s) in 43.89s
+2026-11-20T02:05:21.1974305Z ##[group]Run cargo test --locked --workspace
+2026-11-20T02:05:21.1974669Z cargo test --locked --workspace
+2026-11-20T02:05:21.1992547Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:05:21.1992705Z env:
+2026-11-20T02:05:21.1992834Z   CARGO_TERM_COLOR: always
+2026-11-20T02:05:21.1993132Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:05:21.1993298Z ##[endgroup]
+2026-11-20T02:05:21.4137801Z    Compiling serde_core v1.0.229
+2026-11-20T02:05:21.4221315Z    Compiling getrandom v0.2.17
+2026-11-20T02:05:21.5139067Z    Compiling futures-sink v0.3.34
+2026-11-20T02:05:21.5549116Z    Compiling futures-channel v0.3.34
+2026-11-20T02:05:21.6720463Z    Compiling futures-util v0.3.34
+2026-11-20T02:05:22.8759261Z    Compiling serde v1.0.229
+2026-11-20T02:05:23.2399552Z    Compiling serde_json v1.0.154
+2026-11-20T02:05:23.6487736Z    Compiling rand_core v0.6.4
+2026-11-20T02:05:23.7509409Z    Compiling errno v0.3.14
+2026-11-20T02:05:23.8099343Z    Compiling subtle v2.6.1
+2026-11-20T02:05:23.8816158Z    Compiling signal-hook-registry v1.4.8
+2026-11-20T02:05:24.0036087Z    Compiling tokio v1.54.1
+2026-11-20T02:05:24.0078810Z    Compiling crypto-common v0.1.7
+2026-11-20T02:05:24.0506855Z    Compiling num-traits v0.2.19
+2026-11-20T02:05:24.4949280Z    Compiling smallvec v1.16.5
+2026-11-20T02:05:24.6159105Z    Compiling log v0.4.35
+2026-11-20T02:05:24.7096228Z    Compiling chrono v0.4.42
+2026-11-20T02:05:25.6679317Z    Compiling tracing-core v0.1.36
+2026-11-20T02:05:25.9749092Z    Compiling uuid v1.29.2
+2026-11-20T02:05:26.2499744Z    Compiling siphasher v1.0.4
+2026-11-20T02:05:26.3378990Z    Compiling phf_shared v0.12.1
+2026-11-20T02:05:26.4127571Z    Compiling digest v0.10.7
+2026-11-20T02:05:26.5099204Z    Compiling phf v0.12.1
+2026-11-20T02:05:26.5719173Z    Compiling tracing v0.1.44
+2026-11-20T02:05:26.7080940Z    Compiling num-integer v0.1.47
+2026-11-20T02:05:26.8938408Z    Compiling arrayvec v0.7.8
+2026-11-20T02:05:27.0039093Z    Compiling rust_decimal v1.43.0
+2026-11-20T02:05:27.3959167Z    Compiling num-bigint v0.4.6
+2026-11-20T02:05:27.8079184Z    Compiling chrono-tz v0.10.4
+2026-11-20T02:05:28.2946027Z    Compiling icu_normalizer v2.4.0
+2026-11-20T02:05:28.6110667Z    Compiling form_urlencoded v1.2.2
+2026-11-20T02:05:28.6870115Z    Compiling idna_adapter v1.2.2
+2026-11-20T02:05:28.7429188Z    Compiling idna v1.1.0
+2026-11-20T02:05:29.1322661Z    Compiling either v1.19.0
+2026-11-20T02:05:29.2739038Z    Compiling http v1.5.0
+2026-11-20T02:05:29.8809170Z    Compiling url v2.5.8
+2026-11-20T02:05:30.3428804Z    Compiling http-body v1.1.0
+2026-11-20T02:05:30.4019010Z    Compiling httparse v1.10.1
+2026-11-20T02:05:30.5599751Z    Compiling aws-lc-sys v0.47.0
+2026-11-20T02:05:30.9689257Z    Compiling tower-service v0.3.3
+2026-11-20T02:05:31.0039655Z    Compiling aws-lc-rs v1.19.0
+2026-11-20T02:05:31.3286493Z    Compiling canteiro-domain v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/domain)
+2026-11-20T02:05:32.0519307Z    Compiling ring v0.17.14
+2026-11-20T02:05:32.7479221Z    Compiling mime v0.3.18
+2026-11-20T02:05:32.8584331Z    Compiling httpdate v1.0.3
+2026-11-20T02:05:32.9559606Z    Compiling core_detect v1.0.0
+2026-11-20T02:05:33.0170200Z    Compiling simdutf8 v0.1.5
+2026-11-20T02:05:33.1159977Z    Compiling encoding_rs v0.8.44
+2026-11-20T02:05:33.2699208Z    Compiling rustls-webpki v0.103.16
+2026-11-20T02:05:33.8339578Z    Compiling sha1 v0.10.7
+2026-11-20T02:05:33.9309524Z    Compiling const-oid v0.10.3
+2026-11-20T02:05:34.0201602Z    Compiling data-encoding v2.9.0
+2026-11-20T02:05:34.1711062Z    Compiling try-lock v0.2.5
+2026-11-20T02:05:34.2373081Z    Compiling tower-layer v0.3.3
+2026-11-20T02:05:34.3249473Z    Compiling want v0.3.2
+2026-11-20T02:05:34.3879017Z    Compiling digest v0.11.3
+2026-11-20T02:05:34.4259246Z    Compiling rustls v0.23.46
+2026-11-20T02:05:34.4689362Z    Compiling http-body-util v0.1.5
+2026-11-20T02:05:34.6125756Z    Compiling sync_wrapper v1.0.2
+2026-11-20T02:05:34.6496593Z    Compiling atomic-waker v1.1.2
+2026-11-20T02:05:34.6979317Z    Compiling hyper v1.12.0
+2026-11-20T02:05:35.5502909Z    Compiling base64 v0.23.1
+2026-11-20T02:05:35.7778926Z    Compiling ipnet v2.12.2
+2026-11-20T02:05:36.0164233Z    Compiling hyper-util v0.1.21
+2026-11-20T02:05:37.1790397Z    Compiling tower v0.5.3
+2026-11-20T02:05:37.4929418Z    Compiling parking_lot_core v0.9.12
+2026-11-20T02:05:37.6219092Z    Compiling parking_lot v0.12.5
+2026-11-20T02:05:37.8059070Z    Compiling sha2 v0.10.9
+2026-11-20T02:05:38.0049861Z    Compiling wasm-bindgen v0.2.130
+2026-11-20T02:05:38.4399801Z    Compiling futures-intrusive v0.5.0
+2026-11-20T02:05:38.7049129Z    Compiling sha2 v0.11.1
+2026-11-20T02:05:38.9609417Z    Compiling hmac v0.13.0
+2026-11-20T02:05:39.0299158Z    Compiling md-5 v0.11.0
+2026-11-20T02:05:39.1079328Z    Compiling rand v0.10.3
+2026-11-20T02:05:39.1859184Z    Compiling tokio-stream v0.1.19
+2026-11-20T02:05:39.4579102Z    Compiling sqlx-core v0.9.0
+2026-11-20T02:05:39.5199119Z    Compiling hkdf v0.13.0
+2026-11-20T02:05:39.5729726Z    Compiling js-sys v0.3.107
+2026-11-20T02:05:41.2579063Z    Compiling atoi v2.0.0
+2026-11-20T02:05:41.3099093Z    Compiling sqlx-postgres v0.9.0
+2026-11-20T02:05:45.4941501Z    Compiling block-padding v0.4.2
+2026-11-20T02:05:45.5539803Z    Compiling canteiro-persistence v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/persistence)
+2026-11-20T02:05:45.6239205Z    Compiling inout v0.2.6
+2026-11-20T02:05:45.6839084Z    Compiling sqlx v0.9.0
+2026-11-20T02:05:45.6888820Z    Compiling cipher v0.5.2
+2026-11-20T02:05:45.7489981Z    Compiling canteiro-contracts v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/contracts)
+2026-11-20T02:05:45.8209652Z    Compiling inout v0.1.4
+2026-11-20T02:05:45.8746674Z    Compiling aho-corasick v1.1.5
+2026-11-20T02:05:46.9768908Z    Compiling regex-automata v0.4.18
+2026-11-20T02:05:48.3529214Z    Compiling cipher v0.4.4
+2026-11-20T02:05:49.4599491Z    Compiling wasm-bindgen-futures v0.4.80
+2026-11-20T02:05:49.4949278Z    Compiling universal-hash v0.5.1
+2026-11-20T02:05:49.5439214Z    Compiling futures-executor v0.3.34
+2026-11-20T02:05:49.7619335Z    Compiling opaque-debug v0.3.1
+2026-11-20T02:05:49.7893327Z    Compiling alloc-no-stdlib v2.0.4
+2026-11-20T02:05:49.8384852Z    Compiling simd-adler32 v0.3.10
+2026-11-20T02:05:49.8749100Z    Compiling adler2 v2.0.1
+2026-11-20T02:05:49.9239148Z    Compiling miniz_oxide v0.9.1
+2026-11-20T02:05:49.9286289Z    Compiling alloc-stdlib v0.2.4
+2026-11-20T02:05:49.9690222Z    Compiling polyval v0.6.2
+2026-11-20T02:05:50.0653561Z    Compiling futures v0.3.34
+2026-11-20T02:05:50.1009697Z    Compiling getrandom v0.3.4
+2026-11-20T02:05:50.1909274Z    Compiling crc32fast v1.5.5
+2026-11-20T02:05:50.2859110Z    Compiling zerocopy v0.8.63
+2026-11-20T02:05:50.2956784Z    Compiling base64ct v1.8.3
+2026-11-20T02:05:50.4459249Z    Compiling cpubits v0.1.1
+2026-11-20T02:05:50.4768876Z    Compiling aes v0.9.4
+2026-11-20T02:05:50.7679501Z    Compiling password-hash v0.5.0
+2026-11-20T02:05:50.9729601Z    Compiling flate2 v1.1.11
+2026-11-20T02:05:51.2229651Z    Compiling mime_guess v2.0.5
+2026-11-20T02:05:51.3898819Z    Compiling rand_core v0.9.5
+2026-11-20T02:05:51.4839335Z    Compiling ghash v0.5.1
+2026-11-20T02:05:51.5299093Z    Compiling brotli-decompressor v5.0.3
+2026-11-20T02:05:52.1885752Z    Compiling ctr v0.9.2
+2026-11-20T02:05:52.2699092Z    Compiling aes v0.8.4
+2026-11-20T02:05:52.5869057Z    Compiling ecb v0.2.1
+2026-11-20T02:05:52.6359279Z    Compiling cbc v0.2.1
+2026-11-20T02:05:52.6969168Z    Compiling web-sys v0.3.107
+2026-11-20T02:05:52.9339360Z    Compiling ppv-lite86 v0.2.21
+2026-11-20T02:05:53.1419068Z    Compiling tokio-util v0.7.20
+2026-11-20T02:05:53.4079294Z    Compiling blake2 v0.10.6
+2026-11-20T02:05:53.5999107Z    Compiling aead v0.5.2
+2026-11-20T02:05:53.6558937Z    Compiling throw_error v0.3.1
+2026-11-20T02:05:53.7288270Z    Compiling nom v8.0.0
+2026-11-20T02:05:55.4679784Z    Compiling http-range-header v0.4.2
+2026-11-20T02:05:55.5529045Z    Compiling weezl v0.2.1
+2026-11-20T02:05:55.7919870Z    Compiling rangemap v1.8.0
+2026-11-20T02:05:55.9498892Z    Compiling lopdf v0.47.0
+2026-11-20T02:06:01.1087220Z    Compiling aes-gcm v0.10.3
+2026-11-20T02:06:01.1835842Z    Compiling argon2 v0.5.3
+2026-11-20T02:06:01.4669072Z    Compiling rand_chacha v0.9.0
+2026-11-20T02:06:01.6415704Z    Compiling hmac v0.12.1
+2026-11-20T02:06:01.6989300Z    Compiling event-listener-strategy v0.5.4
+2026-11-20T02:06:01.7489378Z    Compiling send_wrapper v0.6.0
+2026-11-20T02:06:01.7989249Z    Compiling openssl-probe v0.2.2
+2026-11-20T02:06:01.9219407Z    Compiling winnow v1.0.5
+2026-11-20T02:06:02.7033096Z    Compiling toml_parser v1.1.5+spec-1.1.0
+2026-11-20T02:06:03.0710239Z    Compiling rustls-native-certs v0.8.5
+2026-11-20T02:06:03.2321010Z    Compiling async-lock v3.5.0
+2026-11-20T02:06:03.2348845Z    Compiling rand v0.9.5
+2026-11-20T02:06:03.5760677Z    Compiling slotmap v1.1.1
+2026-11-20T02:06:03.6220306Z    Compiling tower-http v0.6.11
+2026-11-20T02:06:03.8755862Z    Compiling hydration_context v0.3.2
+2026-11-20T02:06:04.1175881Z    Compiling any_spawner v0.3.0
+2026-11-20T02:06:04.1761454Z    Compiling tokio-rustls v0.26.6
+2026-11-20T02:06:04.2950182Z    Compiling serde_spanned v1.1.3
+2026-11-20T02:06:04.3022265Z    Compiling guardian v1.3.0
+2026-11-20T02:06:04.3410994Z    Compiling rustc-hash v2.1.3
+2026-11-20T02:06:04.3474587Z    Compiling hyper-rustls v0.27.10
+2026-11-20T02:06:04.3829355Z    Compiling reactive_graph v0.2.16
+2026-11-20T02:06:04.4629098Z    Compiling tungstenite v0.29.0
+2026-11-20T02:06:05.0559920Z    Compiling rustls-platform-verifier v0.7.1
+2026-11-20T02:06:05.1449621Z    Compiling canteiro-application v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/application)
+2026-11-20T02:06:05.9509232Z    Compiling itertools v0.14.0
+2026-11-20T02:06:06.9749313Z    Compiling ryu v1.0.23
+2026-11-20T02:06:07.0819058Z    Compiling spin v0.9.9
+2026-11-20T02:06:07.1289093Z    Compiling multer v3.1.0
+2026-11-20T02:06:07.3719192Z    Compiling serde_urlencoded v0.7.1
+2026-11-20T02:06:07.5052988Z    Compiling thiserror v1.0.69
+2026-11-20T02:06:07.5220978Z    Compiling pin-project v1.1.13
+2026-11-20T02:06:07.5429246Z    Compiling reactive_stores v0.4.4
+2026-11-20T02:06:07.5589324Z    Compiling reqwest v0.13.5
+2026-11-20T02:06:08.0977109Z    Compiling tokio-tungstenite v0.29.0
+2026-11-20T02:06:08.2459135Z    Compiling gloo-utils v0.2.0
+2026-11-20T02:06:08.3105833Z    Compiling either_of v0.1.9
+2026-11-20T02:06:09.4081564Z    Compiling axum-core v0.5.6
+2026-11-20T02:06:09.7460280Z    Compiling oco_ref v0.2.1
+2026-11-20T02:06:09.8369263Z    Compiling serde_path_to_error v0.1.20
+2026-11-20T02:06:10.0579839Z    Compiling syn v3.0.10
+2026-11-20T02:06:10.4749928Z    Compiling toml_datetime v1.1.3+spec-1.1.0
+2026-11-20T02:06:10.5949955Z    Compiling drain_filter_polyfill v0.1.3
+2026-11-20T02:06:10.6409145Z    Compiling next_tuple v0.1.0
+2026-11-20T02:06:10.6858938Z    Compiling erased v0.1.2
+2026-11-20T02:06:10.7255526Z    Compiling matchit v0.8.4
+2026-11-20T02:06:10.9069089Z    Compiling const_str_slice_concat v0.1.0
+2026-11-20T02:06:10.9439132Z    Compiling tachys v0.2.19
+2026-11-20T02:06:13.4515089Z    Compiling proc-macro2-diagnostics v0.11.0
+2026-11-20T02:06:13.5530215Z    Compiling axum v0.8.9
+2026-11-20T02:06:16.4219337Z    Compiling toml v1.2.1+spec-1.1.0
+2026-11-20T02:06:16.7229053Z    Compiling gloo-net v0.6.0
+2026-11-20T02:06:16.9829167Z    Compiling wasm-streams v0.5.0
+2026-11-20T02:06:17.4968124Z    Compiling regex v1.13.1
+2026-11-20T02:06:17.7934448Z    Compiling convert_case v0.6.0
+2026-11-20T02:06:17.9681731Z    Compiling serde_qs v0.15.0
+2026-11-20T02:06:18.3189811Z    Compiling inventory v0.3.25
+2026-11-20T02:06:18.3577093Z    Compiling const-str v1.1.0
+2026-11-20T02:06:18.6009495Z    Compiling pathdiff v0.2.3
+2026-11-20T02:06:18.6379237Z    Compiling config v0.15.27
+2026-11-20T02:06:19.2128135Z    Compiling server_fn v0.8.13
+2026-11-20T02:06:19.7329127Z    Compiling typed-builder v0.23.2
+2026-11-20T02:06:19.7659143Z    Compiling rstml v0.13.1
+2026-11-20T02:06:20.2295825Z    Compiling codee v0.3.5
+2026-11-20T02:06:20.2438424Z    Compiling async-once-cell v0.5.4
+2026-11-20T02:06:20.3219098Z    Compiling leptos_server v0.8.8
+2026-11-20T02:06:20.3569100Z    Compiling wasm_split_helpers v0.2.3
+2026-11-20T02:06:20.4213579Z    Compiling leptos_hot_reload v0.8.7
+2026-11-20T02:06:20.6307850Z    Compiling leptos_config v0.8.10
+2026-11-20T02:06:20.8899142Z    Compiling leptos_dom v0.8.8
+2026-11-20T02:06:20.9359568Z    Compiling canteiro-calculation-verification v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/tools/calculation-verification)
+2026-11-20T02:06:21.0089139Z    Compiling leptos v0.8.23
+2026-11-20T02:06:21.2109204Z    Compiling lazy_static v1.5.1
+2026-11-20T02:06:21.2449138Z    Compiling sharded-slab v0.1.7
+2026-11-20T02:06:21.5469161Z    Compiling matchers v0.2.0
+2026-11-20T02:06:21.6029172Z    Compiling tracing-log v0.2.0
+2026-11-20T02:06:21.6999213Z    Compiling thread_local v1.1.10
+2026-11-20T02:06:21.7947998Z    Compiling nu-ansi-term v0.50.3
+2026-11-20T02:06:21.9429749Z    Compiling leptos_meta v0.8.7
+2026-11-20T02:06:21.9939696Z    Compiling leptos_router v0.8.17
+2026-11-20T02:06:22.5299599Z    Compiling tracing-subscriber v0.3.23
+2026-11-20T02:06:23.8109192Z    Compiling compression-core v0.4.34
+2026-11-20T02:06:23.8659388Z    Compiling compression-codecs v0.4.47
+2026-11-20T02:06:24.3210294Z    Compiling toml_datetime v0.7.5+spec-1.1.0
+2026-11-20T02:06:24.4639079Z    Compiling toml v0.9.8
+2026-11-20T02:06:24.7140236Z    Compiling canteiro-web v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/web)
+2026-11-20T02:06:25.2389159Z    Compiling leptos_integration_utils v0.8.9
+2026-11-20T02:06:25.3768883Z    Compiling async-compression v0.4.52
+2026-11-20T02:06:25.5352029Z    Compiling canteiro-e2e v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/tools/e2e)
+2026-11-20T02:06:25.5636709Z    Compiling tower-http v0.7.1
+2026-11-20T02:06:26.2149161Z    Compiling leptos_axum v0.8.10
+2026-11-20T02:06:44.5439421Z    Compiling xtask v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/tools/xtask)
+2026-11-20T02:07:00.4430287Z    Compiling canteiro-jobs v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/jobs)
+2026-11-20T02:07:29.1740369Z    Compiling canteiro-api v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/api)
+2026-11-20T02:07:47.8981426Z     Finished `test` profile [unoptimized] target(s) in 2m 26s
+2026-11-20T02:07:48.2692148Z      Running unittests src/lib.rs (target/debug/deps/canteiro_api-df33600ba6adf9bb)
+2026-11-20T02:07:48.2709088Z 
+2026-11-20T02:07:48.2709337Z running 10 tests
+2026-11-20T02:07:48.2726099Z test auth::tests::cookie_parser_rejects_shadowing_and_malformed_bearers ... ok
+2026-11-20T02:07:48.2726781Z test auth::tests::origin_configuration_requires_complete_trusted_origin ... ok
+2026-11-20T02:07:48.2729769Z test config::tests::configuration_does_not_read_external_credentials ... ok
+2026-11-20T02:07:48.2730759Z test config::tests::environments_are_explicit_and_unknown_values_fail_closed ... ok
+2026-11-20T02:07:48.2733661Z test error::tests::field_error_preserves_the_protocol_without_private_details ... ok
+2026-11-20T02:07:48.2748169Z test error::tests::only_a_known_stale_version_marks_the_version_field ... ok
+2026-11-20T02:07:48.2748869Z test error::tests::public_errors_have_stable_status_and_matching_operation_reference ... ok
+2026-11-20T02:07:48.2749499Z test projects::tests::native_delivery_retries_keep_the_same_identity ... ok
+2026-11-20T02:07:48.2750096Z test reliability::tests::csv_escapes_cells_and_disables_spreadsheet_formulas ... ok
+2026-11-20T02:07:48.3448937Z test auth::tests::resend_protocol_retries_keep_same_payload_and_id_without_following_redirects ... ok
+2026-11-20T02:07:48.3449554Z 
+2026-11-20T02:07:48.3449980Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+2026-11-20T02:07:48.3450323Z 
+2026-11-20T02:07:48.3454936Z      Running unittests src/main.rs (target/debug/deps/canteiro_api-fcdd7d6d05559efc)
+2026-11-20T02:07:48.3465488Z 
+2026-11-20T02:07:48.3465695Z running 0 tests
+2026-11-20T02:07:48.3465898Z 
+2026-11-20T02:07:48.3466161Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:07:48.3466491Z 
+2026-11-20T02:07:48.3467839Z      Running tests/auth.rs (target/debug/deps/auth-024b2cb43d1b8991)
+2026-11-20T02:07:48.3499141Z 
+2026-11-20T02:07:48.3499346Z running 10 tests
+2026-11-20T02:07:48.3499952Z test access::scoped_access_http_mutations_require_explicit_current_rights_and_versions ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3500801Z test access::scoped_access_http_rejects_forged_identity_csrf_and_old_sessions ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3501578Z test csrf_origin_cookie_rotation_and_revocation_are_enforced_over_http ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3502387Z test native_forms::native_project_form_creates_independently_and_preserves_invalid_revision ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3503273Z test organizations::organization_http_enforces_origin_cookie_csrf_and_private_error_responses ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3504449Z test organizations::organization_http_rejects_anonymous_invalid_inputs_and_revoked_identity ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3506397Z      Running tests/calculations.rs (target/debug/deps/calculations-7979a8889a6dc854)
+2026-11-20T02:07:48.3507088Z test organizations::organization_http_requires_confirmed_mfa_and_serves_only_current_company_export ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3508430Z test public_account_responses_and_recovery_timing_do_not_disclose_existence ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3509511Z test reliability::contract_http_replays_only_for_current_editor_and_preserves_versions_and_report ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3510325Z test reset_is_atomic_private_and_never_logs_in_over_http ... ignored, requer PostgreSQL de desenvolvimento provisionado
+2026-11-20T02:07:48.3510794Z 
+2026-11-20T02:07:48.3511075Z test result: ok. 0 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:07:48.3511418Z 
+2026-11-20T02:07:48.3538046Z 
+2026-11-20T02:07:48.3538239Z running 3 tests
+2026-11-20T02:07:48.3596654Z test calculation_page_renders_examples_and_labels_without_scripts ... ok
+2026-11-20T02:07:48.3623638Z test server_preserves_money_and_calendar_and_returns_the_policy ... ok
+2026-11-20T02:07:48.3766872Z test server_rejects_float_unknown_policy_scale_overflow_and_invalid_dates ... ok
+2026-11-20T02:07:48.3767257Z 
+2026-11-20T02:07:48.3767534Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-20T02:07:48.3768070Z 
+2026-11-20T02:07:48.3776613Z      Running tests/forms.rs (target/debug/deps/forms-39ccc46c40a0edef)
+2026-11-20T02:07:48.3808438Z 
+2026-11-20T02:07:48.3808657Z running 5 tests
+2026-11-20T02:07:48.8444026Z test invalid_queries_and_contexts_are_rejected_without_clamping_or_details ... ok
+2026-11-20T02:07:48.8538691Z test preview_validates_every_field_in_the_server_and_never_writes_the_fixture ... ok
+2026-11-20T02:07:48.8919871Z test export_is_a_download_of_all_filtered_results_not_only_the_page ... ok
+2026-11-20T02:07:48.9979137Z test server_pages_and_filters_a_bounded_fictitious_dataset ... ok
+2026-11-20T02:07:49.0858740Z test worksheet_html_contains_only_its_page_before_hydration ... ok
+2026-11-20T02:07:49.0859261Z 
+2026-11-20T02:07:49.0859578Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+2026-11-20T02:07:49.0859916Z 
+2026-11-20T02:07:49.0880648Z      Running tests/http.rs (target/debug/deps/http-eae0736d36c60b1d)
+2026-11-20T02:07:49.0914555Z 
+2026-11-20T02:07:49.0914696Z running 6 tests
+2026-11-20T02:07:49.0978052Z test initial_document_has_useful_content_before_wasm ... ok
+2026-11-20T02:07:49.0988395Z test html_is_actually_transferred_with_brotli_when_requested ... ok
+2026-11-20T02:07:49.0991931Z test liveness_does_not_claim_business_or_database_readiness ... ok
+2026-11-20T02:07:49.1088247Z test static_asset_serves_the_measured_brotli_without_recompression ... ok
+2026-11-20T02:07:49.1228080Z test unknown_routes_and_private_files_never_receive_a_success_page ... ok
+2026-11-20T02:07:49.1388325Z test prototype_routes_render_only_the_requested_company_and_reject_unknown_contexts ... ok
+2026-11-20T02:07:49.1388976Z 
+2026-11-20T02:07:49.1389403Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+2026-11-20T02:07:49.1389760Z 
+2026-11-20T02:07:49.1391695Z      Running unittests src/lib.rs (target/debug/deps/canteiro_application-c8391b12f89d11c5)
+2026-11-20T02:07:49.1408299Z 
+2026-11-20T02:07:49.1408539Z running 72 tests
+2026-11-20T02:07:49.1412016Z test auth::crypto::tests::canonical_email_and_invalid_inputs ... ok
+2026-11-20T02:07:49.1413067Z test auth::crypto::tests::encryption_binds_object_and_rejects_tamper ... ok
+2026-11-20T02:07:49.1413892Z test auth::crypto::tests::passwords_preserve_unicode_and_spaces ... ok
+2026-11-20T02:07:49.1419085Z test auth::crypto::tests::rfc6238_vector_and_replay ... ok
+2026-11-20T02:07:57.8299311Z test auth::crypto::tests::same_password_has_distinct_salts_and_version ... ok
+2026-11-20T02:07:57.8317912Z test auth::crypto::tests::tokens_have_full_entropy_and_separate_purposes ... ok
+2026-11-20T02:07:57.8519054Z test auth::organizations::access::expiry_tests::membership_expiry_remains_binding_after_the_database_snapshot ... ok
+2026-11-20T02:07:57.8530297Z test auth::organizations::documents::pdf::tests::bounded_parser_accepts_passive_signature_and_preserves_bytes ... ok
+2026-11-20T02:07:57.8531314Z test auth::organizations::documents::pdf::tests::hidden_terminal_xref_cannot_override_checked_outer_footer ... ok
+2026-11-20T02:07:57.8536542Z test auth::organizations::documents::pdf::tests::incremental_xref_requires_real_sections_and_matching_object_numbers ... ok
+2026-11-20T02:07:57.8537256Z test auth::organizations::documents::pdf::tests::parser_limits_nested_objects_and_tokens_before_recursion ... ok
+2026-11-20T02:07:57.8542408Z test auth::organizations::documents::pdf::tests::parser_rejects_forged_pdf_and_accepts_passive_signature_container ... ok
+2026-11-20T02:07:57.8543113Z test auth::organizations::documents::pdf::tests::stream_bytes_do_not_bypass_limits_or_consume_nesting_budget ... ok
+2026-11-20T02:07:57.8557203Z test auth::organizations::documents::pdf::tests::xref_cannot_load_objects_hidden_inside_stream_bytes ... ok
+2026-11-20T02:07:57.8558439Z test auth::organizations::documents::scanner::tests::protocol_requires_exact_clean_result_and_transmits_original_bytes ... ok
+2026-11-20T02:07:57.8559424Z test auth::organizations::reliability::tests::canonical_input_uses_normalized_text_time_scope_and_version ... ok
+2026-11-20T02:07:57.8560197Z test auth::organizations::tests::access_requests_need_decision_and_rotation_invalidates_shared_code ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8561151Z test auth::organizations::tests::access_tests::access_delegation_is_bounded_and_loses_effect_when_its_source_or_membership_ends ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8562180Z test auth::organizations::tests::access_tests::access_external_budgeter_only_operates_the_granted_budget_during_current_validity ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8563210Z test auth::organizations::tests::access_tests::access_mixed_amount_segregation_concurrent_approvals_and_revisions_preserve_history ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8564228Z test auth::organizations::tests::access_tests::access_required_responsible_survives_member_changes_and_concurrent_revocations ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8565235Z test auth::organizations::tests::access_tests::access_roles_exact_scope_and_organization_do_not_allow_direct_command_escalation ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8566232Z test auth::organizations::tests::access_tests::access_stale_context_grant_policy_and_request_versions_leave_no_business_write ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8573480Z test auth::organizations::tests::access_tests::authority_receipts_and_financial_effect_survive_retries_and_membership_removal ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8574471Z test auth::organizations::tests::concurrent_invitation_acceptance_has_one_effect_and_revoke_is_serialized ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8575470Z test auth::organizations::tests::documents_tests::documents_completed_retry_revalidates_after_waiting_for_upload_lock ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8591772Z test auth::organizations::tests::documents_tests::documents_quarantine_is_not_an_attachment_and_replay_revalidates_access ... ignored, requer PostgreSQL isolado e scanner externo não configurado
+2026-11-20T02:07:57.8593435Z test auth::organizations::tests::documents_tests::documents_ticket_is_bound_to_session_tenant_scope_expiry_and_current_membership ... ignored, requer PostgreSQL isolado e scanner externo não configurado
+2026-11-20T02:07:57.8594718Z test auth::organizations::tests::documents_tests::documents_versions_keep_original_bytes_and_signatures_do_not_move ... ignored, requer PostgreSQL isolado e scanner externo não configurado
+2026-11-20T02:07:57.8595723Z test auth::organizations::tests::invitations_bind_identity_expiry_revocation_purpose_and_single_use ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8596568Z test auth::organizations::tests::last_administrator_survives_concurrent_removal_and_old_versions ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8597434Z test auth::organizations::tests::membership_expiry_session_revocation_and_administrator_mfa_are_rechecked ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8598280Z test auth::organizations::tests::names_codes_deadlines_and_spreadsheet_cells_are_bounded ... ok
+2026-11-20T02:07:57.8599003Z test auth::organizations::tests::organization_creation_mfa_single_connection_and_clear_selection ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8599840Z test auth::organizations::tests::organizations_ids_search_export_and_private_members_never_cross ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8600768Z test auth::organizations::tests::project_records_tests::obligation_requires_real_same_scope_evidence_and_effective_professional ... ignored, requer PostgreSQL real local
+2026-11-20T02:07:57.8601737Z test auth::organizations::tests::project_records_tests::project_concurrency_repetition_cross_scope_and_revocation ... ignored, requer PostgreSQL real local
+2026-11-20T02:07:57.8602734Z test auth::organizations::tests::project_records_tests::project_lifecycle_independent_professional_approval_revision_and_acceptance ... ignored, requer PostgreSQL real local
+2026-11-20T02:07:57.8603760Z test auth::organizations::tests::project_records_tests::technical_exception_requires_separate_approver_and_unchanged_proposal ... ignored, requer PostgreSQL real local
+2026-11-20T02:07:57.8604561Z test auth::organizations::tests::public_commands_reject_unknown_identity_or_scope_fields ... ok
+2026-11-20T02:07:57.8605400Z test auth::organizations::tests::registry_tests::registry_bank_permission_immutable_versions_and_inactive_supplier ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8606493Z test auth::organizations::tests::registry_tests::registry_context_refresh_recovers_same_receipts_without_duplication ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8611836Z test auth::organizations::tests::registry_tests::registry_expiry_while_waiting_for_row_lock_hides_records_and_history ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8613023Z test auth::organizations::tests::registry_tests::registry_idempotency_concurrent_creation_payload_change_and_old_version ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8614366Z test auth::organizations::tests::registry_tests::registry_import_is_atomic_and_professional_does_not_create_login ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8615431Z test auth::organizations::tests::registry_tests::registry_official_cnpj_text_export_dedup_and_tenant_isolation ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8616542Z test auth::organizations::tests::registry_tests::registry_portfolio_many_contracts_one_work_exact_allocation_and_conflicts ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8617797Z test auth::organizations::tests::registry_tests::registry_portfolio_permissions_apply_to_search_map_totals_and_direct_reads ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8619031Z test auth::organizations::tests::registry_tests::registry_revocation_prevents_receipt_replay_and_foreign_portfolio ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8620189Z test auth::organizations::tests::reliability_tests::reliability_distinct_editors_and_tenants_cannot_overwrite_or_replay_each_others_effect ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8621428Z test auth::organizations::tests::reliability_tests::reliability_expired_lease_is_recovered_and_failing_outbox_rolls_back_entire_change ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8622604Z test auth::organizations::tests::reliability_tests::reliability_permission_expiring_while_waiting_for_edit_lock_cannot_commit ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:07:57.8623614Z test auth::organizations::tests::stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothing ... ignored, requer PostgreSQL real isolado
+2026-11-20T02:07:57.8624659Z test auth::tests::email_owner_chooses_password_after_pre_registration_attack ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8625578Z test auth::tests::execution_identity_rejects_privileged_insert_and_column_audit_updates ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8626460Z test auth::tests::identity_verification_rotation_and_opaque_storage ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8627329Z test auth::tests::idle_expiry_credential_version_and_runtime_privilege_are_enforced ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8628343Z test auth::tests::mfa_configuration_is_bound_to_session_and_fresh_authentication ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8629209Z test auth::tests::mfa_privilege_recovery_replay_and_reset_preservation ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8630107Z test auth::tests::obsolete_mail_is_not_claimed_and_public_requests_have_a_uniform_floor ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8630885Z test auth::tests::password_cost_is_measured_with_bounded_parallelism ... ignored, mede Argon2 real e exige PostgreSQL local
+2026-11-20T02:07:57.8631772Z test auth::tests::password_reset_is_single_use_expiring_revokes_and_does_not_authenticate ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8632691Z test auth::tests::rate_limits_survive_new_service_and_mail_is_encrypted_and_leased ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8633620Z test auth::tests::replacement_factor_requires_recent_mfa_and_invalidates_old_recovery_codes ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8634530Z test auth::tests::revocation_is_scoped_and_next_command_checks_live_state ... ignored, requer PostgreSQL local e roles descartáveis
+2026-11-20T02:07:57.8635386Z test organization_resources::tests::cache_separates_tenant_actor_context_query_kind_and_data_version ... ok
+2026-11-20T02:07:57.8636021Z test organization_resources::tests::identical_resource_ids_remain_separate_between_organizations ... ok
+2026-11-20T02:07:57.8636674Z test organization_resources::tests::malformed_identifiers_versions_and_transport_cannot_make_namespaces ... ok
+2026-11-20T02:07:57.8637353Z test organization_resources::tests::queue_rejects_wrong_company_before_reading_payload_and_survives_transport ... ok
+2026-11-20T02:07:57.8638175Z test organization_resources::tests::search_scope_rejects_cross_tenant_and_cross_kind_before_content ... ok
+2026-11-20T02:07:57.8638840Z test organization_resources::tests::stale_context_cannot_reuse_export_namespace_but_object_revision_is_stable ... ok
+2026-11-20T02:08:00.6627738Z test auth::crypto::tests::rehash_never_reduces_an_existing_cost ... ok
+2026-11-20T02:08:00.6628245Z 
+2026-11-20T02:08:00.6628538Z test result: ok. 25 passed; 0 failed; 47 ignored; 0 measured; 0 filtered out; finished in 11.52s
+2026-11-20T02:08:00.6628939Z 
+2026-11-20T02:08:00.6645536Z      Running unittests src/lib.rs (target/debug/deps/canteiro_calculation_verification-9319d5ad23dc14c0)
+2026-11-20T02:08:00.6656099Z 
+2026-11-20T02:08:00.6656348Z running 0 tests
+2026-11-20T02:08:00.6656572Z 
+2026-11-20T02:08:00.6656851Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:00.6657209Z 
+2026-11-20T02:08:00.6660094Z      Running unittests src/main.rs (target/debug/deps/canteiro_calculation_verification-c938a293d924bf3e)
+2026-11-20T02:08:00.6667224Z 
+2026-11-20T02:08:00.6667423Z running 0 tests
+2026-11-20T02:08:00.6667776Z 
+2026-11-20T02:08:00.6668053Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:00.6668397Z 
+2026-11-20T02:08:00.6670137Z      Running tests/reference.rs (target/debug/deps/reference-504e057de0e1fa0b)
+2026-11-20T02:08:00.6684582Z 
+2026-11-20T02:08:00.6684794Z running 3 tests
+2026-11-20T02:08:00.6695577Z test expected_fields_cannot_supply_or_change_the_calculated_answer ... ok
+2026-11-20T02:08:00.6696117Z test original_specification_numeric_and_calendar_examples_still_hold ... ok
+2026-11-20T02:08:00.6778927Z test independent_determinant_and_property_samples_match_the_domain ... ok
+2026-11-20T02:08:00.6779502Z 
+2026-11-20T02:08:00.6779971Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-20T02:08:00.6780364Z 
+2026-11-20T02:08:00.6782982Z      Running unittests src/lib.rs (target/debug/deps/canteiro_contracts-89e9bec844368407)
+2026-11-20T02:08:00.6792761Z 
+2026-11-20T02:08:00.6793014Z running 12 tests
+2026-11-20T02:08:00.6799139Z test calculations::tests::previews_explain_residual_and_reject_unbounded_or_unknown_input ... ok
+2026-11-20T02:08:00.6799845Z test error::tests::public_shape_and_stable_codes_are_explicit ... ok
+2026-11-20T02:08:00.6801000Z test error::tests::every_error_has_a_safe_recovery_without_false_success ... ok
+2026-11-20T02:08:00.6801705Z test forms::decimal::tests::ambiguity_excess_precision_and_malformed_values_fail_without_rounding ... ok
+2026-11-20T02:08:00.6802469Z test forms::decimal::tests::civil_dates_and_units_never_guess_foreign_formats_or_invent_units ... ok
+2026-11-20T02:08:00.6803218Z test forms::decimal::tests::presentation_preserves_signed_corrections_and_factor_precision ... ok
+2026-11-20T02:08:00.6818607Z test forms::decimal::tests::explicit_brazilian_values_preserve_precision_and_report_the_interpretation ... ok
+2026-11-20T02:08:01.3459267Z test forms::measurement::tests::a_ten_thousand_row_dataset_returns_only_a_page_and_stable_server_order ... ok
+2026-11-20T02:08:01.3558447Z test forms::measurement::tests::filters_count_all_results_and_company_prefix_never_falls_back ... ok
+2026-11-20T02:08:01.3559517Z test forms::measurement::tests::invalid_fields_do_not_destroy_other_interpretations_or_accept_excess_balance ... ok
+2026-11-20T02:08:01.3560916Z test forms::measurement::tests::period_is_the_difference_of_truncated_accumulated_values ... ok
+2026-11-20T02:08:01.4302898Z test forms::measurement::tests::filtered_export_includes_the_complete_result_once_with_safe_cells ... ok
+2026-11-20T02:08:01.4303507Z 
+2026-11-20T02:08:01.4304072Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+2026-11-20T02:08:01.4304545Z 
+2026-11-20T02:08:01.4327921Z      Running unittests src/lib.rs (target/debug/deps/canteiro_domain-4fd3be3fb82133f5)
+2026-11-20T02:08:01.4340750Z 
+2026-11-20T02:08:01.4341200Z running 15 tests
+2026-11-20T02:08:01.4346094Z test documents::tests::false_extensions_truncation_and_active_pdf_are_rejected ... ok
+2026-11-20T02:08:01.4359179Z test parties::tests::malformed_masks_unicode_wrong_kind_and_check_digits_fail ... ok
+2026-11-20T02:08:01.4359902Z test parties::tests::professional_has_no_implicit_login_and_expiry_is_inclusive ... ok
+2026-11-20T02:08:01.4360535Z test parties::tests::receita_alphanumeric_reference_and_numeric_are_textual ... ok
+2026-11-20T02:08:01.4361540Z test portfolio::tests::allocation_conserves_exact_totals ... ok
+2026-11-20T02:08:01.4362073Z test portfolio::tests::duplicate_contracts_do_not_duplicate_work ... ok
+2026-11-20T02:08:01.4362610Z test portfolio::tests::invalid_and_incomplete_coordinates_fail ... ok
+2026-11-20T02:08:01.4363140Z test portfolio::tests::missing_percentage_is_reported ... ok
+2026-11-20T02:08:01.4363618Z test portfolio::tests::wrong_dimension_is_reported ... ok
+2026-11-20T02:08:01.4364154Z test units::tests::quantities_require_units_and_never_convert_them_implicitly ... ok
+2026-11-20T02:08:01.4364808Z test values::tests::civil_dates_keep_calendar_meaning_and_reject_impossible_or_ambiguous_dates ... ok
+2026-11-20T02:08:01.4365456Z test values::tests::entity_versions_preserve_large_values_and_never_wrap ... ok
+2026-11-20T02:08:01.4366057Z test values::tests::identifiers_have_distinct_types_and_validate_deserialization ... ok
+2026-11-20T02:08:01.4366678Z test values::tests::instants_normalize_offsets_without_losing_microseconds ... ok
+2026-11-20T02:08:01.4373488Z test documents::tests::text_is_bounded_and_spreadsheet_formulas_are_not_accepted ... ok
+2026-11-20T02:08:01.4373900Z 
+2026-11-20T02:08:01.4374265Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4374750Z 
+2026-11-20T02:08:01.4377856Z      Running tests/access.rs (target/debug/deps/access-2ba8f2e0c27dbf96)
+2026-11-20T02:08:01.4388030Z 
+2026-11-20T02:08:01.4388295Z running 22 tests
+2026-11-20T02:08:01.4392098Z test a_budget_grant_cannot_edit_a_sibling_and_contract_access_is_not_inherited ... ok
+2026-11-20T02:08:01.4394295Z test approvals_cannot_be_reused_for_another_version_or_proposal ... ok
+2026-11-20T02:08:01.4394927Z test budget_review_is_an_explicit_grant_without_editing_or_approval_authority ... ok
+2026-11-20T02:08:01.4395633Z test changing_the_source_limits_invalidates_a_previous_delegation ... ok
+2026-11-20T02:08:01.4396206Z test delegated_authority_is_bounded_by_act_amount_period_and_scope ... ok
+2026-11-20T02:08:01.4397166Z test delegation_needs_the_live_original_source_and_cannot_be_forwarded ... ok
+2026-11-20T02:08:01.4398366Z test grants_have_inclusive_start_exclusive_end_and_immediate_revocation ... ok
+2026-11-20T02:08:01.4399891Z test invalid_contexts_and_ambiguous_grant_identity_fail_closed ... ok
+2026-11-20T02:08:01.4400716Z test malformed_grants_and_permanent_support_cannot_be_used ... ok
+2026-11-20T02:08:01.4401745Z test mixed_increase_and_reduction_preserve_authority_even_when_net_is_zero ... ok
+2026-11-20T02:08:01.4404012Z test consultation_only_grants_never_create_access_for_another_person ... ok
+2026-11-20T02:08:01.4404585Z test negative_impacts_and_numeric_json_never_enter_the_monetary_policy ... ok
+2026-11-20T02:08:01.4405196Z test organization_work_contract_and_actor_all_require_exact_matches ... ok
+2026-11-20T02:08:01.4408114Z test original_holder_and_delegates_never_supply_two_independent_powers ... ok
+2026-11-20T02:08:01.4409056Z test quorum_finds_independent_pair_even_if_the_first_candidate_collides_with_both ... ok
+2026-11-20T02:08:01.4410247Z test quorum_rechecks_the_delegator_and_requires_distinct_unconflicted_authorities ... ok
+2026-11-20T02:08:01.4411154Z test read_only_role_cannot_mutate_even_with_a_forged_explicit_action ... ok
+2026-11-20T02:08:01.4412237Z test segregation_blocks_the_proposer_both_directly_and_through_delegation ... ok
+2026-11-20T02:08:01.4415204Z test quorum_uses_current_authority_instead_of_historic_approval_existence ... ok
+2026-11-20T02:08:01.4415791Z test threshold_is_inclusive_and_invalid_quorum_policies_fail_closed ... ok
+2026-11-20T02:08:01.4417059Z test two_grants_or_repeated_rows_from_one_person_remain_one_signature ... ok
+2026-11-20T02:08:01.4418030Z test wire_names_remain_stable_and_distinguish_technical_and_financial_roles ... ok
+2026-11-20T02:08:01.4418526Z 
+2026-11-20T02:08:01.4418851Z test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4419255Z 
+2026-11-20T02:08:01.4421430Z      Running tests/calendar_rules.rs (target/debug/deps/calendar_rules-1262123bd5ae9462)
+2026-11-20T02:08:01.4437024Z 
+2026-11-20T02:08:01.4437526Z running 14 tests
+2026-11-20T02:08:01.4439967Z test canonical_policies_and_validated_timezones_serialize_as_text ... ok
+2026-11-20T02:08:01.4441541Z test daylight_saving_gaps_and_folds_never_guess_a_timestamp ... ok
+2026-11-20T02:08:01.4442957Z test execution_excludes_start_day_and_compares_both_ends_with_validity ... ok
+2026-11-20T02:08:01.4443610Z test fixed_and_civil_cadences_are_explicit_and_do_not_share_month_lengths ... ok
+2026-11-20T02:08:01.4444236Z test historical_subminute_offsets_never_shift_the_instant_when_formatted ... ok
+2026-11-20T02:08:01.4444860Z test local_datetime_parser_rejects_implicit_precision_loss_and_ambiguous_forms ... ok
+2026-11-20T02:08:01.4445504Z test open_pauses_are_explicit_projections_and_do_not_rewrite_formal_dates ... ok
+2026-11-20T02:08:01.4446180Z test original_anchor_survives_short_months_and_leap_years ... ok
+2026-11-20T02:08:01.4446754Z test out_of_range_operations_fail_and_final_residual_never_exceeds_year_9999 ... ok
+2026-11-20T02:08:01.4448018Z test overlap_open_overlap_and_reverse_pause_are_rejected_before_counting ... ok
+2026-11-20T02:08:01.4448596Z test pauses_are_half_open_and_scoped_to_one_front ... ok
+2026-11-20T02:08:01.4449481Z test regional_timezone_changes_dates_only_for_instants_not_civil_terms ... ok
+2026-11-20T02:08:01.4450093Z test schedule_preserves_formal_end_and_marks_only_actual_residuals ... ok
+2026-11-20T02:08:01.4456959Z test schedules_conserve_duration_and_advance_monotonically_for_both_policies ... ok
+2026-11-20T02:08:01.4457368Z 
+2026-11-20T02:08:01.4458483Z test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4458929Z 
+2026-11-20T02:08:01.4462174Z      Running tests/decimal_engine.rs (target/debug/deps/decimal_engine-dbcd5d3b0cbcf71d)
+2026-11-20T02:08:01.4471372Z 
+2026-11-20T02:08:01.4471618Z running 16 tests
+2026-11-20T02:08:01.4476458Z test adjustment_uses_a_ten_place_factor_and_signed_truncation ... ok
+2026-11-20T02:08:01.4477063Z test allocation_is_independent_of_query_order_even_near_precision_limits ... ok
+2026-11-20T02:08:01.4478555Z test allocation_uses_exact_ratios_at_the_largest_money_boundary ... ok
+2026-11-20T02:08:01.4479093Z test allocation_validation_rejects_negative_or_undefined_bases ... ok
+2026-11-20T02:08:01.4481913Z test canonical_text_and_deserialization_never_guess_a_convention ... ok
+2026-11-20T02:08:01.4482470Z test centavos_are_preserved_across_cumulative_measurements ... ok
+2026-11-20T02:08:01.4489546Z test exact_operations_refuse_hidden_rounding_and_unsupported_precision ... ok
+2026-11-20T02:08:01.4498364Z test field_scales_and_numeric_column_bounds_are_enforced_before_rounding ... ok
+2026-11-20T02:08:01.4628695Z test generated_allocations_preserve_total_quota_and_determinism ... ok
+2026-11-20T02:08:01.4629617Z test global_stage_closes_exactly_and_rejects_invalid_progress ... ok
+2026-11-20T02:08:01.4630253Z test largest_remainders_conserve_money_and_percentages_with_stable_ties ... ok
+2026-11-20T02:08:01.4630941Z test measurement_refuses_overrun_unapproved_reduction_and_inconsistent_history ... ok
+2026-11-20T02:08:01.4631598Z test negotiated_price_uses_one_bdi_one_discount_and_explicit_rounding ... ok
+2026-11-20T02:08:01.4632231Z test scratch_integer_capacity_does_not_reject_an_exact_representable_product ... ok
+2026-11-20T02:08:01.4632873Z test truncation_and_nearest_rounding_use_the_documented_signed_rules ... ok
+2026-11-20T02:08:01.4642980Z test cumulative_prices_are_monotone_and_telescope_for_fractional_quantities ... ok
+2026-11-20T02:08:01.4643393Z 
+2026-11-20T02:08:01.4643743Z test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-11-20T02:08:01.4644196Z 
+2026-11-20T02:08:01.4647397Z      Running tests/projects_obligations.rs (target/debug/deps/projects_obligations-73e14c3cd0c551e8)
+2026-11-20T02:08:01.4656786Z 
+2026-11-20T02:08:01.4657277Z running 10 tests
+2026-11-20T02:08:01.4660080Z test budget_art_does_not_cover_execution_or_another_discipline ... ok
+2026-11-20T02:08:01.4660651Z test council_and_registration_timing_depend_on_the_document_nature ... ok
+2026-11-20T02:08:01.4662353Z test delivery_acceptance_only_changes_the_delivery_and_closing_requires_all ... ok
+2026-11-20T02:08:01.4662955Z test duplicate_deliveries_and_unknown_fields_do_not_enter_the_project ... ok
+2026-11-20T02:08:01.4663690Z test exception_requires_case_specific_basis_and_a_safe_source_even_in_draft ... ok
+2026-11-20T02:08:01.4664241Z test independent_project_and_commitment_requirements ... ok
+2026-11-20T02:08:01.4665422Z test other_rrt_activities_need_both_thirty_day_limit_and_completion_event ... ok
+2026-11-20T02:08:01.4666005Z test placeholders_and_unlinked_files_cannot_complete_an_obligation ... ok
+2026-11-20T02:08:01.4666857Z test revising_approved_scope_preserves_previous_commitment_and_requires_new_approval ... ok
+2026-11-20T02:08:01.4667477Z test rrt_framework_cannot_be_switched_to_escape_the_applicable_deadline ... ok
+2026-11-20T02:08:01.4668073Z 
+2026-11-20T02:08:01.4668418Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4670198Z      Running tests/registry_access.rs (target/debug/deps/registry_access-03cf0476169f1c13)
+2026-11-20T02:08:01.4671699Z 
+2026-11-20T02:08:01.4680338Z 
+2026-11-20T02:08:01.4680578Z running 2 tests
+2026-11-20T02:08:01.4683617Z test an_explicit_project_grant_does_not_survive_revocation_or_cross_tenants ... ok
+2026-11-20T02:08:01.4684253Z test work_and_project_management_cannot_be_granted_to_the_wrong_record_kind ... ok
+2026-11-20T02:08:01.4684684Z 
+2026-11-20T02:08:01.4685027Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4685434Z 
+2026-11-20T02:08:01.4686189Z      Running unittests src/lib.rs (target/debug/deps/canteiro_e2e-277de7c199264b7b)
+2026-11-20T02:08:01.4695661Z 
+2026-11-20T02:08:01.4695920Z running 0 tests
+2026-11-20T02:08:01.4696243Z 
+2026-11-20T02:08:01.4696617Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4697034Z 
+2026-11-20T02:08:01.4697939Z      Running tests/access.rs (target/debug/deps/access-9f257ef204751ac2)
+2026-11-20T02:08:01.4712346Z 
+2026-11-20T02:08:01.4712595Z running 1 test
+2026-11-20T02:08:01.4713249Z test scoped_roles_policies_and_independent_decisions_work_in_the_browser ... ignored, requires built SSR/WASM server, PostgreSQL and WebDriver
+2026-11-20T02:08:01.4713920Z 
+2026-11-20T02:08:01.4714265Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4714684Z 
+2026-11-20T02:08:01.4715795Z      Running tests/auth.rs (target/debug/deps/auth-85ec106a6c305176)
+2026-11-20T02:08:01.4729674Z 
+2026-11-20T02:08:01.4730179Z running 1 test
+2026-11-20T02:08:01.4730858Z test account_access_recovers_without_losing_input_and_preserves_mfa ... ignored, requires built server, PostgreSQL, encrypted mail fixture and WebDriver
+2026-11-20T02:08:01.4731459Z 
+2026-11-20T02:08:01.4731797Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4732210Z 
+2026-11-20T02:08:01.4733189Z      Running tests/browser.rs (target/debug/deps/browser-db19fdbb069f5b24)
+2026-11-20T02:08:01.4745519Z 
+2026-11-20T02:08:01.4745763Z running 2 tests
+2026-11-20T02:08:01.4746352Z test initial_route_performance_desktop_and_mobile ... ignored, Runs 80 measured navigations under CPU/network throttling
+2026-11-20T02:08:01.4747202Z test rendered_page_hydrates_and_recovers_with_keyboard ... ignored, Requires cargo xtask build, Chromium and matching ChromeDriver
+2026-11-20T02:08:01.4747927Z 
+2026-11-20T02:08:01.4748267Z test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4749140Z      Running tests/calculations.rs (target/debug/deps/calculations-3fb12f9a82540251)
+2026-11-20T02:08:01.4749594Z 
+2026-11-20T02:08:01.4767342Z 
+2026-11-20T02:08:01.4767687Z running 2 tests
+2026-11-20T02:08:01.4768396Z test independent_vectors_match_native_and_real_browser_wasm ... ignored, requires built server, PostgreSQL, generated verifier WASM and WebDriver
+2026-11-20T02:08:01.4769288Z test previews_are_readable_keyboard_operable_and_preserve_invalid_input ... ignored, requires built server, PostgreSQL and WebDriver
+2026-11-20T02:08:01.4769814Z 
+2026-11-20T02:08:01.4770146Z test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4770562Z 
+2026-11-20T02:08:01.4778625Z      Running tests/forms.rs (target/debug/deps/forms-1a3c3f75abf1d304)
+2026-11-20T02:08:01.4785875Z 
+2026-11-20T02:08:01.4786112Z running 3 tests
+2026-11-20T02:08:01.4786707Z test forms_drafts_tables_and_context ... ignored, Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver
+2026-11-20T02:08:01.4787547Z test forms_http_ssr_and_presentation ... ignored, Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver
+2026-11-20T02:08:01.4788520Z test forms_local_selection_and_expansion_feedback ... ignored, Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver
+2026-11-20T02:08:01.4790680Z 
+2026-11-20T02:08:01.4791106Z test result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4791582Z 
+2026-11-20T02:08:01.4792500Z      Running tests/organizations.rs (target/debug/deps/organizations-49e95f73e59432b8)
+2026-11-20T02:08:01.4803591Z 
+2026-11-20T02:08:01.4803827Z running 1 test
+2026-11-20T02:08:01.4806206Z test organization_membership_context_and_invitations_work_through_the_browser ... ignored, requires built SSR/WASM server, PostgreSQL and WebDriver
+2026-11-20T02:08:01.4806883Z 
+2026-11-20T02:08:01.4807378Z      Running tests/prototype.rs (target/debug/deps/prototype-80e9e5d45756e3f8)
+2026-11-20T02:08:01.4808116Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4808554Z 
+2026-11-20T02:08:01.4820809Z 
+2026-11-20T02:08:01.4821058Z running 2 tests
+2026-11-20T02:08:01.4821719Z test prototype_accessibility_context_and_recovery ... ignored, Requires release SSR/WASM, real PostgreSQL, Chromium and matching ChromeDriver
+2026-11-20T02:08:01.4823411Z test contrast_measurement_rejects_near_threshold_and_composites_alpha ... ok
+2026-11-20T02:08:01.4823823Z 
+2026-11-20T02:08:01.4824161Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4824566Z 
+2026-11-20T02:08:01.4826787Z      Running tests/registry.rs (target/debug/deps/registry-c2bad1966fd32a54)
+2026-11-20T02:08:01.4845360Z 
+2026-11-20T02:08:01.4845593Z running 1 test
+2026-11-20T02:08:01.4846289Z test registry_documents_and_projects_work_with_real_authorization_and_keyboard ... ignored, requer PostgreSQL, servidor, WASM e Chrome/ChromeDriver fixados
+2026-11-20T02:08:01.4847201Z 
+2026-11-20T02:08:01.4847539Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4848118Z 
+2026-11-20T02:08:01.4850015Z      Running tests/reliability.rs (target/debug/deps/reliability-96d95c92fd198594)
+2026-11-20T02:08:01.4863903Z 
+2026-11-20T02:08:01.4864145Z running 1 test
+2026-11-20T02:08:01.4864914Z test recoverable_edits_and_private_contract_history ... ignored, requer binário, WASM, PostgreSQL e Chrome/ChromeDriver fixados
+2026-11-20T02:08:01.4865453Z 
+2026-11-20T02:08:01.4865792Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4866202Z 
+2026-11-20T02:08:01.4867765Z      Running unittests src/main.rs (target/debug/deps/canteiro_jobs-419e10e463404d7c)
+2026-11-20T02:08:01.4876124Z 
+2026-11-20T02:08:01.4876364Z running 0 tests
+2026-11-20T02:08:01.4876639Z 
+2026-11-20T02:08:01.4877199Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4877786Z 
+2026-11-20T02:08:01.4878400Z      Running unittests src/lib.rs (target/debug/deps/canteiro_persistence-33e4ad0278d07445)
+2026-11-20T02:08:01.4890572Z 
+2026-11-20T02:08:01.4890820Z running 40 tests
+2026-11-20T02:08:01.4891549Z test database_tests::access::access_composite_foreign_keys_reject_cross_tenant_references ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4892575Z test database_tests::access::access_contract_parent_is_a_work_and_cannot_become_a_contract_cycle ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4893620Z test database_tests::access::access_last_required_holder_survives_revocation_member_end_and_failed_transfer ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4894698Z test database_tests::access::access_money_constraints_reject_excess_scale_range_and_nonfinite_without_rounding ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4895698Z test database_tests::access::access_request_history_is_insert_only_for_runtime ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4896682Z test database_tests::access::access_runtime_connection_refuses_history_column_privileges_and_disabled_rls ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4897817Z test database_tests::access::access_seven_tables_enforce_rls_even_with_repeated_ids_and_reused_connection ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4898889Z test database_tests::access::access_successor_must_cover_required_action_amount_and_continuous_validity ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4899972Z test database_tests::access::access_two_connections_cannot_remove_both_required_holders_and_rollback_releases_lock ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4901034Z test database_tests::actual_database_error_is_redacted_in_diagnostics_and_public_persistence_error ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4902042Z      Running unittests src/bin/canteiro-db.rs (target/debug/deps/canteiro_db-0ff0bda601312335)
+2026-11-20T02:08:01.4902764Z test database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4903732Z test database_tests::cancelled_borrowed_write_cannot_later_be_committed ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4904872Z test database_tests::cancelled_task_rolls_back_pending_transaction_and_releases_clean_connection ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4906098Z test database_tests::concurrent_expected_version_updates_have_one_winner_and_never_overflow ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4907098Z test database_tests::cross_tenant_foreign_keys_reject_insert_and_update_even_for_superuser ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4908315Z test database_tests::edited_or_future_migration_history_is_rejected_without_erasing_existing_data ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4909347Z test database_tests::environment_owner_and_inherited_privilege_mismatches_fail_closed ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4910327Z test database_tests::failure_delayed_until_commit_is_never_reported_as_confirmed_or_safe_to_retry ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4911461Z test database_tests::ignored_second_write_and_raw_sql_errors_cannot_commit_partial_work ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4912440Z test database_tests::lock_pool_and_global_transaction_deadlines_abort_without_partial_writes ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4913423Z test database_tests::migration_advisory_lock_has_a_bounded_wait_and_rolls_back_bootstrap ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4914247Z      Running unittests src/lib.rs (target/debug/deps/canteiro_web-e9f1f49caa77c297)
+2026-11-20T02:08:01.4915100Z test database_tests::one_connection_pool_clears_context_after_commit_rollback_failure_timeout_and_drop ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4916393Z test database_tests::organizations::organization_creation_and_audit_failure_roll_back_without_orphan_or_secret_error ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4917539Z test database_tests::organizations::organization_database_prevents_last_administrator_and_expiring_administrator ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4918805Z test database_tests::organizations::organization_invites_and_requests_are_versioned_one_use_and_revocable ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4919918Z test database_tests::organizations::organization_last_admin_survives_two_connections_and_repeatable_read_snapshot ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4921050Z test database_tests::organizations::organization_membership_fk_does_not_deadlock_two_authenticated_actors ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4922164Z test database_tests::organizations::organization_rls_hides_foreign_rows_ids_counts_and_identity_directory ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4923323Z test database_tests::organizations::organization_runtime_rejects_audit_column_privilege_truncate_and_disabled_selection_rls ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4924494Z test database_tests::organizations::organization_selection_is_session_owned_versioned_and_pool_context_is_local ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4925635Z test database_tests::reliability::contract_history_backfills_original_authors_in_two_tenants_and_is_append_only ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4926746Z test database_tests::reliability::reliability_runtime_refuses_column_updates_or_dispatch_data_grants ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4927995Z test database_tests::reliability_outbox::acknowledgement_failure_is_deferred_and_a_redelivered_row_cannot_duplicate ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4929254Z test database_tests::reliability_outbox::concurrent_consumers_skip_locked_and_restore_tenant_and_actor ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4930337Z test database_tests::reliability_outbox::revision_and_outbox_commit_together_and_worker_disconnect_is_recoverable ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4931384Z test database_tests::runtime_rls_blocks_unscoped_reads_writes_and_wrong_tenant_mutations ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4932351Z test database_tests::version_one_data_survives_upgrade_with_composite_and_date_constraints ... ignored, requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL
+2026-11-20T02:08:01.4933092Z test migration::tests::administrative_identifiers_are_quoted ... ok
+2026-11-20T02:08:01.4933790Z test settings::tests::limits_and_environments_reject_ambiguous_settings ... ok
+2026-11-20T02:08:01.4934332Z test settings::tests::database_configuration_never_prints_its_input ... ok
+2026-11-20T02:08:01.4934705Z 
+2026-11-20T02:08:01.4935077Z test result: ok. 3 passed; 0 failed; 37 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4935491Z 
+2026-11-20T02:08:01.4935629Z 
+2026-11-20T02:08:01.4935843Z running 0 tests
+2026-11-20T02:08:01.4936082Z 
+2026-11-20T02:08:01.4936401Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:01.4936793Z 
+2026-11-20T02:08:01.4936921Z 
+2026-11-20T02:08:01.4937120Z running 41 tests
+2026-11-20T02:08:01.4937521Z test access::format::tests::brazilian_local_time_is_sent_with_explicit_offset ... ok
+2026-11-20T02:08:01.4938284Z test access::format::tests::money_never_guesses_ambiguous_input_or_rounds ... ok
+2026-11-20T02:08:01.4940892Z test access::format::tests::suggested_delegation_starts_now_without_rounding_before_source ... ok
+2026-11-20T02:08:01.4943915Z test access::model::tests::another_identity_company_or_lost_admin_cannot_restore_draft ... ok
+2026-11-20T02:08:01.4944673Z test access::model::tests::authority_attempt_recovers_only_in_its_company_and_does_not_clear_new_edits ... ok
+2026-11-20T02:08:01.4947026Z test access::model::tests::dirty_policy_change_requires_a_decision_and_keeps_other_drafts ... ok
+2026-11-20T02:08:01.4950549Z test access::model::tests::focus_refresh_supersedes_pending_mutation_before_fetching_identity ... ok
+2026-11-20T02:08:01.4951261Z test access::model::tests::network_failure_hides_private_data_but_resumes_same_identity_draft ... ok
+2026-11-20T02:08:01.4952352Z test access::model::tests::refreshing_does_not_upgrade_saved_policy_version ... ok
+2026-11-20T02:08:01.4956735Z test access::model::tests::route_unmount_preserves_only_a_bound_draft_until_authenticated_return ... ok
+2026-11-20T02:08:01.4961218Z test access::model::tests::switching_revision_keeps_values_and_version_until_discard_is_confirmed ... ok
+2026-11-20T02:08:01.4962271Z test access::model::tests::switching_delegation_keeps_the_draft_until_discard_is_confirmed ... ok
+2026-11-20T02:08:01.4962941Z test auth::model::tests::password_length_is_characters_without_composition_challenges ... ok
+2026-11-20T02:08:01.4963515Z test auth::views::tests::session_labels_do_not_invent_a_local_timezone ... ok
+2026-11-20T02:08:01.4965294Z test obligations::tests::obligations_show_nature_limits_and_private_empty_state_without_edit_form ... ok
+2026-11-20T02:08:01.4966277Z test organizations::model::tests::civil_expiry_uses_brasilia_and_does_not_hide_invalid_input ... ok
+2026-11-20T02:08:01.4969205Z test organizations::model::tests::expired_session_hides_work_until_same_identity_and_company_are_confirmed ... ok
+2026-11-20T02:08:01.4971186Z test organizations::model::tests::forbidden_identity_hides_private_context_and_preserves_only_bound_work ... ok
+2026-11-20T02:08:01.4974379Z test organizations::model::tests::hiding_only_transient_codes_does_not_create_a_draft ... ok
+2026-11-20T02:08:01.4974994Z test organizations::model::tests::mandatory_refresh_supersedes_an_in_flight_response ... ok
+2026-11-20T02:08:01.4975564Z test organizations::model::tests::loss_of_administration_removes_cached_people_and_codes_without_company_change ... ok
+2026-11-20T02:08:01.4980301Z test organizations::model::tests::repeated_hiding_before_reselection_keeps_original_company_draft ... ok
+2026-11-20T02:08:01.4982108Z test organizations::model::tests::revoked_membership_clears_context_and_private_codes ... ok
+2026-11-20T02:08:01.4985558Z test organizations::model::tests::work_never_returns_to_another_identity_or_company ... ok
+2026-11-20T02:08:01.4986710Z test organizations::network::tests::member_search_parameters_cannot_change_scope_or_path ... ok
+2026-11-20T02:08:01.4988122Z test parties::tests::import_validates_every_row_before_submission ... ok
+2026-11-20T02:08:01.4988666Z test parties::tests::url_encoder_keeps_query_boundaries ... ok
+2026-11-20T02:08:01.4989543Z test portfolio::tests::map_uses_exact_coordinates ... ok
+2026-11-20T02:08:01.4990003Z test portfolio::tests::missing_coordinate_remains_absent ... ok
+2026-11-20T02:08:01.4992276Z test projects::tests::project_native_form_escapes_preserved_input_and_retains_csrf_and_version ... ok
+2026-11-20T02:08:01.4993655Z test projects::tests::changed_company_preserves_text_without_retargeting_a_form ... ok
+2026-11-20T02:08:01.4995114Z test prototype::model::tests::fixtures_have_exact_distinct_totals_and_net_values ... ok
+2026-11-20T02:08:01.4995782Z test prototype::model::tests::invalid_input_is_rejected_without_changing_the_draft ... ok
+2026-11-20T02:08:01.4996446Z test prototype::model::tests::routes_and_queries_do_not_silently_choose_another_context ... ok
+2026-11-20T02:08:01.4997495Z test prototype::model::tests::unrelated_context_never_exposes_draft_or_approval ... ok
+2026-11-20T02:08:01.4998408Z test prototype::worksheet::state::tests::changing_one_field_invalidates_check_and_keeps_the_saved_version ... ok
+2026-11-20T02:08:01.4999916Z test prototype::worksheet::state::tests::multiple_drafts_survive_reopening_and_are_never_carried_to_another_company ... ok
+2026-11-20T02:08:01.5000954Z test reliability::draft::tests::command_retries_can_keep_identity_across_context_and_lease_changes ... ok
+2026-11-20T02:08:01.5002034Z test reliability::draft::tests::historical_times_keep_seconds_and_reject_ambiguous_local_times ... ok
+2026-11-20T02:08:01.5002672Z test reliability::draft::tests::rebase_only_moves_the_base_of_a_preserved_draft ... ok
+2026-11-20T02:08:01.5003279Z test reliability::network::tests::report_links_cannot_change_company_or_contract ... ok
+2026-11-20T02:08:01.5003693Z 
+2026-11-20T02:08:01.5004022Z test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-11-20T02:08:01.5004429Z 
+2026-11-20T02:08:01.5006958Z      Running unittests src/main.rs (target/debug/deps/xtask-f6d2a66f61aa6bcb)
+2026-11-20T02:08:01.5019234Z 
+2026-11-20T02:08:01.5019723Z running 25 tests
+2026-11-20T02:08:01.5025278Z test assets::tests::exact_limit_passes_but_one_byte_over_fails_for_each_kind ... ok
+2026-11-20T02:08:01.5505229Z test assets::tests::extra_files_are_aggregated_instead_of_looking_only_at_main_wasm ... ok
+2026-11-20T02:08:01.6129291Z test assets::tests::inline_bootstrap_is_counted ... ok
+2026-11-20T02:08:01.6502899Z test assets::tests::local_stylesheet_import_is_validated_and_counted ... ok
+2026-11-20T02:08:01.7035844Z test assets::tests::remote_stylesheets_and_imports_cannot_escape_the_budget ... ok
+2026-11-20T02:08:01.7319217Z test assets::tests::stale_or_missing_brotli_is_rejected ... ok
+2026-11-20T02:08:01.7338066Z test evidence::tests::evidence_allowlist_frames_are_recoverable_and_missing_files_are_reported ... ok
+2026-11-20T02:08:01.7538345Z test evidence::tests::evidence_projection_discards_secrets_and_all_free_text ... ok
+2026-11-20T02:08:01.7539044Z test evidence::tests::evidence_rejects_file_and_directory_symlinks ... ok
+2026-11-20T02:08:01.9247481Z test evidence::tests::evidence_rejects_wrong_magic_regular_file_and_size_limits ... ok
+2026-11-20T02:08:01.9257222Z test evidence::tests::evidence_requires_both_gates_and_a_complete_source_sha ... ok
+2026-11-20T02:08:01.9714875Z test plan::tests::approved_documents_cross_reference_each_other ... ok
+2026-11-20T02:08:01.9727986Z test plan::tests::changed_acceptance_cannot_silently_diverge_from_source ... ok
+2026-11-20T02:08:01.9998927Z test plan::tests::same_count_with_cyclic_dependency_is_rejected ... ok
+2026-11-20T02:08:01.9999754Z test plan::tests::same_count_with_orphan_or_reassigned_rule_is_rejected ... ok
+2026-11-20T02:08:02.0198724Z test plan::tests::unknown_primary_source_is_rejected ... ok
+2026-11-20T02:08:02.0409077Z test policy::tests::dotenv_file_is_rejected_even_when_empty ... ok
+2026-11-20T02:08:02.1382033Z test policy::tests::every_javascript_module_extension_is_rejected ... ok
+2026-11-20T02:08:02.1939264Z test policy::tests::example_password_is_not_an_exception ... ok
+2026-11-20T02:08:02.2559854Z test policy::tests::external_environment_reference_and_parser_are_allowed ... ok
+2026-11-20T02:08:02.2818923Z test policy::tests::hardcoded_rust_secret_and_connection_password_are_rejected ... ok
+2026-11-20T02:08:02.3299306Z test policy::tests::inline_script_cannot_hide_in_html_or_rust ... ok
+2026-11-20T02:08:02.3919246Z test policy::tests::prefixed_database_url_and_comment_like_password_are_rejected ... ok
+2026-11-20T02:08:02.4217278Z test policy::tests::secrets_in_nested_maps_and_inline_toml_are_rejected ... ok
+2026-11-20T02:08:03.1341366Z test assets::tests::additional_large_javascript_file_breaks_real_compressed_budget ... ok
+2026-11-20T02:08:03.1341942Z 
+2026-11-20T02:08:03.1344054Z test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.63s
+2026-11-20T02:08:03.1344329Z 
+2026-11-20T02:08:03.1357542Z    Doc-tests canteiro_api
+2026-11-20T02:08:03.2349378Z 
+2026-11-20T02:08:03.2350148Z running 0 tests
+2026-11-20T02:08:03.2350960Z 
+2026-11-20T02:08:03.2351312Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.2351510Z 
+2026-11-20T02:08:03.2375390Z    Doc-tests canteiro_application
+2026-11-20T02:08:03.3136413Z 
+2026-11-20T02:08:03.3137291Z running 0 tests
+2026-11-20T02:08:03.3138228Z 
+2026-11-20T02:08:03.3138690Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.3139368Z 
+2026-11-20T02:08:03.3155836Z    Doc-tests canteiro_calculation_verification
+2026-11-20T02:08:03.3339386Z 
+2026-11-20T02:08:03.3340165Z running 0 tests
+2026-11-20T02:08:03.3340519Z 
+2026-11-20T02:08:03.3340905Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.3341383Z 
+2026-11-20T02:08:03.3352057Z    Doc-tests canteiro_contracts
+2026-11-20T02:08:03.6257899Z 
+2026-11-20T02:08:03.6258835Z running 0 tests
+2026-11-20T02:08:03.6259307Z 
+2026-11-20T02:08:03.6259725Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.6260151Z 
+2026-11-20T02:08:03.6274679Z    Doc-tests canteiro_domain
+2026-11-20T02:08:03.7482684Z 
+2026-11-20T02:08:03.7483570Z running 0 tests
+2026-11-20T02:08:03.7483966Z 
+2026-11-20T02:08:03.7484558Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.7484980Z 
+2026-11-20T02:08:03.7498780Z    Doc-tests canteiro_e2e
+2026-11-20T02:08:03.7618648Z 
+2026-11-20T02:08:03.7619246Z running 0 tests
+2026-11-20T02:08:03.7619599Z 
+2026-11-20T02:08:03.7620015Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.7620434Z 
+2026-11-20T02:08:03.7630840Z    Doc-tests canteiro_persistence
+2026-11-20T02:08:03.8390724Z 
+2026-11-20T02:08:03.8391548Z running 0 tests
+2026-11-20T02:08:03.8391992Z 
+2026-11-20T02:08:03.8392708Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:03.8393128Z 
+2026-11-20T02:08:03.8413286Z    Doc-tests canteiro_web
+2026-11-20T02:08:04.3428382Z 
+2026-11-20T02:08:04.3429189Z running 0 tests
+2026-11-20T02:08:04.3429576Z 
+2026-11-20T02:08:04.3430131Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:04.3430520Z 
+2026-11-20T02:08:04.3609120Z ##[group]Run set -euo pipefail
+2026-11-20T02:08:04.3609324Z set -euo pipefail
+2026-11-20T02:08:04.3609518Z export CANTEIRO_TEST_DATABASE_URL="${CANTEIRO_FIXTURE_BOOTSTRAP}"
+2026-11-20T02:08:04.3609742Z unset CANTEIRO_FIXTURE_BOOTSTRAP
+2026-11-20T02:08:04.3609903Z mkdir -p target/evidence
+2026-11-20T02:08:04.3610190Z cargo test --locked -p canteiro-persistence -- --ignored --nocapture 2>&1 | tee target/evidence/persistence.log
+2026-11-20T02:08:04.3610636Z cargo test --locked -p canteiro-application -- --ignored --nocapture --test-threads=1 2>&1 | tee target/evidence/auth-application.log
+2026-11-20T02:08:04.3662544Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:08:04.3662689Z env:
+2026-11-20T02:08:04.3662809Z   CARGO_TERM_COLOR: always
+2026-11-20T02:08:04.3663076Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:08:04.3663298Z   CANTEIRO_FIXTURE_BOOTSTRAP: postgres://canteiro_test_admin@127.0.0.1:5432/canteiro_test
+2026-11-20T02:08:04.3663565Z ##[endgroup]
+2026-11-20T02:08:04.5056008Z    Compiling proc-macro2 v1.0.107
+2026-11-20T02:08:04.5138748Z    Compiling cc v1.11.1
+
+## Executar cenários com PostgreSQL real
+2026-11-20T02:08:04.3428382Z 
+2026-11-20T02:08:04.3429189Z running 0 tests
+2026-11-20T02:08:04.3429576Z 
+2026-11-20T02:08:04.3430131Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:04.3430520Z 
+2026-11-20T02:08:04.3609120Z ##[group]Run set -euo pipefail
+2026-11-20T02:08:04.3609324Z set -euo pipefail
+2026-11-20T02:08:04.3609518Z export CANTEIRO_TEST_DATABASE_URL="${CANTEIRO_FIXTURE_BOOTSTRAP}"
+2026-11-20T02:08:04.3609742Z unset CANTEIRO_FIXTURE_BOOTSTRAP
+2026-11-20T02:08:04.3609903Z mkdir -p target/evidence
+2026-11-20T02:08:04.3610190Z cargo test --locked -p canteiro-persistence -- --ignored --nocapture 2>&1 | tee target/evidence/persistence.log
+2026-11-20T02:08:04.3610636Z cargo test --locked -p canteiro-application -- --ignored --nocapture --test-threads=1 2>&1 | tee target/evidence/auth-application.log
+2026-11-20T02:08:04.3662544Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:08:04.3662689Z env:
+2026-11-20T02:08:04.3662809Z   CARGO_TERM_COLOR: always
+2026-11-20T02:08:04.3663076Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:08:04.3663298Z   CANTEIRO_FIXTURE_BOOTSTRAP: postgres://canteiro_test_admin@127.0.0.1:5432/canteiro_test
+2026-11-20T02:08:04.3663565Z ##[endgroup]
+2026-11-20T02:08:04.5056008Z    Compiling proc-macro2 v1.0.107
+2026-11-20T02:08:04.5138748Z    Compiling cc v1.11.1
+2026-11-20T02:08:05.1500820Z    Compiling quote v1.0.47
+2026-11-20T02:08:05.2839739Z    Compiling syn v3.0.10
+2026-11-20T02:08:05.6499559Z    Compiling ring v0.17.14
+2026-11-20T02:08:07.4149877Z    Compiling synstructure v0.14.0
+2026-11-20T02:08:07.7289600Z    Compiling syn v2.0.119
+2026-11-20T02:08:08.3999292Z    Compiling serde_derive v1.0.229
+2026-11-20T02:08:10.3139107Z    Compiling zerofrom-derive v0.1.8
+2026-11-20T02:08:10.7869063Z    Compiling serde v1.0.229
+2026-11-20T02:08:10.9819367Z    Compiling zerofrom v0.1.8
+2026-11-20T02:08:11.0349171Z    Compiling yoke-derive v0.8.4
+2026-11-20T02:08:11.1169057Z    Compiling zerovec-derive v0.11.7
+2026-11-20T02:08:11.6251455Z    Compiling yoke v0.8.4
+2026-11-20T02:08:11.7249426Z    Compiling displaydoc v0.2.7
+2026-11-20T02:08:11.7689825Z    Compiling zerovec v0.11.9
+2026-11-20T02:08:12.0599012Z    Compiling smallvec v1.16.5
+2026-11-20T02:08:12.1089082Z    Compiling tinystr v0.8.5
+2026-11-20T02:08:12.1789213Z    Compiling potential_utf v0.1.6
+2026-11-20T02:08:12.1989227Z    Compiling icu_locale_core v2.4.0
+2026-11-20T02:08:12.2359736Z    Compiling zerotrie v0.2.5
+2026-11-20T02:08:12.3848997Z    Compiling icu_collections v2.4.0
+2026-11-20T02:08:12.6708502Z    Compiling tracing-attributes v0.1.31
+2026-11-20T02:08:12.9029070Z    Compiling icu_provider v2.4.0
+2026-11-20T02:08:13.0702198Z    Compiling icu_normalizer v2.4.0
+2026-11-20T02:08:13.3779159Z    Compiling icu_properties v2.4.0
+2026-11-20T02:08:13.3847364Z    Compiling thiserror-impl v2.0.21
+2026-11-20T02:08:14.3279755Z    Compiling idna_adapter v1.2.2
+2026-11-20T02:08:14.3769354Z    Compiling parking_lot_core v0.9.12
+2026-11-20T02:08:14.5001623Z    Compiling rustls v0.23.46
+2026-11-20T02:08:14.5068811Z    Compiling parking_lot v0.12.5
+2026-11-20T02:08:14.7021581Z    Compiling idna v1.1.0
+2026-11-20T02:08:15.0880140Z    Compiling rustls-webpki v0.103.16
+2026-11-20T02:08:15.3837173Z    Compiling url v2.5.8
+2026-11-20T02:08:15.8549429Z    Compiling futures-intrusive v0.5.0
+2026-11-20T02:08:16.1199968Z    Compiling either v1.19.0
+2026-11-20T02:08:16.2461027Z    Compiling thiserror v2.0.21
+2026-11-20T02:08:16.3998705Z    Compiling tracing v0.1.44
+2026-11-20T02:08:16.5592336Z    Compiling chrono v0.4.42
+2026-11-20T02:08:17.5089636Z    Compiling tokio-macros v2.7.2
+2026-11-20T02:08:17.8045926Z    Compiling crypto-common v0.1.7
+2026-11-20T02:08:17.8449381Z    Compiling uuid v1.29.2
+2026-11-20T02:08:18.0228125Z    Compiling sqlx-core v0.9.0
+2026-11-20T02:08:19.0538903Z    Compiling digest v0.10.7
+2026-11-20T02:08:19.1349217Z    Compiling tokio v1.54.1
+2026-11-20T02:08:20.7508902Z    Compiling sqlx-postgres v0.9.0
+2026-11-20T02:08:22.9069214Z    Compiling tokio-stream v0.1.19
+2026-11-20T02:08:23.1559668Z    Compiling sha2 v0.10.9
+2026-11-20T02:08:23.3409345Z    Compiling sqlx-macros-core v0.9.0
+2026-11-20T02:08:24.7219082Z    Compiling regex-syntax v0.8.11
+2026-11-20T02:08:25.8410544Z    Compiling regex-automata v0.4.18
+2026-11-20T02:08:27.6709557Z    Compiling chrono-tz v0.10.4
+2026-11-20T02:08:30.3719317Z    Compiling sqlx-macros v0.9.0
+2026-11-20T02:08:30.7342699Z    Compiling canteiro-domain v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/domain)
+2026-11-20T02:08:30.9079037Z    Compiling sqlx v0.9.0
+2026-11-20T02:08:30.9649105Z    Compiling matchers v0.2.0
+2026-11-20T02:08:31.0111552Z    Compiling tracing-subscriber v0.3.23
+2026-11-20T02:08:32.1119566Z    Compiling canteiro-persistence v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/persistence)
+2026-11-20T02:08:34.7021623Z     Finished `test` profile [unoptimized] target(s) in 30.30s
+2026-11-20T02:08:34.7163949Z      Running unittests src/lib.rs (target/debug/deps/canteiro_persistence-25751d5e6a990738)
+2026-11-20T02:08:34.7181771Z 
+2026-11-20T02:08:34.7182820Z running 37 tests
+2026-11-20T02:08:35.3092643Z test database_tests::access::access_composite_foreign_keys_reject_cross_tenant_references ... ok
+2026-11-20T02:08:35.3760869Z test database_tests::access::access_contract_parent_is_a_work_and_cannot_become_a_contract_cycle ... ok
+2026-11-20T02:08:35.6911779Z test database_tests::access::access_last_required_holder_survives_revocation_member_end_and_failed_transfer ... ok
+2026-11-20T02:08:35.7352430Z test database_tests::access::access_money_constraints_reject_excess_scale_range_and_nonfinite_without_rounding ... ok
+2026-11-20T02:08:36.2867909Z test database_tests::access::access_request_history_is_insert_only_for_runtime ... ok
+2026-11-20T02:08:36.5827986Z test database_tests::access::access_seven_tables_enforce_rls_even_with_repeated_ids_and_reused_connection ... ok
+2026-11-20T02:08:36.8449909Z test database_tests::access::access_successor_must_cover_required_action_amount_and_continuous_validity ... ok
+2026-11-20T02:08:37.2415427Z test database_tests::access::access_two_connections_cannot_remove_both_required_holders_and_rollback_releases_lock ... ok
+2026-11-20T02:08:37.4504333Z test database_tests::actual_database_error_is_redacted_in_diagnostics_and_public_persistence_error ... ok
+2026-11-20T02:08:37.6740343Z test database_tests::blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges ... ok
+2026-11-20T02:08:37.9952961Z test database_tests::cancelled_borrowed_write_cannot_later_be_committed ... ok
+2026-11-20T02:08:38.6481080Z test database_tests::access::access_runtime_connection_refuses_history_column_privileges_and_disabled_rls ... ok
+2026-11-20T02:08:38.7199078Z test database_tests::cancelled_task_rolls_back_pending_transaction_and_releases_clean_connection ... ok
+2026-11-20T02:08:39.0732906Z test database_tests::concurrent_expected_version_updates_have_one_winner_and_never_overflow ... ok
+2026-11-20T02:08:39.1451653Z test database_tests::cross_tenant_foreign_keys_reject_insert_and_update_even_for_superuser ... ok
+2026-11-20T02:08:40.5211883Z test database_tests::edited_or_future_migration_history_is_rejected_without_erasing_existing_data ... ok
+2026-11-20T02:08:40.8180131Z test database_tests::failure_delayed_until_commit_is_never_reported_as_confirmed_or_safe_to_retry ... ok
+2026-11-20T02:08:41.0169918Z test database_tests::ignored_second_write_and_raw_sql_errors_cannot_commit_partial_work ... ok
+2026-11-20T02:08:42.1914949Z test database_tests::lock_pool_and_global_transaction_deadlines_abort_without_partial_writes ... ok
+2026-11-20T02:08:43.4280757Z test database_tests::environment_owner_and_inherited_privilege_mismatches_fail_closed ... ok
+2026-11-20T02:08:43.7463811Z test database_tests::one_connection_pool_clears_context_after_commit_rollback_failure_timeout_and_drop ... ok
+2026-11-20T02:08:44.0257540Z test database_tests::organizations::organization_creation_and_audit_failure_roll_back_without_orphan_or_secret_error ... ok
+2026-11-20T02:08:44.2301256Z test database_tests::organizations::organization_database_prevents_last_administrator_and_expiring_administrator ... ok
+2026-11-20T02:08:44.4154775Z test database_tests::organizations::organization_invites_and_requests_are_versioned_one_use_and_revocable ... ok
+2026-11-20T02:08:44.7208022Z test database_tests::organizations::organization_last_admin_survives_two_connections_and_repeatable_read_snapshot ... ok
+2026-11-20T02:08:44.9314680Z test database_tests::organizations::organization_membership_fk_does_not_deadlock_two_authenticated_actors ... ok
+2026-11-20T02:08:45.1391076Z test database_tests::organizations::organization_rls_hides_foreign_rows_ids_counts_and_identity_directory ... ok
+2026-11-20T02:08:47.3864308Z test database_tests::organizations::organization_runtime_rejects_audit_column_privilege_truncate_and_disabled_selection_rls ... ok
+2026-11-20T02:08:48.6970988Z test database_tests::migration_advisory_lock_has_a_bounded_wait_and_rolls_back_bootstrap ... ok
+2026-11-20T02:08:48.9808483Z test database_tests::organizations::organization_selection_is_session_owned_versioned_and_pool_context_is_local ... ok
+2026-11-20T02:08:49.3329276Z test database_tests::reliability::contract_history_backfills_original_authors_in_two_tenants_and_is_append_only ... ok
+2026-11-20T02:08:49.6981328Z test database_tests::reliability_outbox::acknowledgement_failure_is_deferred_and_a_redelivered_row_cannot_duplicate ... ok
+2026-11-20T02:08:50.0579474Z test database_tests::reliability_outbox::concurrent_consumers_skip_locked_and_restore_tenant_and_actor ... ok
+2026-11-20T02:08:50.4569898Z test database_tests::reliability::reliability_runtime_refuses_column_updates_or_dispatch_data_grants ... ok
+2026-11-20T02:08:50.7004110Z test database_tests::reliability_outbox::revision_and_outbox_commit_together_and_worker_disconnect_is_recoverable ... ok
+2026-11-20T02:08:50.9290225Z test database_tests::runtime_rls_blocks_unscoped_reads_writes_and_wrong_tenant_mutations ... ok
+2026-11-20T02:08:51.1690587Z test database_tests::version_one_data_survives_upgrade_with_composite_and_date_constraints ... ok
+2026-11-20T02:08:51.1707883Z 
+2026-11-20T02:08:51.1728256Z test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 16.45s
+2026-11-20T02:08:51.1737811Z 
+2026-11-20T02:08:51.1748682Z      Running unittests src/bin/canteiro-db.rs (target/debug/deps/canteiro_db-b9b87f03c62db88a)
+2026-11-20T02:08:51.1752067Z 
+2026-11-20T02:08:51.1757760Z running 0 tests
+2026-11-20T02:08:51.1758024Z 
+2026-11-20T02:08:51.1758380Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:51.1758773Z 
+2026-11-20T02:08:51.1759076Z    Doc-tests canteiro_persistence
+2026-11-20T02:08:51.2528408Z 
+2026-11-20T02:08:51.2529209Z running 0 tests
+2026-11-20T02:08:51.2529674Z 
+2026-11-20T02:08:51.2530021Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:08:51.2530430Z 
+2026-11-20T02:08:51.3750827Z    Compiling ring v0.17.14
+2026-11-20T02:08:51.3757419Z    Compiling lopdf v0.47.0
+2026-11-20T02:08:52.5109697Z    Compiling rustls-webpki v0.103.16
+2026-11-20T02:08:52.9897739Z    Compiling rustls v0.23.46
+2026-11-20T02:08:56.1261490Z    Compiling sqlx-core v0.9.0
+2026-11-20T02:08:56.1747393Z    Compiling canteiro-contracts v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/contracts)
+2026-11-20T02:08:57.8579525Z    Compiling sqlx-postgres v0.9.0
+2026-11-20T02:08:59.7492289Z    Compiling sqlx v0.9.0
+2026-11-20T02:08:59.8110027Z    Compiling canteiro-persistence v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/persistence)
+2026-11-20T02:09:00.8499379Z    Compiling canteiro-application v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/application)
+2026-11-20T02:09:06.6142408Z     Finished `test` profile [unoptimized] target(s) in 15.33s
+2026-11-20T02:09:06.6275346Z      Running unittests src/lib.rs (target/debug/deps/canteiro_application-a3c681a2091d3279)
+2026-11-20T02:09:06.6292600Z 
+2026-11-20T02:09:06.6293399Z running 47 tests
+2026-11-20T02:09:08.3999282Z test auth::organizations::tests::access_requests_need_decision_and_rotation_invalidates_shared_code ... ok
+2026-11-20T02:09:10.4930374Z test auth::organizations::tests::access_tests::access_delegation_is_bounded_and_loses_effect_when_its_source_or_membership_ends ... ok
+2026-11-20T02:09:12.4400225Z test auth::organizations::tests::access_tests::access_external_budgeter_only_operates_the_granted_budget_during_current_validity ... ok
+2026-11-20T02:09:15.7937011Z test auth::organizations::tests::access_tests::access_mixed_amount_segregation_concurrent_approvals_and_revisions_preserve_history ... ok
+2026-11-20T02:09:17.6093857Z test auth::organizations::tests::access_tests::access_required_responsible_survives_member_changes_and_concurrent_revocations ... ok
+2026-11-20T02:09:19.5132627Z test auth::organizations::tests::access_tests::access_roles_exact_scope_and_organization_do_not_allow_direct_command_escalation ... ok
+2026-11-20T02:09:21.5018777Z test auth::organizations::tests::access_tests::access_stale_context_grant_policy_and_request_versions_leave_no_business_write ... ok
+2026-11-20T02:09:23.6969522Z test auth::organizations::tests::access_tests::authority_receipts_and_financial_effect_survive_retries_and_membership_removal ... ok
+2026-11-20T02:09:25.4992750Z test auth::organizations::tests::concurrent_invitation_acceptance_has_one_effect_and_revoke_is_serialized ... ok
+2026-11-20T02:09:27.8288630Z test auth::organizations::tests::documents_tests::documents_completed_retry_revalidates_after_waiting_for_upload_lock ... ok
+2026-11-20T02:09:29.6170739Z test auth::organizations::tests::documents_tests::documents_quarantine_is_not_an_attachment_and_replay_revalidates_access ... ok
+2026-11-20T02:09:31.5143696Z test auth::organizations::tests::documents_tests::documents_ticket_is_bound_to_session_tenant_scope_expiry_and_current_membership ... ok
+2026-11-20T02:09:33.2592797Z test auth::organizations::tests::documents_tests::documents_versions_keep_original_bytes_and_signatures_do_not_move ... ok
+2026-11-20T02:09:35.0264297Z test auth::organizations::tests::invitations_bind_identity_expiry_revocation_purpose_and_single_use ... ok
+2026-11-20T02:09:36.7533667Z test auth::organizations::tests::last_administrator_survives_concurrent_removal_and_old_versions ... ok
+2026-11-20T02:09:38.4072299Z test auth::organizations::tests::membership_expiry_session_revocation_and_administrator_mfa_are_rechecked ... ok
+2026-11-20T02:09:40.0456772Z test auth::organizations::tests::organization_creation_mfa_single_connection_and_clear_selection ... ok
+2026-11-20T02:09:41.8590742Z test auth::organizations::tests::organizations_ids_search_export_and_private_members_never_cross ... ok
+2026-11-20T02:09:43.5562227Z test auth::organizations::tests::project_records_tests::obligation_requires_real_same_scope_evidence_and_effective_professional ... ok
+2026-11-20T02:09:45.2698802Z test auth::organizations::tests::project_records_tests::project_concurrency_repetition_cross_scope_and_revocation ... ok
+2026-11-20T02:09:47.1281223Z test auth::organizations::tests::project_records_tests::project_lifecycle_independent_professional_approval_revision_and_acceptance ... ok
+2026-11-20T02:09:49.0038409Z test auth::organizations::tests::project_records_tests::technical_exception_requires_separate_approver_and_unchanged_proposal ... ok
+2026-11-20T02:09:50.7490692Z test auth::organizations::tests::registry_tests::registry_bank_permission_immutable_versions_and_inactive_supplier ... ok
+2026-11-20T02:09:52.6115998Z test auth::organizations::tests::registry_tests::registry_context_refresh_recovers_same_receipts_without_duplication ... ok
+2026-11-20T02:09:57.0113718Z test auth::organizations::tests::registry_tests::registry_expiry_while_waiting_for_row_lock_hides_records_and_history ... ok
+2026-11-20T02:09:58.8213552Z test auth::organizations::tests::registry_tests::registry_idempotency_concurrent_creation_payload_change_and_old_version ... ok
+2026-11-20T02:10:00.4679010Z test auth::organizations::tests::registry_tests::registry_import_is_atomic_and_professional_does_not_create_login ... ok
+2026-11-20T02:10:02.1561428Z test auth::organizations::tests::registry_tests::registry_official_cnpj_text_export_dedup_and_tenant_isolation ... ok
+2026-11-20T02:10:03.8154337Z test auth::organizations::tests::registry_tests::registry_portfolio_many_contracts_one_work_exact_allocation_and_conflicts ... ok
+2026-11-20T02:10:05.5079807Z test auth::organizations::tests::registry_tests::registry_portfolio_permissions_apply_to_search_map_totals_and_direct_reads ... ok
+2026-11-20T02:10:07.1669694Z test auth::organizations::tests::registry_tests::registry_revocation_prevents_receipt_replay_and_foreign_portfolio ... ok
+2026-11-20T02:10:09.1333793Z test auth::organizations::tests::reliability_tests::reliability_distinct_editors_and_tenants_cannot_overwrite_or_replay_each_others_effect ... ok
+2026-11-20T02:10:11.0443201Z test auth::organizations::tests::reliability_tests::reliability_expired_lease_is_recovered_and_failing_outbox_rolls_back_entire_change ... ok
+2026-11-20T02:10:13.3810932Z test auth::organizations::tests::reliability_tests::reliability_permission_expiring_while_waiting_for_edit_lock_cannot_commit ... ok
+2026-11-20T02:10:15.1481336Z test auth::organizations::tests::stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothing ... ok
+2026-11-20T02:10:23.9467749Z test auth::tests::email_owner_chooses_password_after_pre_registration_attack ... ok
+2026-11-20T02:10:26.1472195Z test auth::tests::execution_identity_rejects_privileged_insert_and_column_audit_updates ... ok
+2026-11-20T02:10:36.1629609Z test auth::tests::identity_verification_rotation_and_opaque_storage ... ok
+2026-11-20T02:10:43.5339574Z test auth::tests::idle_expiry_credential_version_and_runtime_privilege_are_enforced ... ok
+2026-11-20T02:10:55.2582442Z test auth::tests::mfa_configuration_is_bound_to_session_and_fresh_authentication ... ok
+2026-11-20T02:11:08.7206820Z test auth::tests::mfa_privilege_recovery_replay_and_reset_preservation ... ok
+2026-11-20T02:11:14.6152381Z test auth::tests::obsolete_mail_is_not_claimed_and_public_requests_have_a_uniform_floor ... ok
+2026-11-20T02:11:19.0720514Z test auth::tests::password_cost_is_measured_with_bounded_parallelism ... Argon2id m=65536 KiB, t=3, p=1: hash=1454ms, verificação=1424ms; máximo=2 operações simultâneas por processo (128 MiB de memória Argon2). Este ensaio mede o executor atual, sem representar capacidade de produção.
+2026-11-20T02:11:19.0905988Z ok
+2026-11-20T02:11:34.3612760Z test auth::tests::password_reset_is_single_use_expiring_revokes_and_does_not_authenticate ... ok
+2026-11-20T02:11:50.6802308Z test auth::tests::rate_limits_survive_new_service_and_mail_is_encrypted_and_leased ... ok
+2026-11-20T02:12:03.9399419Z test auth::tests::replacement_factor_requires_recent_mfa_and_invalidates_old_recovery_codes ... ok
+2026-11-20T02:12:15.3899169Z test auth::tests::revocation_is_scoped_and_next_command_checks_live_state ... ok
+2026-11-20T02:12:15.3918095Z 
+2026-11-20T02:12:15.3919347Z test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 25 filtered out; finished in 188.76s
+2026-11-20T02:12:15.3927864Z 
+2026-11-20T02:12:15.3928718Z    Doc-tests canteiro_application
+2026-11-20T02:12:15.4702297Z 
+2026-11-20T02:12:15.4703369Z running 0 tests
+2026-11-20T02:12:15.4703735Z 
+2026-11-20T02:12:15.4704475Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:12:15.4704911Z 
+2026-11-20T02:12:15.4850155Z ##[group]Run docker exec --interactive "16afc3af8bfd37225a5bba568a45c681b00303ba16635610861064de03b51158" psql --username canteiro_test_admin --dbname canteiro_test --set ON_ERROR_STOP=1 <<'SQL'
+2026-11-20T02:12:15.4850878Z docker exec --interactive "16afc3af8bfd37225a5bba568a45c681b00303ba16635610861064de03b51158" psql --username canteiro_test_admin --dbname canteiro_test --set ON_ERROR_STOP=1 <<'SQL'
+2026-11-20T02:12:15.4851444Z CREATE ROLE canteiro_development_migrator LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+2026-11-20T02:12:15.4851890Z CREATE ROLE canteiro_development_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+2026-11-20T02:12:15.4852255Z CREATE DATABASE canteiro_development OWNER canteiro_development_migrator;
+2026-11-20T02:12:15.4852519Z REVOKE ALL ON DATABASE canteiro_development FROM PUBLIC;
+2026-11-20T02:12:15.4852703Z SQL
+2026-11-20T02:12:15.4868107Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:12:15.4868250Z env:
+2026-11-20T02:12:15.4868367Z   CARGO_TERM_COLOR: always
+2026-11-20T02:12:15.4868636Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:12:15.4868767Z ##[endgroup]
+2026-11-20T02:12:15.5445181Z CREATE ROLE
+2026-11-20T02:12:15.5445486Z CREATE ROLE
+2026-11-20T02:12:15.5928914Z CREATE DATABASE
+2026-11-20T02:12:15.5930803Z REVOKE
+2026-11-20T02:12:15.6019743Z ##[group]Run set -euo pipefail
+2026-11-20T02:12:15.6019954Z set -euo pipefail
+2026-11-20T02:12:15.6020137Z export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+2026-11-20T02:12:15.6020397Z export CANTEIRO_MIGRATION_DATABASE_URL="${CANTEIRO_FIXTURE_MIGRATOR}"
+2026-11-20T02:12:15.6020654Z unset CANTEIRO_FIXTURE_RUNTIME CANTEIRO_FIXTURE_MIGRATOR
+2026-11-20T02:12:15.6020981Z cargo run --locked -p canteiro-persistence --bin canteiro-db -- migrate 2>&1 | tee target/evidence/migrations.log
+2026-11-20T02:12:15.6036340Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:12:15.6036475Z env:
+2026-11-20T02:12:15.6036595Z   CARGO_TERM_COLOR: always
+2026-11-20T02:12:15.6036866Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:12:15.6037002Z   CANTEIRO_ENV: development
+2026-11-20T02:12:15.6037259Z   CANTEIRO_FIXTURE_MIGRATOR: postgres://canteiro_development_migrator@127.0.0.1:5432/canteiro_development
+2026-11-20T02:12:15.6037788Z   CANTEIRO_FIXTURE_RUNTIME: postgres://canteiro_development_runtime@127.0.0.1:5432/canteiro_development
+2026-11-20T02:12:15.6038050Z ##[endgroup]
+2026-11-20T02:12:15.7159648Z    Compiling sqlx-core v0.9.0
+
+## Verificar cookies, CSRF e recuperação por HTTP
+2026-11-20T02:12:20.0970298Z     Finished `dev` profile [unoptimized] target(s) in 4.46s
+2026-11-20T02:12:20.1083407Z      Running `target/debug/canteiro-db migrate`
+2026-11-20T02:12:20.2069636Z Migrações verificadas e usuário de execução conferido.
+2026-11-20T02:12:20.2128980Z ##[group]Run set -euo pipefail
+2026-11-20T02:12:20.2129298Z set -euo pipefail
+2026-11-20T02:12:20.2129594Z export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+2026-11-20T02:12:20.2129924Z unset CANTEIRO_FIXTURE_RUNTIME
+2026-11-20T02:12:20.2130445Z cargo test --locked -p canteiro-api --test auth -- --ignored --nocapture --test-threads=1 2>&1 | tee target/evidence/auth-http.log
+2026-11-20T02:12:20.2152445Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:12:20.2152680Z env:
+2026-11-20T02:12:20.2152863Z   CARGO_TERM_COLOR: always
+2026-11-20T02:12:20.2153263Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:12:20.2153684Z   CANTEIRO_FIXTURE_RUNTIME: postgres://canteiro_development_runtime@127.0.0.1:5432/canteiro_development
+2026-11-20T02:12:20.2154128Z ##[endgroup]
+2026-11-20T02:12:20.3797415Z     Finished `test` profile [unoptimized] target(s) in 0.13s
+2026-11-20T02:12:20.3936956Z      Running tests/auth.rs (target/debug/deps/auth-024b2cb43d1b8991)
+2026-11-20T02:12:20.3975105Z 
+2026-11-20T02:12:20.3975678Z running 10 tests
+2026-11-20T02:12:27.9974159Z test access::scoped_access_http_mutations_require_explicit_current_rights_and_versions ... ok
+2026-11-20T02:12:34.5550666Z test access::scoped_access_http_rejects_forged_identity_csrf_and_old_sessions ... ok
+2026-11-20T02:12:41.2139241Z test csrf_origin_cookie_rotation_and_revocation_are_enforced_over_http ... ok
+2026-11-20T02:12:48.0657227Z test native_forms::native_project_form_creates_independently_and_preserves_invalid_revision ... ok
+2026-11-20T02:12:53.3328172Z test organizations::organization_http_enforces_origin_cookie_csrf_and_private_error_responses ... ok
+2026-11-20T02:12:58.5948387Z test organizations::organization_http_rejects_anonymous_invalid_inputs_and_revoked_identity ... ok
+2026-11-20T02:13:06.4569287Z test organizations::organization_http_requires_confirmed_mfa_and_serves_only_current_company_export ... ok
+2026-11-20T02:13:12.6181109Z test public_account_responses_and_recovery_timing_do_not_disclose_existence ... ok
+2026-11-20T02:13:23.1610679Z test reliability::contract_http_replays_only_for_current_editor_and_preserves_versions_and_report ... ok
+2026-11-20T02:13:34.0719863Z test reset_is_atomic_private_and_never_logs_in_over_http ... ok
+2026-11-20T02:13:34.0720146Z 
+2026-11-20T02:13:34.0720391Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 73.67s
+2026-11-20T02:13:34.0720673Z 
+2026-11-20T02:13:34.0839289Z ##[group]Run cargo xtask setup
+2026-11-20T02:13:34.0839533Z cargo xtask setup
+2026-11-20T02:13:34.0854714Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:13:34.0854849Z env:
+2026-11-20T02:13:34.0854962Z   CARGO_TERM_COLOR: always
+2026-11-20T02:13:34.0855227Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:13:34.0855358Z ##[endgroup]
+2026-11-20T02:13:34.1644510Z     Finished `dev` profile [unoptimized] target(s) in 0.05s
+2026-11-20T02:13:34.1676286Z      Running `target/debug/xtask setup`
+2026-11-20T02:13:34.1728837Z Executando cargo install wasm-bindgen-cli --locked --version 0.2.130
+2026-11-20T02:13:34.1898710Z     Updating crates.io index
+2026-11-20T02:13:34.7300204Z  Downloading crates ...
+2026-11-20T02:13:34.8628340Z   Downloaded wasm-bindgen-cli v0.2.130
+2026-11-20T02:13:34.9450517Z   Installing wasm-bindgen-cli v0.2.130
+2026-11-20T02:13:34.9451653Z warning: default toolchain implicitly overridden with `1.99.1-x86_64-unknown-linux-gnu` by environment variable
+2026-11-20T02:13:34.9452376Z   |
+2026-11-20T02:13:34.9453061Z   = help: use `cargo +stable install` if you meant to use the stable toolchain
+2026-11-20T02:13:34.9454056Z   = note: rustup selects the toolchain based on the parent environment and not the environment of the package being installed
+2026-11-20T02:13:34.9468343Z     Updating crates.io index
+
+## Verificar SSR, hidratação, falha e teclado em navegador real
+2026-11-20T02:27:52.8581893Z ##[group]Run export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+2026-11-20T02:27:52.8582203Z export CANTEIRO_DATABASE_URL="${CANTEIRO_FIXTURE_RUNTIME}"
+2026-11-20T02:27:52.8582406Z unset CANTEIRO_FIXTURE_RUNTIME
+2026-11-20T02:27:52.8582651Z cargo test --locked -p canteiro-e2e --no-fail-fast -- --ignored --nocapture
+2026-11-20T02:27:52.8598445Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:27:52.8598598Z env:
+2026-11-20T02:27:52.8598724Z   CARGO_TERM_COLOR: always
+2026-11-20T02:27:52.8599037Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:27:52.8599251Z   CANTEIRO_BROWSER_BIN: /home/runner/work/_temp/canteiro-browser/chrome-linux64/chrome
+2026-11-20T02:27:52.8599583Z   CANTEIRO_WEBDRIVER_BIN: /home/runner/work/_temp/canteiro-browser/chromedriver-linux64/chromedriver
+2026-11-20T02:27:52.8599835Z   CANTEIRO_ENV: development
+2026-11-20T02:27:52.8600088Z   CANTEIRO_FIXTURE_RUNTIME: postgres://canteiro_development_runtime@127.0.0.1:5432/canteiro_development
+2026-11-20T02:27:52.8600399Z ##[endgroup]
+2026-11-20T02:27:53.3778801Z    Compiling smallvec v1.16.5
+2026-11-20T02:27:53.3879119Z    Compiling futures-channel v0.3.34
+2026-11-20T02:27:53.4900231Z    Compiling icu_normalizer v2.4.0
+2026-11-20T02:27:53.4958954Z    Compiling parking_lot_core v0.9.12
+2026-11-20T02:27:53.6237436Z    Compiling parking_lot v0.12.5
+2026-11-20T02:27:53.8277098Z    Compiling idna_adapter v1.2.2
+2026-11-20T02:27:53.8309702Z    Compiling futures-intrusive v0.5.0
+2026-11-20T02:27:53.8809098Z    Compiling idna v1.1.0
+2026-11-20T02:27:54.1058448Z    Compiling url v2.5.8
+2026-11-20T02:27:54.2602438Z    Compiling hyper v1.12.0
+2026-11-20T02:27:54.6280412Z    Compiling sqlx-core v0.9.0
+2026-11-20T02:27:55.0088728Z    Compiling tower v0.5.3
+2026-11-20T02:27:55.8119144Z    Compiling hyper-util v0.1.21
+2026-11-20T02:27:57.0869378Z    Compiling sqlx-postgres v0.9.0
+2026-11-20T02:27:57.2149006Z    Compiling tower-http v0.6.11
+2026-11-20T02:27:57.4359407Z    Compiling reqwest v0.13.5
+2026-11-20T02:27:58.8569368Z    Compiling canteiro-calculation-verification v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/tools/calculation-verification)
+2026-11-20T02:27:59.6638962Z    Compiling sqlx v0.9.0
+2026-11-20T02:27:59.7249386Z    Compiling canteiro-persistence v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/persistence)
+2026-11-20T02:28:00.6440399Z    Compiling canteiro-application v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/crates/application)
+2026-11-20T02:28:02.2939376Z    Compiling canteiro-e2e v0.1.0 (/home/runner/work/canteiro-360/canteiro-360/tools/e2e)
+2026-11-20T02:28:11.9783025Z     Finished `test` profile [unoptimized] target(s) in 19.07s
+2026-11-20T02:28:11.9941807Z      Running unittests src/lib.rs (target/debug/deps/canteiro_e2e-1cb3c6db939a4947)
+2026-11-20T02:28:11.9953964Z 
+2026-11-20T02:28:11.9954419Z running 0 tests
+2026-11-20T02:28:11.9954765Z 
+2026-11-20T02:28:11.9955207Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:28:11.9956095Z      Running tests/access.rs (target/debug/deps/access-8c3edfbdff37904c)
+2026-11-20T02:28:11.9956376Z 
+2026-11-20T02:28:11.9971243Z 
+2026-11-20T02:28:11.9971629Z running 1 test
+2026-11-20T02:28:44.8146399Z test scoped_roles_policies_and_independent_decisions_work_in_the_browser ... ok
+2026-11-20T02:28:44.8158970Z      Running tests/auth.rs (target/debug/deps/auth-35745e8fc574ad7f)
+2026-11-20T02:28:44.8159240Z 
+2026-11-20T02:28:44.8169002Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.82s
+2026-11-20T02:28:44.8169397Z 
+2026-11-20T02:28:44.8169825Z 
+2026-11-20T02:28:44.8209610Z running 1 test
+2026-11-20T02:28:57.8376330Z test account_access_recovers_without_losing_input_and_preserves_mfa ... ok
+2026-11-20T02:28:57.8388452Z      Running tests/browser.rs (target/debug/deps/browser-8905055b1faeb046)
+2026-11-20T02:28:57.8388745Z 
+2026-11-20T02:28:57.8388989Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.02s
+2026-11-20T02:28:57.8389442Z 
+2026-11-20T02:28:57.8389711Z 
+2026-11-20T02:28:57.8389960Z running 2 tests
+2026-11-20T02:29:57.5396156Z Lab result: {"cache":"cold","clsP75":0.0,"controlledInteractionP75Ms":27.299999999813735,"hydrationP75Ms":2539.0999999998603,"lcpP75Ms":588.0,"n":20,"profile":"desktop"}
+2026-11-20T02:29:57.8391777Z test initial_route_performance_desktop_and_mobile has been running for over 60 seconds
+2026-11-20T02:29:57.8392719Z test rendered_page_hydrates_and_recovers_with_keyboard has been running for over 60 seconds
+2026-11-20T02:30:58.8454031Z Lab result: {"cache":"warm","clsP75":0.0,"controlledInteractionP75Ms":26.299999999813735,"hydrationP75Ms":2537.0999999998603,"lcpP75Ms":584.0,"n":20,"profile":"desktop"}
+2026-11-20T02:31:57.9430350Z Lab result: {"cache":"cold","clsP75":0.0,"controlledInteractionP75Ms":26.5,"hydrationP75Ms":2535.0,"lcpP75Ms":580.0,"n":20,"profile":"mobile"}
+2026-11-20T02:32:59.8539126Z Lab result: {"cache":"warm","clsP75":0.0,"controlledInteractionP75Ms":29.0,"hydrationP75Ms":2538.399999999907,"lcpP75Ms":584.0,"n":20,"profile":"mobile"}
+2026-11-20T02:32:59.8551545Z Performance acceptance passed; evidence: /home/runner/work/canteiro-360/canteiro-360/target/evidence
+2026-11-20T02:32:59.9259961Z test initial_route_performance_desktop_and_mobile ... ok
+2026-11-20T02:33:12.1792580Z Functional browser acceptance passed; evidence: /home/runner/work/canteiro-360/canteiro-360/target/evidence
+2026-11-20T02:33:12.2395586Z test rendered_page_hydrates_and_recovers_with_keyboard ... ok
+2026-11-20T02:33:12.2400444Z 
+2026-11-20T02:33:12.2400892Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 254.40s
+2026-11-20T02:33:12.2401329Z 
+2026-11-20T02:33:12.2403072Z      Running tests/calculations.rs (target/debug/deps/calculations-e57a53a2449d405e)
+2026-11-20T02:33:12.2423427Z 
+2026-11-20T02:33:12.2423754Z running 2 tests
+2026-11-20T02:33:16.8549780Z test independent_vectors_match_native_and_real_browser_wasm ... ok
+2026-11-20T02:33:28.8315398Z test previews_are_readable_keyboard_operable_and_preserve_invalid_input ... ok
+2026-11-20T02:33:28.8328803Z      Running tests/forms.rs (target/debug/deps/forms-9f4ecb9a76f0a37a)
+2026-11-20T02:33:28.8342196Z 
+2026-11-20T02:33:28.8344314Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.59s
+2026-11-20T02:33:28.8344751Z 
+2026-11-20T02:33:28.8344898Z 
+2026-11-20T02:33:28.8345053Z running 3 tests
+2026-11-20T02:33:48.5476202Z Forms acceptance passed; evidence: /home/runner/work/canteiro-360/canteiro-360/target/evidence
+2026-11-20T02:33:48.6182545Z test forms_drafts_tables_and_context ... ok
+2026-11-20T02:33:54.1720892Z test forms_http_ssr_and_presentation ... ok
+2026-11-20T02:34:09.4650819Z test forms_local_selection_and_expansion_feedback ... ok
+2026-11-20T02:34:09.4651243Z 
+2026-11-20T02:34:09.4651573Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.63s
+2026-11-20T02:34:09.4651914Z 
+2026-11-20T02:34:09.4659913Z      Running tests/organizations.rs (target/debug/deps/organizations-6dd47f97fc725480)
+2026-11-20T02:34:09.4698298Z 
+2026-11-20T02:34:09.4698747Z running 1 test
+2026-11-20T02:34:41.1029366Z test organization_membership_context_and_invitations_work_through_the_browser ... ok
+2026-11-20T02:34:41.1030449Z      Running tests/prototype.rs (target/debug/deps/prototype-c54352868109c4ec)
+2026-11-20T02:34:41.1030822Z 
+2026-11-20T02:34:41.1031231Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.63s
+2026-11-20T02:34:41.1031946Z 
+2026-11-20T02:34:41.1045866Z 
+2026-11-20T02:34:41.1046323Z running 1 test
+2026-11-20T02:34:53.9915256Z Prototype acceptance passed; evidence: /home/runner/work/canteiro-360/canteiro-360/target/evidence
+2026-11-20T02:34:54.0565210Z test prototype_accessibility_context_and_recovery ... ok
+2026-11-20T02:34:54.0588048Z 
+2026-11-20T02:34:54.0589698Z      Running tests/registry.rs (target/debug/deps/registry-0fb5113445acc21f)
+2026-11-20T02:34:54.0590215Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 12.95s
+2026-11-20T02:34:54.0608285Z 
+2026-11-20T02:34:54.0629067Z 
+2026-11-20T02:34:54.0638261Z running 1 test
+2026-11-20T02:35:11.2364534Z test registry_documents_and_projects_work_with_real_authorization_and_keyboard ... ok
+2026-11-20T02:35:11.2392430Z      Running tests/reliability.rs (target/debug/deps/reliability-62b55262ce3459ce)
+2026-11-20T02:35:11.2392924Z 
+2026-11-20T02:35:11.2409307Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.18s
+2026-11-20T02:35:11.2427967Z 
+2026-11-20T02:35:11.2437997Z 
+2026-11-20T02:35:11.2448312Z running 1 test
+2026-11-20T02:35:32.8099219Z test recoverable_edits_and_private_contract_history ... ok
+2026-11-20T02:35:32.8099634Z 
+2026-11-20T02:35:32.8099891Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.57s
+2026-11-20T02:35:32.8100580Z    Doc-tests canteiro_e2e
+2026-11-20T02:35:32.8100820Z 
+2026-11-20T02:35:32.8235248Z 
+2026-11-20T02:35:32.8235985Z running 0 tests
+2026-11-20T02:35:32.8236310Z 
+2026-11-20T02:35:32.8236618Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-20T02:35:32.8236987Z 
+2026-11-20T02:35:32.8377269Z ##[group]Run cargo xtask evidence
+2026-11-20T02:35:32.8377453Z cargo xtask evidence
+2026-11-20T02:35:32.8392961Z shell: /usr/bin/bash -e {0}
+2026-11-20T02:35:32.8393108Z env:
+2026-11-20T02:35:32.8393227Z   CARGO_TERM_COLOR: always
+2026-11-20T02:35:32.8393513Z   CANTEIRO_AUTH_KEY: ***
+2026-11-20T02:35:32.8393728Z   CANTEIRO_BROWSER_BIN: /home/runner/work/_temp/canteiro-browser/chrome-linux64/chrome
+2026-11-20T02:35:32.8394057Z   CANTEIRO_WEBDRIVER_BIN: /home/runner/work/_temp/canteiro-browser/chromedriver-linux64/chromedriver
+2026-11-20T02:35:32.8394309Z   CANTEIRO_SYNTHETIC_EVIDENCE: 1
+2026-11-20T02:35:32.8394458Z   CANTEIRO_ENV: development
+2026-11-20T02:35:32.8394648Z   CANTEIRO_EVIDENCE_SOURCE: 2de5b86fa1d6ebf3ccad1f064aac59dbaf1b0464
+2026-11-20T02:35:32.8394850Z ##[endgroup]
+2026-11-20T02:35:32.9224251Z     Finished `dev` profile [unoptimized] target(s) in 0.05s
+2026-11-20T02:35:32.9252928Z      Running `target/debug/xtask evidence`

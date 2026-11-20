@@ -35,9 +35,11 @@ Downloads usam links com duração de dois minutos, associados à sessão, ao au
 
 A migração `0009_documents.sql` mantém o conteúdo fora dos recursos públicos. `document_versions` recebe somente documentos promovidos após a verificação; `document_uploads` não é uma fonte válida para obrigações técnicas. A ligação externa usa a chave composta de empresa, documento, versão e SHA-256.
 
-## Verificações executadas
+## Verificações de domínio e aplicação
 
-Foram executados dois testes de domínio e doze testes da aplicação, incluindo quatro cenários com PostgreSQL 17 em banco isolado, usando o papel de execução restrito. A rodada centralizada final aprovou os testes puros na suíte geral de 208 testes e os quatro cenários de banco no conjunto de 47 testes de aplicação. Essa rodada já inclui a guarda de rodapé final do PDF e o décimo segundo teste. Os resultados e a evidência de navegador são separados no [relatório integrado](ISSUES-010-014.md); a execução visual ainda depende da rodada de CI registrada ali.
+Foram executados dois testes de domínio e doze testes da aplicação, incluindo quatro cenários com PostgreSQL 17 em banco isolado, usando o papel de execução restrito. A rodada centralizada inicial aprovou os testes puros na suíte geral de 208 testes e os quatro cenários de banco no conjunto de 47 testes de aplicação. Essa rodada já incluiu a guarda de rodapé final do PDF e o décimo segundo teste. Os resultados das CI2 e CI3 e a revisão visual posterior da correção de CSS estão separados por versão no histórico abaixo.
+
+Os cenários reproduzíveis estão nos [testes de domínio](../../crates/domain/src/documents.rs), nos [testes do parser PDF](../../crates/application/src/auth/organizations/documents/pdf.rs), nos [testes do protocolo de verificação](../../crates/application/src/auth/organizations/documents/scanner.rs) e nos [cenários com PostgreSQL](../../crates/application/src/auth/organizations/documents_tests.rs). O [relatório integrado](ISSUES-010-014.md) discrimina os resultados por revisão.
 
 | Cenário | Resultado observado |
 |---|---|
@@ -46,7 +48,7 @@ Foram executados dois testes de domínio e doze testes da aplicação, incluindo
 | PDF com 10.380 níveis de aninhamento e PDF com mais de 200 mil tokens | Recusados antes da recursão do parser. |
 | Conteúdo de fluxo com colchetes, tamanho incorreto e referência indireta de tamanho, inclusive nome escapado | Bytes do fluxo não consomem a profundidade estrutural; tamanho falso e indireto são recusados. |
 | Objeto escondido dentro de fluxo, número incorreto na tabela e endereço anterior forjado | Recusados antes do parser; atualização incremental legítima aceita. |
-| Rodapé `startxref` e `%%EOF` escondidos dentro de fluxo após o rodapé legítimo | Teste acrescentado; execução do estado final reservada à rodada centralizada. |
+| Rodapé `startxref` e `%%EOF` escondidos dentro de fluxo após o rodapé legítimo | Recusados antes do parser; vetor aprovado na rodada centralizada e incluído na CI2. |
 | Protocolo do verificador | Bytes originais transmitidos; resposta exata aceita, detecção recusa, resposta ambígua não libera. |
 | Dois envios simultâneos com a mesma chave | Um envio em quarentena, nenhuma versão documental antes da liberação. |
 | Mesma chave com conteúdo diferente | Conflito, sem reaproveitar sucesso anterior. |
@@ -70,11 +72,51 @@ cargo test -p canteiro-application documents --lib -- --include-ignored --test-t
 cargo deny check advisories
 ```
 
+## Navegador e revisão visual por versão
+
+### CI2: execução 44657829805, anterior à correção visual
+
+A [CI2, execução 44657829805](https://github.com/tjsasakifln/canteiro-360/actions/runs/44657829805) testou a head `f1c297d029fdc31742bbc0d933c5e8ed7acb86b5` pelo checkout de integração `2de5b86fa1d6ebf3ccad1f064aac59dbaf1b0464`, com a mesma árvore de arquivos. O conjunto executou 320 testes aprovados: 213 gerais, 37 de persistência, 47 de aplicação, dez de HTTP e 13 de navegador. O percurso integrado das cinco telas terminou em 17,18 segundos. O job não ficou aprovado: a auditoria permaneceu bloqueada pelos dois avisos de manutenção de `chrono` e `chrono-tz`, e o upload convencional de artefatos permaneceu recusado pela cota do GitHub Actions.
+
+O [roteiro integrado da CI2](https://github.com/tjsasakifln/canteiro-360/blob/f1c297d029fdc31742bbc0d933c5e8ed7acb86b5/tools/e2e/tests/registry.rs) selecionou e enviou um TXT fictício pela interface de documentos. A fixture do protocolo INSTREAM respondeu positivamente e a aplicação publicou a versão ativa. O teste também conferiu, por HTTP, os bytes originais no download, a recusa de outra sessão e a repetição de um upload recusado sem criar outra versão ou outro recibo. O download por HTTP não equivale a ter acionado visualmente o botão de preparar link. A fixture controlada não valida um mecanismo antivírus real nem suas definições.
+
+As duas capturas de documentos foram recuperadas dos registros da CI, junto com as demais telas, mediante conferência do SHA do checkout, dos tamanhos e dos hashes. Estes arquivos pertencem exclusivamente à CI2:
+
+| Captura | Dimensões do PNG | SHA-256 |
+|---|---|---|
+| `registry-documentos-360.png` | 360 × 2553 px | `093dabcf60c88f8b0e17147fc3bbe392a79f725c4d1ce8a59235a37792b0c9f5` |
+| `registry-documentos-1280.png` | 1265 × 1804 px | `fddd86d0cbcb721953814a9f4e108ac305c80674ef0ea241f55a0307722f7bdb` |
+
+A largura de 1265 px corresponde ao viewport de 1280 px descontada a barra de rolagem. A revisão abriu ambas as imagens e confirmou o estado de sucesso, a versão 1 ativa, a descrição preservada, o seletor de arquivo limpo após o envio e o conteúdo completo até o rodapé. O autor extenso quebra em linhas no celular. As ações de preparar download, prévia e registrar assinatura estão visíveis. Essas capturas não mostram erro, quarentena, o conteúdo do resumo de assinaturas ou o link já preparado, portanto não aprovam visualmente esses estados.
+
+A revisão também identificou um problema material: os botões secundários conservavam apresentação nativa pequena, e os cartões não tinham espaçamento interno porque dependiam de uma variável definida somente no protótipo. A aprovação funcional da CI2 não encerrou esse achado de interface.
+
+### Versão atual: CI3 44663208420 e revisão visual concluídas
+
+No módulo de documentos, a correção enviada na head `7166902c789aac63092a470b13175eefbd18f067` está restrita à apresentação em [documents.css](../../style/documents.css): cartões com espaçamento de 24 px, reduzido a 16 px no celular; fonte herdada e tamanho mínimo de 44 px nos botões secundários; campos e resumo expansível com mínimo de 44 px; ações empilhadas e quebra de textos longos. As regras de foco, feedback e estado desabilitado foram preservadas. O agente de cadastros realizou a revisão independente do CSS, sem identificar falha material por leitura do código.
+
+O [teste integrado](../../tools/e2e/tests/registry.rs) foi ampliado para medir botões, campos, resumos expansíveis e links de navegação em 360 e 1280 px. Ele recusa dimensões inferiores a 44 px e continua verificando transbordamento horizontal e título único. O percurso mantém os comandos reais de teclado. A remoção do foco transitório e a rolagem ao topo acontecem somente antes da captura neutra, depois das operações e das medições.
+
+A [CI3, execução 44663208420](https://github.com/tjsasakifln/canteiro-360/actions/runs/44663208420) usou o checkout `36edb2b1a98ebfac9385b73a180b49f71f0bb61a` e terminou em 20/11/2026 às 03:39:48 UTC. Foram aprovados 320 testes executados: 213 gerais, 37 de persistência, 47 de aplicação, dez de HTTP e 13 de navegador. O percurso integrado terminou em 30,49 segundos. As etapas de compilação de produção, orçamento e transporte das capturas passaram. Somente auditoria de dependências e upload convencional de artefatos falharam, pelos dois avisos de manutenção e pela cota de armazenamento, respectivamente. Esses bloqueios permanecem obrigatórios e impedem declarar o conjunto da CI aprovado.
+
+As [medidas recuperadas do navegador](issue-010-014/registry-interface.json) registram o estado de documentos abaixo. A contagem inclui a navegação compartilhada. Os mínimos são apresentados como inteiros no relatório; a recusa do teste compara as dimensões sem arredondamento.
+
+| Captura final | Dimensões do PNG | Controles medidos | Menor largura × altura | Largura do documento |
+|---|---|---|---|---|
+| [Documentos em 360 px](issue-010-014/registry-documentos-360.png) | 360 × 2974 px | 17 | 141 × 44 px | 360 px |
+| [Documentos em 1280 px](issue-010-014/registry-documentos-1280.png) | 1265 × 2111 px | 17 | 141 × 44 px | 1265 px |
+
+As duas larguras apresentam um único `h1`. O SHA-256 da captura móvel é `cf0a04ab9b41dc14e8d3acf889aed1e99c35fb38b8078c2264305bfeca5759db`; o da captura de desktop é `84f790a72e4f6765a658815a77b993bf340bb904cd537479dc5c5023de94b6d0`. Esses hashes identificam os arquivos da CI3, distintos das imagens históricas da CI2.
+
+A revisão abriu ambas as novas imagens e aprovou a correção no estado exibido: cartões com espaçamento interno, botões com fonte legível e separados entre si, ações empilhadas no celular, versão 1 ativa, descrição da versão e autor legíveis, mensagem de sucesso e seletor de arquivo limpo. Não foram encontrados cortes de cartões, botões ou rodapé, nem um novo problema material. A medição confirmou o mínimo de 44 px e a ausência de transbordamento horizontal nas duas larguras.
+
+Essa aprovação visual é limitada ao estado de sucesso capturado. As imagens não exibem erro, quarentena, resumo de assinaturas expandido ou link já preparado. O protocolo de antivírus continua representado por uma fixture controlada, e o download é conferido por HTTP no teste. A revisão não afirma autenticação de assinatura, validação de um antivírus real ou inspeção visual de estados não mostrados.
+
 ## Revisão
 
 A revisão do supervisor identificou que a primeira inspeção por marcadores PDF era insuficiente e que bloquear qualquer AcroForm também impediria assinaturas passivas. A implementação passou a validar a estrutura com parser nativo e a aceitar o contêiner passivo sem transferir ou autenticar assinaturas.
 
-A auditoria identificou [RUSTSEC-2026-0187](https://rustsec.org/advisories/RUSTSEC-2026-0187) na versão inicialmente escolhida do parser. A dependência foi atualizada para `lopdf 0.47.0`, sem funcionalidades de incorporação de fontes, removendo também `ttf-parser` da árvore. A auditoria final de avisos não encontrou aviso novo dessas dependências. Permanecem os avisos preexistentes da base sobre `chrono` e `chrono-tz`, sem exceção no gate; o registro consolidado da entrega trata esse bloqueio.
+A auditoria identificou [RUSTSEC-2026-0187](https://rustsec.org/advisories/RUSTSEC-2026-0187) na versão inicialmente escolhida do parser. A dependência foi atualizada para `lopdf 0.47.0`, sem funcionalidades de incorporação de fontes, removendo também `ttf-parser` da árvore. A auditoria final de avisos não encontrou aviso novo dessas dependências. Permanecem os avisos preexistentes da base sobre `chrono` e `chrono-tz`, sem exceção no critério obrigatório; o registro consolidado da entrega trata esse bloqueio.
 
 A revisão cruzada também corrigiu revalidação final no recibo de verificação concluída e precisão da data de assinatura. A expiração do link é conferida novamente depois da leitura do conteúdo. Os testes de corrida usam o relógio do PostgreSQL e observam o bloqueio real antes de aguardar o vencimento.
 

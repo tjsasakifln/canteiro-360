@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.11s
+     Running `target/debug/xtask budget`
+Orçamento inicial (.br servido + inline bruto): WASM 1035988/1048576 B, JS 8991/81920 B, CSS 11661/61440 B.

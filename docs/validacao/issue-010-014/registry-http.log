@@ -1,0 +1,16 @@
+    Finished `test` profile [unoptimized] target(s) in 0.37s
+     Running tests/auth.rs (target/debug/deps/auth-8fb4ee5da5adb5eb)
+
+running 9 tests
+test access::scoped_access_http_mutations_require_explicit_current_rights_and_versions ... ok
+test access::scoped_access_http_rejects_forged_identity_csrf_and_old_sessions ... ok
+test csrf_origin_cookie_rotation_and_revocation_are_enforced_over_http ... ok
+test organizations::organization_http_enforces_origin_cookie_csrf_and_private_error_responses ... ok
+test organizations::organization_http_rejects_anonymous_invalid_inputs_and_revoked_identity ... ok
+test organizations::organization_http_requires_confirmed_mfa_and_serves_only_current_company_export ... ok
+test public_account_responses_and_recovery_timing_do_not_disclose_existence ... ok
+test reliability::contract_http_replays_only_for_current_editor_and_preserves_versions_and_report ... ok
+test reset_is_atomic_private_and_never_logs_in_over_http ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 67.33s
+
