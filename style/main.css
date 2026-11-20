@@ -1,6 +1,8 @@
 @import url("prototype.css");
 @import url("organizations.css");
 @import url("access.css");
+@import url("documents.css");
+@import url("registry.css");
 
 :root {
   color-scheme: light;
@@ -32,6 +34,29 @@ body {
 a {
   color: var(--primary);
   text-underline-offset: 0.2em;
+}
+
+.workspace-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding-block: .85rem;
+  border-bottom: 1px solid var(--border);
+}
+.workspace-navigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .5rem .85rem;
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  background: var(--surface);
+  font-weight: 600;
+  text-decoration: none;
+}
+.workspace-navigation a:hover {
+  border-color: var(--primary);
+  background: #eff6ff;
 }
 
 button,
@@ -393,3 +418,4 @@ h3 {
     inline-size: 100%;
   }
 }
+

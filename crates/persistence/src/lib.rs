@@ -22,3 +22,11 @@ pub use unit_of_work::{Committed, NewUnit, TransactionContext, UnitOfWork, UnitR
 
 #[cfg(test)]
 mod database_tests;
+
+pub mod documents;
+pub mod parties;
+pub mod portfolio;
+
+pub mod projects;
+
+pub mod obligations;

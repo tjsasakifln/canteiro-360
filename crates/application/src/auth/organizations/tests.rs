@@ -10,6 +10,8 @@ use std::{str::FromStr, time::Duration as StdDuration};
 
 #[path = "access_tests.rs"]
 mod access_tests;
+#[path = "documents_tests.rs"]
+mod documents_tests;
 #[path = "reliability_tests.rs"]
 mod reliability_tests;
 
@@ -913,3 +915,8 @@ async fn stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothin
     hold.rollback().await.unwrap();
     f.close().await;
 }
+
+#[path = "project_records_tests.rs"]
+mod project_records_tests;
+#[path = "registry_tests.rs"]
+mod registry_tests;

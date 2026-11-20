@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "run": "44663208420",
+  "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a",
+  "total_bytes": 2399018,
+  "source_bytes": 2401516,
+  "files": [
+    {
+      "name": "registry-cadastros-360.png",
+      "bytes": 188690,
+      "sha256": "9bf00fd483204d751c739f3fbb274b586a01a4adbbd1dfda89dd83293aedf391",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-cadastros-1280.png",
+      "bytes": 197473,
+      "sha256": "da09663f6ad83d7069b7bf9bcc46bc097bc43dce169643dcb0605ee93908b0b3",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-carteira-360.png",
+      "bytes": 252912,
+      "sha256": "3a686aae13f4054527a7bcab2d3b7114c775df2b4b9d60893f40d488fa4a89eb",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-carteira-1280.png",
+      "bytes": 271306,
+      "sha256": "bfb5a50b7da12fbf205dfb7b067bdda730e4b384f1f436c2b4da621fa70a0e39",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-projetos-360.png",
+      "bytes": 199244,
+      "sha256": "228a1356f6f8f29ab62e5b96fb3afc2fa8fbdbb4cb033aa7777b7c311c10a50f",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-projetos-1280.png",
+      "bytes": 219182,
+      "sha256": "d4590cbc07fc2f105f461e58738ddfd73052193125a8c69603f0b45cfd5a9df9",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-documentos-360.png",
+      "bytes": 196737,
+      "sha256": "cf0a04ab9b41dc14e8d3acf889aed1e99c35fb38b8078c2264305bfeca5759db",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-documentos-1280.png",
+      "bytes": 199553,
+      "sha256": "84f790a72e4f6765a658815a77b993bf340bb904cd537479dc5c5023de94b6d0",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-obrigacoes-360.png",
+      "bytes": 328851,
+      "sha256": "de346147e969827e652c8d0560abe8d84f2cf1945029e84ebd792cd707606419",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-obrigacoes-1280.png",
+      "bytes": 343236,
+      "sha256": "cd3e4448f9d94dd8e421013b0a9611bf530b486258d0837b3cfded42b166fdf2",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    },
+    {
+      "name": "registry-interface.json",
+      "bytes": 1834,
+      "sha256": "f26f385a9eb6a4b963a7fabe0100263770fc30c9d485ea2e01b4e13c6e56c22b",
+      "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a"
+    }
+  ],
+  "missing": [
+    "registry-failure.png"
+  ]
+}

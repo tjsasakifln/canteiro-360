@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "run_id": 44648996986,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/44648996986",
+  "source_commit": "262acef5409983af4a157ae93a6fc48b77d594b9",
+  "job_id": 135998990055,
+  "job_conclusion": "failure",
+  "started_at": "2026-11-20T00:50:33Z",
+  "completed_at": "2026-11-20T01:44:10Z",
+  "steps": [
+    {
+      "number": 1,
+      "name": "Set up job",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:50:35Z",
+      "completed_at": "2026-11-20T00:50:35Z"
+    },
+    {
+      "number": 2,
+      "name": "Initialize containers",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:50:35Z",
+      "completed_at": "2026-11-20T00:50:52Z"
+    },
+    {
+      "number": 3,
+      "name": "Obter a revisão",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:50:52Z",
+      "completed_at": "2026-11-20T00:50:53Z"
+    },
+    {
+      "number": 4,
+      "name": "Gerar chave temporária exclusiva da base de teste",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:50:53Z",
+      "completed_at": "2026-11-20T00:50:53Z"
+    },
+    {
+      "number": 5,
+      "name": "Instalar toolchain fixada",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:50:53Z",
+      "completed_at": "2026-11-20T00:51:05Z"
+    },
+    {
+      "number": 6,
+      "name": "Conferir formatação",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:51:05Z",
+      "completed_at": "2026-11-20T00:51:06Z"
+    },
+    {
+      "number": 7,
+      "name": "Conferir plano, linguagens e segredos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:51:06Z",
+      "completed_at": "2026-11-20T00:51:25Z"
+    },
+    {
+      "number": 8,
+      "name": "Analisar Rust com avisos tratados como erro",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:51:25Z",
+      "completed_at": "2026-11-20T00:55:01Z"
+    },
+    {
+      "number": 9,
+      "name": "Analisar também o código compilado para navegador",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:55:01Z",
+      "completed_at": "2026-11-20T00:56:12Z"
+    },
+    {
+      "number": 10,
+      "name": "Executar testes positivos e negativos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T00:56:12Z",
+      "completed_at": "2026-11-20T01:00:45Z"
+    },
+    {
+      "number": 11,
+      "name": "Executar cenários com PostgreSQL real",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:00:45Z",
+      "completed_at": "2026-11-20T01:07:42Z"
+    },
+    {
+      "number": 12,
+      "name": "Provisionar identidades distintas para a aplicação de teste",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:07:42Z",
+      "completed_at": "2026-11-20T01:07:42Z"
+    },
+    {
+      "number": 13,
+      "name": "Aplicar migrações e validar a identidade de execução",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:07:42Z",
+      "completed_at": "2026-11-20T01:07:50Z"
+    },
+    {
+      "number": 14,
+      "name": "Verificar cookies, CSRF e recuperação por HTTP",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:07:50Z",
+      "completed_at": "2026-11-20T01:10:04Z"
+    },
+    {
+      "number": 15,
+      "name": "Instalar ferramentas nas versões fixadas",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:10:04Z",
+      "completed_at": "2026-11-20T01:15:49Z"
+    },
+    {
+      "number": 16,
+      "name": "Compilar servidor, processamento e navegador",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:15:49Z",
+      "completed_at": "2026-11-20T01:33:46Z"
+    },
+    {
+      "number": 17,
+      "name": "Conferir orçamento dos arquivos servidos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:33:46Z",
+      "completed_at": "2026-11-20T01:33:46Z"
+    },
+    {
+      "number": 18,
+      "name": "Compilar verificador independente para execução real em WASM",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:33:46Z",
+      "completed_at": "2026-11-20T01:34:06Z"
+    },
+    {
+      "number": 19,
+      "name": "Preparar navegador e driver fixos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:34:06Z",
+      "completed_at": "2026-11-20T01:34:11Z"
+    },
+    {
+      "number": 20,
+      "name": "Verificar SSR, hidratação, falha e teclado em navegador real",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T01:34:11Z",
+      "completed_at": "2026-11-20T01:44:05Z"
+    },
+    {
+      "number": 21,
+      "name": "Auditar dependências, origens e licenças",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T01:44:05Z",
+      "completed_at": "2026-11-20T01:44:07Z"
+    },
+    {
+      "number": 22,
+      "name": "Preservar medidas da revisão",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T01:44:07Z",
+      "completed_at": "2026-11-20T01:44:08Z"
+    },
+    {
+      "number": 43,
+      "name": "Post Obter a revisão",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:44:08Z",
+      "completed_at": "2026-11-20T01:44:08Z"
+    },
+    {
+      "number": 44,
+      "name": "Stop containers",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:44:08Z",
+      "completed_at": "2026-11-20T01:44:09Z"
+    },
+    {
+      "number": 45,
+      "name": "Complete job",
+      "conclusion": "success",
+      "started_at": "2026-11-20T01:44:09Z",
+      "completed_at": "2026-11-20T01:44:09Z"
+    }
+  ],
+  "test_results": {
+    "workspace": {
+      "passed": 208,
+      "failed": 0,
+      "ignored": 106
+    },
+    "persistence": {
+      "passed": 37,
+      "failed": 0
+    },
+    "application": {
+      "passed": 47,
+      "failed": 0
+    },
+    "http": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 11,
+      "failed": 2
+    }
+  },
+  "browser_failures": [
+    {
+      "test": "browser::rendered_page_hydrates_and_recovers_with_keyboard",
+      "error": "Element not reachable by Tab: #foundation-details-toggle",
+      "cause": "Fixed 12-Tab test traversal stopped before the target after five navigation links were added.",
+      "correction": "Count actual available keyboard controls, preserve finite traversal and focus/activation assertions."
+    },
+    {
+      "test": "registry::registry_documents_and_projects_work_with_real_authorization_and_keyboard",
+      "error": "Timed out waiting for Projeto antes da obra and Em elaboração after native form submission.",
+      "cause": "Native document response used Referrer-Policy no-referrer, serializing Origin as null on a navigation POST; server correctly rejected the origin.",
+      "correction": "Use same-origin on native HTML, preserve no-referrer default and exact origin/CSRF validation. New full-Router HTTP test passed locally."
+    }
+  ],
+  "audit": {
+    "blocked": [
+      "RUSTSEC-2026-0543",
+      "RUSTSEC-2026-0555"
+    ],
+    "bans": "passed",
+    "licenses": "passed",
+    "sources": "passed"
+  },
+  "artifacts": {
+    "count": 0,
+    "error": "Artifact storage quota has been hit; no screenshots retrieved from this run."
+  }
+}

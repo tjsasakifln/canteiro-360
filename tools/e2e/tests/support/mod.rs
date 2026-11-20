@@ -42,6 +42,16 @@ pub struct Harness {
 
 impl Harness {
     pub async fn start(name: &str) -> TestResult<Self> {
+        Self::start_with_document_scanner(name, None).await
+    }
+
+    /// A fixture can provide an isolated scanner endpoint to the child server.
+    /// This never changes the runner process environment or production policy.
+    #[allow(dead_code)]
+    pub async fn start_with_document_scanner(
+        name: &str,
+        scanner: Option<&str>,
+    ) -> TestResult<Self> {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .canonicalize()?;
@@ -102,7 +112,11 @@ impl Harness {
             )
             .env_remove("CANTEIRO_AUTH_MAIL_ENDPOINT")
             .env_remove("CANTEIRO_AUTH_MAIL_CREDENTIAL")
+            .env_remove("CANTEIRO_DOCUMENT_SCANNER")
             .env("CANTEIRO_BIND_ADDR", format!("127.0.0.1:{app_port}"));
+        if let Some(scanner) = scanner {
+            api_command.env("CANTEIRO_DOCUMENT_SCANNER", scanner);
+        }
         let api = ChildGuard::start(api_command, &evidence.join(format!("{name}-server.log")))?;
         let mut driver_command = Command::new(&driver_bin);
         driver_command.args([

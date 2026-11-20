@@ -1,6 +1,7 @@
 //! Ferramentas locais de compilação e verificação do Canteiro 360.
 
 mod assets;
+mod evidence;
 mod plan;
 mod policy;
 
@@ -36,7 +37,10 @@ fn run() -> Result<()> {
     let root = workspace();
     let arguments = env::args().skip(1).collect::<Vec<_>>();
     if arguments.len() > 1 {
-        return Err("use um único comando: check, plan, policy, setup, build, budget ou ci".into());
+        return Err(
+            "use um único comando: check, plan, policy, setup, build, budget, evidence ou ci"
+                .into(),
+        );
     }
     match arguments.first().map(String::as_str).unwrap_or("help") {
         "plan" => plan::validate(&root),
@@ -44,6 +48,7 @@ fn run() -> Result<()> {
         "check" => check(&root),
         "setup" => setup(&root),
         "build" => build(&root),
+        "evidence" => evidence::emit(&root),
         "budget" => {
             assets::verify(&root, true)?;
             Ok(())
@@ -144,7 +149,7 @@ fn run() -> Result<()> {
         }
         "help" | "--help" | "-h" => {
             println!(
-                "cargo xtask check   valida plano e política de código/segredos\ncargo xtask plan    valida referências do plano aprovado\ncargo xtask policy  rejeita lógica JS/TS e segredos no repositório\ncargo xtask setup   instala ferramentas nas versões fixadas\ncargo xtask build   compila SSR/WASM, gera Brotli e mede o pacote inicial\ncargo xtask budget  verifica limites e integridade dos arquivos Brotli\ncargo xtask ci      executa as verificações locais da integração contínua"
+                "cargo xtask check   valida plano e política de código/segredos\ncargo xtask plan    valida referências do plano aprovado\ncargo xtask policy  rejeita lógica JS/TS e segredos no repositório\ncargo xtask setup   instala ferramentas nas versões fixadas\ncargo xtask build   compila SSR/WASM, gera Brotli e mede o pacote inicial\ncargo xtask budget  verifica limites e integridade dos arquivos Brotli\ncargo xtask evidence transmite capturas e medições sintéticas autorizadas\ncargo xtask ci      executa as verificações locais da integração contínua"
             );
             Ok(())
         }
@@ -334,6 +339,14 @@ fn build(root: &Path) -> Result<()> {
         package.join("organizations.css"),
     )?;
     fs::copy(root.join("style/access.css"), package.join("access.css"))?;
+    fs::copy(
+        root.join("style/documents.css"),
+        package.join("documents.css"),
+    )?;
+    fs::copy(
+        root.join("style/registry.css"),
+        package.join("registry.css"),
+    )?;
     assets::compress_site(&root.join("target/site"))?;
     fs::create_dir_all(root.join("target/evidence"))?;
     let html = capture(root, "target/release/canteiro-api", &["--render-shell"])?;

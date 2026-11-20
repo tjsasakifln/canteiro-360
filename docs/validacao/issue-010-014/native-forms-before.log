@@ -1,0 +1,31 @@
+CREATE ROLE
+CREATE ROLE
+CREATE DATABASE
+REVOKE
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/crates/persistence)
+    Finished `dev` profile [unoptimized] target(s) in 2.67s
+     Running `target/debug/canteiro-db migrate`
+Migrações verificadas e usuário de execução conferido.
+   Compiling canteiro-persistence v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/crates/persistence)
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/crates/application)
+   Compiling canteiro-api v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/crates/api)
+    Finished `test` profile [unoptimized] target(s) in 19.76s
+     Running tests/auth.rs (target/debug/deps/auth-8fb4ee5da5adb5eb)
+
+running 1 test
+test native_forms::native_project_form_creates_independently_and_preserves_invalid_revision ... 
+thread 'native_forms::native_project_form_creates_independently_and_preserves_invalid_revision' (1283) panicked at crates/api/tests/auth/native_forms.rs:88:5:
+assertion `left == right` failed
+  left: "no-referrer"
+ right: "same-origin"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    native_forms::native_project_form_creates_independently_and_preserves_invalid_revision
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 7.24s
+
+error: test failed, to rerun pass `-p canteiro-api --test auth`

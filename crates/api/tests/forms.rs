@@ -4,22 +4,39 @@ use axum::{
 };
 use canteiro_api::{config::Config, router};
 use serde_json::{Value, json};
+use std::sync::OnceLock;
 use tower::ServiceExt;
+
+fn app() -> axum::Router {
+    static APP: OnceLock<axum::Router> = OnceLock::new();
+    APP.get_or_init(|| {
+        // Leptos suspende recursos por um indicador global durante a geração
+        // das rotas. Gerar novamente enquanto outra requisição SSR carrega
+        // um recurso pode estacioná-lo indefinidamente. Como no servidor,
+        // construímos o roteador uma vez antes de atender, sem serializar
+        // as requisições nem os testes concorrentes.
+        let config = Config::from_lookup(|_| None).unwrap();
+        router(&config)
+    })
+    .clone()
+}
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn worksheet_html_contains_only_its_page_before_hydration() {
-    let config = Config::from_lookup(|_| None).unwrap();
     for (organization, prefix) in [("aurora", "AUR"), ("horizonte", "HOR")] {
-        let response = router(&config)
-            .oneshot(
+        let response = tokio::time::timeout(
+            std::time::Duration::from_secs(15),
+            app().oneshot(
                 Request::get(format!(
                     "/prototipo/{organization}/planilha?page=2&page_size=25&sort=code&direction=asc"
                 ))
                 .body(Body::empty())
                 .unwrap(),
-            )
-            .await
-            .unwrap();
+            ),
+        )
+        .await
+        .expect("o SSR paginado deve resolver os recursos antes da resposta")
+        .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         let html = String::from_utf8(
             to_bytes(response.into_body(), 1_048_576)
@@ -66,14 +83,14 @@ async fn worksheet_html_contains_only_its_page_before_hydration() {
     // concorrentes usam o mesmo runtime das verificações de paginação acima.
     tokio::time::timeout(
         std::time::Duration::from_secs(15),
-        concurrent_worksheet_ssr_preserves_title(&config),
+        concurrent_worksheet_ssr_preserves_title(),
     )
     .await
     .expect("a renderização concorrente deve terminar com todos os títulos");
 }
 
-async fn concurrent_worksheet_ssr_preserves_title(config: &Config) {
-    let app = router(config);
+async fn concurrent_worksheet_ssr_preserves_title() {
+    let app = app();
     let mut requests = tokio::task::JoinSet::new();
     for _ in 0..16 {
         for (company, expected) in [
@@ -106,8 +123,7 @@ async fn concurrent_worksheet_ssr_preserves_title(config: &Config) {
 }
 
 async fn get(path: &str) -> (StatusCode, Value) {
-    let config = Config::from_lookup(|_| None).unwrap();
-    let response = router(&config)
+    let response = app()
         .oneshot(Request::get(path).body(Body::empty()).unwrap())
         .await
         .unwrap();
@@ -119,8 +135,7 @@ async fn get(path: &str) -> (StatusCode, Value) {
 }
 
 async fn post(value: Value) -> (StatusCode, Value) {
-    let config = Config::from_lookup(|_| None).unwrap();
-    let response = router(&config)
+    let response = app()
         .oneshot(
             Request::post("/api/prototipo/aurora/medicoes/preview")
                 .header("content-type", "application/json")
@@ -244,8 +259,7 @@ async fn preview_validates_every_field_in_the_server_and_never_writes_the_fixtur
 
 #[tokio::test]
 async fn export_is_a_download_of_all_filtered_results_not_only_the_page() {
-    let config = Config::from_lookup(|_| None).unwrap();
-    let response = router(&config)
+    let response = app()
         .oneshot(
             Request::get("/api/prototipo/horizonte/medicoes/export?search=Alvenaria&page=2")
                 .body(Body::empty())

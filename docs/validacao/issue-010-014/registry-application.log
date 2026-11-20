@@ -1,0 +1,62 @@
+   Compiling canteiro-application v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/crates/application)
+    Finished `test` profile [unoptimized] target(s) in 2.69s
+     Running unittests src/lib.rs (target/debug/deps/canteiro_application-5cbd790a86fc6c86)
+
+running 47 tests
+test auth::organizations::tests::access_requests_need_decision_and_rotation_invalidates_shared_code ... ok
+test auth::organizations::tests::access_tests::access_delegation_is_bounded_and_loses_effect_when_its_source_or_membership_ends ... ok
+test auth::organizations::tests::access_tests::access_external_budgeter_only_operates_the_granted_budget_during_current_validity ... ok
+test auth::organizations::tests::access_tests::access_mixed_amount_segregation_concurrent_approvals_and_revisions_preserve_history ... ok
+test auth::organizations::tests::access_tests::access_required_responsible_survives_member_changes_and_concurrent_revocations ... ok
+test auth::organizations::tests::access_tests::access_roles_exact_scope_and_organization_do_not_allow_direct_command_escalation ... ok
+test auth::organizations::tests::access_tests::access_stale_context_grant_policy_and_request_versions_leave_no_business_write ... ok
+test auth::organizations::tests::access_tests::authority_receipts_and_financial_effect_survive_retries_and_membership_removal ... ok
+test auth::organizations::tests::concurrent_invitation_acceptance_has_one_effect_and_revoke_is_serialized ... ok
+test auth::organizations::tests::documents_tests::documents_completed_retry_revalidates_after_waiting_for_upload_lock ... ok
+test auth::organizations::tests::documents_tests::documents_quarantine_is_not_an_attachment_and_replay_revalidates_access ... ok
+test auth::organizations::tests::documents_tests::documents_ticket_is_bound_to_session_tenant_scope_expiry_and_current_membership ... ok
+test auth::organizations::tests::documents_tests::documents_versions_keep_original_bytes_and_signatures_do_not_move ... ok
+test auth::organizations::tests::invitations_bind_identity_expiry_revocation_purpose_and_single_use ... ok
+test auth::organizations::tests::last_administrator_survives_concurrent_removal_and_old_versions ... ok
+test auth::organizations::tests::membership_expiry_session_revocation_and_administrator_mfa_are_rechecked ... ok
+test auth::organizations::tests::organization_creation_mfa_single_connection_and_clear_selection ... ok
+test auth::organizations::tests::organizations_ids_search_export_and_private_members_never_cross ... ok
+test auth::organizations::tests::project_records_tests::obligation_requires_real_same_scope_evidence_and_effective_professional ... ok
+test auth::organizations::tests::project_records_tests::project_concurrency_repetition_cross_scope_and_revocation ... ok
+test auth::organizations::tests::project_records_tests::project_lifecycle_independent_professional_approval_revision_and_acceptance ... ok
+test auth::organizations::tests::project_records_tests::technical_exception_requires_separate_approver_and_unchanged_proposal ... ok
+test auth::organizations::tests::registry_tests::registry_bank_permission_immutable_versions_and_inactive_supplier ... ok
+test auth::organizations::tests::registry_tests::registry_context_refresh_recovers_same_receipts_without_duplication ... ok
+test auth::organizations::tests::registry_tests::registry_expiry_while_waiting_for_row_lock_hides_records_and_history ... ok
+test auth::organizations::tests::registry_tests::registry_idempotency_concurrent_creation_payload_change_and_old_version ... ok
+test auth::organizations::tests::registry_tests::registry_import_is_atomic_and_professional_does_not_create_login ... ok
+test auth::organizations::tests::registry_tests::registry_official_cnpj_text_export_dedup_and_tenant_isolation ... ok
+test auth::organizations::tests::registry_tests::registry_portfolio_many_contracts_one_work_exact_allocation_and_conflicts ... ok
+test auth::organizations::tests::registry_tests::registry_portfolio_permissions_apply_to_search_map_totals_and_direct_reads ... ok
+test auth::organizations::tests::registry_tests::registry_revocation_prevents_receipt_replay_and_foreign_portfolio ... ok
+test auth::organizations::tests::reliability_tests::reliability_distinct_editors_and_tenants_cannot_overwrite_or_replay_each_others_effect ... ok
+test auth::organizations::tests::reliability_tests::reliability_expired_lease_is_recovered_and_failing_outbox_rolls_back_entire_change ... ok
+test auth::organizations::tests::reliability_tests::reliability_permission_expiring_while_waiting_for_edit_lock_cannot_commit ... ok
+test auth::organizations::tests::stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothing ... ok
+test auth::tests::email_owner_chooses_password_after_pre_registration_attack ... ok
+test auth::tests::execution_identity_rejects_privileged_insert_and_column_audit_updates ... ok
+test auth::tests::identity_verification_rotation_and_opaque_storage ... ok
+test auth::tests::idle_expiry_credential_version_and_runtime_privilege_are_enforced ... ok
+test auth::tests::mfa_configuration_is_bound_to_session_and_fresh_authentication ... ok
+test auth::tests::mfa_privilege_recovery_replay_and_reset_preservation ... ok
+test auth::tests::obsolete_mail_is_not_claimed_and_public_requests_have_a_uniform_floor ... ok
+test auth::tests::password_cost_is_measured_with_bounded_parallelism ... Argon2id m=65536 KiB, t=3, p=1: hash=1375ms, verificação=1457ms; máximo=2 operações simultâneas por processo (128 MiB de memória Argon2). Este ensaio mede o executor atual, sem representar capacidade de produção.
+ok
+test auth::tests::password_reset_is_single_use_expiring_revokes_and_does_not_authenticate ... ok
+test auth::tests::rate_limits_survive_new_service_and_mail_is_encrypted_and_leased ... ok
+test auth::tests::replacement_factor_requires_recent_mfa_and_invalidates_old_recovery_codes ... ok
+test auth::tests::revocation_is_scoped_and_next_command_checks_live_state ... ok
+
+test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 25 filtered out; finished in 219.89s
+
+   Doc-tests canteiro_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

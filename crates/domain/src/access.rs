@@ -77,7 +77,14 @@ impl AccessRole {
         }
         match self {
             Self::Viewer | Self::Client | Self::Support => false,
-            Self::Manager => matches!(action, A::ProposeChange | A::EditContractRecord),
+            Self::Manager => matches!(
+                action,
+                A::ProposeChange
+                    | A::EditContractRecord
+                    | A::ManagePortfolio
+                    | A::EditProject
+                    | A::ManageTechnicalObligations
+            ),
             Self::Budgeter => {
                 matches!(action, A::EditBudget | A::ReviewBudget | A::ProposeChange)
             }
@@ -87,11 +94,20 @@ impl AccessRole {
             ),
             Self::TechnicalResponsible => matches!(
                 action,
-                A::RecordExecution | A::ReviewMeasurement | A::ProposeChange | A::TechnicalAccept
+                A::RecordExecution
+                    | A::ReviewMeasurement
+                    | A::ProposeChange
+                    | A::TechnicalAccept
+                    | A::EditProject
+                    | A::ManageTechnicalObligations
             ),
             Self::Approver => matches!(
                 action,
-                A::ApproveBudget | A::ApproveChange | A::AuthorizePayment
+                A::ApproveBudget
+                    | A::ApproveChange
+                    | A::AuthorizePayment
+                    | A::ApproveProjectScope
+                    | A::ApproveTechnicalException
             ),
             Self::Finance => matches!(action, A::RecordPayment),
             Self::Supplier => matches!(action, A::RecordExecution | A::ProposeChange),
@@ -114,10 +130,15 @@ pub enum AccessAction {
     RecordPayment,
     TechnicalAccept,
     EditContractRecord,
+    ManagePortfolio,
+    EditProject,
+    ApproveProjectScope,
+    ManageTechnicalObligations,
+    ApproveTechnicalException,
 }
 
 impl AccessAction {
-    pub const ALL: [Self; 12] = [
+    pub const ALL: [Self; 17] = [
         Self::View,
         Self::EditBudget,
         Self::ReviewBudget,
@@ -130,6 +151,11 @@ impl AccessAction {
         Self::RecordPayment,
         Self::TechnicalAccept,
         Self::EditContractRecord,
+        Self::ManagePortfolio,
+        Self::EditProject,
+        Self::ApproveProjectScope,
+        Self::ManageTechnicalObligations,
+        Self::ApproveTechnicalException,
     ];
 
     pub const fn as_str(self) -> &'static str {
@@ -146,6 +172,11 @@ impl AccessAction {
             Self::RecordPayment => "record_payment",
             Self::TechnicalAccept => "technical_accept",
             Self::EditContractRecord => "edit_contract_record",
+            Self::ManagePortfolio => "manage_portfolio",
+            Self::EditProject => "edit_project",
+            Self::ApproveProjectScope => "approve_project_scope",
+            Self::ManageTechnicalObligations => "manage_technical_obligations",
+            Self::ApproveTechnicalException => "approve_technical_exception",
         }
     }
 
@@ -163,6 +194,11 @@ impl AccessAction {
             Self::RecordPayment => "Registrar pagamento",
             Self::TechnicalAccept => "Dar aceite técnico",
             Self::EditContractRecord => "Editar referência do contrato",
+            Self::ManagePortfolio => "Gerir carteira",
+            Self::EditProject => "Gerir projeto",
+            Self::ApproveProjectScope => "Aprovar escopo",
+            Self::ManageTechnicalObligations => "Gerir obrigações técnicas",
+            Self::ApproveTechnicalException => "Aprovar exceção técnica",
         }
     }
 
@@ -173,7 +209,20 @@ impl AccessAction {
                 | Self::ApproveChange
                 | Self::AuthorizePayment
                 | Self::TechnicalAccept
+                | Self::ApproveProjectScope
+                | Self::ApproveTechnicalException
         )
+    }
+
+    /// Restringe os novos atos ao tipo de registro que lhes dá sentido.
+    /// Um vínculo concedido em uma obra nunca libera outro escopo por herança.
+    pub const fn applies_to(self, kind: ScopeKind) -> bool {
+        match self {
+            Self::EditContractRecord => matches!(kind, ScopeKind::Contract),
+            Self::ManagePortfolio => matches!(kind, ScopeKind::Work),
+            Self::EditProject | Self::ApproveProjectScope => matches!(kind, ScopeKind::Project),
+            _ => true,
+        }
     }
 }
 
@@ -183,6 +232,7 @@ pub enum ScopeKind {
     Work,
     Contract,
     Budget,
+    Project,
 }
 
 impl ScopeKind {
@@ -191,6 +241,7 @@ impl ScopeKind {
             Self::Work => "work",
             Self::Contract => "contract",
             Self::Budget => "budget",
+            Self::Project => "project",
         }
     }
 
@@ -199,6 +250,7 @@ impl ScopeKind {
             Self::Work => "Obra",
             Self::Contract => "Contrato",
             Self::Budget => "Orçamento",
+            Self::Project => "Projeto",
         }
     }
 }
@@ -384,11 +436,10 @@ pub fn validate_grant(grant: &AccessGrant) -> Result<(), AccessError> {
     let distinct: BTreeSet<_> = grant.actions.iter().copied().collect();
     if distinct.is_empty()
         || distinct.len() != grant.actions.len()
-        || grant.actions.iter().any(|action| {
-            !grant.role.permits(*action)
-                || (*action == AccessAction::EditContractRecord
-                    && grant.scope.kind != ScopeKind::Contract)
-        })
+        || grant
+            .actions
+            .iter()
+            .any(|action| !grant.role.permits(*action) || !action.applies_to(grant.scope.kind))
     {
         return Err(AccessError::InvalidGrant);
     }

@@ -1,0 +1,5 @@
+   Compiling xtask v0.1.0 (/workspace/scratch/371d5bee48a0/canteiro-360/tools/xtask)
+    Finished `dev` profile [unoptimized] target(s) in 1.72s
+     Running `target/debug/xtask check`
+Plano aprovado: 72 issues, 192 regras, dependências, fontes e documentos coerentes.
+Política aprovada: 343 arquivos, sem lógica JS/TS própria ou credenciais embutidas detectadas.

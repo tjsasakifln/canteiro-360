@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "run_id": 44657829805,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/44657829805",
+  "source_commit": "f1c297d029fdc31742bbc0d933c5e8ed7acb86b5",
+  "checkout_commit": "2de5b86fa1d6ebf3ccad1f064aac59dbaf1b0464",
+  "tree": "c4e61fee55208ff845803b06071199810e779810",
+  "job_id": 136028335328,
+  "job_conclusion": "failure",
+  "started_at": "2026-11-20T02:01:42Z",
+  "completed_at": "2026-11-20T02:35:39Z",
+  "steps": [
+    {
+      "number": 1,
+      "name": "Set up job",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:01:43Z",
+      "completed_at": "2026-11-20T02:01:44Z"
+    },
+    {
+      "number": 2,
+      "name": "Initialize containers",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:01:44Z",
+      "completed_at": "2026-11-20T02:02:03Z"
+    },
+    {
+      "number": 3,
+      "name": "Obter a revisão",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:02:03Z",
+      "completed_at": "2026-11-20T02:02:04Z"
+    },
+    {
+      "number": 4,
+      "name": "Gerar chave temporária exclusiva da base de teste",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:02:04Z",
+      "completed_at": "2026-11-20T02:02:04Z"
+    },
+    {
+      "number": 5,
+      "name": "Instalar toolchain fixada",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:02:04Z",
+      "completed_at": "2026-11-20T02:02:14Z"
+    },
+    {
+      "number": 6,
+      "name": "Conferir formatação",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:02:14Z",
+      "completed_at": "2026-11-20T02:02:14Z"
+    },
+    {
+      "number": 7,
+      "name": "Conferir plano, linguagens e segredos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:02:14Z",
+      "completed_at": "2026-11-20T02:02:28Z"
+    },
+    {
+      "number": 8,
+      "name": "Analisar Rust com avisos tratados como erro",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:02:28Z",
+      "completed_at": "2026-11-20T02:04:37Z"
+    },
+    {
+      "number": 9,
+      "name": "Analisar também o código compilado para navegador",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:04:37Z",
+      "completed_at": "2026-11-20T02:05:21Z"
+    },
+    {
+      "number": 10,
+      "name": "Executar testes positivos e negativos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:05:21Z",
+      "completed_at": "2026-11-20T02:08:04Z"
+    },
+    {
+      "number": 11,
+      "name": "Executar cenários com PostgreSQL real",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:08:04Z",
+      "completed_at": "2026-11-20T02:12:15Z"
+    },
+    {
+      "number": 12,
+      "name": "Provisionar identidades distintas para a aplicação de teste",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:12:15Z",
+      "completed_at": "2026-11-20T02:12:15Z"
+    },
+    {
+      "number": 13,
+      "name": "Aplicar migrações e validar a identidade de execução",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:12:15Z",
+      "completed_at": "2026-11-20T02:12:20Z"
+    },
+    {
+      "number": 14,
+      "name": "Verificar cookies, CSRF e recuperação por HTTP",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:12:20Z",
+      "completed_at": "2026-11-20T02:13:34Z"
+    },
+    {
+      "number": 15,
+      "name": "Instalar ferramentas nas versões fixadas",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:13:34Z",
+      "completed_at": "2026-11-20T02:17:02Z"
+    },
+    {
+      "number": 16,
+      "name": "Compilar servidor, processamento e navegador",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:17:02Z",
+      "completed_at": "2026-11-20T02:27:37Z"
+    },
+    {
+      "number": 17,
+      "name": "Conferir orçamento dos arquivos servidos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:27:37Z",
+      "completed_at": "2026-11-20T02:27:38Z"
+    },
+    {
+      "number": 18,
+      "name": "Compilar verificador independente para execução real em WASM",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:27:38Z",
+      "completed_at": "2026-11-20T02:27:49Z"
+    },
+    {
+      "number": 19,
+      "name": "Preparar navegador e driver fixos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:27:49Z",
+      "completed_at": "2026-11-20T02:27:52Z"
+    },
+    {
+      "number": 20,
+      "name": "Verificar SSR, hidratação, falha e teclado em navegador real",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:27:52Z",
+      "completed_at": "2026-11-20T02:35:32Z"
+    },
+    {
+      "number": 21,
+      "name": "Transmitir capturas e medições das jornadas sintéticas",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:35:32Z",
+      "completed_at": "2026-11-20T02:35:34Z"
+    },
+    {
+      "number": 22,
+      "name": "Auditar dependências, origens e licenças",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T02:35:34Z",
+      "completed_at": "2026-11-20T02:35:35Z"
+    },
+    {
+      "number": 23,
+      "name": "Preservar medidas da revisão",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T02:35:35Z",
+      "completed_at": "2026-11-20T02:35:36Z"
+    },
+    {
+      "number": 45,
+      "name": "Post Obter a revisão",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:35:36Z",
+      "completed_at": "2026-11-20T02:35:36Z"
+    },
+    {
+      "number": 46,
+      "name": "Stop containers",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:35:36Z",
+      "completed_at": "2026-11-20T02:35:38Z"
+    },
+    {
+      "number": 47,
+      "name": "Complete job",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:35:38Z",
+      "completed_at": "2026-11-20T02:35:38Z"
+    }
+  ],
+  "test_results": {
+    "workspace": {
+      "passed": 213,
+      "failed": 0,
+      "ignored": 107
+    },
+    "persistence": {
+      "passed": 37,
+      "failed": 0
+    },
+    "application": {
+      "passed": 47,
+      "failed": 0
+    },
+    "http": {
+      "passed": 10,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 13,
+      "failed": 0
+    },
+    "total_executed": 320
+  },
+  "asset_budget": {
+    "wasm_brotli_bytes": 1036328,
+    "wasm_limit_bytes": 1048576,
+    "javascript_budget_bytes": 8991,
+    "javascript_limit_bytes": 81920,
+    "css_brotli_bytes": 11661,
+    "css_limit_bytes": 61440
+  },
+  "audit": {
+    "blocked": [
+      "RUSTSEC-2026-0543",
+      "RUSTSEC-2026-0555"
+    ],
+    "bans": "passed",
+    "licenses": "passed",
+    "sources": "passed"
+  },
+  "artifacts": {
+    "uploaded": 0,
+    "upload_error": "Artifact storage quota has been hit.",
+    "recovered_via_logs": {
+      "png_files": 10,
+      "projected_measurement_files": 1,
+      "total_bytes": 2325013,
+      "sha256_verified": true
+    }
+  },
+  "visual_review": {
+    "status": "changes_required",
+    "findings": [
+      "Secondary buttons and some direct form controls used small browser-default presentation.",
+      "Document cards depended on padding tokens unavailable outside the prototype.",
+      "Native project navigation links needed a minimum 44-pixel target."
+    ],
+    "correction_scope": [
+      "style/documents.css",
+      "style/registry.css",
+      "style/projects.css",
+      "44-pixel control measurements in registry E2E"
+    ],
+    "next_verification": "New CI and actual screenshots required after CSS correction."
+  }
+}

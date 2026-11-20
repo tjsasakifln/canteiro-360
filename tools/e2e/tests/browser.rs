@@ -23,6 +23,31 @@ const TOGGLE: &str = "#foundation-details-toggle";
 const READY: &str =
     "return document.querySelector('.interaction-status')?.dataset.ready === 'true';";
 
+// Observe the live tab order without moving focus or changing the DOM. The
+// global navigation can add links before the home-page controls.
+const OBSERVE_KEYBOARD: &str = r#"
+const describe = element => {
+  if (!element) return null;
+  const style = getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
+  return {
+    tag: element.tagName.toLowerCase(), id: element.id,
+    href: element.getAttribute('href'), tabIndex: element.tabIndex,
+    disabled: element.matches(':disabled') || element.getAttribute('aria-disabled') === 'true',
+    visible: element.getClientRects().length > 0 && rect.width > 0 && rect.height > 0 &&
+      style.visibility === 'visible' && !element.closest('[hidden], [inert]')
+  };
+};
+const candidates = Array.from(document.querySelectorAll(
+  'a[href], area[href], button, input, select, textarea, summary, [tabindex], [contenteditable="true"]'
+)).map(describe).filter(element => element.visible && !element.disabled && element.tabIndex >= 0);
+return {
+  location: location.pathname, targetCount: document.querySelectorAll(targetSelector).length,
+  target: describe(document.querySelector(targetSelector)), active: describe(document.activeElement),
+  matched: document.activeElement?.matches(targetSelector) === true, candidates
+};
+"#;
+
 #[tokio::test]
 #[ignore = "Requires cargo xtask build, Chromium and matching ChromeDriver"]
 async fn rendered_page_hydrates_and_recovers_with_keyboard() -> TestResult {
@@ -98,7 +123,11 @@ async fn functional_cases(h: &Harness, browser: &Browser) -> TestResult {
         json!("false")
     );
 
-    browser.tab_to(TOGGLE).await?;
+    let mut keyboard_navigation = vec![browser.tab_to(TOGGLE).await?];
+    write_json(
+        &h.evidence.join("keyboard-navigation.json"),
+        &json!(keyboard_navigation),
+    )?;
     let focus = browser.execute(
         "const e=document.activeElement;const r=e.getBoundingClientRect();const s=getComputedStyle(e);return {id:e.id,outline:s.outlineWidth,width:r.width,height:r.height,top:r.top,bottom:r.bottom,viewport:innerHeight};",
     ).await?;
@@ -178,7 +207,11 @@ async fn functional_cases(h: &Harness, browser: &Browser) -> TestResult {
             .await?,
         "visible"
     );
-    browser.tab_to(".retry-link").await?;
+    keyboard_navigation.push(browser.tab_to(".retry-link").await?);
+    write_json(
+        &h.evidence.join("keyboard-navigation.json"),
+        &json!(keyboard_navigation),
+    )?;
     assert_eq!(
         browser
             .execute("return getComputedStyle(document.activeElement).outlineWidth;")
@@ -222,6 +255,7 @@ async fn functional_cases(h: &Harness, browser: &Browser) -> TestResult {
             "checks": ["useful_ssr_without_scripts", "hydration_without_mismatch", "keyboard_enter_space", "focus_3px", "touch_target_44px", "reflow_320_360", "http_404", "missing_wasm_delayed_guidance", "keyboard_retry_recovers"],
             "hydration_navigation_wall_ms": hydration_wall_ms,
             "focus": focus,
+            "keyboard_navigation": keyboard_navigation,
             "viewports": viewports,
             "normal_console": normal_logs,
             "expected_missing_wasm_console": failure_logs,
@@ -686,18 +720,55 @@ impl Browser {
         Ok(())
     }
 
-    async fn tab_to(&self, selector: &str) -> TestResult {
-        let expression = format!(
-            "return document.activeElement?.matches({});",
+    async fn keyboard_state(&self, selector: &str) -> TestResult<Value> {
+        self.execute(&format!(
+            "const targetSelector = {}; {OBSERVE_KEYBOARD}",
             serde_json::to_string(selector)?
-        );
-        for _ in 0..12 {
+        ))
+        .await
+    }
+
+    async fn tab_to(&self, selector: &str) -> TestResult<Value> {
+        let initial = self.keyboard_state(selector).await?;
+        if initial["targetCount"] != 1
+            || initial["target"]["visible"] != true
+            || initial["target"]["disabled"] != false
+            || initial["target"]["tabIndex"].as_i64().is_none_or(|v| v < 0)
+        {
+            return Err(format!(
+                "Keyboard target is not uniquely available: {selector}; {initial}"
+            )
+            .into());
+        }
+        let candidate_count = initial["candidates"]
+            .as_array()
+            .ok_or("Keyboard diagnostics did not return candidate controls")?
+            .len();
+        // One traversal plus two steps for the document/browser boundary,
+        // with a finite ceiling to retain a failure for an actual focus trap.
+        // The previous fixed budget of 12 stopped before the 14th control
+        // after five workspace links were added to the shared navigation.
+        let budget = candidate_count.saturating_add(2).min(128);
+        let mut path = vec![initial["active"].clone()];
+        if initial["matched"] == true {
+            return Ok(json!({"selector":selector,"budget":budget,"initial":initial,"path":path}));
+        }
+        let mut last = initial.clone();
+        for _ in 0..budget {
             self.key(TAB).await?;
-            if self.execute(&expression).await? == true {
-                return Ok(());
+            last = self.keyboard_state(selector).await?;
+            path.push(last["active"].clone());
+            if last["matched"] == true {
+                return Ok(
+                    json!({"selector":selector,"budget":budget,"initial":initial,"path":path}),
+                );
             }
         }
-        Err(format!("Element not reachable by Tab: {selector}").into())
+        let diagnostic =
+            json!({"selector":selector,"budget":budget,"initial":initial,"last":last,"path":path});
+        // Keep the route, target state and actual focus path in CI output even
+        // when screenshot artifact upload is unavailable.
+        Err(format!("Element not reachable by Tab: {selector}; {diagnostic}").into())
     }
 
     async fn wait(&self, expression: &str, timeout: Duration) -> TestResult {

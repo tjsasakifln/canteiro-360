@@ -1,0 +1,468 @@
+{
+  "schema_version": 1,
+  "run_id": 44663208420,
+  "url": "https://github.com/tjsasakifln/canteiro-360/actions/runs/44663208420",
+  "source_commit": "7166902c789aac63092a470b13175eefbd18f067",
+  "checkout_commit": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a",
+  "tree": "003608a5ceab076ed5d793f852ab70813d43ff2c",
+  "checkout_tree_equals_source_tree": true,
+  "checkout_parents": [
+    "17880bc98de8d1b8d20be3c5075aa53c3fbc6742",
+    "7166902c789aac63092a470b13175eefbd18f067"
+  ],
+  "job_id": 136046159994,
+  "job_conclusion": "failure",
+  "started_at": "2026-11-20T02:47:00Z",
+  "completed_at": "2026-11-20T03:39:48Z",
+  "duration_seconds": 3168,
+  "steps": [
+    {
+      "number": 1,
+      "name": "Set up job",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:01Z",
+      "completed_at": "2026-11-20T02:47:02Z"
+    },
+    {
+      "number": 2,
+      "name": "Initialize containers",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:02Z",
+      "completed_at": "2026-11-20T02:47:18Z"
+    },
+    {
+      "number": 3,
+      "name": "Obter a revisão",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:18Z",
+      "completed_at": "2026-11-20T02:47:20Z"
+    },
+    {
+      "number": 4,
+      "name": "Gerar chave temporária exclusiva da base de teste",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:20Z",
+      "completed_at": "2026-11-20T02:47:20Z"
+    },
+    {
+      "number": 5,
+      "name": "Instalar toolchain fixada",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:20Z",
+      "completed_at": "2026-11-20T02:47:31Z"
+    },
+    {
+      "number": 6,
+      "name": "Conferir formatação",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:31Z",
+      "completed_at": "2026-11-20T02:47:32Z"
+    },
+    {
+      "number": 7,
+      "name": "Conferir plano, linguagens e segredos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:32Z",
+      "completed_at": "2026-11-20T02:47:53Z"
+    },
+    {
+      "number": 8,
+      "name": "Analisar Rust com avisos tratados como erro",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:47:53Z",
+      "completed_at": "2026-11-20T02:51:20Z"
+    },
+    {
+      "number": 9,
+      "name": "Analisar também o código compilado para navegador",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:51:20Z",
+      "completed_at": "2026-11-20T02:52:30Z"
+    },
+    {
+      "number": 10,
+      "name": "Executar testes positivos e negativos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:52:30Z",
+      "completed_at": "2026-11-20T02:56:55Z"
+    },
+    {
+      "number": 11,
+      "name": "Executar cenários com PostgreSQL real",
+      "conclusion": "success",
+      "started_at": "2026-11-20T02:56:55Z",
+      "completed_at": "2026-11-20T03:03:56Z"
+    },
+    {
+      "number": 12,
+      "name": "Provisionar identidades distintas para a aplicação de teste",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:03:56Z",
+      "completed_at": "2026-11-20T03:03:56Z"
+    },
+    {
+      "number": 13,
+      "name": "Aplicar migrações e validar a identidade de execução",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:03:56Z",
+      "completed_at": "2026-11-20T03:04:04Z"
+    },
+    {
+      "number": 14,
+      "name": "Verificar cookies, CSRF e recuperação por HTTP",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:04:04Z",
+      "completed_at": "2026-11-20T03:06:34Z"
+    },
+    {
+      "number": 15,
+      "name": "Instalar ferramentas nas versões fixadas",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:06:34Z",
+      "completed_at": "2026-11-20T03:12:16Z"
+    },
+    {
+      "number": 16,
+      "name": "Compilar servidor, processamento e navegador",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:12:16Z",
+      "completed_at": "2026-11-20T03:29:39Z"
+    },
+    {
+      "number": 17,
+      "name": "Conferir orçamento dos arquivos servidos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:29:39Z",
+      "completed_at": "2026-11-20T03:29:40Z"
+    },
+    {
+      "number": 18,
+      "name": "Compilar verificador independente para execução real em WASM",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:29:40Z",
+      "completed_at": "2026-11-20T03:29:59Z"
+    },
+    {
+      "number": 19,
+      "name": "Preparar navegador e driver fixos",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:29:59Z",
+      "completed_at": "2026-11-20T03:30:04Z"
+    },
+    {
+      "number": 20,
+      "name": "Verificar SSR, hidratação, falha e teclado em navegador real",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:30:04Z",
+      "completed_at": "2026-11-20T03:39:37Z"
+    },
+    {
+      "number": 21,
+      "name": "Transmitir capturas e medições das jornadas sintéticas",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:39:37Z",
+      "completed_at": "2026-11-20T03:39:41Z"
+    },
+    {
+      "number": 22,
+      "name": "Auditar dependências, origens e licenças",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T03:39:41Z",
+      "completed_at": "2026-11-20T03:39:43Z"
+    },
+    {
+      "number": 23,
+      "name": "Preservar medidas da revisão",
+      "conclusion": "failure",
+      "started_at": "2026-11-20T03:39:43Z",
+      "completed_at": "2026-11-20T03:39:44Z"
+    },
+    {
+      "number": 45,
+      "name": "Post Obter a revisão",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:39:44Z",
+      "completed_at": "2026-11-20T03:39:44Z"
+    },
+    {
+      "number": 46,
+      "name": "Stop containers",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:39:44Z",
+      "completed_at": "2026-11-20T03:39:45Z"
+    },
+    {
+      "number": 47,
+      "name": "Complete job",
+      "conclusion": "success",
+      "started_at": "2026-11-20T03:39:45Z",
+      "completed_at": "2026-11-20T03:39:45Z"
+    }
+  ],
+  "test_results": {
+    "workspace": {
+      "passed": 213,
+      "failed": 0,
+      "ignored": 107
+    },
+    "persistence": {
+      "passed": 37,
+      "failed": 0
+    },
+    "application": {
+      "passed": 47,
+      "failed": 0
+    },
+    "http": {
+      "passed": 10,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 13,
+      "failed": 0
+    },
+    "total_executed": 320,
+    "reserved_tests_note": "The 107 ignored tests in the general run were executed in the specific PostgreSQL, HTTP and browser groups; no double counting."
+  },
+  "asset_budget": {
+    "wasm": {
+      "bytes": 1036328,
+      "limit": 1048576
+    },
+    "js": {
+      "bytes": 8991,
+      "limit": 81920
+    },
+    "css": {
+      "bytes": 12205,
+      "limit": 61440
+    },
+    "basis": "Brotli served files plus uncompressed inline content, from CI step 17"
+  },
+  "browser": {
+    "browser": "156.0.8078.80",
+    "driver": "156.0.8078.80",
+    "platform": "linux"
+  },
+  "browser_registry_seconds": 30.49,
+  "visual_evidence": {
+    "source": "36edb2b1a98ebfac9385b73a180b49f71f0bb61a",
+    "files": 11,
+    "png_count": 10,
+    "total_bytes": 2399018,
+    "integrity": "Source commit, ordered chunks, canonical base64, declared byte counts and SHA-256 verified; each PNG also decoded and verified.",
+    "layouts": [
+      {
+        "geometry": {
+          "controlCount": 37,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 83,
+          "scroll": 360,
+          "width": 360
+        },
+        "route": "cadastros",
+        "width": 360
+      },
+      {
+        "geometry": {
+          "controlCount": 37,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 83,
+          "scroll": 1265,
+          "width": 1280
+        },
+        "route": "cadastros",
+        "width": 1280
+      },
+      {
+        "geometry": {
+          "controlCount": 29,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 110,
+          "scroll": 360,
+          "width": 360
+        },
+        "route": "carteira",
+        "width": 360
+      },
+      {
+        "geometry": {
+          "controlCount": 29,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 103,
+          "scroll": 1265,
+          "width": 1280
+        },
+        "route": "carteira",
+        "width": 1280
+      },
+      {
+        "geometry": {
+          "controlCount": 25,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 58,
+          "scroll": 360,
+          "width": 360
+        },
+        "route": "projetos",
+        "width": 360
+      },
+      {
+        "geometry": {
+          "controlCount": 25,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 63,
+          "scroll": 1265,
+          "width": 1280
+        },
+        "route": "projetos",
+        "width": 1280
+      },
+      {
+        "geometry": {
+          "controlCount": 17,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 141,
+          "scroll": 360,
+          "width": 360
+        },
+        "route": "documentos",
+        "width": 360
+      },
+      {
+        "geometry": {
+          "controlCount": 17,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 141,
+          "scroll": 1265,
+          "width": 1280
+        },
+        "route": "documentos",
+        "width": 1280
+      },
+      {
+        "geometry": {
+          "controlCount": 32,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 58,
+          "scroll": 360,
+          "width": 360
+        },
+        "route": "obrigacoes",
+        "width": 360
+      },
+      {
+        "geometry": {
+          "controlCount": 32,
+          "headings": 1,
+          "minimumControlHeight": 44,
+          "minimumControlWidth": 63,
+          "scroll": 1265,
+          "width": 1280
+        },
+        "route": "obrigacoes",
+        "width": 1280
+      }
+    ],
+    "images": [
+      {
+        "name": "registry-cadastros-360.png",
+        "width": 360,
+        "height": 3344,
+        "sha256": "9bf00fd483204d751c739f3fbb274b586a01a4adbbd1dfda89dd83293aedf391"
+      },
+      {
+        "name": "registry-cadastros-1280.png",
+        "width": 1265,
+        "height": 2384,
+        "sha256": "da09663f6ad83d7069b7bf9bcc46bc097bc43dce169643dcb0605ee93908b0b3"
+      },
+      {
+        "name": "registry-carteira-360.png",
+        "width": 360,
+        "height": 4302,
+        "sha256": "3a686aae13f4054527a7bcab2d3b7114c775df2b4b9d60893f40d488fa4a89eb"
+      },
+      {
+        "name": "registry-carteira-1280.png",
+        "width": 1265,
+        "height": 3512,
+        "sha256": "bfb5a50b7da12fbf205dfb7b067bdda730e4b384f1f436c2b4da621fa70a0e39"
+      },
+      {
+        "name": "registry-projetos-360.png",
+        "width": 360,
+        "height": 3300,
+        "sha256": "228a1356f6f8f29ab62e5b96fb3afc2fa8fbdbb4cb033aa7777b7c311c10a50f"
+      },
+      {
+        "name": "registry-projetos-1280.png",
+        "width": 1265,
+        "height": 2290,
+        "sha256": "d4590cbc07fc2f105f461e58738ddfd73052193125a8c69603f0b45cfd5a9df9"
+      },
+      {
+        "name": "registry-documentos-360.png",
+        "width": 360,
+        "height": 2974,
+        "sha256": "cf0a04ab9b41dc14e8d3acf889aed1e99c35fb38b8078c2264305bfeca5759db"
+      },
+      {
+        "name": "registry-documentos-1280.png",
+        "width": 1265,
+        "height": 2111,
+        "sha256": "84f790a72e4f6765a658815a77b993bf340bb904cd537479dc5c5023de94b6d0"
+      },
+      {
+        "name": "registry-obrigacoes-360.png",
+        "width": 360,
+        "height": 4912,
+        "sha256": "de346147e969827e652c8d0560abe8d84f2cf1945029e84ebd792cd707606419"
+      },
+      {
+        "name": "registry-obrigacoes-1280.png",
+        "width": 1265,
+        "height": 2670,
+        "sha256": "cd3e4448f9d94dd8e421013b0a9611bf530b486258d0837b3cfded42b166fdf2"
+      }
+    ],
+    "review": "The three module agents inspected their assigned full screenshots; the root inspected decisive states. No material visual defect remained in these captured states.",
+    "limits": [
+      "Five synthetic states, each at viewport widths 360 and 1280; not every lifecycle state.",
+      "Control dimensions and keyboard journeys are not a complete accessibility or screen-reader audit.",
+      "Native date and file controls use the Chrome environment locale.",
+      "Mobile map axis labels are small; coordinates and the list remain the primary alternatives."
+    ]
+  },
+  "audit": {
+    "conclusion": "failure",
+    "advisory_ids": [
+      "RUSTSEC-2026-0543",
+      "RUSTSEC-2026-0555"
+    ],
+    "bans": "ok",
+    "licenses": "ok",
+    "sources": "ok",
+    "new_ignored_advisories": false
+  },
+  "artifact_upload": {
+    "conclusion": "failure",
+    "artifact_count": 0,
+    "reason": "GitHub Actions artifact storage quota reached",
+    "fallback": "Allowlisted synthetic PNGs and projected metrics recovered from bounded, hashed CI log frames; upload gate remains mandatory."
+  },
+  "acceptance_limits": [
+    "PR remains draft on PR82 base; no merge and no commercial acceptance.",
+    "Scanner test uses a synthetic INSTREAM protocol fixture, not real antivirus definitions.",
+    "No council, CNO registration or cryptographic signature authenticity is certified."
+  ]
+}

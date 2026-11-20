@@ -12,11 +12,13 @@ use std::{
 
 pub(super) const ROLES: [AccessRole; 10] = AccessRole::ALL;
 pub(super) const ACTIONS: [AccessAction; AccessAction::ALL.len()] = AccessAction::ALL;
-pub(super) const DECISIONS: [AccessAction; 4] = [
+pub(super) const DECISIONS: [AccessAction; 6] = [
     AccessAction::ApproveBudget,
     AccessAction::ApproveChange,
     AccessAction::AuthorizePayment,
     AccessAction::TechnicalAccept,
+    AccessAction::ApproveProjectScope,
+    AccessAction::ApproveTechnicalException,
 ];
 
 #[derive(Clone, PartialEq, Eq)]
@@ -623,7 +625,9 @@ impl Access {
             );
             return;
         }
-        if d.scope_kind != ScopeKind::Work && d.scope_parent.is_empty() {
+        if matches!(d.scope_kind, ScopeKind::Contract | ScopeKind::Budget)
+            && d.scope_parent.is_empty()
+        {
             self.local_error(
                 if d.scope_kind == ScopeKind::Contract {
                     "Selecione a obra deste contrato."
@@ -638,7 +642,7 @@ impl Access {
             context,
             kind: d.scope_kind,
             name: d.scope_name,
-            parent_id: if d.scope_kind != ScopeKind::Work {
+            parent_id: if matches!(d.scope_kind, ScopeKind::Contract | ScopeKind::Budget) {
                 Some(d.scope_parent)
             } else {
                 None

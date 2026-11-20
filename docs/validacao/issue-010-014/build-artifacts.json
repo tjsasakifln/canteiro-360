@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "source_commit": "f1c297d029fdc31742bbc0d933c5e8ed7acb86b5",
+  "environment": "local Linux x86_64, Rust 1.99.1, CARGO_BUILD_JOBS=1",
+  "build": "cargo xtask build, incremental dependencies; unchanged optimization profiles and asset limits",
+  "artifacts": [
+    {
+      "path": "target/release/canteiro-api",
+      "bytes": 97004968,
+      "sha256": "60cd869f97d863d3575010d194a7bb34e5d1eb4c1e9b56deccc60a2518fe7998"
+    },
+    {
+      "path": "target/release/canteiro-jobs",
+      "bytes": 7817424,
+      "sha256": "519f9f40c8264ce126adb4c1686fd4f46e1d8c442a69e0f74939cef1b9d4f3a4"
+    },
+    {
+      "path": "target/site/pkg/canteiro-web_bg.wasm",
+      "bytes": 5866323,
+      "sha256": "637efcffc890eb7a1ea20fbea43077e50942080cd516bdff79225d9da18550ba"
+    },
+    {
+      "path": "target/site/pkg/canteiro-web_bg.wasm.br",
+      "bytes": 1035988,
+      "sha256": "a83a81b0dc4ce0fbf2b37eccdecde6ace7f2bb144bda26ffbe4c4d0bd78385a3"
+    }
+  ]
+}

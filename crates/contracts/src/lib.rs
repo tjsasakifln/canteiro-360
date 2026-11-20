@@ -22,3 +22,9 @@ pub mod access;
 pub mod auth;
 pub mod organizations;
 pub mod reliability;
+
+pub mod documents;
+pub mod obligations;
+pub mod parties;
+pub mod portfolio;
+pub mod projects;
