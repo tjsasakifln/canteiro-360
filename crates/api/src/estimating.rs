@@ -44,6 +44,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/api/estimating/composition/calculate",
             post(composition_calculate),
         )
+        .route("/orcamentos/composicoes/memoria", get(composition_memory_page))
         .route(
             "/api/estimating/composition/command",
             post(composition_write),
@@ -280,6 +281,59 @@ async fn composition_calculate(
         Err(e) => application_failure(e),
     }
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CompositionMemoryQuery {
+    organization_id: String,
+    context_version: i64,
+    scope_id: String,
+    code: String,
+}
+
+async fn composition_memory_page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<CompositionMemoryQuery>, QueryRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, false) {
+        Ok(value) => value,
+        Err(response) => return *response,
+    };
+    let Ok(Query(query)) = query else {
+        return bad_input();
+    };
+    let context = ReliabilityScope {
+        organization_id: query.organization_id,
+        context_version: query.context_version,
+    };
+    let page = match auth.service().estimating_context(&token).await {
+        Ok(page) => page,
+        Err(error) => return application_failure(error),
+    };
+    if page.context.as_ref() != Some(&context) {
+        return bad_input();
+    }
+    let Some(record) = page
+        .compositions
+        .iter()
+        .find(|entry| entry.scope_id == query.scope_id && entry.code == query.code)
+        .cloned()
+    else {
+        return bad_input();
+    };
+    match auth
+        .service()
+        .estimating_composition_calculate(&token, &context, &query.scope_id, record.composition.clone())
+        .await
+    {
+        Ok(memory) => html_page(
+            canteiro_web::estimating::composition_memory(page, record, memory),
+            StatusCode::OK,
+        ),
+        Err(error) => application_failure(error),
+    }
+}
+
 async fn composition_write(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
