@@ -68,9 +68,19 @@ fn err(row: usize, col: usize, cause: &str) -> CellError {
 pub(crate) fn safe(s: &str) -> bool {
     // Planilhas podem ignorar espaços e caracteres invisíveis antes de uma
     // fórmula. A verificação vale para entrada e saída, sem executar conteúdo.
-    let visible = s.trim_start_matches(|c: char| {
-        c.is_whitespace() || matches!(c, '\u{feff}' | '\u{200b}' | '\u{2060}')
-    });
+    // Controles de direção e caracteres de largura zero podem esconder um
+    // marcador de fórmula do revisor sem alterar sua aparência na planilha.
+    // Rejeitamos esses caracteres em qualquer posição, não apenas no início.
+    if s.chars().any(|c| {
+        matches!(
+            c,
+            '\u{feff}' | '\u{200b}'..='\u{200f}' | '\u{202a}'..='\u{202e}'
+                | '\u{2060}' | '\u{2066}'..='\u{2069}' | '\0'
+        )
+    }) {
+        return false;
+    }
+    let visible = s.trim_start_matches(char::is_whitespace);
     !visible
         .chars()
         .next()
@@ -572,7 +582,7 @@ mod tests {
     fn hidden_formula_prefixes_are_rejected_in_both_directions() {
         let original = sample(1);
         let clean = export_csv(&original, NumberLocale::PtBr).unwrap();
-        for prefix in [" ", "\t", "\u{feff}", "\u{200b}", "\u{2060}", "\u{00a0}"] {
+        for prefix in [" ", "\t", "\u{feff}", "\u{200b}", "\u{200c}", "\u{200d}", "\u{200e}", "\u{202e}", "\u{2060}", "\u{2066}", "\u{00a0}"] {
             let attack = format!("{prefix}=HYPERLINK(1)");
             let mut outgoing = original.clone();
             outgoing.lines[0].description = attack.clone();
@@ -597,6 +607,25 @@ mod tests {
             .unwrap(),
             benign
         );
+    }
+    #[test]
+    fn formula_masked_inside_description_is_rejected() {
+        let mut original = sample(1);
+        for hidden in ['\u{200c}', '\u{200d}', '\u{200f}', '\u{202a}', '\u{2069}'] {
+            original.lines[0].description = format!("Mobilização{hidden} administrativa");
+            assert!(export_csv(&original, NumberLocale::Canonical).is_err());
+        }
+    }
+    #[test]
+    fn malformed_last_service_rejects_ten_thousand_line_batch() {
+        let original = sample(10_000);
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+        let corrupted = csv.replacen("C-9999", "=1+1", 1);
+        let error = preview_import(&corrupted, NumberLocale::PtBr).unwrap_err();
+        assert_eq!(error.column, 13);
+        assert_eq!(error.row, 10_004);
+        // A prévia não expõe nenhum subconjunto como importação válida.
+        assert!(preview_import(&corrupted, NumberLocale::PtBr).is_err());
     }
     #[test]
     fn quote_and_delimiter_are_not_executable() {
