@@ -52,6 +52,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/api/estimating/composition/command",
             post(composition_write),
         )
+        .route(
+            "/orcamentos/composicoes/editar-descricao",
+            post(composition_edit_description_form),
+        )
         .route("/api/estimating/budget/lease", post(budget_lease))
         .route("/api/estimating/budget/command", post(budget_write))
         .route(
@@ -361,6 +365,79 @@ async fn composition_write(
     {
         Ok(result) => private_json(result),
         Err(e) => application_failure(e),
+    }
+}
+/// Alteração pontual preserva a estrutura, as referências e o cálculo da
+/// composição salva. A versão e a autorização são revalidadas no comando.
+async fn composition_edit_description_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
+) -> Response {
+    let Ok(Form(data)) = input else {
+        return bad_input();
+    };
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let context = match form_context(&data) {
+        Ok(value) => value,
+        Err(_) => return bad_input(),
+    };
+    let scope_id = field(&data, "scope_id");
+    let code = field(&data, "code");
+    let version = match field(&data, "expected_version").parse::<i64>() {
+        Ok(value) if value > 0 => value,
+        _ => return bad_input(),
+    };
+    let page = match auth.service().estimating_context(&token).await {
+        Ok(value) => value,
+        Err(error) => return application_failure(error),
+    };
+    if page.context.as_ref() != Some(&context) {
+        return bad_input();
+    }
+    let Some(record) = page
+        .compositions
+        .iter()
+        .find(|entry| entry.scope_id == scope_id && entry.code == code)
+    else {
+        return bad_input();
+    };
+    if record.version != version {
+        let mut response = (
+            StatusCode::CONFLICT,
+            "A composição mudou desde a abertura do formulário. Recarregue a página e confira a revisão.",
+        )
+            .into_response();
+        private_headers(&mut response);
+        return response;
+    }
+    let mut composition = record.composition.clone();
+    composition.description = field(&data, "description").to_owned();
+    let command = CompositionWriteCommand {
+        context,
+        scope_id: scope_id.to_owned(),
+        operation_key: uuid::Uuid::new_v4().to_string(),
+        expected_version: Some(version),
+        reason: field(&data, "reason").to_owned(),
+        composition,
+    };
+    match auth
+        .service()
+        .estimating_composition_write(&token, command)
+        .await
+    {
+        Ok(_) => match auth.service().estimating_context(&token).await {
+            Ok(ctx) => html_page(canteiro_web::estimating::page(ctx), StatusCode::OK),
+            Err(error) => application_failure(error),
+        },
+        Err(error) => application_failure(error),
     }
 }
 async fn budget_lease(
