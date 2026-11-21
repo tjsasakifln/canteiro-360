@@ -97,6 +97,36 @@ impl AuthService {
         tx.commit().await?;
         Ok(value)
     }
+    /// Consulta comparativa autenticada em uma transação. A fonte anterior
+    /// permanece legível e nenhuma edição histórica é regravada.
+    pub async fn estimating_catalog_compare(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        catalog: &str,
+        before: u32,
+        after: u32,
+    ) -> Result<CatalogComparison, AuthError> {
+        self.limit("estimating-catalog-compare", token, 30, 60)
+            .await?;
+        if before == after {
+            return Err(invalid("Selecione duas edições diferentes da mesma tabela."));
+        }
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_text)?;
+        require_budget(&a, scope, AccessAction::View, tx.now().await?)?;
+        let old = load_catalog(&mut tx, a.tenant, scope, catalog, before).await?;
+        let new = load_catalog(&mut tx, a.tenant, scope, catalog, after).await?;
+        let result = old
+            .compare_to(&new)
+            .map_err(|_| invalid("Não foi possível comparar essas edições."))?;
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+            .await?;
+        tx.commit().await?;
+        Ok(result)
+    }
     pub async fn estimating_catalog_publish(
         &self,
         token: &str,
