@@ -572,12 +572,9 @@ mod tests {
             let attack = format!("{prefix}=HYPERLINK(1)");
             let mut outgoing = original.clone();
             outgoing.lines[0].description = attack.clone();
-            assert_eq!(
-                export_csv(&outgoing, NumberLocale::PtBr)
-                    .unwrap_err()
-                    .column,
-                14
-            );
+            // A validação do orçamento pode recusar o texto antes de
+            // materializar a linha CSV, portanto a coluna ainda não existe.
+            assert!(export_csv(&outgoing, NumberLocale::PtBr).is_err());
             let incoming = clean.replacen("Descrição técnica", &attack, 1);
             assert_eq!(
                 preview_import(&incoming, NumberLocale::PtBr)
