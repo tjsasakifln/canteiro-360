@@ -1,7 +1,10 @@
 //! Transporte CSV oficial versionado. Nenhum dado é gravado durante análise de lote.
 use crate::{
     ActorId, CivilDate, EntityId,
-    budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation, BudgetSchedule, PeriodBasis, SchedulePeriod},
+    budgets::{
+        BudgetLine, BudgetRevision, BudgetSchedule, BudgetState, BudgetVariation, PeriodBasis,
+        SchedulePeriod,
+    },
     decimal::{Percent, Quantity, UnitPrice},
     units::MeasureUnit,
 };
@@ -86,7 +89,11 @@ fn csv_row(cells: &[String], out: &mut String) {
 fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(), CellError> {
     for (col, value) in cells.iter().enumerate() {
         if !safe(value) {
-            return Err(err(row_number, col + 1, "Campo pode ser interpretado como fórmula ao abrir a planilha."));
+            return Err(err(
+                row_number,
+                col + 1,
+                "Campo pode ser interpretado como fórmula ao abrir a planilha.",
+            ));
         }
     }
     csv_row(cells, out);
@@ -289,15 +296,24 @@ pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String
         entry[3] = match schedule.basis {
             PeriodBasis::Fixed30Days => "fixed_30_days",
             PeriodBasis::CivilMonths => "civil_months",
-        }.into();
-        export_row(&entry, &mut out, 4 + value.variations.len() + value.lines.len())?;
+        }
+        .into();
+        export_row(
+            &entry,
+            &mut out,
+            4 + value.variations.len() + value.lines.len(),
+        )?;
         for (index, period) in schedule.periods.iter().enumerate() {
             let mut entry = row();
             entry[0] = "PERIOD".into();
             entry[5] = period.id.clone();
             entry[6] = period.position.to_string();
             entry[15] = canonical_to_locale(period.percentage.to_string(), locale);
-            export_row(&entry, &mut out, 5 + value.variations.len() + value.lines.len() + index)?;
+            export_row(
+                &entry,
+                &mut out,
+                5 + value.variations.len() + value.lines.len() + index,
+            )?;
         }
     }
     if out.len() > MAX_BYTES {
@@ -419,7 +435,8 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 let b = budget
                     .as_mut()
                     .ok_or_else(|| err(num, 1, "Metadados precisam vir primeiro."))?;
-                let schedule = b.schedule
+                let schedule = b
+                    .schedule
                     .as_mut()
                     .ok_or_else(|| err(num, 1, "Declare o cronograma antes de seus períodos."))?;
                 let percentage: Percent = locale_number(&r[15], locale, num, 16)?
@@ -498,9 +515,15 @@ mod tests {
     #[test]
     fn schedule_survives_csv_roundtrip() {
         let mut original = sample(3);
-        original.schedule = Some(BudgetSchedule::linear(
-            "2026-11-01".parse().unwrap(), 90, PeriodBasis::CivilMonths, 3,
-        ).unwrap());
+        original.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                90,
+                PeriodBasis::CivilMonths,
+                3,
+            )
+            .unwrap(),
+        );
         let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
         assert!(csv.contains("SCHEDULE;2026-11-01;90;civil_months"));
         assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);

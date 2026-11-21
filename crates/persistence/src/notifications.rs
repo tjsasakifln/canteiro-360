@@ -53,7 +53,10 @@ impl AuthTransaction {
         .fetch_all(&mut *self.tx)
         .await?)
     }
-    pub async fn user_notice_record(&mut self, notice: &NewNotice<'_>) -> Result<bool, AuthStoreError> {
+    pub async fn user_notice_record(
+        &mut self,
+        notice: &NewNotice<'_>,
+    ) -> Result<bool, AuthStoreError> {
         let inserted = sqlx::query(
             "INSERT INTO canteiro.user_notices
           (tenant_id,recipient_id,event_id,kind,scope_id,target_id,due_on,essential)
