@@ -32,7 +32,12 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
                 .or_else(|| value.strip_prefix('\n'))
         })
         .ok_or_else(|| issue(1, 1, "Versão do catálogo desconhecida."))?;
-    let rows = parse_csv(rest, HEADER.len(), MAX_ITEMS + 1)?;
+    // A primeira linha do arquivo declara a versão; os erros do leitor
+    // de dados precisam apontar a linha física vista por quem importa.
+    let rows = parse_csv(rest, HEADER.len(), MAX_ITEMS + 1).map_err(|mut error| {
+        error.row += 1;
+        error
+    })?;
     if rows.first() != Some(&HEADER.iter().map(|s| (*s).to_owned()).collect()) {
         return Err(issue(
             2,
