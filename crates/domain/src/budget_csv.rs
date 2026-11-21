@@ -166,7 +166,7 @@ pub(crate) fn parse_csv(
     input: &str,
     columns: usize,
     max_rows: usize,
-) -> Result<Vec<Vec<String>>, CellError> {
+) -> Result<(Vec<Vec<String>>, Vec<usize>), CellError> {
     let input = input.strip_prefix('\u{feff}').unwrap_or(input);
     if input.len() > MAX_BYTES {
         return Err(err(1, 1, "Arquivo acima do limite de 8 MiB."));
@@ -269,7 +269,7 @@ pub(crate) fn parse_csv(
             }
         }
     }
-    Ok(rows)
+    Ok((rows, starts))
 }
 fn fields() -> Vec<String> {
     HEADER.iter().map(|s| (*s).into()).collect()
@@ -363,7 +363,7 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
         .ok_or_else(|| err(1, 1, "Versão de formato não reconhecida."))?;
     // A linha da versão foi removida antes de chamar o leitor de dados.
     // Ajuste o diagnóstico para corresponder à linha física do arquivo.
-    let data = parse_csv(rest, HEADER.len(), MAX_SERVICES + 1000).map_err(|mut error| {
+    let (data, starts) = parse_csv(rest, HEADER.len(), MAX_SERVICES + 1000).map_err(|mut error| {
         error.row += 1;
         error
     })?;
@@ -373,7 +373,8 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
     let mut budget: Option<BudgetRevision> = None;
     let mut seen = BTreeSet::new();
     for (index, r) in data.iter().enumerate().skip(1) {
-        let num = index + 2;
+        // A versão fica na primeira linha física, antes dos registros CSV.
+        let num = starts[index] + 1;
         match r[0].as_str() {
             "META" => {
                 if budget.is_some() {
