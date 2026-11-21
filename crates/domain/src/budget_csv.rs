@@ -172,6 +172,10 @@ pub(crate) fn parse_csv(
         return Err(err(1, 1, "Arquivo acima do limite de 8 MiB."));
     }
     let mut rows = Vec::new();
+    // Índice da linha física inicial, inclusive para campos com quebras de linha.
+    let mut starts = Vec::new();
+    let mut physical_line = 1_usize;
+    let mut record_start = 1_usize;
     let mut row = Vec::new();
     let mut cell = String::new();
     let mut chars = input.chars().peekable();
@@ -188,6 +192,9 @@ pub(crate) fn parse_csv(
                     closed = true;
                 }
             } else {
+                if ch == '\n' {
+                    physical_line += 1;
+                }
                 cell.push(ch);
             }
             continue;
@@ -201,31 +208,37 @@ pub(crate) fn parse_csv(
             '\n' => {
                 row.push(std::mem::take(&mut cell));
                 rows.push(std::mem::take(&mut row));
+                starts.push(record_start);
+                physical_line += 1;
+                record_start = physical_line;
                 closed = false;
             }
             '\r' if chars.peek() == Some(&'\n') => {
                 chars.next();
                 row.push(std::mem::take(&mut cell));
                 rows.push(std::mem::take(&mut row));
+                starts.push(record_start);
+                physical_line += 1;
+                record_start = physical_line;
                 closed = false;
             }
             _ if closed => {
                 return Err(err(
-                    rows.len() + 1,
+                    physical_line,
                     row.len() + 1,
                     "Texto após campo entre aspas.",
                 ));
             }
-            '"' => return Err(err(rows.len() + 1, row.len() + 1, "Aspas sem abertura.")),
+            '"' => return Err(err(physical_line, row.len() + 1, "Aspas sem abertura.")),
             _ => cell.push(ch),
         }
         if rows.len() > max_rows {
-            return Err(err(rows.len(), 1, "Limite de linhas excedido."));
+            return Err(err(physical_line, 1, "Limite de linhas excedido."));
         }
     }
     if quoted {
         return Err(err(
-            rows.len() + 1,
+            physical_line,
             row.len() + 1,
             "Campo entre aspas não foi fechado.",
         ));
@@ -233,22 +246,23 @@ pub(crate) fn parse_csv(
     if !cell.is_empty() || !row.is_empty() {
         row.push(cell);
         rows.push(row);
+        starts.push(record_start);
     }
     for (i, row) in rows.iter().enumerate() {
         if row.len() != columns {
             return Err(err(
-                i + 1,
+                starts[i],
                 row.len(),
                 "Quantidade de colunas incompatível com o formato oficial.",
             ));
         }
         for (j, value) in row.iter().enumerate() {
             if value.len() > 10_000 {
-                return Err(err(i + 1, j + 1, "Célula excede o limite."));
+                return Err(err(starts[i], j + 1, "Célula excede o limite."));
             }
             if i > 0 && !safe(value) {
                 return Err(err(
-                    i + 1,
+                    starts[i],
                     j + 1,
                     "Conteúdo executável ou fórmula não permitido.",
                 ));
