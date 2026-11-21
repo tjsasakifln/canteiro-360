@@ -74,11 +74,23 @@ pub fn page(ctx: EstimatingContext) -> String {
         .clone()
         .into_iter()
         .map(|entry| {
+            let memory = selected.as_ref().map(|context| {
+                view! {
+                    <form action="/orcamentos/composicoes/memoria" method="get">
+                        <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                        <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                        <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                        <input type="hidden" name="code" value=entry.code.clone()/>
+                        <button type="submit" class="secondary-button">"Conferir memória de cálculo"</button>
+                    </form>
+                }
+            });
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · revisão {}",entry.code,entry.version)}</h3>
                     <p>{entry.composition.description}</p>
                     <p>{format!("Revisado em {}",entry.recorded_at)}</p>
+                    {memory}
                 </article>
             }
         })
@@ -212,6 +224,110 @@ pub fn page(ctx: EstimatingContext) -> String {
         },
     )
 }
+/// Memória autorizada, calculada novamente contra as edições imutáveis das fontes.
+pub fn composition_memory(
+    ctx: EstimatingContext,
+    record: CompositionRecord,
+    memory: CostMemory,
+) -> String {
+    use canteiro_domain::{
+        catalogs::CostCategory,
+        compositions::{ComponentSource, CostMode},
+    };
+    fn category(category: CostCategory) -> &'static str {
+        match category {
+            CostCategory::Material => "Materiais",
+            CostCategory::Labor => "Mão de obra",
+            CostCategory::Equipment => "Equipamentos",
+            CostCategory::Service => "Serviços e composições vinculadas",
+            CostCategory::Transport => "Transportes",
+        }
+    }
+    let mode = match &record.composition.cost_mode {
+        CostMode::Formula => "Custo obtido dos insumos e incidências".to_owned(),
+        CostMode::Informed { reason, .. } => format!("Custo informado: {reason}"),
+    };
+    let categories = memory
+        .category_totals
+        .into_iter()
+        .map(|entry| {
+            view! {
+                <p>{format!("{}: R$ {}",category(entry.category),entry.amount)}</p>
+            }
+        })
+        .collect_view();
+    let lines = memory
+        .line_details
+        .into_iter()
+        .map(|entry| {
+            let source = match &entry.source {
+                ComponentSource::Catalog { catalog_id, edition, code } =>
+                    format!("Fonte {catalog_id}, edição {edition}, item {code}"),
+                ComponentSource::Composition { code } =>
+                    format!("Composição vinculada {code}"),
+            };
+            view! {
+                <article class="record-summary">
+                    <h3>{format!("{} · {}",entry.id,category(entry.category))}</h3>
+                    <p>{source}</p>
+                    <p>{format!("Coeficiente {} {} · preço unitário convertido R$ {} · parcela R$ {}",
+                        entry.coefficient,entry.unit,entry.unit_cost,entry.amount)}</p>
+                </article>
+            }
+        })
+        .collect_view();
+    let incidences = memory
+        .incidence_details
+        .into_iter()
+        .map(|entry| {
+            view! {
+                <article class="record-summary">
+                    <h3>{format!("Incidência {}",entry.id)}</h3>
+                    <p>{format!("Base: {} · R$ {}",entry.base_lines.join(", "),entry.basis)}</p>
+                    <p>{format!("Alíquota {}% · parcela R$ {}",entry.percent,entry.amount)}</p>
+                </article>
+            }
+        })
+        .collect_view();
+    shell(
+        "Memória da composição",
+        view! {
+            <section class="record-heading">
+                <h1>{format!("Memória de cálculo · {}",record.code)}</h1>
+                <p>{format!("{} · revisão {} · registrada em {}",
+                    record.composition.description,record.version,record.recorded_at)}</p>
+                <p>{mode}</p>
+                <a href="/orcamentos" class="secondary-button">"Voltar aos orçamentos"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>"Resumo financeiro por unidade da composição"</h2>
+                <p>{format!("Custo dos insumos: R$ {}",memory.base_cost)}</p>
+                <p>{format!("Incidências: R$ {}",memory.incidence_cost)}</p>
+                <p>{format!("Custo direto: R$ {}",memory.direct_cost)}</p>
+                <p>{format!("Preço de venda, após BDI e desconto: R$ {}",memory.selling_price)}</p>
+                <p>{format!("BDI {}% · desconto {}%",
+                    record.composition.bdi,record.composition.discount)}</p>
+                {memory.free_item.then(|| view! { <p class="record-status">"Item sem cobrança"</p> })}
+                <h3>"Custos por categoria, antes das incidências"</h3>
+                {categories}
+            </section>
+            <section class="foundation-card">
+                <h2>"Insumos e referências"</h2>
+                {lines}
+                <h2>"Incidências e bases utilizadas"</h2>
+                {incidences}
+                <p>"Valores unitários são arredondados para exibição após cálculo decimal exato. Composições vinculadas aparecem como serviço nesta memória."</p>
+            </section>
+            <section class="foundation-card">
+                <h2>"Escopo e rastreabilidade"</h2>
+                <p>{format!("Empresa: {} · escopo: {} · versão da composição: {}",
+                    ctx.organization_name,record.scope_id,record.version)}</p>
+                <p>"Esta consulta não altera a composição, a fonte de custos ou o orçamento aprovado."</p>
+            </section>
+        },
+    )
+}
+
 pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> String {
     let total = result.total;
     shell(
