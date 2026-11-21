@@ -413,48 +413,28 @@ mod tests {
         let mut draft = budget();
         let original = draft.clone();
         assert_eq!(
-            draft.edit_line_values(
-                "l-1",
-                "3".parse().unwrap(),
-                "200".parse().unwrap()
-            ),
+            draft.edit_line_values("l-1", "3".parse().unwrap(), "200".parse().unwrap()),
             Err(BudgetError::ReferencedItem)
         );
         assert_eq!(draft, original);
         draft
-            .edit_line_values(
-                "l-1",
-                "3".parse().unwrap(),
-                "100".parse().unwrap(),
-            )
+            .edit_line_values("l-1", "3".parse().unwrap(), "100".parse().unwrap())
             .unwrap();
         assert_eq!(draft.summarize().unwrap().total.to_string(), "330.00");
         assert_eq!(draft.schedule, original.schedule);
         draft
-            .edit_line_values(
-                "l-2",
-                "2".parse().unwrap(),
-                "40".parse().unwrap(),
-            )
+            .edit_line_values("l-2", "2".parse().unwrap(), "40".parse().unwrap())
             .unwrap();
         assert_eq!(draft.summarize().unwrap().total.to_string(), "380.00");
         let before_missing = draft.clone();
         assert_eq!(
-            draft.edit_line_values(
-                "absente",
-                "1".parse().unwrap(),
-                "1".parse().unwrap()
-            ),
+            draft.edit_line_values("absente", "1".parse().unwrap(), "1".parse().unwrap()),
             Err(BudgetError::Structure)
         );
         assert_eq!(draft, before_missing);
         draft.status = BudgetState::Approved;
         assert_eq!(
-            draft.edit_line_values(
-                "l-2",
-                "1".parse().unwrap(),
-                "1".parse().unwrap()
-            ),
+            draft.edit_line_values("l-2", "1".parse().unwrap(), "1".parse().unwrap()),
             Err(BudgetError::Definitive)
         );
     }
