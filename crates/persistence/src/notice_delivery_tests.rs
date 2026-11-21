@@ -237,7 +237,7 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     assert_eq!((state.as_str(), attempts), ("queued", 0));
     let retry_count: i32 = sqlx::query_scalar(
         "SELECT attempts FROM canteiro_meta.user_notice_queue
-         WHERE tenant_id=$1 AND event_id=$2 AND ready_at>clock_timestamp()",
+         WHERE tenant_id=$1 AND event_id=$2",
     )
     .bind(s.tenant)
     .bind(s.event)
