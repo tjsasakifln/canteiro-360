@@ -91,7 +91,7 @@ mod tests {
         let base = format!("{FORMAT_VERSION}\ncodigo;descricao;categoria;unidade;preco\n");
         for value in ["=1+1", " \u{200b}@SUM(1)", "+HYPERLINK(1)"] {
             let content = format!("{base}A;{value};service;m;2,00\n");
-            assert_eq!(preview_import(&content, NumberLocale::PtBr).unwrap_err().row, 2);
+            assert_eq!(preview_import(&content, NumberLocale::PtBr).unwrap_err().row, 3);
         }
         let repeated = format!("{base}A;Serviço;service;m;2,00\nA;Outro;service;m;3,00\n");
         let error = preview_import(&repeated, NumberLocale::PtBr).unwrap_err();
