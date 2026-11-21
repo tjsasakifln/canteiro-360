@@ -5,7 +5,7 @@ use crate::{
     units::MeasureUnit,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -99,10 +99,10 @@ impl CostSource {
                 .all(u8::is_ascii_digit)
             || self.competence[..4]
                 .parse::<u16>()
-                .is_err_or(|year| !(1900..=9999).contains(&year))
+                .is_ok_and(|year| (1900..=9999).contains(&year)) == false
             || self.competence[5..]
                 .parse::<u8>()
-                .is_err_or(|month| !(1..=12).contains(&month))
+                .is_ok_and(|month| (1..=12).contains(&month)) == false
         {
             return Err(CatalogError::Source);
         }

@@ -1,7 +1,7 @@
 //! Transporte CSV oficial versionado. Nenhum dado é gravado durante análise de lote.
 use crate::{
     ActorId, EntityId,
-    budgets::{BudgetError, BudgetLine, BudgetRevision, BudgetState, BudgetVariation},
+    budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation},
     decimal::{Quantity, UnitPrice},
     units::MeasureUnit,
 };
@@ -386,7 +386,7 @@ pub fn compare(existing: &BudgetRevision, incoming: &BudgetRevision) -> ImportDi
         included: new.keys().filter(|id| !old.contains_key(*id)).count(),
         changed: new
             .iter()
-            .filter(|(id, line)| old.get(*id).is_some_and(|other| *other != *line))
+            .filter(|(id, line)| old.get(*id).is_some_and(|other| *other != **line))
             .count(),
         removed: old.keys().filter(|id| !new.contains_key(*id)).count(),
     }
