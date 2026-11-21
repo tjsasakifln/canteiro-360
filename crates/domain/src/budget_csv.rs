@@ -650,6 +650,20 @@ mod tests {
         assert!(preview_import(&corrupted, NumberLocale::PtBr).is_err());
     }
     #[test]
+    fn csv_reports_physical_lines_after_multiline_quoted_fields() {
+        let wrong_columns = "a;b\r\n\"nota\nrevisada\";ok\r\nx;y;extra\r\n";
+        let error = parse_csv(wrong_columns, 2, 10).unwrap_err();
+        assert_eq!((error.row, error.column), (4, 3));
+
+        let formula = "a;b\n\"nota\nrevisada\";ok\nx;=1+1\n";
+        let error = parse_csv(formula, 2, 10).unwrap_err();
+        assert_eq!((error.row, error.column), (4, 2));
+
+        let unclosed = "a;b\n\"texto\nsem fechamento";
+        let error = parse_csv(unclosed, 2, 10).unwrap_err();
+        assert_eq!((error.row, error.column), (3, 1));
+    }
+    #[test]
     fn quote_and_delimiter_are_not_executable() {
         let mut original = sample(1);
         original.lines[0].description = "Materiais; \"revisados\"".into();
