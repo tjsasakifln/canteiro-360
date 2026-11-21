@@ -347,7 +347,12 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
         .strip_prefix(FORMAT_VERSION)
         .and_then(|s| s.strip_prefix("\r\n").or_else(|| s.strip_prefix('\n')))
         .ok_or_else(|| err(1, 1, "Versão de formato não reconhecida."))?;
-    let data = parse_csv(rest, HEADER.len(), MAX_SERVICES + 1000)?;
+    // A linha da versão foi removida antes de chamar o leitor de dados.
+    // Ajuste o diagnóstico para corresponder à linha física do arquivo.
+    let data = parse_csv(rest, HEADER.len(), MAX_SERVICES + 1000).map_err(|mut error| {
+        error.row += 1;
+        error
+    })?;
     if data.first() != Some(&fields()) {
         return Err(err(2, 1, "Cabeçalhos diferentes do formato oficial."));
     }
