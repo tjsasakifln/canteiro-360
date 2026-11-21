@@ -32,7 +32,8 @@ const HEADER: &[&str] = &[
 ];
 const MAX_BYTES: usize = 8 * 1024 * 1024;
 const MAX_SERVICES: usize = 100_000;
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum NumberLocale {
     Canonical,
     PtBr,
