@@ -29,13 +29,13 @@ fn err(row:usize,col:usize,cause:&str)->CellError{
     CellError{row,column:col,cause:cause.into()}
 }
 fn safe(s:&str)->bool{
-    !s.starts_with(['=','+','-','@','\t','\r','\n'])
+    !s.chars().next().is_some_and(|c|matches!(c,'='|'+'|'-'|'@'|'\t'|'\r'|'\n'))
         && !s.chars().any(|c| c=='\0')
 }
 fn csv_row(cells:&[String],out:&mut String){
     for (idx,cell) in cells.iter().enumerate(){
         if idx>0{out.push(';');}
-        if cell.contains([';','"','\n','\r']){
+        if cell.chars().any(|c|matches!(c,';'|'"'|'\n'|'\r')){
             out.push('"');
             out.push_str(&cell.replace('"',"\"\""));
             out.push('"');
