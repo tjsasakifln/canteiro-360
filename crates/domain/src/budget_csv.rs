@@ -152,7 +152,11 @@ pub(crate) fn locale_number(
     };
     Ok(value)
 }
-pub(crate) fn parse_csv(input: &str, columns: usize, max_rows: usize) -> Result<Vec<Vec<String>>, CellError> {
+pub(crate) fn parse_csv(
+    input: &str,
+    columns: usize,
+    max_rows: usize,
+) -> Result<Vec<Vec<String>>, CellError> {
     let input = input.strip_prefix('\u{feff}').unwrap_or(input);
     if input.len() > MAX_BYTES {
         return Err(err(1, 1, "Arquivo acima do limite de 8 MiB."));
