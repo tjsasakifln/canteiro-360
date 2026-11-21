@@ -23,11 +23,23 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/api/estimating/catalog", get(catalog))
         .route("/api/estimating/catalog/compare", get(catalog_compare))
         .route("/orcamentos/catalogos/comparar", get(catalog_compare_page))
-        .route("/orcamentos/catalogos/conferir", post(catalog_csv_preview_form))
-        .route("/orcamentos/catalogos/publicar-csv", post(catalog_csv_publish_form))
+        .route(
+            "/orcamentos/catalogos/conferir",
+            post(catalog_csv_preview_form),
+        )
+        .route(
+            "/orcamentos/catalogos/publicar-csv",
+            post(catalog_csv_publish_form),
+        )
         .route("/api/estimating/catalog/publish", post(catalog_publish))
-        .route("/api/estimating/catalog/import/preview", post(catalog_csv_preview))
-        .route("/api/estimating/catalog/import/publish", post(catalog_csv_publish))
+        .route(
+            "/api/estimating/catalog/import/preview",
+            post(catalog_csv_preview),
+        )
+        .route(
+            "/api/estimating/catalog/import/publish",
+            post(catalog_csv_publish),
+        )
         .route(
             "/api/estimating/composition/calculate",
             post(composition_calculate),
@@ -210,7 +222,11 @@ async fn catalog_csv_preview(
     let Ok(Json(input)) = input else {
         return bad_input();
     };
-    match auth.service().estimating_catalog_csv_preview(&token, input).await {
+    match auth
+        .service()
+        .estimating_catalog_csv_preview(&token, input)
+        .await
+    {
         Ok(result) => private_json(result),
         Err(error) => application_failure(error),
     }
@@ -228,7 +244,11 @@ async fn catalog_csv_publish(
     let Ok(Json(input)) = input else {
         return bad_input();
     };
-    match auth.service().estimating_catalog_csv_publish(&token, input).await {
+    match auth
+        .service()
+        .estimating_catalog_csv_publish(&token, input)
+        .await
+    {
         Ok(result) => private_json(result),
         Err(error) => application_failure(error),
     }
@@ -418,10 +438,7 @@ async fn page(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response
     }
 }
 
-
-fn catalog_csv_from_form(
-    data: &BTreeMap<String, String>,
-) -> Result<CatalogCsvImportCommand, ()> {
+fn catalog_csv_from_form(data: &BTreeMap<String, String>) -> Result<CatalogCsvImportCommand, ()> {
     let context = form_context(data).map_err(|_| ())?;
     let edition = field(data, "edition").parse::<u32>().map_err(|_| ())?;
     Ok(CatalogCsvImportCommand {
@@ -463,9 +480,16 @@ async fn catalog_csv_preview_form(
     let Ok(input) = catalog_csv_from_form(&data) else {
         return bad_input();
     };
-    match auth.service().estimating_catalog_csv_preview(&token, input.clone()).await {
+    match auth
+        .service()
+        .estimating_catalog_csv_preview(&token, input.clone())
+        .await
+    {
         Ok(result) => match auth.service().estimating_context(&token).await {
-            Ok(ctx) => html_page(canteiro_web::estimating::catalog_csv_preview(ctx, result, input), StatusCode::OK),
+            Ok(ctx) => html_page(
+                canteiro_web::estimating::catalog_csv_preview(ctx, result, input),
+                StatusCode::OK,
+            ),
             Err(error) => application_failure(error),
         },
         Err(error) => application_failure(error),
@@ -491,9 +515,16 @@ async fn catalog_csv_publish_form(
     let Ok(input) = catalog_csv_from_form(&data) else {
         return bad_input();
     };
-    match auth.service().estimating_catalog_csv_publish(&token, input).await {
+    match auth
+        .service()
+        .estimating_catalog_csv_publish(&token, input)
+        .await
+    {
         Ok(header) => match auth.service().estimating_context(&token).await {
-            Ok(ctx) => html_page(canteiro_web::estimating::catalog_csv_published(ctx, header), StatusCode::OK),
+            Ok(ctx) => html_page(
+                canteiro_web::estimating::catalog_csv_published(ctx, header),
+                StatusCode::OK,
+            ),
             Err(error) => application_failure(error),
         },
         Err(error) => application_failure(error),
