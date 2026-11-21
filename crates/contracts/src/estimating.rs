@@ -2,7 +2,7 @@ use crate::reliability::ReliabilityScope;
 pub use canteiro_domain::{
     budget_csv::{ImportDifference, NumberLocale},
     budgets::{BudgetRevision, BudgetSchedule, BudgetState, BudgetSummary},
-    catalogs::{CatalogEdition, CatalogItem, CostSource},
+    catalogs::{CatalogComparison, CatalogEdition, CatalogItem, CostSource},
     compositions::{Composition, CostMemory},
 };
 use serde::{Deserialize, Serialize};
