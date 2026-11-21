@@ -19,8 +19,8 @@ pub mod parties;
 pub mod portfolio;
 pub mod projects;
 
-pub mod notifications;
+pub mod budget_csv;
+pub mod budgets;
 pub mod catalogs;
 pub mod compositions;
-pub mod budgets;
-pub mod budget_csv;
+pub mod notifications;
