@@ -1,0 +1,260 @@
+//! Orçamentos mantêm variações, grupos, revisões e calendário reconciliáveis.
+use crate::{
+    ActorId, CivilDate, EntityId, UtcInstant,
+    decimal::{AllocationWeight, DecimalError, ExactDecimal, Money, Percent, Quantity, UnitPrice,
+        allocate_percentages},
+    units::MeasureUnit,
+};
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BudgetState { Draft, Review, Approved }
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudgetVariation {
+    pub id: String,
+    pub work_id: EntityId,
+    pub scope: String,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudgetLine {
+    pub id: String,
+    pub variation_id: String,
+    pub group: String,
+    pub stage: String,
+    pub substage: String,
+    pub code: String,
+    pub description: String,
+    pub unit: MeasureUnit,
+    pub quantity: Quantity,
+    pub price: UnitPrice,
+    pub catalog_id: Option<String>,
+    pub catalog_edition: Option<u32>,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudgetRevision {
+    pub budget_id: String,
+    pub revision: u32,
+    pub status: BudgetState,
+    pub responsible_id: ActorId,
+    pub variations: Vec<BudgetVariation>,
+    pub lines: Vec<BudgetLine>,
+    pub schedule: Option<BudgetSchedule>,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudgetGroupTotal {
+    pub variation_id: String,
+    pub group: String,
+    pub amount: Money,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudgetSummary {
+    pub groups: Vec<BudgetGroupTotal>,
+    pub total: Money,
+}
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PeriodBasis { Fixed30Days, CivilMonths }
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SchedulePeriod {
+    pub id: String,
+    pub position: u32,
+    pub percentage: Percent,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudgetSchedule {
+    pub starts_on: CivilDate,
+    pub deadline_days: u32,
+    pub basis: PeriodBasis,
+    pub periods: Vec<SchedulePeriod>,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EditLease {
+    pub actor: ActorId,
+    pub session: EntityId,
+    pub revision: u32,
+    pub valid_until: UtcInstant,
+}
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
+pub enum BudgetError {
+    #[error("A estrutura do orçamento está incompleta ou contém identificações repetidas.")]
+    Structure,
+    #[error("O prazo ou rateio do cronograma é inválido.")]
+    Schedule,
+    #[error("A versão mudou ou a reserva de edição expirou. O rascunho deve ser preservado.")]
+    Lease,
+    #[error("Esta revisão é definitiva e não pode ser alterada diretamente.")]
+    Definitive,
+    #[error("O item possui referência em composição ou documento definitivo.")]
+    ReferencedItem,
+    #[error(transparent)]
+    Decimal(#[from] DecimalError),
+}
+fn bounded(s:&str, limit:usize)->bool {
+    !s.trim().is_empty() && s.trim()==s && s.len()<=limit && !s.chars().any(char::is_control)
+}
+impl BudgetLine {
+    pub fn total(&self)->Result<Money,BudgetError> {
+        Ok(Money::new(self.quantity.value().checked_mul(self.price.value())?.truncate(2)?)?)
+    }
+}
+impl BudgetRevision {
+    pub fn validate(&self)->Result<(),BudgetError> {
+        if !bounded(&self.budget_id,120)||self.revision==0
+            || self.variations.is_empty() || self.variations.len()>500
+            || self.lines.len()>100_000 {return Err(BudgetError::Structure);}
+        let mut variation_ids=BTreeSet::new();
+        let mut real_scopes=BTreeSet::new();
+        for v in &self.variations {
+            if !bounded(&v.id,120) || !bounded(&v.scope,500)
+                || !variation_ids.insert(v.id.as_str())
+                || !real_scopes.insert((v.work_id,v.scope.as_str())) {
+                return Err(BudgetError::Structure);
+            }
+        }
+        let mut line_ids=BTreeSet::new();
+        for l in &self.lines {
+            if !bounded(&l.id,120) || !line_ids.insert(l.id.as_str())
+                || !variation_ids.contains(l.variation_id.as_str())
+                || !bounded(&l.group,160) || !bounded(&l.stage,160)
+                || !bounded(&l.substage,160) || !bounded(&l.code,80)
+                || !bounded(&l.description,800)
+                || l.catalog_id.is_some()!=l.catalog_edition.is_some()
+                || l.catalog_edition==Some(0) {
+                return Err(BudgetError::Structure);
+            }
+        }
+        if let Some(schedule)=&self.schedule {schedule.validate()?;}
+        Ok(())
+    }
+    pub fn summarize(&self)->Result<BudgetSummary,BudgetError> {
+        self.validate()?;
+        let mut subtotals:BTreeMap<(String,String),ExactDecimal>=BTreeMap::new();
+        let mut total=ExactDecimal::ZERO;
+        for line in &self.lines {
+            let amount=line.total()?.value();
+            total=total.checked_add(amount)?;
+            let key=(line.variation_id.clone(),line.group.clone());
+            let prev=subtotals.entry(key).or_insert(ExactDecimal::ZERO);
+            *prev=prev.checked_add(amount)?;
+        }
+        let groups=subtotals.into_iter().map(|((variation_id,group),amount)|
+            Ok(BudgetGroupTotal{variation_id,group,amount:Money::new(amount)?}))
+            .collect::<Result<Vec<_>,DecimalError>>()?;
+        Ok(BudgetSummary{groups,total:Money::new(total)?})
+    }
+    pub fn confirm_edit(
+        &self,lease:&EditLease,actor:ActorId,session:EntityId,now:UtcInstant,
+    )->Result<(),BudgetError> {
+        if self.status==BudgetState::Approved{return Err(BudgetError::Definitive);}
+        if lease.actor!=actor || lease.session!=session
+            || lease.revision!=self.revision || lease.valid_until<=now {
+            return Err(BudgetError::Lease);
+        }
+        Ok(())
+    }
+    pub fn remove_line(
+        &mut self,line_id:&str,referenced_compositions:bool,final_document:bool,
+        lease:&EditLease,actor:ActorId,session:EntityId,now:UtcInstant,
+    )->Result<(),BudgetError> {
+        self.confirm_edit(lease,actor,session,now)?;
+        if referenced_compositions||final_document {return Err(BudgetError::ReferencedItem);}
+        if !self.lines.iter().any(|line|line.id==line_id) {return Err(BudgetError::Structure);}
+        self.lines.retain(|line|line.id!=line_id);
+        Ok(())
+    }
+}
+impl BudgetSchedule {
+    /// Residual entregue na ordem estável dos períodos, não na ordem da consulta SQL.
+    pub fn linear(starts_on:CivilDate,deadline_days:u32,basis:PeriodBasis,count:u32)
+        ->Result<Self,BudgetError> {
+        if count==0 || count>10000 || deadline_days==0 {return Err(BudgetError::Schedule);}
+        let weights=(0..count).map(|i|AllocationWeight{
+            id:format!("periodo-{}",i+1),position:i,
+            weight:ExactDecimal::ONE
+        }).collect::<Vec<_>>();
+        let parts=allocate_percentages(&weights)?;
+        let periods=parts.parts.into_iter().map(|p|Ok(SchedulePeriod{
+            id:p.id,position:p.position,percentage:Percent::new(p.value)?
+        })).collect::<Result<Vec<_>,DecimalError>>()?;
+        let result=Self{starts_on,deadline_days,basis,periods};result.validate()?;Ok(result)
+    }
+    pub fn validate(&self)->Result<(),BudgetError> {
+        if self.deadline_days==0 || self.periods.is_empty() || self.periods.len()>10000 {
+            return Err(BudgetError::Schedule);
+        }
+        let mut ids=BTreeSet::new();
+        let mut positions=BTreeSet::new();
+        let mut sum=ExactDecimal::ZERO;
+        for period in &self.periods {
+            if !bounded(&period.id,128) || !ids.insert(period.id.as_str())
+                || !positions.insert(period.position) {
+                return Err(BudgetError::Schedule);
+            }
+            sum=sum.checked_add(period.percentage.value())?;
+        }
+        if sum!="100".parse()? {return Err(BudgetError::Schedule);}
+        Ok(())
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn actor(n:u8)->ActorId{format!("{n:032x}").parse().unwrap()}
+    fn entity(n:u8)->EntityId{format!("{n:032x}").parse().unwrap()}
+    fn budget()->BudgetRevision {
+        BudgetRevision{budget_id:"orcamento-001".into(),revision:1,status:BudgetState::Review,
+            responsible_id:actor(1),
+            variations:vec![
+                BudgetVariation{id:"v-01".into(),work_id:entity(10),scope:"Prédio A".into()},
+                BudgetVariation{id:"v-02".into(),work_id:entity(11),scope:"Prédio B".into()}],
+            lines:vec![
+                BudgetLine{id:"l-1".into(),variation_id:"v-01".into(),group:"Fundações".into(),
+                    stage:"Estaca".into(),substage:"Escavação".into(),code:"SIN-A".into(),
+                    description:"Serviço exemplo".into(),unit:MeasureUnit::CubicMetre,
+                    quantity:"2.000000".parse().unwrap(),price:"100.000000".parse().unwrap(),
+                    catalog_id:Some("ref".into()),catalog_edition:Some(1)},
+                BudgetLine{id:"l-2".into(),variation_id:"v-02".into(),group:"Fundações".into(),
+                    stage:"Blocos".into(),substage:"Forma".into(),code:"SIN-B".into(),
+                    description:"Serviço exemplo".into(),unit:MeasureUnit::SquareMetre,
+                    quantity:"1".parse().unwrap(),price:"30".parse().unwrap(),
+                    catalog_id:None,catalog_edition:None}],
+            schedule:Some(BudgetSchedule::linear("2026-11-01".parse().unwrap(),
+                90,PeriodBasis::Fixed30Days,3).unwrap())}
+    }
+    #[test]
+    fn totals_reconcile_and_three_periods_allocate_stably() {
+        let b=budget();let totals=b.summarize().unwrap();
+        assert_eq!(totals.total.to_string(),"230.00");
+        assert_eq!(totals.groups.len(),2);
+        assert_eq!(totals.groups.iter().map(|g|g.amount.value()).try_fold(ExactDecimal::ZERO,|sum,v|sum.checked_add(v)).unwrap(),
+            totals.total.value());
+        let percentages=b.schedule.unwrap().periods;
+        assert_eq!(percentages.iter().map(|p|p.percentage.to_string()).collect::<Vec<_>>(),
+            vec!["33.34","33.33","33.33"]);
+    }
+    #[test]
+    fn stale_reservation_and_referenced_item_cannot_delete() {
+        let mut b=budget();
+        let lease=EditLease{actor:actor(1),session:entity(8),revision:1,
+            valid_until:"2026-11-21T16:00:00Z".parse().unwrap()};
+        let now="2026-11-21T15:00:00Z".parse().unwrap();
+        assert_eq!(b.remove_line("l-1",true,false,&lease,actor(1),entity(8),now),
+            Err(BudgetError::ReferencedItem));
+        assert_eq!(b.remove_line("l-1",false,false,&lease,actor(2),entity(8),now),
+            Err(BudgetError::Lease));
+        assert_eq!(b.remove_line("l-1",false,false,&lease,actor(1),entity(8),
+            "2026-11-21T16:00:00Z".parse().unwrap()),Err(BudgetError::Lease));
+        b.remove_line("l-1",false,false,&lease,actor(1),entity(8),now).unwrap();
+        assert_eq!(b.lines.len(),1);
+    }
+}
