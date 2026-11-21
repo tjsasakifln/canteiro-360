@@ -52,6 +52,32 @@ pub struct EstimatingContext {
     pub budgets: Vec<BudgetRecord>,
     pub compositions: Vec<CompositionRecord>,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct CatalogCsvImportCommand {
+    pub context: ReliabilityScope,
+    pub scope_id: String,
+    pub catalog_id: String,
+    pub edition: u32,
+    pub published_on: String,
+    pub source: CostSource,
+    pub reason: String,
+    pub csv: String,
+    pub locale: NumberLocale,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct CatalogCsvPreviewReply {
+    pub header: CatalogHeader,
+    pub items_total: usize,
+    pub sample: Vec<CatalogItem>,
+    pub previous_edition: Option<u32>,
+    pub included: usize,
+    pub changed: usize,
+    pub removed: usize,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct CatalogPublishCommand {

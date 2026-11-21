@@ -77,6 +77,30 @@ pub(super) async fn load_catalog(
     )
     .map_err(|_| AuthError::unavailable())
 }
+
+fn edition_from_csv(input: &CatalogCsvImportCommand) -> Result<CatalogEdition, AuthError> {
+    let published_on: canteiro_domain::CivilDate = input
+        .published_on
+        .parse()
+        .map_err(|_| invalid("Informe a data de publicação no formato AAAA-MM-DD."))?;
+    let items = canteiro_domain::catalog_csv::preview_import(&input.csv, input.locale)
+        .map_err(|error| {
+            AuthError::new(
+                AuthErrorKind::InvalidInput,
+                "invalid_catalog_cell",
+                format!("Catálogo de preços: {error}"),
+            )
+        })?;
+    CatalogEdition::assemble(
+        input.catalog_id.clone(),
+        input.edition,
+        published_on,
+        input.source.clone(),
+        items,
+    )
+    .map_err(|_| invalid("Confira a identificação, fonte, licença, edição e linhas de preços."))
+}
+
 impl AuthService {
     pub async fn estimating_catalog(
         &self,
@@ -228,4 +252,95 @@ impl AuthService {
             published_on: edition.published_on.to_string(),
         })
     }
+    /// Uma consulta autenticada, sem gravação, de todos os preços e da variação histórica.
+    pub async fn estimating_catalog_csv_preview(
+        &self,
+        token: &str,
+        input: CatalogCsvImportCommand,
+    ) -> Result<CatalogCsvPreviewReply, AuthError> {
+        self.limit("estimating-catalog-import-preview", token, 10, 60).await?;
+        reason(&input.reason)?;
+        let edition = edition_from_csv(&input)?;
+        let scope = id(&input.scope_id)?;
+        let (mut tx, access) = self.record_access(token, Some(&input.context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let edition_number = i32::try_from(edition.edition)
+            .map_err(|_| invalid("Edição de preços inválida."))?;
+        if tx
+            .catalog_edition_exists(a.tenant, &edition.catalog_id, edition_number)
+            .await?
+        {
+            return Err(record_conflict());
+        }
+        let previous = tx
+            .catalog_headers(a.tenant, &[scope])
+            .await?
+            .into_iter()
+            .filter(|header| {
+                header.catalog_id == edition.catalog_id && header.edition < edition_number
+            })
+            .max_by_key(|header| header.edition);
+        let (previous_edition, included, changed, removed) =
+            if let Some(previous) = previous {
+                let old = load_catalog(
+                    &mut tx,
+                    a.tenant,
+                    scope,
+                    &edition.catalog_id,
+                    previous.edition as u32,
+                )
+                .await?;
+                let differences = old
+                    .compare_to(&edition)
+                    .map_err(|_| AuthError::unavailable())?;
+                (
+                    Some(previous.edition as u32),
+                    differences.added.len(),
+                    differences.changed.len(),
+                    differences.removed.len(),
+                )
+            } else {
+                (None, edition.items.len(), 0, 0)
+            };
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        Ok(CatalogCsvPreviewReply {
+            header: CatalogHeader {
+                scope_id: scope.to_string(),
+                catalog_id: edition.catalog_id,
+                edition: edition.edition,
+                source: edition.source,
+                published_on: edition.published_on.to_string(),
+            },
+            items_total: edition.items.len(),
+            sample: edition.items.values().take(20).cloned().collect(),
+            previous_edition,
+            included,
+            changed,
+            removed,
+        })
+    }
+
+    /// Publica numa transação existente: nenhuma linha de uma edição rejeitada persiste.
+    pub async fn estimating_catalog_csv_publish(
+        &self,
+        token: &str,
+        input: CatalogCsvImportCommand,
+    ) -> Result<CatalogHeader, AuthError> {
+        self.limit("estimating-catalog-import-publish", token, 10, 60).await?;
+        let edition = edition_from_csv(&input)?;
+        self.estimating_catalog_publish(
+            token,
+            CatalogPublishCommand {
+                context: input.context,
+                scope_id: input.scope_id,
+                edition,
+                reason: input.reason,
+            },
+        )
+        .await
+    }
+
 }

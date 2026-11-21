@@ -24,6 +24,8 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/api/estimating/catalog/compare", get(catalog_compare))
         .route("/orcamentos/catalogos/comparar", get(catalog_compare_page))
         .route("/api/estimating/catalog/publish", post(catalog_publish))
+        .route("/api/estimating/catalog/import/preview", post(catalog_csv_preview))
+        .route("/api/estimating/catalog/import/publish", post(catalog_csv_publish))
         .route(
             "/api/estimating/composition/calculate",
             post(composition_calculate),
@@ -193,6 +195,43 @@ struct CompositionCalculateCommand {
     scope_id: String,
     composition: Composition,
 }
+
+async fn catalog_csv_preview(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Json<CatalogCsvImportCommand>, JsonRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(Json(input)) = input else {
+        return bad_input();
+    };
+    match auth.service().estimating_catalog_csv_preview(&token, input).await {
+        Ok(result) => private_json(result),
+        Err(error) => application_failure(error),
+    }
+}
+
+async fn catalog_csv_publish(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Json<CatalogCsvImportCommand>, JsonRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(Json(input)) = input else {
+        return bad_input();
+    };
+    match auth.service().estimating_catalog_csv_publish(&token, input).await {
+        Ok(result) => private_json(result),
+        Err(error) => application_failure(error),
+    }
+}
+
 async fn composition_calculate(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
