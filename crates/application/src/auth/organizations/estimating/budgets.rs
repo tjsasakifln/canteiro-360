@@ -197,12 +197,10 @@ impl AuthService {
             })
             .await?
             .ok_or_else(record_conflict)?;
-        if !approving {
-            if let Some(lease) = input.lease_key.as_deref() {
-                let lease = operation_id(lease)?;
-                tx.budget_release_lease(a.tenant, scope, a.actor.id, a.actor.session, lease)
-                    .await?;
-            }
+        if !approving && let Some(lease) = input.lease_key.as_deref() {
+            let lease = operation_id(lease)?;
+            tx.budget_release_lease(a.tenant, scope, a.actor.id, a.actor.session, lease)
+                .await?;
         }
         tx.org_audit(
             a.tenant,
