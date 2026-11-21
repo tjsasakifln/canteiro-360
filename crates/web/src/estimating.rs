@@ -6,12 +6,42 @@ use leptos::prelude::*;
 pub fn page(ctx: EstimatingContext) -> String {
     let scopes = ctx.scopes.clone();
     let selected = ctx.context.clone();
+    let all_catalogs = ctx.catalogs.clone();
+    let comparison_context = ctx.context.clone();
+    let current_competence = chrono::Utc::now().format("%Y-%m").to_string();
     let catalogs = ctx
         .catalogs
         .clone()
         .into_iter()
         .map(|catalog| {
+            let previous = all_catalogs
+                .iter()
+                .filter(|other| {
+                    other.scope_id == catalog.scope_id
+                        && other.catalog_id == catalog.catalog_id
+                        && other.edition < catalog.edition
+                })
+                .map(|other| other.edition)
+                .max();
+            let compare = comparison_context.as_ref().and_then(|context| {
+                previous.map(|before| {
+                    view! {
+                        <form action="/orcamentos/catalogos/comparar" method="get">
+                            <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <input type="hidden" name="scope_id" value=catalog.scope_id.clone()/>
+                            <input type="hidden" name="catalog_id" value=catalog.catalog_id.clone()/>
+                            <input type="hidden" name="before" value=before.to_string()/>
+                            <input type="hidden" name="after" value=catalog.edition.to_string()/>
+                            <button class="secondary-button" type="submit">
+                                {format!("Comparar com a edição {}",before)}
+                            </button>
+                        </form>
+                    }
+                })
+            });
             let source = catalog.source;
+            let historical = source.competence < current_competence;
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · edição {}",catalog.catalog_id,catalog.edition)}</h3>
@@ -19,6 +49,10 @@ pub fn page(ctx: EstimatingContext) -> String {
                     <p>{format!("Competência: {} · Localidade: {} · Regime: {}",
                         source.competence,source.locality,source.tax_regime)}</p>
                     <p>{format!("Licença de uso: {}",source.license)}</p>
+                    {historical.then(||view!{<p class="record-status">
+                        "Base histórica. Os valores não representam preços da competência atual."
+                    </p>})}
+                    {compare}
                 </article>
             }
         })
@@ -139,6 +173,77 @@ pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> Stri
             </section>
             <section class="foundation-card">
                 <h2>"Empresa selecionada"</h2><p>{ctx.organization_name}</p>
+            </section>
+        },
+    )
+}
+
+pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> String {
+    let added_count = result.added.len();
+    let removed_count = result.removed.len();
+    let changed_count = result.changed.len();
+    let added = result.added.into_iter().map(|item|view! {
+        <article class="record-summary">
+            <h3>{format!("{} · {}",item.code,item.description)}</h3>
+            <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
+        </article>
+    }).collect_view();
+    let removed = result.removed.into_iter().map(|item|view! {
+        <article class="record-summary">
+            <h3>{format!("{} · {}",item.code,item.description)}</h3>
+            <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
+        </article>
+    }).collect_view();
+    let changed = result.changed.into_iter().map(|item|view! {
+        <article class="record-summary">
+            <h3>{item.after.code.clone()}</h3>
+            <p>{format!("Antes: {} · {} · R$ {}",
+                item.before.description,item.before.unit,item.before.price)}</p>
+            <p>{format!("Depois: {} · {} · R$ {}",
+                item.after.description,item.after.unit,item.after.price)}</p>
+        </article>
+    }).collect_view();
+    let before = result.before_source;
+    let after = result.after_source;
+    shell(
+        "Comparar edições de custos",
+        view! {
+            <section class="record-heading">
+                <h1>{format!("Comparação da tabela {}",result.catalog_id)}</h1>
+                <p>"As edições são imutáveis. Esta comparação não atualiza contratos ou orçamentos existentes."</p>
+                <a href="/orcamentos" class="secondary-button">"Voltar aos orçamentos"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>{format!("Edição {} · fonte anterior",result.before_edition)}</h2>
+                <p>{format!("{} / {} · competência {}",
+                    before.organization,before.title,before.competence)}</p>
+                <p>{format!("Localidade: {} · Regime: {} · Licença: {}",
+                    before.locality,before.tax_regime,before.license)}</p>
+            </section>
+            <section class="foundation-card">
+                <h2>{format!("Edição {} · fonte posterior",result.after_edition)}</h2>
+                <p>{format!("{} / {} · competência {}",
+                    after.organization,after.title,after.competence)}</p>
+                <p>{format!("Localidade: {} · Regime: {} · Licença: {}",
+                    after.locality,after.tax_regime,after.license)}</p>
+            </section>
+            <section class="foundation-card">
+                <h2>"Mudanças identificadas"</h2>
+                <p>{format!("Incluídos: {} · removidos: {} · alterados: {}",
+                    added_count,removed_count,changed_count)}</p>
+                <h3>"Valores alterados ou dados corrigidos"</h3>
+                {changed_count.eq(&0).then(||view!{<p>"Nenhum item alterado."</p>})}
+                {changed}
+                <h3>"Itens incluídos"</h3>
+                {added_count.eq(&0).then(||view!{<p>"Nenhum item incluído."</p>})}
+                {added}
+                <h3>"Itens removidos"</h3>
+                {removed_count.eq(&0).then(||view!{<p>"Nenhum item removido."</p>})}
+                {removed}
+            </section>
+            <section class="foundation-card">
+                <h2>"Empresa consultada"</h2>
+                <p>{ctx.organization_name}</p>
             </section>
         },
     )
