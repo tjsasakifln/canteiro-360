@@ -182,27 +182,45 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
     let added_count = result.added.len();
     let removed_count = result.removed.len();
     let changed_count = result.changed.len();
-    let added = result.added.into_iter().map(|item|view! {
-        <article class="record-summary">
-            <h3>{format!("{} · {}",item.code,item.description)}</h3>
-            <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
-        </article>
-    }).collect_view();
-    let removed = result.removed.into_iter().map(|item|view! {
-        <article class="record-summary">
-            <h3>{format!("{} · {}",item.code,item.description)}</h3>
-            <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
-        </article>
-    }).collect_view();
-    let changed = result.changed.into_iter().map(|item|view! {
-        <article class="record-summary">
-            <h3>{item.after.code.clone()}</h3>
-            <p>{format!("Antes: {} · {} · R$ {}",
-                item.before.description,item.before.unit,item.before.price)}</p>
-            <p>{format!("Depois: {} · {} · R$ {}",
-                item.after.description,item.after.unit,item.after.price)}</p>
-        </article>
-    }).collect_view();
+    let added = result
+        .added
+        .into_iter()
+        .map(|item| {
+            view! {
+                <article class="record-summary">
+                    <h3>{format!("{} · {}",item.code,item.description)}</h3>
+                    <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
+                </article>
+            }
+        })
+        .collect_view();
+    let removed = result
+        .removed
+        .into_iter()
+        .map(|item| {
+            view! {
+                <article class="record-summary">
+                    <h3>{format!("{} · {}",item.code,item.description)}</h3>
+                    <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
+                </article>
+            }
+        })
+        .collect_view();
+    let changed = result
+        .changed
+        .into_iter()
+        .map(|item| {
+            view! {
+                <article class="record-summary">
+                    <h3>{item.after.code.clone()}</h3>
+                    <p>{format!("Antes: {} · {} · R$ {}",
+                        item.before.description,item.before.unit,item.before.price)}</p>
+                    <p>{format!("Depois: {} · {} · R$ {}",
+                        item.after.description,item.after.unit,item.after.price)}</p>
+                </article>
+            }
+        })
+        .collect_view();
     let before = result.before_source;
     let after = result.after_source;
     shell(
