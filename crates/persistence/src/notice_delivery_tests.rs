@@ -134,7 +134,10 @@ async fn internal_notice_delivery_is_atomic_private_and_idempotent() {
         .fetch_one(&fixture.admin)
         .await
         .unwrap();
-        assert_eq!((state.as_str(), attempts, receipt.as_str()), ("communicated", 1, "internal"));
+        assert_eq!(
+            (state.as_str(), attempts, receipt.as_str()),
+            ("communicated", 1, "internal")
+        );
 
         let history: i64 = sqlx::query_scalar(
             "SELECT count(*) FROM canteiro.user_notice_delivery_history
@@ -182,11 +185,12 @@ async fn internal_notice_delivery_is_atomic_private_and_idempotent() {
             .len(),
         1
     );
-    assert!(read
-        .user_notice_list(second.tenant, second.actor, &[second.scope])
-        .await
-        .unwrap()
-        .is_empty());
+    assert!(
+        read.user_notice_list(second.tenant, second.actor, &[second.scope])
+            .await
+            .unwrap()
+            .is_empty()
+    );
     read.commit().await.unwrap();
 
     let no_global_queue_access: bool = sqlx::query_scalar(
