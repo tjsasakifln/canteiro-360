@@ -56,6 +56,8 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/orcamentos/composicoes/editar-descricao",
             post(composition_edit_description_form),
         )
+        .route("/orcamentos/servicos/editar", get(budget_edit_line_page))
+        .route("/orcamentos/servicos/salvar", post(budget_save_line_form))
         .route("/api/estimating/budget/lease", post(budget_lease))
         .route("/api/estimating/budget/command", post(budget_write))
         .route(
@@ -440,6 +442,178 @@ async fn composition_edit_description_form(
         Err(error) => application_failure(error),
     }
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BudgetLineQuery {
+    organization_id: String,
+    context_version: i64,
+    scope_id: String,
+    item_id: String,
+}
+
+async fn budget_edit_line_page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<BudgetLineQuery>, QueryRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, false) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(Query(query)) = query else {
+        return bad_input();
+    };
+    let context = ReliabilityScope {
+        organization_id: query.organization_id,
+        context_version: query.context_version,
+    };
+    let page = match auth.service().estimating_context(&token).await {
+        Ok(value) => value,
+        Err(error) => return application_failure(error),
+    };
+    if page.context.as_ref() != Some(&context)
+        || !page
+            .scopes
+            .iter()
+            .any(|scope| scope.id == query.scope_id && scope.can_edit)
+    {
+        return bad_input();
+    }
+    let Some(record) = page
+        .budgets
+        .iter()
+        .find(|entry| {
+            entry.scope_id == query.scope_id
+                && entry.snapshot.status != BudgetState::Approved
+                && entry.snapshot.lines.iter().any(|line| line.id == query.item_id)
+        })
+        .cloned()
+    else {
+        return bad_input();
+    };
+    html_page(
+        canteiro_web::estimating::budget_line_editor(page, record, &query.item_id),
+        StatusCode::OK,
+    )
+}
+
+async fn budget_save_line_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
+) -> Response {
+    let Ok(Form(data)) = input else {
+        return bad_input();
+    };
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let context = match form_context(&data) {
+        Ok(value) => value,
+        Err(_) => return bad_input(),
+    };
+    let scope_id = field(&data, "scope_id").to_owned();
+    let item_id = field(&data, "item_id").to_owned();
+    let version = match field(&data, "expected_version").parse::<i64>() {
+        Ok(value) if value > 0 => value,
+        _ => return bad_input(),
+    };
+    let revision = match version.checked_add(1).and_then(|v| u32::try_from(v).ok()) {
+        Some(value) => value,
+        None => return bad_input(),
+    };
+    let quantity = match field(&data, "quantity").parse::<canteiro_domain::decimal::Quantity>() {
+        Ok(value) => value,
+        Err(_) => return bad_input(),
+    };
+    let price = match field(&data, "price").parse::<canteiro_domain::decimal::UnitPrice>() {
+        Ok(value) => value,
+        Err(_) => return bad_input(),
+    };
+    let page = match auth.service().estimating_context(&token).await {
+        Ok(value) => value,
+        Err(error) => return application_failure(error),
+    };
+    if page.context.as_ref() != Some(&context)
+        || !page
+            .scopes
+            .iter()
+            .any(|scope| scope.id == scope_id && scope.can_edit)
+    {
+        return bad_input();
+    }
+    let Some(record) = page
+        .budgets
+        .iter()
+        .find(|entry| {
+            entry.scope_id == scope_id
+                && entry.version == version
+                && entry.snapshot.status != BudgetState::Approved
+        })
+        .cloned()
+    else {
+        let mut response = (
+            StatusCode::CONFLICT,
+            "O orçamento mudou desde a abertura do formulário. Confira a revisão antes de editar.",
+        )
+            .into_response();
+        private_headers(&mut response);
+        return response;
+    };
+    let mut snapshot = record.snapshot;
+    if snapshot.edit_line_values(&item_id, quantity, price).is_err() {
+        return bad_input();
+    }
+    snapshot.revision = revision;
+    snapshot.status = BudgetState::Draft;
+    let lease_key = uuid::Uuid::new_v4().to_string();
+    let lease = auth
+        .service()
+        .estimating_budget_lease(
+            &token,
+            BudgetLeaseCommand {
+                context: context.clone(),
+                scope_id: scope_id.clone(),
+                lease_key: lease_key.clone(),
+            },
+        )
+        .await;
+    match lease {
+        Ok(reply) if reply.revision == revision => {}
+        Ok(_) => {
+            let mut response = (
+                StatusCode::CONFLICT,
+                "Uma revisão mais recente foi registrada. Confira os dados antes de salvar.",
+            )
+                .into_response();
+            private_headers(&mut response);
+            return response;
+        }
+        Err(error) => return application_failure(error),
+    }
+    let command = BudgetCommand {
+        context,
+        scope_id,
+        operation_key: uuid::Uuid::new_v4().to_string(),
+        expected_version: Some(version),
+        lease_key: Some(lease_key),
+        reason: field(&data, "reason").to_owned(),
+        change: BudgetChange::Save { snapshot },
+    };
+    match auth.service().estimating_budget_execute(&token, command).await {
+        Ok(_) => match auth.service().estimating_context(&token).await {
+            Ok(updated) => html_page(canteiro_web::estimating::page(updated), StatusCode::OK),
+            Err(error) => application_failure(error),
+        },
+        Err(error) => application_failure(error),
+    }
+}
+
 async fn budget_lease(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
