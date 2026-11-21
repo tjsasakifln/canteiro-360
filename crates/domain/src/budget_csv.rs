@@ -1,8 +1,8 @@
 //! Transporte CSV oficial versionado. Nenhum dado é gravado durante análise de lote.
 use crate::{
-    ActorId, EntityId,
-    budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation},
-    decimal::{Quantity, UnitPrice},
+    ActorId, CivilDate, EntityId,
+    budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation, BudgetSchedule, PeriodBasis, SchedulePeriod},
+    decimal::{Percent, Quantity, UnitPrice},
     units::MeasureUnit,
 };
 use serde::{Deserialize, Serialize};
@@ -82,6 +82,15 @@ fn csv_row(cells: &[String], out: &mut String) {
         }
     }
     out.push_str("\r\n");
+}
+fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(), CellError> {
+    for (col, value) in cells.iter().enumerate() {
+        if !safe(value) {
+            return Err(err(row_number, col + 1, "Campo pode ser interpretado como fórmula ao abrir a planilha."));
+        }
+    }
+    csv_row(cells, out);
+    Ok(())
 }
 fn canonical_to_locale(value: String, locale: NumberLocale) -> String {
     if locale == NumberLocale::PtBr {
@@ -243,16 +252,16 @@ pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String
     }
     .into();
     meta[4] = value.responsible_id.to_string();
-    csv_row(&meta, &mut out);
-    for v in &value.variations {
+    export_row(&meta, &mut out, 3)?;
+    for (index, v) in value.variations.iter().enumerate() {
         let mut r = row();
         r[0] = "VAR".into();
         r[5] = v.id.clone();
         r[6] = v.work_id.to_string();
         r[7] = v.scope.clone();
-        csv_row(&r, &mut out);
+        export_row(&r, &mut out, 4 + index)?;
     }
-    for line in &value.lines {
+    for (index, line) in value.lines.iter().enumerate() {
         let mut r = row();
         r[0] = "ITEM".into();
         r[5] = line.variation_id.clone();
@@ -270,7 +279,26 @@ pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String
             .catalog_edition
             .map(|v| v.to_string())
             .unwrap_or_default();
-        csv_row(&r, &mut out);
+        export_row(&r, &mut out, 4 + value.variations.len() + index)?;
+    }
+    if let Some(schedule) = &value.schedule {
+        let mut entry = row();
+        entry[0] = "SCHEDULE".into();
+        entry[1] = schedule.starts_on.to_string();
+        entry[2] = schedule.deadline_days.to_string();
+        entry[3] = match schedule.basis {
+            PeriodBasis::Fixed30Days => "fixed_30_days",
+            PeriodBasis::CivilMonths => "civil_months",
+        }.into();
+        export_row(&entry, &mut out, 4 + value.variations.len() + value.lines.len())?;
+        for (index, period) in schedule.periods.iter().enumerate() {
+            let mut entry = row();
+            entry[0] = "PERIOD".into();
+            entry[5] = period.id.clone();
+            entry[6] = period.position.to_string();
+            entry[15] = canonical_to_locale(period.percentage.to_string(), locale);
+            export_row(&entry, &mut out, 5 + value.variations.len() + value.lines.len() + index)?;
+        }
     }
     if out.len() > MAX_BYTES {
         return Err(err(1, 1, "Exportação acima do limite de 8 MiB."));
@@ -365,6 +393,46 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     },
                 });
             }
+            "SCHEDULE" => {
+                let b = budget
+                    .as_mut()
+                    .ok_or_else(|| err(num, 1, "Metadados precisam vir primeiro."))?;
+                if b.schedule.is_some() {
+                    return Err(err(num, 1, "O cronograma foi declarado mais de uma vez."));
+                }
+                let basis = match r[3].as_str() {
+                    "fixed_30_days" => PeriodBasis::Fixed30Days,
+                    "civil_months" => PeriodBasis::CivilMonths,
+                    _ => return Err(err(num, 4, "Base de calendário desconhecida.")),
+                };
+                b.schedule = Some(BudgetSchedule {
+                    starts_on: CivilDate::from_str(&r[1])
+                        .map_err(|_| err(num, 2, "Data de início inválida."))?,
+                    deadline_days: r[2]
+                        .parse()
+                        .map_err(|_| err(num, 3, "Prazo em dias inválido."))?,
+                    basis,
+                    periods: vec![],
+                });
+            }
+            "PERIOD" => {
+                let b = budget
+                    .as_mut()
+                    .ok_or_else(|| err(num, 1, "Metadados precisam vir primeiro."))?;
+                let schedule = b.schedule
+                    .as_mut()
+                    .ok_or_else(|| err(num, 1, "Declare o cronograma antes de seus períodos."))?;
+                let percentage: Percent = locale_number(&r[15], locale, num, 16)?
+                    .parse()
+                    .map_err(|_| err(num, 16, "Percentual de período inválido."))?;
+                schedule.periods.push(SchedulePeriod {
+                    id: r[5].clone(),
+                    position: r[6]
+                        .parse()
+                        .map_err(|_| err(num, 7, "Posição de período inválida."))?,
+                    percentage,
+                });
+            }
             _ => return Err(err(num, 1, "Tipo de registro não reconhecido.")),
         }
     }
@@ -426,6 +494,23 @@ mod tests {
             });
         }
         v
+    }
+    #[test]
+    fn schedule_survives_csv_roundtrip() {
+        let mut original = sample(3);
+        original.schedule = Some(BudgetSchedule::linear(
+            "2026-11-01".parse().unwrap(), 90, PeriodBasis::CivilMonths, 3,
+        ).unwrap());
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+        assert!(csv.contains("SCHEDULE;2026-11-01;90;civil_months"));
+        assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
+    }
+    #[test]
+    fn formula_in_export_is_rejected_before_worksheet_open() {
+        let mut original = sample(1);
+        original.lines[0].description = "=HYPERLINK(1)".into();
+        let error = export_csv(&original, NumberLocale::PtBr).unwrap_err();
+        assert_eq!(error.column, 14);
     }
     #[test]
     fn brazilian_number_and_10000_services_roundtrip() {
