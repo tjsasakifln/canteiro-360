@@ -485,7 +485,11 @@ async fn budget_edit_line_page(
         .find(|entry| {
             entry.scope_id == query.scope_id
                 && entry.snapshot.status != BudgetState::Approved
-                && entry.snapshot.lines.iter().any(|line| line.id == query.item_id)
+                && entry
+                    .snapshot
+                    .lines
+                    .iter()
+                    .any(|line| line.id == query.item_id)
         })
         .cloned()
     else {
@@ -566,7 +570,10 @@ async fn budget_save_line_form(
         return response;
     };
     let mut snapshot = record.snapshot;
-    if snapshot.edit_line_values(&item_id, quantity, price).is_err() {
+    if snapshot
+        .edit_line_values(&item_id, quantity, price)
+        .is_err()
+    {
         return bad_input();
     }
     snapshot.revision = revision;
@@ -605,7 +612,11 @@ async fn budget_save_line_form(
         reason: field(&data, "reason").to_owned(),
         change: BudgetChange::Save { snapshot },
     };
-    match auth.service().estimating_budget_execute(&token, command).await {
+    match auth
+        .service()
+        .estimating_budget_execute(&token, command)
+        .await
+    {
         Ok(_) => match auth.service().estimating_context(&token).await {
             Ok(updated) => html_page(canteiro_web::estimating::page(updated), StatusCode::OK),
             Err(error) => application_failure(error),
