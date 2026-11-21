@@ -573,7 +573,9 @@ mod tests {
             let mut outgoing = original.clone();
             outgoing.lines[0].description = attack.clone();
             assert_eq!(
-                export_csv(&outgoing, NumberLocale::PtBr).unwrap_err().column,
+                export_csv(&outgoing, NumberLocale::PtBr)
+                    .unwrap_err()
+                    .column,
                 14
             );
             let incoming = clean.replacen("Descrição técnica", &attack, 1);
