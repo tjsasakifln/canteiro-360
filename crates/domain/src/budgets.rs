@@ -189,6 +189,33 @@ impl BudgetRevision {
             total: Money::new(total)?,
         })
     }
+    /// Edição de serviço sem perder cronograma e sem substituir preço de fonte
+    /// histórica por valor manual mantendo a referência de catálogo.
+    /// O serviço de aplicação ainda exige reserva, versão e autorização atuais.
+    pub fn edit_line_values(
+        &mut self,
+        line_id: &str,
+        quantity: Quantity,
+        price: UnitPrice,
+    ) -> Result<(), BudgetError> {
+        if self.status == BudgetState::Approved {
+            return Err(BudgetError::Definitive);
+        }
+        let mut candidate = self.clone();
+        let line = candidate
+            .lines
+            .iter_mut()
+            .find(|line| line.id == line_id)
+            .ok_or(BudgetError::Structure)?;
+        if line.catalog_id.is_some() && line.price != price {
+            return Err(BudgetError::ReferencedItem);
+        }
+        line.quantity = quantity;
+        line.price = price;
+        candidate.summarize()?;
+        *self = candidate;
+        Ok(())
+    }
     pub fn confirm_edit(
         &self,
         lease: &EditLease,
