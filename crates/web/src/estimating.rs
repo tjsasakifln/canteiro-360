@@ -135,6 +135,24 @@ pub fn page(ctx: EstimatingContext) -> String {
         let export=selected.as_ref().map(|s|format!(
             "/api/estimating/budget/{}/export.csv?organization_id={}&context_version={}&locale=pt_br",
             entry.scope_id,s.organization_id,s.context_version));
+        let edit = selected
+            .as_ref()
+            .filter(|_| {
+                scope.is_some_and(|scope| scope.can_edit)
+                    && entry.snapshot.status != BudgetState::Approved
+            })
+            .map(|context| view! {
+                <form action="/orcamentos/servicos/editar" method="get" class="record-form">
+                    <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                    <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                    <label class="record-field">
+                        <span>"Identificador do serviço a editar"</span>
+                        <input type="text" name="item_id" maxlength="120" required=true/>
+                    </label>
+                    <button type="submit" class="secondary-button">"Localizar serviço no orçamento"</button>
+                </form>
+            });
         let state=match entry.snapshot.status{
             BudgetState::Draft=>"Rascunho",
             BudgetState::Review=>"Em conferência",
@@ -151,6 +169,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                 <p>{format!("Última alteração: {}",entry.recorded_at)}</p>
                 {export.map(|url|view!{<a class="secondary-button" href=url>
                     "Exportar CSV editável"</a>})}
+                {edit}
             </article>
         }
     }).collect_view();
@@ -356,6 +375,65 @@ pub fn composition_memory(
                 <p>{format!("Empresa: {} · escopo: {} · versão da composição: {}",
                     ctx.organization_name,record.scope_id,record.version)}</p>
                 <p>"Esta consulta não altera a composição, a fonte de custos ou o orçamento aprovado."</p>
+            </section>
+        },
+    )
+}
+
+/// Edição pontual, sem carregar milhares de serviços em formulários simultâneos.
+/// O servidor reconfere sessão, versão, reserva e referências antes de persistir.
+pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id: &str) -> String {
+    let line = record
+        .snapshot
+        .lines
+        .iter()
+        .find(|line| line.id == item_id)
+        .expect("O servidor localiza o serviço antes de renderizar")
+        .clone();
+    let context = ctx.context.expect("Edição requer empresa selecionada");
+    let historical = line.catalog_id.as_ref().zip(line.catalog_edition).map(|(id, edition)| {
+        format!("Preço fixado pela fonte histórica {id}, edição {edition}. Edite apenas a quantidade.")
+    });
+    shell(
+        "Editar serviço do orçamento",
+        view! {
+            <section class="record-heading">
+                <h1>{format!("Editar serviço · {}",line.code)}</h1>
+                <p>{line.description}</p>
+                <p>{format!("Orçamento {} · revisão {} · unidade {}",
+                    record.scope_id,record.version,line.unit)}</p>
+                <p>"A alteração cria nova revisão de rascunho e preserva o cronograma. Outra sessão pode impedir a gravação."</p>
+                <a href="/orcamentos" class="secondary-button">"Voltar sem alterar"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>"Quantidade e preço unitário"</h2>
+                {historical.map(|note|view!{<p class="record-status">{note}</p>})}
+                <form action="/orcamentos/servicos/salvar" method="post" class="record-form">
+                    <input type="hidden" name="organization_id" value=context.organization_id/>
+                    <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=record.scope_id/>
+                    <input type="hidden" name="expected_version" value=record.version.to_string()/>
+                    <input type="hidden" name="item_id" value=line.id/>
+                    <input type="hidden" name="csrf" value=ctx.csrf/>
+                    <label class="record-field">
+                        <span>"Quantidade (separador decimal: ponto)"</span>
+                        <input type="text" name="quantity" value=line.quantity.to_string() required=true/>
+                    </label>
+                    <label class="record-field">
+                        <span>"Preço unitário (separador decimal: ponto)"</span>
+                        <input type="text" name="price" value=line.price.to_string()
+                            readonly=line.catalog_id.is_some() required=true/>
+                    </label>
+                    <label class="record-field">
+                        <span>"Justificativa da alteração"</span>
+                        <input type="text" name="reason" maxlength="240" required=true/>
+                    </label>
+                    <button type="submit" class="primary-button">"Salvar nova revisão do serviço"</button>
+                </form>
+            </section>
+            <section class="foundation-card">
+                <h2>"Rastreabilidade"</h2>
+                <p>"Preços vinculados a catálogos não são sobrescritos. A revisão aprovada permanece imutável."</p>
             </section>
         },
     )
