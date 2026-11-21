@@ -665,6 +665,15 @@ mod tests {
         assert_eq!((error.row, error.column), (3, 1));
     }
     #[test]
+    fn semantic_error_uses_physical_line_after_multiline_cell() {
+        let csv = export_csv(&sample(2), NumberLocale::PtBr).unwrap();
+        let mut changed = csv.replacen("Descrição técnica", "\"Descrição\n técnica\"", 1);
+        let at = changed.rfind("78,900000").unwrap();
+        changed.replace_range(at..at + "78,900000".len(), "preco-invalido");
+        let error = preview_import(&changed, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (7, 17));
+    }
+    #[test]
     fn quote_and_delimiter_are_not_executable() {
         let mut original = sample(1);
         original.lines[0].description = "Materiais; \"revisados\"".into();
