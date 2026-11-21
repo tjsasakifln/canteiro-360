@@ -1,10 +1,10 @@
 use crate::{
     auth::{AuthHttp, application_failure, private_headers},
     organizations::private_json,
-    projects::{authenticated,bad_input,html_page},
+    projects::{authenticated,bad_input,form_context,form_headers,field,html_page},
 };
 use axum::{
-    Extension,Json,Router,
+    Extension,Form,Json,Router,
     extract::{DefaultBodyLimit,Path,Query,rejection::{JsonRejection,QueryRejection}},
     http::{HeaderMap,HeaderValue,StatusCode,header},
     response::{IntoResponse,Response},
@@ -12,6 +12,7 @@ use axum::{
 };
 use canteiro_contracts::{estimating::*,reliability::ReliabilityScope};
 use serde::Deserialize;
+use std::collections::BTreeMap;
 
 pub fn routes<S:Clone+Send+Sync+'static>()->Router<S>{
     Router::new()
@@ -26,6 +27,7 @@ pub fn routes<S:Clone+Send+Sync+'static>()->Router<S>{
         .route("/api/estimating/budget/{scope}/history",get(budget_history))
         .route("/api/estimating/budget/{scope}/export.csv",get(budget_export))
         .route("/orcamentos",get(page))
+        .route("/orcamentos/conferir-csv",post(preview_form))
         .layer(DefaultBodyLimit::max(9_000_000))
 }
 async fn context(auth:Option<Extension<AuthHttp>>,headers:HeaderMap)->Response{
@@ -190,5 +192,32 @@ async fn page(auth:Option<Extension<AuthHttp>>,headers:HeaderMap)->Response{
     match auth.service().estimating_context(&token).await{
         Ok(ctx)=>html_page(canteiro_web::estimating::page(ctx),StatusCode::OK),
         Err(e)=>application_failure(e),
+    }
+}
+
+async fn preview_form(
+    auth:Option<Extension<AuthHttp>>,headers:HeaderMap,
+    input:Result<Form<BTreeMap<String,String>>,axum::extract::rejection::FormRejection>,
+)->Response{
+    let Ok(Form(data))=input else{return bad_input()};
+    let headers=match form_headers(headers,&data){
+        Ok(value)=>value,Err(response)=>return *response,
+    };
+    let (auth,token)=match authenticated(auth,&headers,true){
+        Ok(value)=>value,Err(response)=>return *response,
+    };
+    let context=match form_context(&data){
+        Ok(value)=>value,Err(_)=>return bad_input(),
+    };
+    let command=BudgetImportPreviewCommand{
+        context,scope_id:field(&data,"scope_id").to_owned(),
+        csv:field(&data,"csv").to_owned(),locale:NumberLocale::PtBr,
+    };
+    match auth.service().estimating_budget_import_preview(&token,command).await{
+        Ok(value)=>match auth.service().estimating_context(&token).await{
+            Ok(ctx)=>html_page(canteiro_web::estimating::preview(ctx,value),StatusCode::OK),
+            Err(error)=>application_failure(error),
+        },
+        Err(error)=>application_failure(error),
     }
 }

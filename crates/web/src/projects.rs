@@ -7,7 +7,7 @@ pub fn shell(title: &str, body: impl IntoView) -> String {
     let title = title.to_owned();
     view!{<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>{format!("{title} | Canteiro 360")}</title><link rel="stylesheet" href="/pkg/canteiro-web.css"/><style>{include_str!("../../../style/projects.css")}</style></head><body>
         <a class="skip-link" href="#conteudo">"Pular para o conteúdo"</a>
-        <header class="site-header"><div class="page-width header-inner"><a class="brand" href="/">"Canteiro 360"</a><nav class="record-navigation" aria-label="Áreas"><a href="/carteira">"Obras"</a><a href="/cadastros">"Cadastros"</a><a href="/projetos">"Projetos"</a><a href="/obrigacoes">"Obrigações"</a><a href="/documentos">"Documentos"</a><a href="/organizacoes">"Empresa"</a></nav></div></header>
+        <header class="site-header"><div class="page-width header-inner"><a class="brand" href="/">"Canteiro 360"</a><nav class="record-navigation" aria-label="Áreas"><a href="/carteira">"Obras"</a><a href="/cadastros">"Cadastros"</a><a href="/projetos">"Projetos"</a><a href="/obrigacoes">"Obrigações"</a><a href="/documentos">"Documentos"</a><a href="/orcamentos">"Orçamentos"</a><a href="/pendencias">"Pendências"</a><a href="/organizacoes">"Empresa"</a></nav></div></header>
         <main id="conteudo" class="page-width record-page" tabindex="-1">{body}</main>
         <footer class="page-width site-footer"><p>"Canteiro 360 · Ambiente em desenvolvimento"</p></footer>
     </body></html>}.to_html()

@@ -13,6 +13,7 @@ mod access;
 pub mod documents;
 mod obligations;
 mod notifications;
+mod estimating;
 mod parties;
 mod portfolio;
 mod projects;

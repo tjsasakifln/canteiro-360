@@ -32,3 +32,7 @@ pub mod projects;
 pub mod obligations;
 
 pub mod notifications;
+
+pub mod budgets;
+pub mod catalogs;
+pub mod compositions;
