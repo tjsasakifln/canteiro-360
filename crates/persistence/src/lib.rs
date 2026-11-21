@@ -30,3 +30,5 @@ pub mod portfolio;
 pub mod projects;
 
 pub mod obligations;
+
+pub mod notifications;

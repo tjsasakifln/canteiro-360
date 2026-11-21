@@ -12,6 +12,7 @@ use uuid::Uuid;
 mod access;
 pub mod documents;
 mod obligations;
+mod notifications;
 mod parties;
 mod portfolio;
 mod projects;

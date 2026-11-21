@@ -27,6 +27,8 @@ mod portfolio;
 pub mod projects;
 mod prototype;
 mod reliability;
+#[cfg(feature = "ssr")]
+pub mod notifications;
 pub use prototype::is_supported_prototype_route;
 
 /// Complete document rendered by the server. Only Leptos generates bootstrap JS.

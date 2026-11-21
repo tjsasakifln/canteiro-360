@@ -58,6 +58,18 @@ impl AuthTransaction {
         }
         Ok(inserted)
     }
+    /// Uma confirmação válida resolve os avisos da obrigação para o autor.
+    pub async fn user_notice_resolve_for_target(
+        &mut self,tenant:Uuid,recipient:Uuid,target:Uuid,
+    )->Result<u64,AuthStoreError>{
+        Ok(sqlx::query(
+          "UPDATE canteiro.user_notices
+           SET state='resolved',resolved_at=clock_timestamp()
+           WHERE tenant_id=$1 AND recipient_id=$2 AND target_id=$3
+             AND kind='technical_obligation' AND state<>'resolved'")
+          .bind(tenant).bind(recipient).bind(target)
+          .execute(&mut *self.tx).await?.rows_affected())
+    }
     pub async fn user_notice_preferences(
         &mut self,tenant:Uuid,recipient:Uuid,
     )->Result<Option<StoredNoticePreferences>,AuthStoreError>{

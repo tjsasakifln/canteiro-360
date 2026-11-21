@@ -354,6 +354,22 @@ impl AuthService {
             ),
         )
         .await?;
+        if input.confirm {
+            tx.user_notice_resolve_for_target(a.tenant, a.actor.id, row.obligation_id)
+                .await?;
+        } else {
+            tx.user_notice_record(
+                a.tenant,
+                a.actor.id,
+                key,
+                "technical_obligation",
+                scope,
+                row.obligation_id,
+                input.spec.valid_until.map(|day| day.as_naive_date()),
+                true,
+            )
+            .await?;
+        }
         self.record_revalidate(&mut tx, token, &a, scope, action)
             .await?;
         let result = view(row, &a, tx.now().await?)?;
