@@ -69,6 +69,8 @@ pub fn page(ctx: EstimatingContext) -> String {
             }
         })
         .collect_view();
+    let editable_scopes = ctx.scopes.clone();
+    let composition_csrf = ctx.csrf.clone();
     let compositions = ctx
         .compositions
         .clone()
@@ -85,12 +87,43 @@ pub fn page(ctx: EstimatingContext) -> String {
                     </form>
                 }
             });
+            let editing = selected
+                .as_ref()
+                .filter(|_| {
+                    editable_scopes
+                        .iter()
+                        .any(|scope| scope.id == entry.scope_id && scope.can_edit)
+                })
+                .map(|context| {
+                    view! {
+                        <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                            <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                            <input type="hidden" name="code" value=entry.code.clone()/>
+                            <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                            <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                            <label class="record-field">
+                                <span>"Descrição técnica da composição"</span>
+                                <textarea name="description" maxlength="800" rows="3" required=true>
+                                    {entry.composition.description.clone()}
+                                </textarea>
+                            </label>
+                            <label class="record-field">
+                                <span>"Motivo da alteração"</span>
+                                <input type="text" name="reason" maxlength="240" required=true/>
+                            </label>
+                            <button type="submit" class="secondary-button">"Salvar nova revisão da descrição"</button>
+                        </form>
+                    }
+                });
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · revisão {}",entry.code,entry.version)}</h3>
                     <p>{entry.composition.description}</p>
                     <p>{format!("Revisado em {}",entry.recorded_at)}</p>
                     {memory}
+                    {editing}
                 </article>
             }
         })
