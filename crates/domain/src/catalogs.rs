@@ -47,6 +47,24 @@ pub struct CatalogEdition {
     pub items: BTreeMap<String, CatalogItem>,
 }
 
+/// Diferenças calculadas apenas entre edições publicadas de uma mesma base.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CatalogItemChange {
+    pub before: CatalogItem,
+    pub after: CatalogItem,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CatalogComparison {
+    pub catalog_id: String,
+    pub before_edition: u32,
+    pub after_edition: u32,
+    pub added: Vec<CatalogItem>,
+    pub removed: Vec<CatalogItem>,
+    pub changed: Vec<CatalogItemChange>,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnitConversion {
@@ -69,6 +87,9 @@ pub enum CatalogError {
     ImmutableEdition,
     #[error("Selecione explicitamente uma edição existente.")]
     MissingEdition,
+    #[error("Compare edições diferentes de uma mesma base de custos.")]
+    IncompatibleComparison,
+
     #[error("As unidades são incompatíveis. Registre a conversão com referência.")]
     UnitMismatch,
     #[error("Coeficiente ou referência de conversão inválido.")]
@@ -151,6 +172,39 @@ impl CatalogEdition {
     pub fn get(&self, code: &str) -> Option<&CatalogItem> {
         self.items.get(code)
     }
+    /// Compara códigos em ordem estável, sem atualizar referências históricas.
+    /// Alterações de unidade ou categoria são sempre apresentadas, nunca convertidas
+    /// implicitamente em preços equivalentes.
+    pub fn compare_to(&self, other: &Self) -> Result<CatalogComparison, CatalogError> {
+        if self.catalog_id != other.catalog_id || self.edition == other.edition {
+            return Err(CatalogError::IncompatibleComparison);
+        }
+        let mut result = CatalogComparison {
+            catalog_id: self.catalog_id.clone(),
+            before_edition: self.edition,
+            after_edition: other.edition,
+            added: Vec::new(),
+            removed: Vec::new(),
+            changed: Vec::new(),
+        };
+        for (code, before) in &self.items {
+            match other.items.get(code) {
+                None => result.removed.push(before.clone()),
+                Some(after) if before != after => result.changed.push(CatalogItemChange {
+                    before: before.clone(),
+                    after: after.clone(),
+                }),
+                Some(_) => {}
+            }
+        }
+        for (code, after) in &other.items {
+            if !self.items.contains_key(code) {
+                result.added.push(after.clone());
+            }
+        }
+        Ok(result)
+    }
+
     pub fn outdated_on(&self, current_competence: &str) -> bool {
         self.source.competence.as_str() < current_competence
     }
@@ -275,6 +329,50 @@ mod tests {
         assert_eq!(lib.edition("ref", 1).unwrap().source.competence, "2021-04");
         assert_eq!(lib.publish(a), Err(CatalogError::ImmutableEdition));
         assert_eq!(lib.edition("ref", 3), Err(CatalogError::MissingEdition));
+    }
+    #[test]
+    fn compare_immutable_editions_reports_all_types_of_changes() {
+        let first = CatalogEdition::assemble(
+            "ref".into(),
+            1,
+            "2021-04-01".parse().unwrap(),
+            source("2021-04"),
+            vec![item("A"), item("B"), item("C")],
+        )
+        .unwrap();
+        let mut changed = item("A");
+        changed.price = "124.000000".parse().unwrap();
+        let second = CatalogEdition::assemble(
+            "ref".into(),
+            2,
+            "2026-11-01".parse().unwrap(),
+            source("2026-11"),
+            vec![changed.clone(), item("B"), item("D")],
+        )
+        .unwrap();
+        let delta = first.compare_to(&second).unwrap();
+        assert_eq!((delta.before_edition, delta.after_edition), (1, 2));
+        assert_eq!(delta.added[0].code, "D");
+        assert_eq!(delta.removed[0].code, "C");
+        assert_eq!(delta.changed[0].before.code, "A");
+        assert_eq!(delta.changed[0].after.price, changed.price);
+        assert_eq!(first.get("A").unwrap().price.to_string(), "123.456789");
+        assert_eq!(
+            first.compare_to(&first),
+            Err(CatalogError::IncompatibleComparison)
+        );
+        let different = CatalogEdition::assemble(
+            "other".into(),
+            1,
+            "2026-11-01".parse().unwrap(),
+            source("2026-11"),
+            vec![item("A")],
+        )
+        .unwrap();
+        assert_eq!(
+            first.compare_to(&different),
+            Err(CatalogError::IncompatibleComparison)
+        );
     }
     #[test]
     fn wrong_units_and_failed_import_do_not_publish_partial_edition() {
