@@ -584,7 +584,7 @@ mod tests {
             );
         }
         let mut benign = original.clone();
-        benign.lines[0].description = "  Materiais conferidos".into();
+        benign.lines[0].description = "Materiais   conferidos".into();
         assert_eq!(
             preview_import(
                 &export_csv(&benign, NumberLocale::PtBr).unwrap(),
