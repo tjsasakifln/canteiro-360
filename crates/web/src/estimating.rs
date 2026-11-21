@@ -328,7 +328,6 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
     )
 }
 
-
 pub fn catalog_csv_preview(
     ctx: EstimatingContext,
     preview: CatalogCsvPreviewReply,
