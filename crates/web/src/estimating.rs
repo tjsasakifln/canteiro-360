@@ -109,6 +109,16 @@ pub fn page(ctx: EstimatingContext) -> String {
             </article>
         }
     }).collect_view();
+    let catalog_selected = selected.clone();
+    let catalog_scope_options = ctx
+        .scopes
+        .clone()
+        .into_iter()
+        .map(|scope| {
+            let disabled = !scope.can_edit;
+            view! { <option value=scope.id disabled=disabled>{scope.name}</option> }
+        })
+        .collect_view();
     let scope_options = scopes
         .into_iter()
         .map(|scope| {
@@ -147,6 +157,45 @@ pub fn page(ctx: EstimatingContext) -> String {
                             <textarea name="csv" rows="8" maxlength="8500000" required=true></textarea>
                         </label>
                         <button class="primary-button" type="submit">"Conferir arquivo"</button>
+                    </form>
+                })}
+            </section>
+
+            <section class="foundation-card">
+                <h2>"Importar tabela de preços"</h2>
+                <p>"Informe a fonte e cole o CSV versionado. A prévia examina todas as linhas sem gravar e compara os valores com a edição histórica anterior. A publicação exige confirmação."</p>
+                {catalog_selected.map(|context| view! {
+                    <form action="/orcamentos/catalogos/conferir" method="post" class="record-form">
+                        <input type="hidden" name="organization_id" value=context.organization_id/>
+                        <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                        <input type="hidden" name="csrf" value=ctx.csrf.clone()/>
+                        <label class="record-field"><span>"Orçamento vinculado"</span>
+                            <select name="scope_id" required=true>{catalog_scope_options}</select></label>
+                        <label class="record-field"><span>"Identificador da tabela"</span>
+                            <input type="text" name="catalog_id" maxlength="128" required=true/></label>
+                        <label class="record-field"><span>"Número da edição"</span>
+                            <input type="number" name="edition" min="1" required=true/></label>
+                        <label class="record-field"><span>"Data de publicação da fonte"</span>
+                            <input type="date" name="published_on" required=true/></label>
+                        <label class="record-field"><span>"Título da tabela de origem"</span>
+                            <input type="text" name="source_title" maxlength="160" required=true/></label>
+                        <label class="record-field"><span>"Organização responsável pela fonte"</span>
+                            <input type="text" name="source_organization" maxlength="160" required=true/></label>
+                        <label class="record-field"><span>"Condição ou licença autorizando uso dos preços"</span>
+                            <input type="text" name="source_license" maxlength="300" required=true/></label>
+                        <label class="record-field"><span>"Localidade de referência"</span>
+                            <input type="text" name="source_locality" maxlength="120" required=true/></label>
+                        <label class="record-field"><span>"Regime tributário da fonte"</span>
+                            <input type="text" name="source_tax_regime" maxlength="120" required=true/></label>
+                        <label class="record-field"><span>"Competência (AAAA-MM)"</span>
+                            <input type="month" name="source_competence" required=true/></label>
+                        <label class="record-field"><span>"Justificativa da publicação"</span>
+                            <input type="text" name="reason" maxlength="240" required=true/></label>
+                        <label class="record-field"><span>"CSV no formato CANTEIRO-CUSTOS-CSV-1"</span>
+                            <textarea name="csv" rows="7" maxlength="8000000" required=true
+                                placeholder="CANTEIRO-CUSTOS-CSV-1&#10;codigo;descricao;categoria;unidade;preco&#10;A;Concreto;material;m³;350,00"></textarea></label>
+                        <p>"Categorias: material, labor, equipment, service, transport. Unidades: un, m, m², m³, kg, t, L, h. No arquivo pt-BR, use vírgula decimal. Evite colar fórmulas."</p>
+                        <button class="primary-button" type="submit">"Conferir preços antes de publicar"</button>
                     </form>
                 })}
             </section>
@@ -274,6 +323,89 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
             <section class="foundation-card">
                 <h2>"Empresa consultada"</h2>
                 <p>{ctx.organization_name}</p>
+            </section>
+        },
+    )
+}
+
+
+pub fn catalog_csv_preview(
+    ctx: EstimatingContext,
+    preview: CatalogCsvPreviewReply,
+    input: CatalogCsvImportCommand,
+) -> String {
+    let sample = preview
+        .sample
+        .into_iter()
+        .map(|item| {
+            view! {
+                <article class="record-summary">
+                    <p>{format!("{} · {} · {} · R$ {}",
+                        item.code,item.description,item.unit,item.price)}</p>
+                </article>
+            }
+        })
+        .collect_view();
+    shell(
+        "Conferir tabela de custos",
+        view! {
+            <section class="record-heading">
+                <h1>"Conferência da tabela de preços"</h1>
+                <p>"Nenhuma linha foi publicada. Confira a fonte, a competência, os valores e a comparação antes de confirmar."</p>
+                <a href="/orcamentos">"Voltar sem publicar"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>{format!("{} · edição {}",preview.header.catalog_id,preview.header.edition)}</h2>
+                <p>{format!("{} / {}",preview.header.source.organization,preview.header.source.title)}</p>
+                <p>{format!("Competência {} · Localidade {} · Regime {}",
+                    preview.header.source.competence,preview.header.source.locality,
+                    preview.header.source.tax_regime)}</p>
+                <p>{format!("Licença: {}",preview.header.source.license)}</p>
+                <p>{format!("{} preços examinados",preview.items_total)}</p>
+                <p>{format!("Comparação com edição {}: {} incluídos, {} alterados, {} removidos",
+                    preview.previous_edition.map_or("nenhuma".into(),|value|value.to_string()),
+                    preview.included,preview.changed,preview.removed)}</p>
+                <h3>"Amostra dos primeiros 20 itens"</h3>
+                {sample}
+            </section>
+            <section class="foundation-card">
+                <h2>"Confirmar publicação imutável"</h2>
+                <p>"O servidor revalidará integralmente os dados, a permissão e a inexistência da edição. A publicação será integral ou não ocorrerá."</p>
+                <form action="/orcamentos/catalogos/publicar-csv" method="post" class="record-form">
+                    <input type="hidden" name="organization_id" value=input.context.organization_id/>
+                    <input type="hidden" name="context_version" value=input.context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=input.scope_id/>
+                    <input type="hidden" name="catalog_id" value=input.catalog_id/>
+                    <input type="hidden" name="edition" value=input.edition.to_string()/>
+                    <input type="hidden" name="published_on" value=input.published_on/>
+                    <input type="hidden" name="source_title" value=input.source.title/>
+                    <input type="hidden" name="source_organization" value=input.source.organization/>
+                    <input type="hidden" name="source_license" value=input.source.license/>
+                    <input type="hidden" name="source_locality" value=input.source.locality/>
+                    <input type="hidden" name="source_tax_regime" value=input.source.tax_regime/>
+                    <input type="hidden" name="source_competence" value=input.source.competence/>
+                    <input type="hidden" name="reason" value=input.reason/>
+                    <input type="hidden" name="csrf" value=ctx.csrf.clone()/>
+                    <textarea hidden=true name="csv">{input.csv}</textarea>
+                    <button class="primary-button" type="submit">"Publicar edição de preços"</button>
+                </form>
+            </section>
+        },
+    )
+}
+
+pub fn catalog_csv_published(ctx: EstimatingContext, header: CatalogHeader) -> String {
+    shell(
+        "Tabela de preços publicada",
+        view! {
+            <section class="record-heading">
+                <h1>"Tabela publicada"</h1>
+                <p>{format!("A tabela {} · edição {} foi publicada integralmente.",
+                    header.catalog_id,header.edition)}</p>
+                <p>{format!("Fonte: {} · competência {} · licença {}",
+                    header.source.organization,header.source.competence,header.source.license)}</p>
+                <p>{format!("Empresa: {}",ctx.organization_name)}</p>
+                <a class="primary-button" href="/orcamentos">"Ver tabelas e comparar edições"</a>
             </section>
         },
     )

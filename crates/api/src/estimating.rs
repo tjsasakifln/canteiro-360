@@ -23,6 +23,8 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/api/estimating/catalog", get(catalog))
         .route("/api/estimating/catalog/compare", get(catalog_compare))
         .route("/orcamentos/catalogos/comparar", get(catalog_compare_page))
+        .route("/orcamentos/catalogos/conferir", post(catalog_csv_preview_form))
+        .route("/orcamentos/catalogos/publicar-csv", post(catalog_csv_publish_form))
         .route("/api/estimating/catalog/publish", post(catalog_publish))
         .route("/api/estimating/catalog/import/preview", post(catalog_csv_preview))
         .route("/api/estimating/catalog/import/publish", post(catalog_csv_publish))
@@ -413,6 +415,88 @@ async fn page(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response
     match auth.service().estimating_context(&token).await {
         Ok(ctx) => html_page(canteiro_web::estimating::page(ctx), StatusCode::OK),
         Err(e) => application_failure(e),
+    }
+}
+
+
+fn catalog_csv_from_form(
+    data: &BTreeMap<String, String>,
+) -> Result<CatalogCsvImportCommand, ()> {
+    let context = form_context(data).map_err(|_| ())?;
+    let edition = field(data, "edition").parse::<u32>().map_err(|_| ())?;
+    Ok(CatalogCsvImportCommand {
+        context,
+        scope_id: field(data, "scope_id").to_owned(),
+        catalog_id: field(data, "catalog_id").to_owned(),
+        edition,
+        published_on: field(data, "published_on").to_owned(),
+        source: CostSource {
+            title: field(data, "source_title").to_owned(),
+            organization: field(data, "source_organization").to_owned(),
+            license: field(data, "source_license").to_owned(),
+            locality: field(data, "source_locality").to_owned(),
+            tax_regime: field(data, "source_tax_regime").to_owned(),
+            competence: field(data, "source_competence").to_owned(),
+        },
+        reason: field(data, "reason").to_owned(),
+        csv: field(data, "csv").to_owned(),
+        locale: NumberLocale::PtBr,
+    })
+}
+
+async fn catalog_csv_preview_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
+) -> Response {
+    let Ok(Form(data)) = input else {
+        return bad_input();
+    };
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(input) = catalog_csv_from_form(&data) else {
+        return bad_input();
+    };
+    match auth.service().estimating_catalog_csv_preview(&token, input.clone()).await {
+        Ok(result) => match auth.service().estimating_context(&token).await {
+            Ok(ctx) => html_page(canteiro_web::estimating::catalog_csv_preview(ctx, result, input), StatusCode::OK),
+            Err(error) => application_failure(error),
+        },
+        Err(error) => application_failure(error),
+    }
+}
+
+async fn catalog_csv_publish_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
+) -> Response {
+    let Ok(Form(data)) = input else {
+        return bad_input();
+    };
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(input) = catalog_csv_from_form(&data) else {
+        return bad_input();
+    };
+    match auth.service().estimating_catalog_csv_publish(&token, input).await {
+        Ok(header) => match auth.service().estimating_context(&token).await {
+            Ok(ctx) => html_page(canteiro_web::estimating::catalog_csv_published(ctx, header), StatusCode::OK),
+            Err(error) => application_failure(error),
+        },
+        Err(error) => application_failure(error),
     }
 }
 
