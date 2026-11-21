@@ -14,30 +14,42 @@ pub fn page(ctx: EstimatingContext) -> String {
         .clone()
         .into_iter()
         .map(|catalog| {
-            let previous = all_catalogs
+            let mut earlier = all_catalogs
                 .iter()
                 .filter(|other| {
                     other.scope_id == catalog.scope_id
                         && other.catalog_id == catalog.catalog_id
                         && other.edition < catalog.edition
                 })
-                .map(|other| other.edition)
-                .max();
+                .collect::<Vec<_>>();
+            earlier.sort_by_key(|other| std::cmp::Reverse(other.edition));
             let compare = comparison_context.as_ref().and_then(|context| {
-                previous.map(|before| {
-                    view! {
-                        <form action="/orcamentos/catalogos/comparar" method="get">
-                            <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
-                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
-                            <input type="hidden" name="scope_id" value=catalog.scope_id.clone()/>
-                            <input type="hidden" name="catalog_id" value=catalog.catalog_id.clone()/>
-                            <input type="hidden" name="before" value=before.to_string()/>
-                            <input type="hidden" name="after" value=catalog.edition.to_string()/>
-                            <button class="secondary-button" type="submit">
-                                {format!("Comparar com a edição {}",before)}
-                            </button>
-                        </form>
-                    }
+                if earlier.is_empty() {
+                    return None;
+                }
+                let options = earlier
+                    .into_iter()
+                    .map(|prior| {
+                        view! {
+                            <option value=prior.edition.to_string()>
+                                {format!("Edição {} · competência {}", prior.edition, prior.source.competence)}
+                            </option>
+                        }
+                    })
+                    .collect_view();
+                Some(view! {
+                    <form action="/orcamentos/catalogos/comparar" method="get" class="record-form">
+                        <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                        <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                        <input type="hidden" name="scope_id" value=catalog.scope_id.clone()/>
+                        <input type="hidden" name="catalog_id" value=catalog.catalog_id.clone()/>
+                        <input type="hidden" name="after" value=catalog.edition.to_string()/>
+                        <label class="record-field">
+                            <span>{format!("Comparar a edição {} com uma edição histórica", catalog.edition)}</span>
+                            <select name="before" required=true>{options}</select>
+                        </label>
+                        <button class="secondary-button" type="submit">"Conferir diferenças de preços"</button>
+                    </form>
                 })
             });
             let source = catalog.source;
