@@ -358,16 +358,16 @@ impl AuthService {
             tx.user_notice_resolve_for_target(a.tenant, a.actor.id, row.obligation_id)
                 .await?;
         } else {
-            tx.user_notice_record(
-                a.tenant,
-                a.actor.id,
-                key,
-                "technical_obligation",
+            tx.user_notice_record(&canteiro_persistence::notifications::NewNotice {
+                tenant: a.tenant,
+                recipient: a.actor.id,
+                event: key,
+                kind: "technical_obligation",
                 scope,
-                row.obligation_id,
-                input.spec.valid_until.map(|day| day.as_naive_date()),
-                true,
-            )
+                target: row.obligation_id,
+                due: input.spec.valid_until.map(|day| day.as_naive_date()),
+                essential: true,
+            })
             .await?;
         }
         self.record_revalidate(&mut tx, token, &a, scope, action)

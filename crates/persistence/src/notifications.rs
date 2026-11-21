@@ -22,6 +22,16 @@ pub struct StoredNoticePreferences {
     pub reminder_days: Vec<i16>,
     pub version: i64,
 }
+pub struct NewNotice<'a> {
+    pub tenant: Uuid,
+    pub recipient: Uuid,
+    pub event: Uuid,
+    pub kind: &'a str,
+    pub scope: Uuid,
+    pub target: Uuid,
+    pub due: Option<NaiveDate>,
+    pub essential: bool,
+}
 impl AuthTransaction {
     /// RLS separa empresas e destinatários. O serviço verifica os escopos antes e depois.
     pub async fn user_notice_list(
@@ -43,31 +53,21 @@ impl AuthTransaction {
         .fetch_all(&mut *self.tx)
         .await?)
     }
-    pub async fn user_notice_record(
-        &mut self,
-        tenant: Uuid,
-        recipient: Uuid,
-        event: Uuid,
-        kind: &str,
-        scope: Uuid,
-        target: Uuid,
-        due: Option<NaiveDate>,
-        essential: bool,
-    ) -> Result<bool, AuthStoreError> {
+    pub async fn user_notice_record(&mut self, notice: &NewNotice<'_>) -> Result<bool, AuthStoreError> {
         let inserted = sqlx::query(
             "INSERT INTO canteiro.user_notices
           (tenant_id,recipient_id,event_id,kind,scope_id,target_id,due_on,essential)
           VALUES($1,$2,$3,$4,$5,$6,$7,$8)
           ON CONFLICT(tenant_id,recipient_id,event_id,kind) DO NOTHING",
         )
-        .bind(tenant)
-        .bind(recipient)
-        .bind(event)
-        .bind(kind)
-        .bind(scope)
-        .bind(target)
-        .bind(due)
-        .bind(essential)
+        .bind(notice.tenant)
+        .bind(notice.recipient)
+        .bind(notice.event)
+        .bind(notice.kind)
+        .bind(notice.scope)
+        .bind(notice.target)
+        .bind(notice.due)
+        .bind(notice.essential)
         .execute(&mut *self.tx)
         .await?
         .rows_affected()
@@ -79,10 +79,10 @@ impl AuthTransaction {
               VALUES($1,$2,$3,$4,'internal')
               ON CONFLICT DO NOTHING",
             )
-            .bind(tenant)
-            .bind(recipient)
-            .bind(event)
-            .bind(kind)
+            .bind(notice.tenant)
+            .bind(notice.recipient)
+            .bind(notice.event)
+            .bind(notice.kind)
             .execute(&mut *self.tx)
             .await?;
         }
