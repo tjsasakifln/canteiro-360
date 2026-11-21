@@ -66,9 +66,15 @@ fn err(row: usize, col: usize, cause: &str) -> CellError {
     }
 }
 fn safe(s: &str) -> bool {
-    !s.chars()
+    // Planilhas podem ignorar espaços e caracteres invisíveis antes de uma
+    // fórmula. A verificação vale para entrada e saída, sem executar conteúdo.
+    let visible = s.trim_start_matches(|c: char| {
+        c.is_whitespace() || matches!(c, '\u{feff}' | '\u{200b}' | '\u{2060}')
+    });
+    !visible
+        .chars()
         .next()
-        .is_some_and(|c| matches!(c, '=' | '+' | '-' | '@' | '\t' | '\r' | '\n'))
+        .is_some_and(|c| matches!(c, '=' | '+' | '-' | '@'))
         && !s.chars().any(|c| c == '\0')
 }
 fn csv_row(cells: &[String], out: &mut String) {
@@ -557,6 +563,37 @@ mod tests {
             1,
         );
         assert!(preview_import(&formula, NumberLocale::PtBr).is_err());
+    }
+    #[test]
+    fn hidden_formula_prefixes_are_rejected_in_both_directions() {
+        let original = sample(1);
+        let clean = export_csv(&original, NumberLocale::PtBr).unwrap();
+        for prefix in [" ", "\t", "\u{feff}", "\u{200b}", "\u{2060}", "\u{00a0}"] {
+            let attack = format!("{prefix}=HYPERLINK(1)");
+            let mut outgoing = original.clone();
+            outgoing.lines[0].description = attack.clone();
+            assert_eq!(
+                export_csv(&outgoing, NumberLocale::PtBr).unwrap_err().column,
+                14
+            );
+            let incoming = clean.replacen("Descrição técnica", &attack, 1);
+            assert_eq!(
+                preview_import(&incoming, NumberLocale::PtBr)
+                    .unwrap_err()
+                    .column,
+                14
+            );
+        }
+        let mut benign = original.clone();
+        benign.lines[0].description = "  Materiais conferidos".into();
+        assert_eq!(
+            preview_import(
+                &export_csv(&benign, NumberLocale::PtBr).unwrap(),
+                NumberLocale::PtBr
+            )
+            .unwrap(),
+            benign
+        );
     }
     #[test]
     fn quote_and_delimiter_are_not_executable() {
