@@ -34,7 +34,7 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
         .ok_or_else(|| issue(1, 1, "Versão do catálogo desconhecida."))?;
     // A primeira linha do arquivo declara a versão; os erros do leitor
     // de dados precisam apontar a linha física vista por quem importa.
-    let rows = parse_csv(rest, HEADER.len(), MAX_ITEMS + 1).map_err(|mut error| {
+    let (rows, starts) = parse_csv(rest, HEADER.len(), MAX_ITEMS + 1).map_err(|mut error| {
         error.row += 1;
         error
     })?;
@@ -51,7 +51,7 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
     let mut seen = BTreeSet::new();
     let mut items = Vec::with_capacity(rows.len() - 1);
     for (offset, row) in rows.into_iter().enumerate().skip(1) {
-        let line = offset + 2;
+        let line = starts[offset] + 1;
         let category = match row[2].as_str() {
             "material" => CostCategory::Material,
             "labor" => CostCategory::Labor,
