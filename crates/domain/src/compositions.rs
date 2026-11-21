@@ -1,6 +1,6 @@
 //! Composições recursivas sem ciclos. BDI, descontos e incidências têm uma aplicação.
 use crate::{
-    catalogs::{CatalogError, CatalogLibrary, UnitConversion, require_matching_units},
+    catalogs::{CatalogError, CatalogLibrary, CostCategory, UnitConversion, require_matching_units},
     decimal::{DecimalError, ExactDecimal, Percent, Quantity, UnitPrice, negotiated_unit_price},
     units::MeasureUnit,
 };
@@ -65,6 +65,33 @@ pub struct CostMemory {
     pub selling_price: UnitPrice,
     pub free_item: bool,
     pub informed: bool,
+    /// Memória discriminada da revisão; valores de insumos não são preços de venda.
+    pub line_details: Vec<CostLineMemory>,
+    pub incidence_details: Vec<CostIncidenceMemory>,
+    pub category_totals: Vec<CostCategoryMemory>,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CostLineMemory {
+    pub id: String,
+    pub source: ComponentSource,
+    pub category: CostCategory,
+    pub coefficient: Quantity,
+    pub unit: MeasureUnit,
+    pub unit_cost: UnitPrice,
+    pub amount: UnitPrice,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CostIncidenceMemory {
+    pub id: String,
+    pub base_lines: Vec<String>,
+    pub percent: Percent,
+    pub basis: UnitPrice,
+    pub amount: UnitPrice,
+}
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CostCategoryMemory {
+    pub category: CostCategory,
+    pub amount: UnitPrice,
 }
 #[derive(Clone, Debug, Default)]
 pub struct CompositionBook {
@@ -179,12 +206,15 @@ impl CompositionBook {
         path: &mut Vec<String>,
     ) -> Result<CostMemory, CompositionError> {
         let mut amounts = BTreeMap::new();
+        let mut line_details = Vec::new();
+        let mut incidence_details = Vec::new();
+        let mut category_amounts = [ExactDecimal::ZERO; 5];
         let (base, incidence, informed) = match &item.cost_mode {
             CostMode::Informed { cost, .. } => (*cost, UnitPrice::new(ExactDecimal::ZERO)?, true),
             CostMode::Formula => {
                 let mut base = ExactDecimal::ZERO;
                 for line in &item.lines {
-                    let (price, unit) = match &line.source {
+                    let (price, unit, category) = match &line.source {
                         ComponentSource::Catalog {
                             catalog_id,
                             edition,
@@ -194,20 +224,41 @@ impl CompositionBook {
                                 .edition(catalog_id, *edition)?
                                 .get(code)
                                 .ok_or_else(|| CompositionError::Missing(code.clone()))?;
-                            (source.price, source.unit)
+                            (source.price, source.unit, source.category)
                         }
                         ComponentSource::Composition { code } => {
                             let source = self
                                 .compositions
                                 .get(code)
                                 .ok_or_else(|| CompositionError::Missing(code.clone()))?;
-                            (self.walk(code, catalogs, path)?.direct_cost, source.unit)
+                            (
+                                self.walk(code, catalogs, path)?.direct_cost,
+                                source.unit,
+                                CostCategory::Service,
+                            )
                         }
                     };
                     let unit_cost =
                         require_matching_units(unit, line.unit, line.conversion.as_ref(), price)?;
                     let amount = unit_cost.value().checked_mul(line.coefficient.value())?;
                     base = base.checked_add(amount)?;
+                    let index = match category {
+                        CostCategory::Material => 0,
+                        CostCategory::Labor => 1,
+                        CostCategory::Equipment => 2,
+                        CostCategory::Service => 3,
+                        CostCategory::Transport => 4,
+                    };
+                    category_amounts[index] = category_amounts[index].checked_add(amount)?;
+                    line_details.push(CostLineMemory {
+                        id: line.id.clone(),
+                        source: line.source.clone(),
+                        category,
+                        coefficient: line.coefficient,
+                        unit: line.unit,
+                        unit_cost,
+                        amount: unit_price(amount)?,
+                    });
                     amounts.insert(line.id.clone(), amount);
                 }
                 let mut incidences = ExactDecimal::ZERO;
@@ -221,12 +272,39 @@ impl CompositionBook {
                         .checked_mul(incidence.percent.value())?
                         .checked_div_exact("100".parse()?)?;
                     incidences = incidences.checked_add(part)?;
+                    incidence_details.push(CostIncidenceMemory {
+                        id: incidence.id.clone(),
+                        base_lines: incidence.base_lines.clone(),
+                        percent: incidence.percent,
+                        basis: unit_price(basis)?,
+                        amount: unit_price(part)?,
+                    });
                 }
                 (unit_price(base)?, unit_price(incidences)?, false)
             }
         };
         let direct = unit_price(base.value().checked_add(incidence.value())?)?;
         let selling = negotiated_unit_price(direct, item.bdi, item.discount)?;
+        let category_totals = if informed {
+            Vec::new()
+        } else {
+            [
+                CostCategory::Material,
+                CostCategory::Labor,
+                CostCategory::Equipment,
+                CostCategory::Service,
+                CostCategory::Transport,
+            ]
+            .into_iter()
+            .zip(category_amounts)
+            .map(|(category, amount)| {
+                Ok(CostCategoryMemory {
+                    category,
+                    amount: unit_price(amount)?,
+                })
+            })
+            .collect::<Result<Vec<_>, CompositionError>>()?
+        };
         Ok(CostMemory {
             code: item.code.clone(),
             base_cost: base,
@@ -235,6 +313,9 @@ impl CompositionBook {
             selling_price: selling,
             free_item: selling.value().is_zero(),
             informed,
+            line_details,
+            incidence_details,
+            category_totals,
         })
     }
 }
@@ -358,5 +439,16 @@ mod tests {
         assert_eq!(result.base_cost.to_string(), "100.000000");
         assert_eq!(result.incidence_cost.to_string(), "10.000000");
         assert_eq!(result.selling_price.to_string(), "110.000000");
+        assert_eq!(result.line_details.len(), 1);
+        assert_eq!(result.line_details[0].category, CostCategory::Material);
+        assert_eq!(result.line_details[0].amount.to_string(), "100.000000");
+        assert_eq!(result.incidence_details.len(), 1);
+        assert_eq!(result.incidence_details[0].basis.to_string(), "100.000000");
+        assert_eq!(result.incidence_details[0].amount.to_string(), "10.000000");
+        assert_eq!(result.category_totals[0].category, CostCategory::Material);
+        assert_eq!(result.category_totals[0].amount.to_string(), "100.000000");
+        assert_eq!(result.category_totals[2].category, CostCategory::Equipment);
+        assert_eq!(result.category_totals[4].category, CostCategory::Transport);
+        assert_eq!(result.category_totals[4].amount.to_string(), "0.000000");
     }
 }
