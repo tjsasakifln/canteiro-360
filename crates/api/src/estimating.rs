@@ -44,7 +44,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/api/estimating/composition/calculate",
             post(composition_calculate),
         )
-        .route("/orcamentos/composicoes/memoria", get(composition_memory_page))
+        .route(
+            "/orcamentos/composicoes/memoria",
+            get(composition_memory_page),
+        )
         .route(
             "/api/estimating/composition/command",
             post(composition_write),
@@ -323,7 +326,12 @@ async fn composition_memory_page(
     };
     match auth
         .service()
-        .estimating_composition_calculate(&token, &context, &query.scope_id, record.composition.clone())
+        .estimating_composition_calculate(
+            &token,
+            &context,
+            &query.scope_id,
+            record.composition.clone(),
+        )
         .await
     {
         Ok(memory) => html_page(
