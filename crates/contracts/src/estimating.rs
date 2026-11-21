@@ -101,7 +101,7 @@ pub enum BudgetChange{
     Save{snapshot:BudgetRevision},
     Approve,
 }
-#[derive(Clone,Debug,Serialize,PartialEq,Eq)]
+#[derive(Clone,Debug,Serialize)]
 pub struct BudgetReply{
     pub budget:BudgetRecord,
     pub total:BudgetSummary,

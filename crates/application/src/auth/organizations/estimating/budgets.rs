@@ -62,7 +62,7 @@ impl AuthService{
         }
         let next_version=input.expected_version.unwrap_or(0).checked_add(1)
             .ok_or_else(record_conflict)?;
-        let mut snapshot=match &input.change{
+        let snapshot=match &input.change{
             BudgetChange::Save{snapshot}=>{
                 if current.as_ref().is_some_and(|r|r.state=="approved")
                     || snapshot.status==BudgetState::Approved{

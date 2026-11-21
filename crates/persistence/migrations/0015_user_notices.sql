@@ -85,7 +85,7 @@ END $$;
 CREATE POLICY own_notice_prefs ON canteiro.user_notice_preferences AS RESTRICTIVE
     USING(recipient_id=NULLIF(current_setting('canteiro.actor_id',true),'')::UUID)
     WITH CHECK(recipient_id=NULLIF(current_setting('canteiro.actor_id',true),'')::UUID);
-CREATE POLICY own_notice_records ON canteiro.user_notices AS RESTRICTIVE
+CREATE POLICY own_notice_records ON canteiro.user_notices AS RESTRICTIVE FOR SELECT
     USING(recipient_id=NULLIF(current_setting('canteiro.actor_id',true),'')::UUID)
     WITH CHECK(recipient_id=NULLIF(current_setting('canteiro.actor_id',true),'')::UUID);
 -- Histórico de tentativa de comunicação imutável, com evolução por novos fatos.

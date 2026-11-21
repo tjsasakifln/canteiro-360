@@ -48,12 +48,21 @@ CREATE INDEX cost_catalog_history ON canteiro.cost_catalog_editions
     WHERE state='published';
 CREATE FUNCTION canteiro.cost_catalog_items_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path=pg_catalog AS $$
-DECLARE current_state TEXT;
+DECLARE current_state TEXT; target_tenant UUID; target_catalog TEXT; target_edition INTEGER;
 BEGIN
+    IF TG_OP='DELETE' THEN
+        target_tenant:=OLD.tenant_id;
+        target_catalog:=OLD.catalog_id;
+        target_edition:=OLD.edition;
+    ELSE
+        target_tenant:=NEW.tenant_id;
+        target_catalog:=NEW.catalog_id;
+        target_edition:=NEW.edition;
+    END IF;
     SELECT e.state INTO current_state FROM canteiro.cost_catalog_editions e
-    WHERE e.tenant_id=COALESCE(NEW.tenant_id,OLD.tenant_id)
-    AND e.catalog_id=COALESCE(NEW.catalog_id,OLD.catalog_id)
-    AND e.edition=COALESCE(NEW.edition,OLD.edition) FOR UPDATE;
+    WHERE e.tenant_id=target_tenant
+    AND e.catalog_id=target_catalog
+    AND e.edition=target_edition FOR UPDATE;
     IF current_state IS NULL OR current_state='published' THEN
         RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='A edição publicada é imutável.';
     END IF;
