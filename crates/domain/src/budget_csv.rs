@@ -65,7 +65,7 @@ fn err(row: usize, col: usize, cause: &str) -> CellError {
         cause: cause.into(),
     }
 }
-fn safe(s: &str) -> bool {
+pub(crate) fn safe(s: &str) -> bool {
     // Planilhas podem ignorar espaços e caracteres invisíveis antes de uma
     // fórmula. A verificação vale para entrada e saída, sem executar conteúdo.
     let visible = s.trim_start_matches(|c: char| {
@@ -112,7 +112,7 @@ fn canonical_to_locale(value: String, locale: NumberLocale) -> String {
         value
     }
 }
-fn locale_number(
+pub(crate) fn locale_number(
     value: &str,
     locale: NumberLocale,
     row: usize,
@@ -152,7 +152,7 @@ fn locale_number(
     };
     Ok(value)
 }
-fn parse_csv(input: &str) -> Result<Vec<Vec<String>>, CellError> {
+pub(crate) fn parse_csv(input: &str, columns: usize, max_rows: usize) -> Result<Vec<Vec<String>>, CellError> {
     let input = input.strip_prefix('\u{feff}').unwrap_or(input);
     if input.len() > MAX_BYTES {
         return Err(err(1, 1, "Arquivo acima do limite de 8 MiB."));
@@ -205,7 +205,7 @@ fn parse_csv(input: &str) -> Result<Vec<Vec<String>>, CellError> {
             '"' => return Err(err(rows.len() + 1, row.len() + 1, "Aspas sem abertura.")),
             _ => cell.push(ch),
         }
-        if rows.len() > MAX_SERVICES + 1000 {
+        if rows.len() > max_rows {
             return Err(err(rows.len(), 1, "Limite de linhas excedido."));
         }
     }
@@ -221,7 +221,7 @@ fn parse_csv(input: &str) -> Result<Vec<Vec<String>>, CellError> {
         rows.push(row);
     }
     for (i, row) in rows.iter().enumerate() {
-        if row.len() != HEADER.len() {
+        if row.len() != columns {
             return Err(err(
                 i + 1,
                 row.len(),
@@ -333,7 +333,7 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
         .strip_prefix(FORMAT_VERSION)
         .and_then(|s| s.strip_prefix("\r\n").or_else(|| s.strip_prefix('\n')))
         .ok_or_else(|| err(1, 1, "Versão de formato não reconhecida."))?;
-    let data = parse_csv(rest)?;
+    let data = parse_csv(rest, HEADER.len(), MAX_SERVICES + 1000)?;
     if data.first() != Some(&fields()) {
         return Err(err(2, 1, "Cabeçalhos diferentes do formato oficial."));
     }
