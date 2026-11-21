@@ -97,12 +97,12 @@ impl CostSource {
             || !self.competence.as_bytes()[5..]
                 .iter()
                 .all(u8::is_ascii_digit)
-            || self.competence[..4]
+            || !self.competence[..4]
                 .parse::<u16>()
-                .is_ok_and(|year| (1900..=9999).contains(&year)) == false
-            || self.competence[5..]
+                .is_ok_and(|year| (1900..=9999).contains(&year))
+            || !self.competence[5..]
                 .parse::<u8>()
-                .is_ok_and(|month| (1..=12).contains(&month)) == false
+                .is_ok_and(|month| (1..=12).contains(&month))
         {
             return Err(CatalogError::Source);
         }
