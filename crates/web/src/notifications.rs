@@ -2,7 +2,7 @@
 use crate::projects::{hidden, shell};
 use canteiro_contracts::notifications::*;
 use leptos::prelude::*;
-pub fn page(ctx:NoticesContext,message:Option<String>,key:String)->String{
+pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String {
     let notice_rows=ctx.notices.clone().into_iter().map(|row|{
         let kind=match row.kind{
             NoticeKind::TechnicalObligation=>"Documento técnico",
@@ -27,12 +27,21 @@ pub fn page(ctx:NoticesContext,message:Option<String>,key:String)->String{
             </article>
         }
     }).collect_view();
-    let prefs=ctx.preferences.settings;
-    let version=ctx.preferences.version.map(|v|v.to_string()).unwrap_or_default();
-    let days=prefs.reminder_days.into_iter().map(|v|v.to_string())
-        .collect::<Vec<_>>().join(",");
-    shell("Pendências e notificações",
-        view!{
+    let prefs = ctx.preferences.settings;
+    let version = ctx
+        .preferences
+        .version
+        .map(|v| v.to_string())
+        .unwrap_or_default();
+    let days = prefs
+        .reminder_days
+        .into_iter()
+        .map(|v| v.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
+    shell(
+        "Pendências e notificações",
+        view! {
             <section class="record-heading">
                 <p class="eyebrow">{ctx.organization_name}</p>
                 <h1>"Pendências e notificações"</h1>
@@ -70,6 +79,6 @@ pub fn page(ctx:NoticesContext,message:Option<String>,key:String)->String{
                     })}
                 </section>
             </div>
-        }
+        },
     )
 }
