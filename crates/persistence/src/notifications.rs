@@ -6,8 +6,8 @@ use crate::{
     reliability_outbox::NotificationStep,
 };
 use chrono::{DateTime, NaiveDate, Utc};
-use uuid::Uuid;
 use tokio::time::timeout;
+use uuid::Uuid;
 
 #[derive(Clone, sqlx::FromRow)]
 pub struct StoredNotice {
