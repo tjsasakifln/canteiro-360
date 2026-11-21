@@ -179,9 +179,7 @@ impl AuthTransaction {
 impl Database {
     /// Um passo de entrega interna, atômico com a atualização do histórico.
     /// Falha de conexão durante o commit não gera dois recibos no reprocessamento.
-    pub async fn consume_user_notice_delivery(
-        &self,
-    ) -> Result<NotificationStep, PersistenceError> {
+    pub async fn consume_user_notice_delivery(&self) -> Result<NotificationStep, PersistenceError> {
         let operation = operation_id();
         let status = timeout(
             self.limits.transaction,
@@ -195,7 +193,10 @@ impl Database {
             "idle" => Ok(NotificationStep::Idle),
             "delivered" => Ok(NotificationStep::Delivered),
             "deferred" => Ok(NotificationStep::Deferred),
-            _ => Err(PersistenceError::new(PersistenceErrorKind::Internal, operation)),
+            _ => Err(PersistenceError::new(
+                PersistenceErrorKind::Internal,
+                operation,
+            )),
         }
     }
 }
