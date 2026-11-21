@@ -1,6 +1,8 @@
 //! Composições recursivas sem ciclos. BDI, descontos e incidências têm uma aplicação.
 use crate::{
-    catalogs::{CatalogError, CatalogLibrary, CostCategory, UnitConversion, require_matching_units},
+    catalogs::{
+        CatalogError, CatalogLibrary, CostCategory, UnitConversion, require_matching_units,
+    },
     decimal::{DecimalError, ExactDecimal, Percent, Quantity, UnitPrice, negotiated_unit_price},
     units::MeasureUnit,
 };
