@@ -111,7 +111,9 @@ impl AuthService {
         self.limit("estimating-catalog-compare", token, 30, 60)
             .await?;
         if before == after {
-            return Err(invalid("Selecione duas edições diferentes da mesma tabela."));
+            return Err(invalid(
+                "Selecione duas edições diferentes da mesma tabela.",
+            ));
         }
         let (mut tx, access) = self.record_access(token, Some(context)).await?;
         let a = access.ok_or_else(record_denied)?;
