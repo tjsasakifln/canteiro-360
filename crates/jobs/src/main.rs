@@ -42,25 +42,34 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 async fn run(database: &Database) {
     let mut last_connection_warning = None;
     loop {
-        let result = database.consume_contract_notification().await;
-        if result.is_ok() {
-            last_connection_warning = None;
-        }
-        match result {
-            Ok(NotificationStep::Delivered) => tokio::task::yield_now().await,
-            Ok(NotificationStep::Deferred) => {
-                tracing::warn!("Uma notificação interna foi adiada para nova tentativa.");
-                tokio::task::yield_now().await;
+        // Fila de contratos e caixa de entrada avançam de forma independente.
+        // A fila de e-mails permanece fora deste processador: sem provedor,
+        // nenhuma mensagem externa pode ser dada como entregue.
+        let contract = database.consume_contract_notification().await;
+        let notice = database.consume_user_notice_delivery().await;
+        let failed = contract.is_err() || notice.is_err();
+        let delivered = matches!(contract, Ok(NotificationStep::Delivered))
+            || matches!(notice, Ok(NotificationStep::Delivered));
+        let deferred = matches!(contract, Ok(NotificationStep::Deferred))
+            || matches!(notice, Ok(NotificationStep::Deferred));
+
+        if failed {
+            let now = Instant::now();
+            if last_connection_warning
+                .is_none_or(|last| now.duration_since(last) >= Duration::from_secs(60))
+            {
+                tracing::warn!("Não foi possível consultar uma das filas de comunicação.");
+                last_connection_warning = Some(now);
             }
-            Ok(NotificationStep::Idle) => tokio::time::sleep(Duration::from_secs(1)).await,
-            Err(_) => {
-                let now = Instant::now();
-                if last_connection_warning
-                    .is_none_or(|last| now.duration_since(last) >= Duration::from_secs(60))
-                {
-                    tracing::warn!("Não foi possível consultar a fila de notificações internas.");
-                    last_connection_warning = Some(now);
-                }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        } else {
+            last_connection_warning = None;
+            if deferred {
+                tracing::warn!("Uma comunicação foi adiada para nova tentativa.");
+            }
+            if delivered || deferred {
+                tokio::task::yield_now().await;
+            } else {
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
         }
