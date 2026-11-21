@@ -73,7 +73,7 @@ pub async fn migrate(
         GRANT SELECT, INSERT, UPDATE ON canteiro.cost_catalog_editions, canteiro.cost_compositions, canteiro.budget_records, canteiro.budget_import_batches TO {role}; \
         GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.cost_catalog_items, canteiro.budget_edit_leases TO {role}; \
         GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.contract_edit_leases TO {role}; \
-        GRANT EXECUTE ON FUNCTION canteiro.rename_contract_reference(UUID,UUID,UUID,UUID,UUID,BIGINT,TEXT,TEXT,TIMESTAMPTZ), canteiro_meta.consume_contract_notification() TO {role}; \
+        GRANT EXECUTE ON FUNCTION canteiro.rename_contract_reference(UUID,UUID,UUID,UUID,UUID,BIGINT,TEXT,TEXT,TIMESTAMPTZ), canteiro_meta.consume_contract_notification(), canteiro_meta.consume_user_notice() TO {role}; \
         GRANT UPDATE (revoked_at, version) ON canteiro.access_grants TO {role}; \
         GRANT UPDATE (min_amount) ON canteiro.access_requirements TO {role}; \
         GRANT UPDATE (threshold, approvals_above_threshold, segregate_proposer, version) ON canteiro.access_policies TO {role}; \
