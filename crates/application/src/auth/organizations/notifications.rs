@@ -127,7 +127,8 @@ impl AuthService {
         }
         let (mut tx, a) = self.record_access(token, Some(&input.context)).await?;
         let a = a.ok_or_else(record_denied)?;
-        if a.member_until.is_some_and(|until| until <= tx.now().await?) {
+        let now = tx.now().await?;
+        if a.member_until.is_some_and(|until| until <= now) {
             return Err(record_denied());
         }
         let days = input
@@ -156,7 +157,8 @@ impl AuthService {
         )
         .await?;
         self.locked(&mut tx, token).await?;
-        if a.member_until.is_some_and(|until| until <= tx.now().await?) {
+        let now = tx.now().await?;
+        if a.member_until.is_some_and(|until| until <= now) {
             return Err(record_denied());
         }
         let view = preference_view(Some(saved))?;
