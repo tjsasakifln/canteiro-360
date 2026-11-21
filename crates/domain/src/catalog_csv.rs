@@ -26,11 +26,19 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
     let input = input.strip_prefix('\u{feff}').unwrap_or(input);
     let rest = input
         .strip_prefix(FORMAT_VERSION)
-        .and_then(|value| value.strip_prefix("\r\n").or_else(|| value.strip_prefix('\n')))
+        .and_then(|value| {
+            value
+                .strip_prefix("\r\n")
+                .or_else(|| value.strip_prefix('\n'))
+        })
         .ok_or_else(|| issue(1, 1, "Versão do catálogo desconhecida."))?;
     let rows = parse_csv(rest, HEADER.len(), MAX_ITEMS + 1)?;
     if rows.first() != Some(&HEADER.iter().map(|s| (*s).to_owned()).collect()) {
-        return Err(issue(2, 1, "Cabeçalho diferente do formato de preços oficial."));
+        return Err(issue(
+            2,
+            1,
+            "Cabeçalho diferente do formato de preços oficial.",
+        ));
     }
     if rows.len() <= 1 {
         return Err(issue(3, 1, "Inclua ao menos um preço."));
@@ -59,9 +67,8 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
             unit,
             price,
         };
-        item.validate().map_err(|_| {
-            issue(line, 1, "Código, descrição ou preço inválidos.")
-        })?;
+        item.validate()
+            .map_err(|_| issue(line, 1, "Código, descrição ou preço inválidos."))?;
         if !seen.insert(item.code.clone()) {
             return Err(issue(line, 1, "Código duplicado na edição."));
         }
@@ -91,7 +98,12 @@ mod tests {
         let base = format!("{FORMAT_VERSION}\ncodigo;descricao;categoria;unidade;preco\n");
         for value in ["=1+1", " \u{200b}@SUM(1)", "+HYPERLINK(1)"] {
             let content = format!("{base}A;{value};service;m;2,00\n");
-            assert_eq!(preview_import(&content, NumberLocale::PtBr).unwrap_err().row, 3);
+            assert_eq!(
+                preview_import(&content, NumberLocale::PtBr)
+                    .unwrap_err()
+                    .row,
+                3
+            );
         }
         let repeated = format!("{base}A;Serviço;service;m;2,00\nA;Outro;service;m;3,00\n");
         let error = preview_import(&repeated, NumberLocale::PtBr).unwrap_err();
@@ -115,7 +127,10 @@ mod tests {
     #[test]
     fn rejects_broken_header_or_unclosed_quote_as_a_whole() {
         let wrong = format!("{FORMAT_VERSION}\ncodigo;descricao;categoria;unidade;valor\n");
-        assert_eq!(preview_import(&wrong, NumberLocale::PtBr).unwrap_err().row, 2);
+        assert_eq!(
+            preview_import(&wrong, NumberLocale::PtBr).unwrap_err().row,
+            2
+        );
         let broken = format!(
             "{FORMAT_VERSION}\ncodigo;descricao;categoria;unidade;preco\nA;\"sem fim;service;m;1\n"
         );
