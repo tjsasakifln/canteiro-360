@@ -1,7 +1,13 @@
 //! Pendências são fatos persistidos. A outbox não transforma um registro em entregue.
-use crate::auth::{AuthStoreError, AuthTransaction};
+use crate::{
+    Database, PersistenceError, PersistenceErrorKind,
+    auth::{AuthStoreError, AuthTransaction},
+    error::operation_id,
+    reliability_outbox::NotificationStep,
+};
 use chrono::{DateTime, NaiveDate, Utc};
 use uuid::Uuid;
+use tokio::time::timeout;
 
 #[derive(Clone, sqlx::FromRow)]
 pub struct StoredNotice {
@@ -166,6 +172,30 @@ impl AuthTransaction {
             .bind(days)
             .fetch_optional(&mut *self.tx)
             .await?)
+        }
+    }
+}
+
+impl Database {
+    /// Um passo de entrega interna, atômico com a atualização do histórico.
+    /// Falha de conexão durante o commit não gera dois recibos no reprocessamento.
+    pub async fn consume_user_notice_delivery(
+        &self,
+    ) -> Result<NotificationStep, PersistenceError> {
+        let operation = operation_id();
+        let status = timeout(
+            self.limits.transaction,
+            sqlx::query_scalar::<_, String>("SELECT canteiro_meta.consume_user_notice()")
+                .fetch_one(&self.pool),
+        )
+        .await
+        .map_err(|_| PersistenceError::new(PersistenceErrorKind::Timeout, operation))?
+        .map_err(|error| PersistenceError::from_sql(&error, operation))?;
+        match status.as_str() {
+            "idle" => Ok(NotificationStep::Idle),
+            "delivered" => Ok(NotificationStep::Delivered),
+            "deferred" => Ok(NotificationStep::Deferred),
+            _ => Err(PersistenceError::new(PersistenceErrorKind::Internal, operation)),
         }
     }
 }
