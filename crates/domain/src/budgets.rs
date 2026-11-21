@@ -211,15 +211,14 @@ impl BudgetRevision {
     pub fn remove_line(
         &mut self,
         line_id: &str,
-        referenced_compositions: bool,
-        final_document: bool,
+        is_referenced_or_final: bool,
         lease: &EditLease,
         actor: ActorId,
         session: EntityId,
         now: UtcInstant,
     ) -> Result<(), BudgetError> {
         self.confirm_edit(lease, actor, session, now)?;
-        if referenced_compositions || final_document {
+        if is_referenced_or_final {
             return Err(BudgetError::ReferencedItem);
         }
         if !self.lines.iter().any(|line| line.id == line_id) {
@@ -393,17 +392,16 @@ mod tests {
         };
         let now = "2026-11-21T15:00:00Z".parse().unwrap();
         assert_eq!(
-            b.remove_line("l-1", true, false, &lease, actor(1), entity(8), now),
+            b.remove_line("l-1", true, &lease, actor(1), entity(8), now),
             Err(BudgetError::ReferencedItem)
         );
         assert_eq!(
-            b.remove_line("l-1", false, false, &lease, actor(2), entity(8), now),
+            b.remove_line("l-1", false, &lease, actor(2), entity(8), now),
             Err(BudgetError::Lease)
         );
         assert_eq!(
             b.remove_line(
                 "l-1",
-                false,
                 false,
                 &lease,
                 actor(1),
@@ -412,7 +410,7 @@ mod tests {
             ),
             Err(BudgetError::Lease)
         );
-        b.remove_line("l-1", false, false, &lease, actor(1), entity(8), now)
+        b.remove_line("l-1", false, &lease, actor(1), entity(8), now)
             .unwrap();
         assert_eq!(b.lines.len(), 1);
     }
