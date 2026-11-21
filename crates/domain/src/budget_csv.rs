@@ -582,7 +582,10 @@ mod tests {
     fn hidden_formula_prefixes_are_rejected_in_both_directions() {
         let original = sample(1);
         let clean = export_csv(&original, NumberLocale::PtBr).unwrap();
-        for prefix in [" ", "\t", "\u{feff}", "\u{200b}", "\u{200c}", "\u{200d}", "\u{200e}", "\u{202e}", "\u{2060}", "\u{2066}", "\u{00a0}"] {
+        for prefix in [
+            " ", "\t", "\u{feff}", "\u{200b}", "\u{200c}", "\u{200d}", "\u{200e}", "\u{202e}",
+            "\u{2060}", "\u{2066}", "\u{00a0}",
+        ] {
             let attack = format!("{prefix}=HYPERLINK(1)");
             let mut outgoing = original.clone();
             outgoing.lines[0].description = attack.clone();
