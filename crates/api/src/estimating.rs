@@ -21,6 +21,8 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
     Router::new()
         .route("/api/estimating/context", get(context))
         .route("/api/estimating/catalog", get(catalog))
+        .route("/api/estimating/catalog/compare", get(catalog_compare))
+        .route("/orcamentos/catalogos/comparar", get(catalog_compare_page))
         .route("/api/estimating/catalog/publish", post(catalog_publish))
         .route(
             "/api/estimating/composition/calculate",
@@ -98,6 +100,71 @@ async fn catalog(
         Err(e) => application_failure(e),
     }
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CatalogCompareQuery {
+    organization_id: String,
+    context_version: i64,
+    scope_id: String,
+    catalog_id: String,
+    before: u32,
+    after: u32,
+}
+async fn compare_catalog(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<CatalogCompareQuery>, QueryRejection>,
+    as_page: bool,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, false) {
+        Ok(v) => v,
+        Err(e) => return *e,
+    };
+    let Ok(Query(query)) = query else {
+        return bad_input();
+    };
+    let context = ReliabilityScope {
+        organization_id: query.organization_id,
+        context_version: query.context_version,
+    };
+    match auth
+        .service()
+        .estimating_catalog_compare(
+            &token,
+            &context,
+            &query.scope_id,
+            &query.catalog_id,
+            query.before,
+            query.after,
+        )
+        .await
+    {
+        Ok(result) if as_page => match auth.service().estimating_context(&token).await {
+            Ok(ctx) => html_page(
+                canteiro_web::estimating::catalog_comparison(ctx, result),
+                StatusCode::OK,
+            ),
+            Err(error) => application_failure(error),
+        },
+        Ok(result) => private_json(result),
+        Err(error) => application_failure(error),
+    }
+}
+async fn catalog_compare(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<CatalogCompareQuery>, QueryRejection>,
+) -> Response {
+    compare_catalog(auth, headers, query, false).await
+}
+async fn catalog_compare_page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<CatalogCompareQuery>, QueryRejection>,
+) -> Response {
+    compare_catalog(auth, headers, query, true).await
+}
+
 async fn catalog_publish(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
