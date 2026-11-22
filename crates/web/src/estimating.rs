@@ -95,44 +95,17 @@ pub fn page(ctx: EstimatingContext) -> String {
                         .any(|scope| scope.id == entry.scope_id && scope.can_edit)
                 })
                 .map(|context| {
-                    let line_editors = entry
+                    let has_lines = !entry.composition.lines.is_empty();
+                    let line_options = entry
                         .composition
                         .lines
                         .clone()
                         .into_iter()
                         .map(|line| {
-                            let source = match &line.source {
-                                canteiro_domain::compositions::ComponentSource::Catalog {
-                                    catalog_id,
-                                    edition,
-                                    code,
-                                } => format!("Catálogo {catalog_id}, edição {edition}, item {code}"),
-                                canteiro_domain::compositions::ComponentSource::Composition {
-                                    code,
-                                } => format!("Composição vinculada {code}"),
-                            };
                             view! {
-                                <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
-                                    <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
-                                    <input type="hidden" name="context_version" value=context.context_version.to_string()/>
-                                    <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
-                                    <input type="hidden" name="code" value=entry.code.clone()/>
-                                    <input type="hidden" name="expected_version" value=entry.version.to_string()/>
-                                    <input type="hidden" name="csrf" value=composition_csrf.clone()/>
-                                    <input type="hidden" name="change_kind" value="coefficient"/>
-                                    <input type="hidden" name="line_id" value=line.id.clone()/>
-                                    <p>{source}</p>
-                                    <label class="record-field">
-                                        <span>{format!("Coeficiente do insumo {}", line.id)}</span>
-                                        <input type="text" name="coefficient" inputmode="decimal" maxlength="40"
-                                            value=line.coefficient.to_string() required=true/>
-                                    </label>
-                                    <label class="record-field">
-                                        <span>"Motivo da alteração do coeficiente"</span>
-                                        <input type="text" name="reason" maxlength="240" required=true/>
-                                    </label>
-                                    <button type="submit" class="secondary-button">"Salvar coeficiente em nova revisão"</button>
-                                </form>
+                                <option value=line.id.clone()>
+                                    {format!("{} · coeficiente atual {}", line.id, line.coefficient)}
+                                </option>
                             }
                         })
                         .collect_view();
@@ -183,7 +156,31 @@ pub fn page(ctx: EstimatingContext) -> String {
                             </label>
                             <button type="submit" class="secondary-button">"Salvar índices em nova revisão"</button>
                         </form>
-                        {line_editors}
+                        {has_lines.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="coefficient"/>
+                                <label class="record-field">
+                                    <span>"Linha de insumo a alterar"</span>
+                                    <select name="line_id" required=true>{line_options}</select>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Novo coeficiente decimal (use ponto)"</span>
+                                    <input type="text" name="coefficient" inputmode="decimal"
+                                        maxlength="40" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Motivo da alteração do coeficiente"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Salvar coeficiente em nova revisão"</button>
+                            </form>
+                        })}
                         </details>
                     }
                 });
