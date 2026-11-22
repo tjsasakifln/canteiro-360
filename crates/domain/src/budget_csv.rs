@@ -9,7 +9,10 @@ use crate::{
     units::MeasureUnit,
 };
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeSet, str::FromStr};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    str::FromStr,
+};
 
 pub const FORMAT_VERSION: &str = "CANTEIRO-ORCAMENTO-CSV-1";
 const HEADER: &[&str] = &[
@@ -517,6 +520,7 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
     // de atribuir toda falha de uma importação extensa aos metadados da linha 3.
     let mut service_ids = BTreeSet::new();
     let mut variation_scopes = BTreeSet::new();
+    let mut period_positions = BTreeMap::new();
     let variation_ids: BTreeSet<_> = result.variations.iter().map(|v| v.id.as_str()).collect();
     for (index, fields) in data.iter().enumerate().skip(1) {
         let row_number = starts[index] + 1;
@@ -582,7 +586,24 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     ));
                 }
             }
+            "PERIOD" => {
+                let position = fields[6]
+                    .parse::<u32>()
+                    .map_err(|_| err(row_number, 7, "Posição de período inválida."))?;
+                if period_positions.insert(position, row_number).is_some() {
+                    return Err(err(row_number, 7, "Posição de período repetida."));
+                }
+            }
             _ => {}
+        }
+    }
+    for (expected, (position, row_number)) in period_positions.iter().enumerate() {
+        if *position != expected as u32 {
+            return Err(err(
+                *row_number,
+                7,
+                "O cronograma deve usar posições consecutivas a partir de zero.",
+            ));
         }
     }
     result.validate().map_err(|e| err(3, 1, &e.to_string()))?;
@@ -1092,6 +1113,33 @@ mod tests {
         let error = preview_import(&changed, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (7, 17));
     }
+    #[test]
+    fn invalid_schedule_position_reports_real_csv_cell() {
+        let mut original = sample(2);
+        original.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                90,
+                PeriodBasis::Fixed30Days,
+                3,
+            )
+            .unwrap(),
+        );
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+        let missing_position = csv.replacen("periodo-3;2;", "periodo-3;99;", 1);
+        assert_ne!(missing_position, csv);
+        let error = preview_import(&missing_position, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (10, 7));
+        assert!(error.cause.contains("consecutivas"));
+
+        let duplicate = csv.replacen("periodo-3;2;", "periodo-3;1;", 1);
+        assert_ne!(duplicate, csv);
+        let error = preview_import(&duplicate, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (10, 7));
+        assert!(error.cause.contains("repetida"));
+        assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
+    }
+
     #[test]
     fn quote_and_delimiter_are_not_executable() {
         let mut original = sample(1);
