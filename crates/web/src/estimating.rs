@@ -1275,6 +1275,7 @@ pub fn budget_csv_published(ctx: EstimatingContext, result: BudgetReply) -> Stri
             <section class="foundation-card">
                 <h2>{format!("Orçamento {}", result.budget.scope_id)}</h2>
                 <p>{format!("Nova revisão: {}", result.budget.version)}</p>
+                <p>{format!("Identificador do registro: {}", result.budget.operation_key)}</p>
                 <p>{format!("Serviços: {}", result.budget.snapshot.lines.len())}</p>
                 <p>{format!("Valor dos serviços: R$ {}", result.total.total)}</p>
                 <p>{format!("Justificativa: {}", result.budget.reason)}</p>
