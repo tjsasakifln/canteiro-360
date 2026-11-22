@@ -45,6 +45,14 @@ END;
 $$;
 REVOKE ALL ON FUNCTION canteiro_meta.record_user_notice_failure() FROM PUBLIC;
 
+-- An employee may inspect only their own attempt history, not the delivery
+-- receipts of every other person in the same organization.
+CREATE POLICY own_user_notice_delivery_history
+ON canteiro.user_notice_delivery_history AS RESTRICTIVE FOR SELECT
+USING (
+    recipient_id = NULLIF(current_setting('canteiro.actor_id', true), '')::UUID
+);
+
 CREATE TRIGGER audit_user_notice_retry
 AFTER UPDATE OF attempts ON canteiro_meta.user_notice_queue
 FOR EACH ROW
