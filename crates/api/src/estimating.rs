@@ -693,9 +693,7 @@ async fn budget_transfer_line_form(
         private_headers(&mut response);
         return response;
     };
-    if field(&data, "operation") == "delete"
-        && field(&data, "confirm_delete") != "yes"
-    {
+    if field(&data, "operation") == "delete" && field(&data, "confirm_delete") != "yes" {
         return bad_input();
     }
     let mut snapshot = record.snapshot.clone();
