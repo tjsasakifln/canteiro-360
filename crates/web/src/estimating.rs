@@ -796,6 +796,41 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
 
 pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> String {
     let total = result.total;
+    let detail_count = result.change_details.records.len();
+    let omitted_count = result.change_details.omitted;
+    let detail_rows = result
+        .change_details
+        .records
+        .into_iter()
+        .map(|change| {
+            let kind = match change.kind {
+                "included" => "Incluído",
+                "removed" => "Removido",
+                _ => "Alterado",
+            };
+            let fields = if change.fields.is_empty() {
+                "Registro completo".to_owned()
+            } else {
+                format!("Campos: {}", change.fields.join(", "))
+            };
+            let display = |line: BudgetLine| {
+                format!(
+                    "{} · {} · {} {} × R$ {}",
+                    line.code, line.description, line.quantity, line.unit, line.price
+                )
+            };
+            let before = change.before.map(display);
+            let after = change.after.map(display);
+            view! {
+                <li class="record-summary">
+                    <strong>{format!("{} · serviço {}", kind, change.id)}</strong>
+                    <p>{fields}</p>
+                    {before.map(|text| view! { <p>{format!("Antes: {text}")}</p> })}
+                    {after.map(|text| view! { <p>{format!("Depois: {text}")}</p> })}
+                </li>
+            }
+        })
+        .collect_view();
     shell(
         "Prévia da importação",
         view! {
@@ -811,6 +846,12 @@ pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> Stri
                     result.difference.included,result.difference.changed,result.difference.removed)}</p>
                 <p>{format!("Total calculado: R$ {}",total.total)}</p>
                 <p>{format!("Quantidade de serviços: {}",result.snapshot.lines.len())}</p>
+                <details>
+                    <summary>{format!("Conferir {} diferenças por serviço",detail_count)}</summary>
+                    <p>"Mostramos as primeiras diferenças por identificador. Valores anteriores permanecem na revisão histórica."</p>
+                    <ol>{detail_rows}</ol>
+                    {(omitted_count > 0).then(||view!{<p>{format!("Outros {omitted_count} serviços não exibidos nesta amostra. Os totais acima consideram todos.")}</p>})}
+                </details>
                 <p>"Para salvar, obtenha a reserva de edição e utilize o comando autenticado de revisão. Esta prévia não equivale a uma aprovação."</p>
                 <a href="/orcamentos">"Voltar para os orçamentos"</a>
             </section>
