@@ -139,10 +139,18 @@ impl Composition {
             if !text(&line.id, 80) || !ids.insert(line.id.as_str()) {
                 return Err(CompositionError::Invalid);
             }
-            if let ComponentSource::Composition { code } = &line.source
-                && !text(code, 80)
-            {
-                return Err(CompositionError::Invalid);
+            match &line.source {
+                ComponentSource::Composition { code } if !text(code, 80) => {
+                    return Err(CompositionError::Invalid);
+                }
+                ComponentSource::Catalog {
+                    catalog_id,
+                    edition,
+                    code,
+                } if !text(catalog_id, 128) || !text(code, 128) || *edition == 0 => {
+                    return Err(CompositionError::Invalid);
+                }
+                _ => {}
             }
         }
         let mut incidence_ids = BTreeSet::new();
