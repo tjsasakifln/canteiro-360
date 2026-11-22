@@ -1,6 +1,6 @@
 use crate::reliability::ReliabilityScope;
 pub use canteiro_domain::{
-    budget_csv::{ImportDifference, NumberLocale},
+    budget_csv::{ImportDifference, ImportLineChanges, NumberLocale},
     budgets::{BudgetRevision, BudgetSchedule, BudgetState, BudgetSummary},
     catalogs::{CatalogComparison, CatalogEdition, CatalogItem, CostSource},
     compositions::{Composition, CostMemory},
@@ -146,6 +146,7 @@ pub struct BudgetImportPreviewCommand {
 pub struct BudgetImportPreviewReply {
     pub snapshot: BudgetRevision,
     pub difference: ImportDifference,
+    pub change_details: ImportLineChanges,
     pub total: BudgetSummary,
     pub base_version: Option<i64>,
     pub format: &'static str,
