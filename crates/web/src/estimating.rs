@@ -1155,6 +1155,39 @@ pub fn catalog_csv_preview(
             }
         })
         .collect_view();
+    let added = preview
+        .added_sample
+        .into_iter()
+        .map(|item| view! {
+            <article class="record-summary">
+                <p>{format!("Incluído: {} · {} · {:?} · {} · R$ {}",
+                    item.code,item.description,item.category,item.unit,item.price)}</p>
+            </article>
+        })
+        .collect_view();
+    let changed = preview
+        .changed_sample
+        .into_iter()
+        .map(|item| view! {
+            <article class="record-summary">
+                <h4>{format!("Alterado: {}",item.after.code)}</h4>
+                <p>{format!("Antes: {} · {:?} · {} · R$ {}",
+                    item.before.description,item.before.category,item.before.unit,item.before.price)}</p>
+                <p>{format!("Depois: {} · {:?} · {} · R$ {}",
+                    item.after.description,item.after.category,item.after.unit,item.after.price)}</p>
+            </article>
+        })
+        .collect_view();
+    let removed = preview
+        .removed_sample
+        .into_iter()
+        .map(|item| view! {
+            <article class="record-summary">
+                <p>{format!("Removido: {} · {} · {:?} · {} · R$ {}",
+                    item.code,item.description,item.category,item.unit,item.price)}</p>
+            </article>
+        })
+        .collect_view();
     shell(
         "Conferir tabela de custos",
         view! {
@@ -1176,6 +1209,13 @@ pub fn catalog_csv_preview(
                     preview.included,preview.changed,preview.removed)}</p>
                 <h3>"Amostra dos primeiros 20 itens"</h3>
                 {sample}
+                <h3>"Itens incluídos, até 10 exemplos"</h3>
+                {added}
+                <h3>"Itens alterados, até 10 exemplos"</h3>
+                {changed}
+                <h3>"Itens removidos, até 10 exemplos"</h3>
+                {removed}
+                <p>"A contagem acima considera todos os códigos, mesmo quando há mais de 10 diferenças. A amostra é apenas para conferência e não reduz a validação integral."</p>
             </section>
             <section class="foundation-card">
                 <h2>"Confirmar publicação imutável"</h2>
