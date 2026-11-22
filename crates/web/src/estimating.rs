@@ -829,7 +829,13 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
     )
 }
 
-pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> String {
+pub fn preview(
+    ctx: EstimatingContext,
+    result: BudgetImportPreviewReply,
+    input: BudgetImportPreviewCommand,
+) -> String {
+    let expected_version = result.base_version.map_or_else(String::new, |v| v.to_string());
+    let csrf = ctx.csrf.clone();
     let total = result.total;
     let changed_metadata = result.change_details.changed_metadata.join(", ");
     let variations_included = result.change_details.variations_included;
@@ -940,8 +946,25 @@ pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> Stri
                     <ol>{detail_rows}</ol>
                     {(omitted_count > 0).then(||view!{<p>{format!("Outros {omitted_count} serviços não exibidos nesta amostra. Os totais acima consideram todos.")}</p>})}
                 </details>
-                <p>"Para salvar, obtenha a reserva de edição e utilize o comando autenticado de revisão. Esta prévia não equivale a uma aprovação."</p>
+                <p>"A prévia não constitui aprovação nem altera a revisão histórica."</p>
                 <a href="/orcamentos">"Voltar para os orçamentos"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>"Confirmar importação integral"</h2>
+                <p>"Todos os serviços serão revalidados. O servidor exige a mesma revisão examinada, uma reserva de edição da sessão e gravação atômica. Se houver erro ou concorrência, nenhum serviço será importado."</p>
+                <form action="/orcamentos/publicar-csv" method="post" class="record-form">
+                    <input type="hidden" name="organization_id" value=input.context.organization_id/>
+                    <input type="hidden" name="context_version" value=input.context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=input.scope_id/>
+                    <input type="hidden" name="expected_version" value=expected_version/>
+                    <input type="hidden" name="csrf" value=csrf/>
+                    <textarea hidden=true name="csv">{input.csv}</textarea>
+                    <label class="record-field">
+                        <span>"Justificativa da importação e nova revisão"</span>
+                        <input type="text" name="reason" maxlength="240" required=true/>
+                    </label>
+                    <button class="primary-button" type="submit">"Confirmar e salvar orçamento completo"</button>
+                </form>
             </section>
             <section class="foundation-card">
                 <h2>"Empresa selecionada"</h2><p>{ctx.organization_name}</p>
@@ -1132,6 +1155,30 @@ pub fn catalog_csv_published(ctx: EstimatingContext, header: CatalogHeader) -> S
                     header.source.organization,header.source.competence,header.source.license)}</p>
                 <p>{format!("Empresa: {}",ctx.organization_name)}</p>
                 <a class="primary-button" href="/orcamentos">"Ver tabelas e comparar edições"</a>
+            </section>
+        },
+    )
+}
+
+pub fn budget_csv_published(ctx: EstimatingContext, result: BudgetReply) -> String {
+    shell(
+        "Orçamento importado",
+        view! {
+            <section class="record-heading">
+                <h1>"Importação registrada"</h1>
+                <p>"A revisão inteira foi gravada em uma única transação, sem alterar as anteriores."</p>
+            </section>
+            <section class="foundation-card">
+                <h2>{format!("Orçamento {}", result.budget.scope_id)}</h2>
+                <p>{format!("Nova revisão: {}", result.budget.version)}</p>
+                <p>{format!("Serviços: {}", result.budget.snapshot.lines.len())}</p>
+                <p>{format!("Valor dos serviços: R$ {}", result.total.total)}</p>
+                <p>{format!("Justificativa: {}", result.budget.reason)}</p>
+                <p>"A importação não aprova automaticamente o orçamento."</p>
+                <a href="/orcamentos" class="secondary-button">"Voltar aos orçamentos"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>"Empresa selecionada"</h2><p>{ctx.organization_name}</p>
             </section>
         },
     )
