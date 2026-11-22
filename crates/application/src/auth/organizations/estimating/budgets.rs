@@ -1,6 +1,57 @@
 use super::*;
 use canteiro_domain::budget_csv::{ImportDifference, NumberLocale};
 
+use std::collections::BTreeMap;
+
+/// Sempre confronta a referência informada com a edição publicada no mesmo escopo.
+/// Impede substituir o preço ou o código por payload direto ou importação CSV.
+async fn require_catalog_snapshot(
+    tx: &mut AuthTransaction,
+    tenant: Uuid,
+    scope: Uuid,
+    snapshot: &BudgetRevision,
+) -> Result<(), AuthError> {
+    let catalogs = snapshot
+        .lines
+        .iter()
+        .filter_map(|item| {
+            item.catalog_id
+                .as_ref()
+                .zip(item.catalog_edition)
+                .map(|(catalog, edition)| (catalog.clone(), edition))
+        })
+        .collect::<BTreeSet<_>>();
+    let mut official = BTreeMap::new();
+    for (catalog, edition) in catalogs {
+        if !tx
+            .composition_catalog_published(tenant, scope, &catalog, edition)
+            .await?
+        {
+            return Err(invalid(
+                "A tabela histórica escolhida não está publicada neste orçamento.",
+            ));
+        }
+        let rows = tx
+            .catalog_lines(
+                tenant,
+                scope,
+                &catalog,
+                i32::try_from(edition).map_err(|_| invalid("Edição inválida."))?,
+            )
+            .await?;
+        for row in rows {
+            let unit: canteiro_domain::units::MeasureUnit =
+                row.unit.parse().map_err(|_| AuthError::unavailable())?;
+            let price: canteiro_domain::decimal::UnitPrice =
+                row.price.parse().map_err(|_| AuthError::unavailable())?;
+            official.insert((catalog.clone(), edition, row.code), (unit, price));
+        }
+    }
+    snapshot.validate_catalog_references(&official).map_err(|_| {
+        invalid("O código, a unidade ou o preço não coincide com a edição histórica publicada.")
+    })
+}
+
 impl AuthService {
     pub async fn estimating_budget_lease(
         &self,
@@ -160,22 +211,7 @@ impl AuthService {
                     ));
                 }
             }
-            let mut catalogs = BTreeSet::new();
-            for item in &snapshot.lines {
-                if let (Some(catalog), Some(edition)) = (&item.catalog_id, item.catalog_edition) {
-                    catalogs.insert((catalog.clone(), edition));
-                }
-            }
-            for (catalog, edition) in catalogs {
-                if !tx
-                    .composition_catalog_published(a.tenant, scope, &catalog, edition)
-                    .await?
-                {
-                    return Err(invalid(
-                        "A tabela histórica escolhida não está publicada neste orçamento.",
-                    ));
-                }
-            }
+            require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
         }
         let state = match snapshot.status {
             BudgetState::Draft => "draft",
@@ -254,6 +290,7 @@ impl AuthService {
         let total = snapshot
             .summarize()
             .map_err(|_| invalid("Valores ou grupos inválidos no CSV."))?;
+        require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
         let difference = if let Some(old) = current {
             let before = budget_view(old)?;
             compare(&before.snapshot, &snapshot)
