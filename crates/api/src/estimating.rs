@@ -414,6 +414,27 @@ fn changed_composition_from_form(
             copied.coefficient = field(data, "coefficient").parse().ok()?;
             composition.lines.push(copied);
         }
+        "add_catalog_line" => {
+            let id = field(data, "new_line_id");
+            if matches!(id.chars().next(), Some('=' | '+' | '-' | '@')) {
+                return None;
+            }
+            let edition = field(data, "catalog_edition").parse::<u32>().ok()?;
+            if edition == 0 {
+                return None;
+            }
+            composition.lines.push(canteiro_domain::compositions::ComponentLine {
+                id: id.to_owned(),
+                source: canteiro_domain::compositions::ComponentSource::Catalog {
+                    catalog_id: field(data, "catalog_id").to_owned(),
+                    edition,
+                    code: field(data, "catalog_code").to_owned(),
+                },
+                coefficient: field(data, "coefficient").parse().ok()?,
+                unit: field(data, "unit").parse().ok()?,
+                conversion: None,
+            });
+        }
         "remove_line" => {
             let line_id = field(data, "line_id");
             if composition
