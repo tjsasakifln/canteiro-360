@@ -192,7 +192,7 @@ pub(crate) fn parse_csv(
                     closed = true;
                 }
             } else {
-                if ch == '\n' {
+                if ch == '\n' || (ch == '\r' && chars.peek() != Some(&'\n')) {
                     physical_line += 1;
                 }
                 cell.push(ch);
@@ -221,6 +221,13 @@ pub(crate) fn parse_csv(
                 physical_line += 1;
                 record_start = physical_line;
                 closed = false;
+            }
+            '\r' => {
+                return Err(err(
+                    physical_line,
+                    row.len() + 1,
+                    "Quebra de linha CR isolada não permitida; use LF ou CRLF.",
+                ));
             }
             _ if closed => {
                 return Err(err(
@@ -815,6 +822,22 @@ mod tests {
         let with_newline = "codigo;descricao\nA;regular\n";
         assert!(parse_csv(with_newline, 2, 1).is_err());
         assert_eq!(parse_csv(without_newline, 2, 2).unwrap().0.len(), 2);
+    }
+
+    #[test]
+    fn bare_carriage_return_cannot_hide_a_second_spreadsheet_record() {
+        let malicious = "a;b\ncodigo;texto\r=HYPERLINK(1)\n";
+        let error = parse_csv(malicious, 2, 10).unwrap_err();
+        assert_eq!((error.row, error.column), (2, 2));
+        assert!(error.cause.contains("CR isolada"));
+
+        let old_mac_line_ending = "a;b\rc;d";
+        assert!(parse_csv(old_mac_line_ending, 2, 10).is_err());
+
+        let legitimate = "a;b\r\ncodigo;\"texto\r\nlegítimo\"\r\n";
+        let (rows, starts) = parse_csv(legitimate, 2, 10).unwrap();
+        assert_eq!(rows[1][1], "texto\r\nlegítimo");
+        assert_eq!(starts, vec![1, 2]);
     }
 
     #[test]
