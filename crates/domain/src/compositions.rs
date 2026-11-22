@@ -369,6 +369,40 @@ mod tests {
         assert!("-1".parse::<Quantity>().is_err());
     }
     #[test]
+    fn informed_cost_still_requires_well_formed_catalog_references() {
+        let mut item = c("A");
+        item.lines.push(ComponentLine {
+            id: "insumo".into(),
+            source: ComponentSource::Catalog {
+                catalog_id: "fonte".into(),
+                edition: 1,
+                code: "COD-1".into(),
+            },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::Unit,
+            conversion: None,
+        });
+        assert!(item.validate().is_ok());
+        item.lines[0].source = ComponentSource::Catalog {
+            catalog_id: "".into(),
+            edition: 1,
+            code: "COD-1".into(),
+        };
+        assert_eq!(item.validate(), Err(CompositionError::Invalid));
+        item.lines[0].source = ComponentSource::Catalog {
+            catalog_id: "fonte".into(),
+            edition: 0,
+            code: "COD-1".into(),
+        };
+        assert_eq!(item.validate(), Err(CompositionError::Invalid));
+        item.lines[0].source = ComponentSource::Catalog {
+            catalog_id: "fonte".into(),
+            edition: 1,
+            code: " ".into(),
+        };
+        assert_eq!(item.validate(), Err(CompositionError::Invalid));
+    }
+    #[test]
     fn mutually_recursive_compositions_report_complete_cycle() {
         let mut a = c("A");
         a.cost_mode = CostMode::Formula;
