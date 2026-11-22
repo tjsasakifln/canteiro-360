@@ -108,7 +108,7 @@ pub enum BudgetError {
     #[error(transparent)]
     Decimal(#[from] DecimalError),
 }
-fn bounded(s: &str, limit: usize) -> bool {
+pub(crate) fn bounded(s: &str, limit: usize) -> bool {
     !s.trim().is_empty() && s.trim() == s && s.len() <= limit && !s.chars().any(char::is_control)
 }
 impl BudgetLine {
