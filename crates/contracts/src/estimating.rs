@@ -133,6 +133,17 @@ pub struct BudgetCommand {
 pub enum BudgetChange {
     Save { snapshot: BudgetRevision },
     RemoveLine { line_id: String },
+    /// Copia o serviço existente sem aceitar preço ou referência fornecidos pelo cliente.
+    CopyLine {
+        source_id: String,
+        new_id: String,
+        target_variation_id: String,
+    },
+    /// Move um serviço existente, preservando identidade, preço e fonte histórica.
+    MoveLine {
+        line_id: String,
+        target_variation_id: String,
+    },
     Approve,
 }
 #[derive(Clone, Debug, Serialize)]
