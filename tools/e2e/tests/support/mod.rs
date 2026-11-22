@@ -290,13 +290,34 @@ impl Browser {
 
     /// W3C attributes reflect markup; live field state must be read as a property.
     pub async fn property(&self, selector: &str, property: &str) -> TestResult<Value> {
-        let id = self.element(selector).await?;
-        self.request(
-            Method::GET,
-            &format!("element/{id}/property/{property}"),
-            None,
-        )
-        .await
+        // SSR hydration can replace a form field between finding it and reading
+        // its live value. The first stale reference is retried against a fresh
+        // element; missing fields and all other WebDriver errors still fail.
+        for attempt in 0..2 {
+            let id = self.element(selector).await?;
+            match self
+                .request(
+                    Method::GET,
+                    &format!("element/{id}/property/{property}"),
+                    None,
+                )
+                .await
+            {
+                Ok(value) => return Ok(value),
+                Err(error)
+                    if attempt == 0 && error.to_string().contains("stale element reference") =>
+                {
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                }
+                Err(error) => {
+                    return Err(format!(
+                        "WebDriver property {property} failed for {selector}: {error}"
+                    )
+                    .into());
+                }
+            }
+        }
+        Err(format!("Element was replaced twice while reading {selector}.{property}").into())
     }
 
     pub async fn enabled(&self, selector: &str) -> TestResult<bool> {
