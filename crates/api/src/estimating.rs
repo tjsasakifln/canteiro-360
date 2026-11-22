@@ -708,7 +708,10 @@ mod composition_form_tests {
         fields.insert("base_lines".into(), "insumo-02".into());
         let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
         assert_eq!(changed.incidences[0].base_lines, vec!["insumo-02"]);
-        assert_eq!(changed.incidences[0].percent, original.incidences[0].percent);
+        assert_eq!(
+            changed.incidences[0].percent,
+            original.incidences[0].percent
+        );
         assert_eq!(changed.lines, original.lines);
         assert_eq!(original.incidences[0].base_lines, vec!["insumo-01"]);
 
