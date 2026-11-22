@@ -338,3 +338,39 @@ impl AuthService {
         .await
     }
 }
+
+#[cfg(test)]
+mod import_diagnostics_tests {
+    use super::*;
+
+    #[test]
+    fn catalog_import_reports_physical_row_and_column_without_publication() {
+        let command = CatalogCsvImportCommand {
+            context: ReliabilityScope {
+                organization_id: Uuid::nil().to_string(),
+                context_version: 1,
+            },
+            scope_id: Uuid::nil().to_string(),
+            catalog_id: "historico".into(),
+            edition: 1,
+            published_on: "2026-11-01".into(),
+            source: CostSource {
+                title: "Teste".into(),
+                organization: "Fonte".into(),
+                license: "Uso interno".into(),
+                locality: "SC".into(),
+                tax_regime: "regular".into(),
+                competence: "2026-11".into(),
+            },
+            reason: "Conferência".into(),
+            csv: format!(
+                "{}\ncodigo;descricao;categoria;unidade;preco\nA;Serviço;service;m;=2+2",
+                canteiro_domain::catalog_csv::FORMAT_VERSION
+            ),
+            locale: NumberLocale::PtBr,
+        };
+        let error = edition_from_csv(&command).unwrap_err();
+        assert!(error.message().contains("Linha 3, coluna 5"));
+        assert!(error.message().contains("Conteúdo executável"));
+    }
+}
