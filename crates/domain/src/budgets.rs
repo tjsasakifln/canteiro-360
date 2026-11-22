@@ -254,6 +254,42 @@ impl BudgetRevision {
         *self = candidate;
         Ok(())
     }
+    /// Copia um serviço preservando preço, unidade e edição de catálogo.
+    /// O servidor deve conferir reserva, autorização e versão antes de salvar.
+    /// A operação não modifica o orçamento se a cópia for inválida.
+    pub fn copy_line(
+        &mut self,
+        source_id: &str,
+        new_id: &str,
+        target_variation_id: &str,
+    ) -> Result<(), BudgetError> {
+        if self.status == BudgetState::Approved {
+            return Err(BudgetError::Definitive);
+        }
+        if !bounded(new_id, 120)
+            || self.lines.len() >= 100_000
+            || self.lines.iter().any(|line| line.id == new_id)
+            || !self
+                .variations
+                .iter()
+                .any(|variation| variation.id == target_variation_id)
+        {
+            return Err(BudgetError::Structure);
+        }
+        let mut copy = self
+            .lines
+            .iter()
+            .find(|line| line.id == source_id)
+            .ok_or(BudgetError::Structure)?
+            .clone();
+        copy.id = new_id.to_owned();
+        copy.variation_id = target_variation_id.to_owned();
+        let mut candidate = self.clone();
+        candidate.lines.push(copy);
+        candidate.summarize()?;
+        *self = candidate;
+        Ok(())
+    }
     pub fn confirm_edit(
         &self,
         lease: &EditLease,
@@ -532,6 +568,38 @@ mod tests {
             draft.edit_line_values("l-2", "1".parse().unwrap(), "1".parse().unwrap()),
             Err(BudgetError::Definitive)
         );
+    }
+    #[test]
+    fn copying_service_preserves_catalog_provenance_schedule_and_atomicity() {
+        let mut draft = budget();
+        let original = draft.clone();
+        draft.copy_line("l-1", "l-3", "v-02").unwrap();
+        assert_eq!(draft.lines.len(), 3);
+        assert_eq!(draft.lines[2].id, "l-3");
+        assert_eq!(draft.lines[2].variation_id, "v-02");
+        assert_eq!(draft.lines[2].catalog_id, original.lines[0].catalog_id);
+        assert_eq!(draft.lines[2].catalog_edition, original.lines[0].catalog_edition);
+        assert_eq!(draft.lines[2].price, original.lines[0].price);
+        assert_eq!(draft.schedule, original.schedule);
+        assert_eq!(draft.summarize().unwrap().total.to_string(), "430.00");
+
+        let before_failure = draft.clone();
+        for (source, id, variation) in [
+            ("l-1", "l-3", "v-01"),
+            ("missing", "new", "v-01"),
+            ("l-1", "new", "missing"),
+            ("l-1", "=1+1", "v-01"),
+        ] {
+            assert!(draft.copy_line(source, id, variation).is_err());
+            assert_eq!(draft, before_failure);
+        }
+        draft.status = BudgetState::Approved;
+        let before_approval = draft.clone();
+        assert_eq!(
+            draft.copy_line("l-1", "l-4", "v-02"),
+            Err(BudgetError::Definitive)
+        );
+        assert_eq!(draft, before_approval);
     }
     #[test]
     fn stale_reservation_and_referenced_item_cannot_delete() {
