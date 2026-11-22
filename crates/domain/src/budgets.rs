@@ -291,6 +291,34 @@ impl BudgetRevision {
         *self = candidate;
         Ok(())
     }
+    /// Recorta e cola um serviço em outra variação sem alterar preço ou origem.
+    /// A gravação no servidor continua condicionada a reserva e versão atuais.
+    pub fn move_line(
+        &mut self,
+        line_id: &str,
+        target_variation_id: &str,
+    ) -> Result<(), BudgetError> {
+        if self.status == BudgetState::Approved {
+            return Err(BudgetError::Definitive);
+        }
+        if !self
+            .variations
+            .iter()
+            .any(|variation| variation.id == target_variation_id)
+        {
+            return Err(BudgetError::Structure);
+        }
+        let mut candidate = self.clone();
+        let line = candidate
+            .lines
+            .iter_mut()
+            .find(|line| line.id == line_id)
+            .ok_or(BudgetError::Structure)?;
+        line.variation_id = target_variation_id.to_owned();
+        candidate.summarize()?;
+        *self = candidate;
+        Ok(())
+    }
     pub fn confirm_edit(
         &self,
         lease: &EditLease,
@@ -601,6 +629,25 @@ mod tests {
             Err(BudgetError::Definitive)
         );
         assert_eq!(draft, before_approval);
+    }
+    #[test]
+    fn moving_service_is_atomic_and_does_not_reprice_or_discard_schedule() {
+        let mut draft = budget();
+        let original = draft.clone();
+        draft.move_line("l-1", "v-02").unwrap();
+        assert_eq!(draft.lines[0].variation_id, "v-02");
+        assert_eq!(draft.lines[0].price, original.lines[0].price);
+        assert_eq!(draft.lines[0].catalog_id, original.lines[0].catalog_id);
+        assert_eq!(draft.lines[0].catalog_edition, original.lines[0].catalog_edition);
+        assert_eq!(draft.schedule, original.schedule);
+        assert_eq!(draft.summarize().unwrap().total.to_string(), "230.00");
+
+        let stable = draft.clone();
+        assert_eq!(draft.move_line("l-1", "unknown"), Err(BudgetError::Structure));
+        assert_eq!(draft.move_line("unknown", "v-02"), Err(BudgetError::Structure));
+        assert_eq!(draft, stable);
+        draft.status = BudgetState::Approved;
+        assert_eq!(draft.move_line("l-1", "v-01"), Err(BudgetError::Definitive));
     }
     #[test]
     fn stale_reservation_and_referenced_item_cannot_delete() {
