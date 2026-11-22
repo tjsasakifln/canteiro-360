@@ -58,7 +58,8 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         )
         .route("/orcamentos/servicos/editar", get(budget_edit_line_page))
         .route("/orcamentos/servicos/salvar", post(budget_save_line_form))
-        .route("/orcamentos/servicos/copiar", post(budget_copy_line_form))
+        .route("/orcamentos/servicos/copiar", post(budget_transfer_line_form))
+        .route("/orcamentos/servicos/mover", post(budget_transfer_line_form))
         .route("/api/estimating/budget/lease", post(budget_lease))
         .route("/api/estimating/budget/command", post(budget_write))
         .route(
@@ -626,9 +627,9 @@ async fn budget_save_line_form(
     }
 }
 
-/// A cópia passa pelo mesmo contrato de reserva, concorrência e trilha de
-/// auditoria da edição. A identidade e a origem do preço são preservadas.
-async fn budget_copy_line_form(
+/// Copiar ou mover um serviço exige reserva, concorrência e auditoria da edição.
+/// A identidade e a origem do preço original são preservadas.
+async fn budget_transfer_line_form(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
     input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
@@ -683,11 +684,16 @@ async fn budget_copy_line_form(
         return response;
     };
     let mut snapshot = record.snapshot.clone();
-    if snapshot.copy_line(
-        field(&data, "item_id"),
-        field(&data, "new_item_id"),
-        field(&data, "variation_id"),
-    ).is_err() {
+    let result = match field(&data, "operation") {
+        "copy" => snapshot.copy_line(
+            field(&data, "item_id"),
+            field(&data, "new_item_id"),
+            field(&data, "variation_id"),
+        ),
+        "move" => snapshot.move_line(field(&data, "item_id"), field(&data, "variation_id")),
+        _ => return bad_input(),
+    };
+    if result.is_err() {
         return bad_input();
     }
     snapshot.revision = revision;
