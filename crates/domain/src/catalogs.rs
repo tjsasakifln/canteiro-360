@@ -405,7 +405,11 @@ mod tests {
         .unwrap();
         let difference = before.compare_to(&after).unwrap();
         assert_eq!(
-            (difference.added.len(), difference.changed.len(), difference.removed.len()),
+            (
+                difference.added.len(),
+                difference.changed.len(),
+                difference.removed.len()
+            ),
             (1, 1, 1)
         );
         assert_eq!(difference.added[0].code, "NOVO");
