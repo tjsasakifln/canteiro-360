@@ -551,6 +551,12 @@ pub struct ImportLineChange {
 pub struct ImportLineChanges {
     pub records: Vec<ImportLineChange>,
     pub omitted: usize,
+    pub changed_metadata: Vec<&'static str>,
+    pub variations_included: usize,
+    pub variations_changed: usize,
+    pub variations_removed: usize,
+    pub previous_schedule: Option<BudgetSchedule>,
+    pub imported_schedule: Option<BudgetSchedule>,
 }
 
 /// Compara uma importação com a revisão existente sem modificar nenhuma delas.
@@ -629,9 +635,55 @@ pub fn compare_details(
             after: after.cloned(),
         });
     }
+    // As diferenças estruturais também afetam o aceite: não se limitam
+    // aos serviços. Compare sem depender da ordem no arquivo importado.
+    let previous_variations: std::collections::BTreeMap<_, _> = existing
+        .into_iter()
+        .flat_map(|budget| budget.variations.iter())
+        .map(|variation| (&variation.id, variation))
+        .collect();
+    let imported_variations: std::collections::BTreeMap<_, _> = incoming
+        .variations
+        .iter()
+        .map(|variation| (&variation.id, variation))
+        .collect();
+    let mut changed_metadata = Vec::new();
+    if let Some(previous) = existing {
+        if previous.budget_id != incoming.budget_id {
+            changed_metadata.push("identificação do orçamento");
+        }
+        if previous.revision != incoming.revision {
+            changed_metadata.push("revisão");
+        }
+        if previous.status != incoming.status {
+            changed_metadata.push("estado");
+        }
+        if previous.responsible_id != incoming.responsible_id {
+            changed_metadata.push("responsável");
+        }
+    }
     ImportLineChanges {
         omitted: total.saturating_sub(records.len()),
         records,
+        changed_metadata,
+        variations_included: imported_variations
+            .keys()
+            .filter(|id| !previous_variations.contains_key(*id))
+            .count(),
+        variations_changed: imported_variations
+            .iter()
+            .filter(|(id, variation)| {
+                previous_variations
+                    .get(*id)
+                    .is_some_and(|previous| *previous != *variation)
+            })
+            .count(),
+        variations_removed: previous_variations
+            .keys()
+            .filter(|id| !imported_variations.contains_key(*id))
+            .count(),
+        previous_schedule: existing.and_then(|budget| budget.schedule.clone()),
+        imported_schedule: incoming.schedule.clone(),
     }
 }
 
@@ -709,6 +761,66 @@ mod tests {
         assert_eq!(original.lines.len(), 3);
     }
 
+    #[test]
+    fn detailed_comparison_detects_variations_schedule_and_revision_metadata() {
+        let mut previous = sample(2);
+        previous.variations.push(BudgetVariation {
+            id: "sem-servicos".into(),
+            work_id: format!("{:032x}", 3_u8).parse().unwrap(),
+            scope: "Frente sem serviços".into(),
+        });
+        previous.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                60,
+                PeriodBasis::CivilMonths,
+                2,
+            )
+            .unwrap(),
+        );
+        let mut imported = previous.clone();
+        imported.revision += 1;
+        imported.variations[0].scope = "Frente revisada".into();
+        imported.variations.remove(1);
+        imported.variations.push(BudgetVariation {
+            id: "nova-frente".into(),
+            work_id: format!("{:032x}", 4_u8).parse().unwrap(),
+            scope: "Nova frente".into(),
+        });
+        imported.schedule.as_mut().unwrap().deadline_days = 90;
+
+        let delta = compare_details(Some(&previous), &imported);
+        assert_eq!(delta.records.len(), 0);
+        assert_eq!(delta.changed_metadata, vec!["revisão"]);
+        assert_eq!(
+            (delta.variations_included, delta.variations_changed, delta.variations_removed),
+            (1, 1, 1)
+        );
+        assert_eq!(delta.previous_schedule, previous.schedule);
+        assert_eq!(delta.imported_schedule, imported.schedule);
+    }
+
+    #[test]
+    fn new_budget_preview_reports_structure_without_inventing_previous_schedule() {
+        let mut imported = sample(10_000);
+        imported.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                30,
+                PeriodBasis::Fixed30Days,
+                1,
+            )
+            .unwrap(),
+        );
+        let delta = compare_details(None, &imported);
+        assert_eq!(delta.variations_included, 1);
+        assert_eq!(delta.variations_changed, 0);
+        assert_eq!(delta.variations_removed, 0);
+        assert!(delta.changed_metadata.is_empty());
+        assert!(delta.previous_schedule.is_none());
+        assert_eq!(delta.imported_schedule, imported.schedule);
+        assert_eq!(delta.omitted, 10_000 - MAX_IMPORT_CHANGE_DETAILS);
+    }
     #[test]
     fn detailed_comparison_limits_display_but_counts_ten_thousand_services() {
         let incoming = sample(10_000);
