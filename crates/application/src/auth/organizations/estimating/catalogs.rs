@@ -276,27 +276,39 @@ impl AuthService {
                 header.catalog_id == edition.catalog_id && header.edition < edition_number
             })
             .max_by_key(|header| header.edition);
-        let (previous_edition, included, changed, removed) = if let Some(previous) = previous {
-            let old = load_catalog(
-                &mut tx,
-                a.tenant,
-                scope,
-                &edition.catalog_id,
-                previous.edition as u32,
-            )
-            .await?;
-            let differences = old
-                .compare_to(&edition)
-                .map_err(|_| AuthError::unavailable())?;
-            (
-                Some(previous.edition as u32),
-                differences.added.len(),
-                differences.changed.len(),
-                differences.removed.len(),
-            )
-        } else {
-            (None, edition.items.len(), 0, 0)
-        };
+        let (previous_edition, included, changed, removed, added_sample, changed_sample, removed_sample) =
+            if let Some(previous) = previous {
+                let old = load_catalog(
+                    &mut tx,
+                    a.tenant,
+                    scope,
+                    &edition.catalog_id,
+                    previous.edition as u32,
+                )
+                .await?;
+                let differences = old
+                    .compare_to(&edition)
+                    .map_err(|_| AuthError::unavailable())?;
+                (
+                    Some(previous.edition as u32),
+                    differences.added.len(),
+                    differences.changed.len(),
+                    differences.removed.len(),
+                    differences.added.into_iter().take(10).collect(),
+                    differences.changed.into_iter().take(10).collect(),
+                    differences.removed.into_iter().take(10).collect(),
+                )
+            } else {
+                (
+                    None,
+                    edition.items.len(),
+                    0,
+                    0,
+                    edition.items.values().take(10).cloned().collect(),
+                    Vec::new(),
+                    Vec::new(),
+                )
+            };
         self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
             .await?;
         tx.commit().await?;
@@ -314,6 +326,9 @@ impl AuthService {
             included,
             changed,
             removed,
+            added_sample,
+            changed_sample,
+            removed_sample,
         })
     }
 
