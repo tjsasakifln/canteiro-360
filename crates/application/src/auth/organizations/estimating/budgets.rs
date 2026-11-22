@@ -2,6 +2,8 @@ use super::*;
 use canteiro_domain::budget_csv::{ImportDifference, NumberLocale, compare_details};
 
 use std::collections::BTreeMap;
+use sha2::{Digest, Sha256};
+use canteiro_persistence::budget_imports::NewBudgetImport;
 
 fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision, AuthError> {
     preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
@@ -366,6 +368,41 @@ impl AuthService {
                 compare_details(None, &snapshot),
             )
         };
+        // Vincula a prévia a um hash do arquivo integral, à sessão e à revisão-base.
+        // Novos orçamentos sem revisão-base continuam no fluxo de primeira gravação.
+        let batch_id = if let Some(version) = base_version {
+            let sha256: [u8; 32] = Sha256::digest(input.csv.as_bytes()).into();
+            let payload =
+                serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
+            let count = |n: usize| {
+                i32::try_from(n).map_err(|_| invalid("A quantidade de serviços excede o limite."))
+            };
+            let batch = NewBudgetImport {
+                tenant: a.tenant,
+                id: Uuid::new_v4(),
+                scope,
+                actor: a.actor.id,
+                session: a.actor.session,
+                base_version: version,
+                locale: match input.locale {
+                    NumberLocale::Canonical => "canonical",
+                    NumberLocale::PtBr => "pt-BR",
+                },
+                sha256: &sha256,
+                preview: &payload,
+                included: count(difference.included)?,
+                changed: count(difference.changed)?,
+                removed: count(difference.removed)?,
+            };
+            Some(
+                tx.budget_import_stage(&batch)
+                    .await?
+                    .ok_or_else(record_conflict)?
+                    .to_string(),
+            )
+        } else {
+            None
+        };
         self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
             .await?;
         tx.commit().await?;
@@ -375,6 +412,7 @@ impl AuthService {
             change_details,
             total,
             base_version,
+            batch_id,
             format: FORMAT_VERSION,
         })
     }
