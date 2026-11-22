@@ -26,7 +26,7 @@ struct Actor {
     mfa: bool,
 }
 
-fn invalid(message: &'static str) -> AuthError {
+fn invalid(message: impl Into<String>) -> AuthError {
     AuthError::new(AuthErrorKind::InvalidInput, "invalid_input", message)
 }
 fn denied() -> AuthError {
