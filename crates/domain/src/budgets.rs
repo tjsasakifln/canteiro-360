@@ -356,6 +356,29 @@ impl BudgetRevision {
         *self = candidate;
         Ok(())
     }
+    /// Recria o rateio linear com revisão explícita de datas, base e períodos.
+    /// O serviço valida novamente reserva, versão e escopo antes do commit.
+    pub fn reschedule_linear(
+        &mut self,
+        starts_on: CivilDate,
+        deadline_days: u32,
+        basis: PeriodBasis,
+        periods: u32,
+    ) -> Result<(), BudgetError> {
+        if self.status == BudgetState::Approved {
+            return Err(BudgetError::Definitive);
+        }
+        let mut candidate = self.clone();
+        candidate.schedule = Some(BudgetSchedule::linear(
+            starts_on,
+            deadline_days,
+            basis,
+            periods,
+        )?);
+        candidate.summarize()?;
+        *self = candidate;
+        Ok(())
+    }
     pub fn confirm_edit(
         &self,
         lease: &EditLease,
@@ -728,6 +751,57 @@ mod tests {
         approved.status = BudgetState::Approved;
         assert_eq!(
             approved.remove_unlinked_line("l-2"),
+            Err(BudgetError::Definitive)
+        );
+    }
+    #[test]
+    fn rescheduling_is_atomic_keeps_costs_and_rejects_definitive_versions() {
+        let mut draft = budget();
+        let original = draft.clone();
+        assert_eq!(
+            draft.reschedule_linear(
+                "2026-12-01".parse().unwrap(),
+                0,
+                PeriodBasis::CivilMonths,
+                4,
+            ),
+            Err(BudgetError::Schedule)
+        );
+        assert_eq!(draft, original);
+        draft
+            .reschedule_linear(
+                "2026-12-01".parse().unwrap(),
+                120,
+                PeriodBasis::CivilMonths,
+                4,
+            )
+            .unwrap();
+        assert_eq!(draft.lines, original.lines);
+        assert_eq!(draft.variations, original.variations);
+        assert_eq!(draft.summarize().unwrap(), original.summarize().unwrap());
+        let schedule = draft.schedule.as_ref().unwrap();
+        assert_eq!(schedule.starts_on.to_string(), "2026-12-01");
+        assert_eq!(schedule.periods.len(), 4);
+        assert_eq!(schedule.periods[0].percentage.to_string(), "25.0000");
+        let stable = draft.clone();
+        assert_eq!(
+            draft.reschedule_linear(
+                "2026-12-01".parse().unwrap(),
+                120,
+                PeriodBasis::CivilMonths,
+                0,
+            ),
+            Err(BudgetError::Schedule)
+        );
+        assert_eq!(draft, stable);
+        draft.status = BudgetState::Approved;
+        assert_eq!(
+            draft.reschedule_linear(
+                "2026-12-01".parse().unwrap(),
+                120,
+                PeriodBasis::CivilMonths,
+                4,
+            ),
             Err(BudgetError::Definitive)
         );
     }
