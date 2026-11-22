@@ -148,6 +148,19 @@ pub fn page(ctx: EstimatingContext) -> String {
                             }
                         })
                         .collect_view();
+                    let incidence_base_options = entry
+                        .composition
+                        .incidences
+                        .clone()
+                        .into_iter()
+                        .map(|incidence| {
+                            view! {
+                                <option value=incidence.id.clone()>
+                                    {format!("{} · base atual: {}", incidence.id, incidence.base_lines.join(", "))}
+                                </option>
+                            }
+                        })
+                        .collect_view();
                     let informed_cost = match &entry.composition.cost_mode {
                         canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
                             Some(cost.to_string())
@@ -298,6 +311,32 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <input type="text" name="reason" maxlength="240" required=true/>
                                 </label>
                                 <button type="submit" class="secondary-button">"Salvar incidência em nova revisão"</button>
+                            </form>
+                        })}
+                        {has_incidences.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="incidence_base"/>
+                                <label class="record-field">
+                                    <span>"Incidência com base a revisar"</span>
+                                    <select name="incidence_id" required=true>{incidence_base_options}</select>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Nova base, com IDs existentes separados por vírgula"</span>
+                                    <input type="text" name="base_lines" maxlength="2000"
+                                        placeholder="insumo-01, insumo-02" required=true/>
+                                </label>
+                                <p>"Cada identificador deve existir na composição; não repita linhas."</p>
+                                <label class="record-field">
+                                    <span>"Motivo da alteração da base de incidência"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Salvar base da incidência em nova revisão"</button>
                             </form>
                         })}
                         {informed_cost.map(|amount| view! {
