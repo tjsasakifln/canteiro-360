@@ -33,7 +33,7 @@ const HEADER: &[&str] = &[
     "catalogo",
     "edicao",
 ];
-const MAX_BYTES: usize = 8 * 1024 * 1024;
+pub(crate) const MAX_BYTES: usize = 8 * 1024 * 1024;
 const MAX_SERVICES: usize = 100_000;
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -368,6 +368,10 @@ pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String
     Ok(out)
 }
 pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevision, CellError> {
+    // A declaração de versão também integra o limite do arquivo recebido.
+    if input.len() > MAX_BYTES {
+        return Err(err(1, 1, "Arquivo acima do limite de 8 MiB."));
+    }
     let input = input.strip_prefix('\u{feff}').unwrap_or(input);
     let rest = input
         .strip_prefix(FORMAT_VERSION)
@@ -712,6 +716,14 @@ mod tests {
         assert_eq!(comparison.omitted, 10_000 - MAX_IMPORT_CHANGE_DETAILS);
         assert!(comparison.records.iter().all(|row| row.kind == "included"));
     }
+    #[test]
+    fn version_header_counts_toward_total_input_size() {
+        let oversized = format!("{FORMAT_VERSION}\n{}", "x".repeat(MAX_BYTES));
+        let error = preview_import(&oversized, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (1, 1));
+        assert_eq!(error.cause, "Arquivo acima do limite de 8 MiB.");
+    }
+
     #[test]
     fn schedule_survives_csv_roundtrip() {
         let mut original = sample(3);
