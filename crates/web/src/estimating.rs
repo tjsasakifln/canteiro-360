@@ -797,6 +797,30 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
 
 pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> String {
     let total = result.total;
+    let changed_metadata = result.change_details.changed_metadata.join(", ");
+    let variations_included = result.change_details.variations_included;
+    let variations_changed = result.change_details.variations_changed;
+    let variations_removed = result.change_details.variations_removed;
+    let schedule_changed =
+        result.change_details.previous_schedule != result.change_details.imported_schedule;
+    let schedule_label = |schedule: &BudgetSchedule| {
+        let basis = match schedule.basis {
+            canteiro_domain::budgets::PeriodBasis::Fixed30Days => "períodos de 30 dias",
+            canteiro_domain::budgets::PeriodBasis::CivilMonths => "meses civis",
+        };
+        let periods = schedule
+            .periods
+            .iter()
+            .map(|period| format!("{}: {}%", period.id, period.percentage))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!(
+            "Início: {} · prazo: {} dias · base: {} · rateio: {}",
+            schedule.starts_on, schedule.deadline_days, basis, periods
+        )
+    };
+    let before_schedule = result.change_details.previous_schedule.as_ref().map(&schedule_label);
+    let after_schedule = result.change_details.imported_schedule.as_ref().map(&schedule_label);
     let detail_count = result.change_details.records.len();
     let omitted_count = result.change_details.omitted;
     let detail_rows = result
@@ -847,6 +871,27 @@ pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> Stri
                     result.difference.included,result.difference.changed,result.difference.removed)}</p>
                 <p>{format!("Total calculado: R$ {}",total.total)}</p>
                 <p>{format!("Quantidade de serviços: {}",result.snapshot.lines.len())}</p>
+                <h3>"Estrutura e cronograma"</h3>
+                <p>{format!(
+                    "Variações incluídas: {} · modificadas: {} · removidas: {}",
+                    variations_included, variations_changed, variations_removed
+                )}</p>
+                {(!changed_metadata.is_empty()).then(||view! {
+                    <p class="record-status">{format!("Metadados alterados: {changed_metadata}")}</p>
+                })}
+                {schedule_changed.then(||view! {
+                    <div class="record-summary">
+                        <p class="record-status">"O cronograma foi alterado na importação."</p>
+                        <p>{format!(
+                            "Anterior: {}",
+                            before_schedule.unwrap_or_else(|| "sem cronograma".into())
+                        )}</p>
+                        <p>{format!(
+                            "Importado: {}",
+                            after_schedule.unwrap_or_else(|| "sem cronograma".into())
+                        )}</p>
+                    </div>
+                })}
                 <details>
                     <summary>{format!("Conferir {} diferenças por serviço",detail_count)}</summary>
                     <p>"Mostramos as primeiras diferenças por identificador. Valores anteriores permanecem na revisão histórica."</p>
