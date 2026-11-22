@@ -388,11 +388,9 @@ impl BudgetRevision {
         if is_referenced_or_final {
             return Err(BudgetError::ReferencedItem);
         }
-        if !self.lines.iter().any(|line| line.id == line_id) {
-            return Err(BudgetError::Structure);
-        }
-        self.lines.retain(|line| line.id != line_id);
-        Ok(())
+        // A indicação externa de referências não substitui a verificação
+        // da origem histórica presente no próprio orçamento.
+        self.remove_unlinked_line(line_id)
     }
 }
 impl BudgetSchedule {
@@ -762,8 +760,16 @@ mod tests {
             ),
             Err(BudgetError::Lease)
         );
-        b.remove_line("l-1", false, &lease, actor(1), entity(8), now)
+        let original = b.clone();
+        assert_eq!(
+            b.remove_line("l-1", false, &lease, actor(1), entity(8), now),
+            Err(BudgetError::ReferencedItem)
+        );
+        assert_eq!(b, original);
+        b.remove_line("l-2", false, &lease, actor(1), entity(8), now)
             .unwrap();
         assert_eq!(b.lines.len(), 1);
+        assert_eq!(b.lines[0].id, "l-1");
+        assert_eq!(b.schedule, original.schedule);
     }
 }
