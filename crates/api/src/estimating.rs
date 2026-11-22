@@ -423,7 +423,10 @@ fn changed_composition_from_form(
             {
                 return None;
             }
-            let index = composition.lines.iter().position(|line| line.id == line_id)?;
+            let index = composition
+                .lines
+                .iter()
+                .position(|line| line.id == line_id)?;
             composition.lines.remove(index);
         }
         "incidence" => {
