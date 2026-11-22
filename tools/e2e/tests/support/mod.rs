@@ -321,7 +321,9 @@ impl Browser {
                 {
                     tokio::time::sleep(Duration::from_millis(50)).await;
                 }
-                Err(error) => return Err(error),
+                Err(error) => {
+                    return Err(format!("WebDriver click failed for {selector}: {error}").into());
+                }
             }
         }
         Err(format!("Element was replaced while clicking: {selector}").into())
