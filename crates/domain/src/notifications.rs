@@ -223,6 +223,12 @@ mod tests {
         let mut inbox = Inbox::default();
         assert_eq!(inbox.record(notice()).unwrap(), DeliveryEffect::Created);
         assert_eq!(inbox.record(notice()).unwrap(), DeliveryEffect::AlreadySeen);
+        let mut changed = notice();
+        changed.essential = false;
+        assert_eq!(inbox.record(changed), Err(NoticeError::Unauthorized));
+        let mut changed = notice();
+        changed.due_on = Some("2026-12-05".parse().unwrap());
+        assert_eq!(inbox.record(changed), Err(NoticeError::Unauthorized));
         assert_eq!(inbox.for_recipient(tenant(1), actor(2)).len(), 1);
         let n = inbox.get_mut(&notice().identity).unwrap();
         n.record_attempt(date(), false).unwrap();
