@@ -1589,10 +1589,12 @@ async fn publish_budget_csv_form(
         Ok(value) => value,
         Err(error) => return application_failure(error),
     };
-    if preview.base_version != expected_version {
+    if preview.base_version != expected_version
+        || preview.batch_id.as_deref().unwrap_or("") != field(&data, "batch_id")
+    {
         let mut response = (
             StatusCode::CONFLICT,
-            "O orçamento mudou desde a prévia. Confira novamente o arquivo antes de publicar.",
+            "O orçamento ou o lote mudou desde a prévia. Confira novamente o arquivo antes de publicar.",
         )
             .into_response();
         private_headers(&mut response);
@@ -1626,7 +1628,11 @@ async fn publish_budget_csv_form(
     let command = BudgetCommand {
         context,
         scope_id: input.scope_id,
-        operation_key: uuid::Uuid::new_v4().to_string(),
+        // A operação da importação é a identidade durável da prévia conferida.
+        operation_key: preview
+            .batch_id
+            .clone()
+            .unwrap_or_else(|| uuid::Uuid::new_v4().to_string()),
         expected_version,
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
