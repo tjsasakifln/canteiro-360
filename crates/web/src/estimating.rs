@@ -909,12 +909,17 @@ pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> Stri
 }
 
 pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> String {
+    const MAX_VISIBLE_CHANGES: usize = 30;
     let added_count = result.added.len();
     let removed_count = result.removed.len();
     let changed_count = result.changed.len();
+    let added_omitted = added_count.saturating_sub(MAX_VISIBLE_CHANGES);
+    let removed_omitted = removed_count.saturating_sub(MAX_VISIBLE_CHANGES);
+    let changed_omitted = changed_count.saturating_sub(MAX_VISIBLE_CHANGES);
     let added = result
         .added
         .into_iter()
+        .take(MAX_VISIBLE_CHANGES)
         .map(|item| {
             view! {
                 <article class="record-summary">
@@ -927,6 +932,7 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
     let removed = result
         .removed
         .into_iter()
+        .take(MAX_VISIBLE_CHANGES)
         .map(|item| {
             view! {
                 <article class="record-summary">
@@ -939,6 +945,7 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
     let changed = result
         .changed
         .into_iter()
+        .take(MAX_VISIBLE_CHANGES)
         .map(|item| {
             view! {
                 <article class="record-summary">
@@ -982,12 +989,21 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
                 <h3>"Valores alterados ou dados corrigidos"</h3>
                 {changed_count.eq(&0).then(||view!{<p>"Nenhum item alterado."</p>})}
                 {changed}
+                {(changed_omitted > 0).then(||view! {<p>{format!(
+                    "Outros {changed_omitted} itens alterados não exibidos. A contagem considera todos."
+                )}</p>})}
                 <h3>"Itens incluídos"</h3>
                 {added_count.eq(&0).then(||view!{<p>"Nenhum item incluído."</p>})}
                 {added}
+                {(added_omitted > 0).then(||view! {<p>{format!(
+                    "Outros {added_omitted} itens incluídos não exibidos. A contagem considera todos."
+                )}</p>})}
                 <h3>"Itens removidos"</h3>
                 {removed_count.eq(&0).then(||view!{<p>"Nenhum item removido."</p>})}
                 {removed}
+                {(removed_omitted > 0).then(||view! {<p>{format!(
+                    "Outros {removed_omitted} itens removidos não exibidos. A contagem considera todos."
+                )}</p>})}
             </section>
             <section class="foundation-card">
                 <h2>"Empresa consultada"</h2>
