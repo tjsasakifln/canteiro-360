@@ -4,12 +4,31 @@ use canteiro_contracts::estimating::*;
 use canteiro_domain::budgets::BudgetLine;
 use leptos::prelude::*;
 
+fn brazilian_competence() -> String {
+    chrono::Utc::now()
+        .with_timezone(&chrono_tz::America::Sao_Paulo)
+        .format("%Y-%m")
+        .to_string()
+}
+
+/// A edição é uma revisão editorial, não uma garantia de competência mais recente.
+fn competence_flags(
+    competence: &str,
+    previous: Option<&str>,
+    today: &str,
+) -> (bool, bool) {
+    (
+        competence < today,
+        previous.is_some_and(|earlier| competence < earlier),
+    )
+}
+
 pub fn page(ctx: EstimatingContext) -> String {
     let scopes = ctx.scopes.clone();
     let selected = ctx.context.clone();
     let all_catalogs = ctx.catalogs.clone();
     let comparison_context = ctx.context.clone();
-    let current_competence = chrono::Utc::now().format("%Y-%m").to_string();
+    let current_competence = brazilian_competence();
     let catalogs = ctx
         .catalogs
         .clone()
@@ -54,7 +73,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                 })
             });
             let source = catalog.source;
-            let historical = source.competence < current_competence;
+            let (historical, _) = competence_flags(&source.competence, None, &current_competence);
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · edição {}",catalog.catalog_id,catalog.edition)}</h3>
@@ -1086,6 +1105,8 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
         .collect_view();
     let before = result.before_source;
     let after = result.after_source;
+    let (_, competence_regressed) =
+        competence_flags(&after.competence, Some(&before.competence), &brazilian_competence());
     shell(
         "Comparar edições de custos",
         view! {
@@ -1107,6 +1128,9 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
                     after.organization,after.title,after.competence)}</p>
                 <p>{format!("Localidade: {} · Regime: {} · Licença: {}",
                     after.locality,after.tax_regime,after.license)}</p>
+                {competence_regressed.then(||view! {<p class="record-status">
+                    "A edição posterior usa competência anterior à da edição comparada. A numeração da edição não indica atualização de preços."
+                </p>})}
             </section>
             <section class="foundation-card">
                 <h2>"Mudanças identificadas"</h2>
@@ -1144,6 +1168,20 @@ pub fn catalog_csv_preview(
     preview: CatalogCsvPreviewReply,
     input: CatalogCsvImportCommand,
 ) -> String {
+    let previous_competence = ctx
+        .catalogs
+        .iter()
+        .find(|catalog| {
+            catalog.scope_id == input.scope_id
+                && catalog.catalog_id == input.catalog_id
+                && Some(catalog.edition) == preview.previous_edition
+        })
+        .map(|catalog| catalog.source.competence.as_str());
+    let (historical, competence_regressed) = competence_flags(
+        &preview.header.source.competence,
+        previous_competence,
+        &brazilian_competence(),
+    );
     let sample = preview
         .sample
         .into_iter()
@@ -1208,6 +1246,12 @@ pub fn catalog_csv_preview(
                     preview.header.source.competence,preview.header.source.locality,
                     preview.header.source.tax_regime)}</p>
                 <p>{format!("Licença: {}",preview.header.source.license)}</p>
+                {historical.then(||view! {<p class="record-status">
+                    "Competência histórica: estes preços não correspondem necessariamente ao mês atual. Confira se esta é a fonte pretendida."
+                </p>})}
+                {competence_regressed.then(||view! {<p class="record-status">
+                    "A competência importada antecede a edição histórica comparada. Confirme a escolha antes de publicar."
+                </p>})}
                 <p>{format!("{} preços examinados",preview.items_total)}</p>
                 <p>{format!("Comparação com edição {}: {} incluídos, {} alterados, {} removidos",
                     preview.previous_edition.map_or("nenhuma".into(),|value|value.to_string()),
@@ -1288,4 +1332,17 @@ pub fn budget_csv_published(ctx: EstimatingContext, result: BudgetReply) -> Stri
             </section>
         },
     )
+}
+
+#[cfg(test)]
+mod competence_tests {
+    use super::competence_flags;
+
+    #[test]
+    fn warns_on_historical_and_backdated_catalog_editions_without_rejecting_them() {
+        assert_eq!(competence_flags("2026-11", Some("2026-10"), "2026-11"), (false, false));
+        assert_eq!(competence_flags("2026-09", Some("2026-10"), "2026-11"), (true, true));
+        assert_eq!(competence_flags("2026-09", None, "2026-11"), (true, false));
+        assert_eq!(competence_flags("2026-12", Some("2026-11"), "2026-11"), (false, false));
+    }
 }
