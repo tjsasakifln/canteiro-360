@@ -270,7 +270,8 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
                  RAISE EXCEPTION 'Falha fictícia no recibo';
              END IF;
              RETURN NEW;
-         END $$;
+         END;
+         $$;
          CREATE TRIGGER fail_notice_ack
          BEFORE INSERT ON canteiro.user_notice_delivery_history
          FOR EACH ROW EXECUTE FUNCTION canteiro_meta.fail_notice_ack()",
