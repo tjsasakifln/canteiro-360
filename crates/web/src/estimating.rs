@@ -1017,6 +1017,7 @@ pub fn preview(
                     <input type="hidden" name="context_version" value=input.context.context_version.to_string()/>
                     <input type="hidden" name="scope_id" value=input.scope_id/>
                     <input type="hidden" name="expected_version" value=expected_version/>
+                    <input type="hidden" name="batch_id" value=result.batch_id.unwrap_or_default()/>
                     <input type="hidden" name="csrf" value=csrf/>
                     <textarea hidden=true name="csv">{input.csv}</textarea>
                     <label class="record-field">
