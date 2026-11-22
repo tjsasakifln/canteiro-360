@@ -129,7 +129,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                         .into_iter()
                         .map(|line| {
                             view! {
-                                <option value=line.id.clone()>{line.id}</option>
+                                <option value=line.id.clone()>{line.id.clone()}</option>
                             }
                         })
                         .collect_view();
