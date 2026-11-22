@@ -782,7 +782,10 @@ mod tests {
         let schedule = draft.schedule.as_ref().unwrap();
         assert_eq!(schedule.starts_on.to_string(), "2026-12-01");
         assert_eq!(schedule.periods.len(), 4);
-        assert_eq!(schedule.periods[0].percentage.value(), "25".parse().unwrap());
+        assert_eq!(
+            schedule.periods[0].percentage.value(),
+            "25".parse().unwrap()
+        );
         let stable = draft.clone();
         assert_eq!(
             draft.reschedule_linear(
