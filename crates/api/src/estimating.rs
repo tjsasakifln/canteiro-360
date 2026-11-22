@@ -437,6 +437,22 @@ fn changed_composition_from_form(
                 .find(|incidence| incidence.id == incidence_id)?;
             incidence.percent = field(data, "incidence_percent").parse().ok()?;
         }
+        "incidence_base" => {
+            let incidence_id = field(data, "incidence_id");
+            let bases = field(data, "base_lines")
+                .split(',')
+                .map(str::trim)
+                .map(str::to_owned)
+                .collect::<Vec<_>>();
+            if bases.iter().any(String::is_empty) {
+                return None;
+            }
+            let incidence = composition
+                .incidences
+                .iter_mut()
+                .find(|incidence| incidence.id == incidence_id)?;
+            incidence.base_lines = bases;
+        }
         "informed_cost" => match &mut composition.cost_mode {
             canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
                 *cost = field(data, "informed_cost").parse().ok()?;
