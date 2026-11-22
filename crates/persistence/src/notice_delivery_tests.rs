@@ -324,22 +324,21 @@ async fn repeated_notice_key_rejects_changed_scope_target_due_or_priority() {
     assert!(!record(&mut tx, &s).await);
     tx.commit().await.unwrap();
 
-    let (scope, target, due, essential): (
-        Uuid,
-        Uuid,
-        Option<chrono::NaiveDate>,
-        bool,
-    ) = sqlx::query_as(
-        "SELECT scope_id,target_id,due_on,essential FROM canteiro.user_notices
+    let (scope, target, due, essential): (Uuid, Uuid, Option<chrono::NaiveDate>, bool) =
+        sqlx::query_as(
+            "SELECT scope_id,target_id,due_on,essential FROM canteiro.user_notices
          WHERE tenant_id=$1 AND recipient_id=$2 AND event_id=$3",
-    )
-    .bind(s.tenant)
-    .bind(s.actor)
-    .bind(s.event)
-    .fetch_one(&fixture.admin)
-    .await
-    .unwrap();
-    assert_eq!((scope, target, due, essential), (s.scope, s.target, None, true));
+        )
+        .bind(s.tenant)
+        .bind(s.actor)
+        .bind(s.event)
+        .fetch_one(&fixture.admin)
+        .await
+        .unwrap();
+    assert_eq!(
+        (scope, target, due, essential),
+        (s.scope, s.target, None, true)
+    );
 
     let pending: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM canteiro.user_notice_outbox
