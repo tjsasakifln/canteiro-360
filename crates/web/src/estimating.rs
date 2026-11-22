@@ -409,6 +409,7 @@ pub fn page(ctx: EstimatingContext) -> String {
             }
         })
         .collect_view();
+    let schedule_csrf = ctx.csrf.clone();
     let budgets=ctx.budgets.clone().into_iter().map(|entry|{
         let total=entry.snapshot.summarize().ok();
         let scope=scopes.iter().find(|s|s.id==entry.scope_id);
@@ -434,6 +435,62 @@ pub fn page(ctx: EstimatingContext) -> String {
                     <button type="submit" class="secondary-button">"Localizar serviço no orçamento"</button>
                 </form>
             });
+        let schedule_editor = selected
+            .as_ref()
+            .filter(|_| {
+                scope.is_some_and(|scope| scope.can_edit)
+                    && entry.snapshot.status != BudgetState::Approved
+            })
+            .map(|context| {
+                let previous = entry.snapshot.schedule.as_ref();
+                let start = previous.map_or_else(String::new, |v| v.starts_on.to_string());
+                let deadline = previous.map_or_else(String::new, |v| v.deadline_days.to_string());
+                let count = previous.map_or_else(|| "3".to_owned(), |v| v.periods.len().to_string());
+                let fixed = previous.is_some_and(|v| {
+                    v.basis == canteiro_domain::budgets::PeriodBasis::Fixed30Days
+                });
+                view! {
+                    <details>
+                        <summary>"Revisar cronograma físico-financeiro"</summary>
+                        <p>"O novo rateio será linear e substituirá todos os percentuais anteriores. Os serviços e preços permanecerão inalterados."</p>
+                        <form action="/orcamentos/cronograma/salvar" method="post" class="record-form">
+                            <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                            <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                            <input type="hidden" name="csrf" value=schedule_csrf.clone()/>
+                            <label class="record-field">
+                                <span>"Data de início"</span>
+                                <input type="date" name="starts_on" value=start required=true/>
+                            </label>
+                            <label class="record-field">
+                                <span>"Prazo em dias"</span>
+                                <input type="number" name="deadline_days" min="1" value=deadline required=true/>
+                            </label>
+                            <label class="record-field">
+                                <span>"Base do calendário"</span>
+                                <select name="basis" required=true>
+                                    <option value="fixed_30_days" selected=fixed>"Períodos fixos de 30 dias"</option>
+                                    <option value="civil_months" selected=!fixed>"Meses civis"</option>
+                                </select>
+                            </label>
+                            <label class="record-field">
+                                <span>"Quantidade de períodos para o rateio linear"</span>
+                                <input type="number" name="periods" min="1" max="10000" value=count required=true/>
+                            </label>
+                            <label class="record-field">
+                                <span>"Motivo da revisão do cronograma"</span>
+                                <input type="text" name="reason" maxlength="240" required=true/>
+                            </label>
+                            <label class="record-field">
+                                <input type="checkbox" name="confirm_schedule" value="yes" required=true/>
+                                <span>"Confirmo que o rateio anterior será substituído."</span>
+                            </label>
+                            <button type="submit" class="secondary-button">"Salvar nova revisão do cronograma"</button>
+                        </form>
+                    </details>
+                }
+            });
         let state=match entry.snapshot.status{
             BudgetState::Draft=>"Rascunho",
             BudgetState::Review=>"Em conferência",
@@ -451,6 +508,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                 {export.map(|url|view!{<a class="secondary-button" href=url>
                     "Exportar CSV editável"</a>})}
                 {edit}
+                {schedule_editor}
             </article>
         }
     }).collect_view();
