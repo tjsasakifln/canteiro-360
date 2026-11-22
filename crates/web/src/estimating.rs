@@ -402,18 +402,30 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
     let move_scope = record.scope_id.clone();
     let move_item = line.id.clone();
     let move_csrf = ctx.csrf.clone();
-    let move_variation_options = record.snapshot.variations.clone().into_iter().map(|variation| {
-        let selected = variation.id == line.variation_id;
-        view! {
-            <option value=variation.id selected=selected>{variation.scope}</option>
-        }
-    }).collect_view();
-    let variation_options = record.snapshot.variations.clone().into_iter().map(|variation| {
-        let selected = variation.id == line.variation_id;
-        view! {
-            <option value=variation.id selected=selected>{variation.scope}</option>
-        }
-    }).collect_view();
+    let move_variation_options = record
+        .snapshot
+        .variations
+        .clone()
+        .into_iter()
+        .map(|variation| {
+            let selected = variation.id == line.variation_id;
+            view! {
+                <option value=variation.id selected=selected>{variation.scope}</option>
+            }
+        })
+        .collect_view();
+    let variation_options = record
+        .snapshot
+        .variations
+        .clone()
+        .into_iter()
+        .map(|variation| {
+            let selected = variation.id == line.variation_id;
+            view! {
+                <option value=variation.id selected=selected>{variation.scope}</option>
+            }
+        })
+        .collect_view();
     shell(
         "Editar serviço do orçamento",
         view! {
