@@ -206,7 +206,7 @@ async fn internal_notice_delivery_is_atomic_private_and_idempotent() {
     .unwrap();
     sqlx::query(
         "INSERT INTO canteiro.organization_members(tenant_id,user_id,role)
-         VALUES($1,$2,'viewer')",
+         VALUES($1,$2,'member')",
     )
     .bind(first.tenant)
     .bind(coworker)
