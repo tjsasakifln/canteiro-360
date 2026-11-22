@@ -407,13 +407,11 @@ fn changed_composition_from_form(
                 .find(|incidence| incidence.id == incidence_id)?;
             incidence.percent = field(data, "incidence_percent").parse().ok()?;
         }
-        "informed_cost" => {
-            match &mut composition.cost_mode {
-                canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
-                    *cost = field(data, "informed_cost").parse().ok()?;
-                }
-                canteiro_domain::compositions::CostMode::Formula => return None,
+        "informed_cost" => match &mut composition.cost_mode {
+            canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
+                *cost = field(data, "informed_cost").parse().ok()?;
             }
+            canteiro_domain::compositions::CostMode::Formula => return None,
         }
         _ => return None,
     }
@@ -580,7 +578,10 @@ mod composition_form_tests {
         fields.insert("incidence_percent".into(), "15.5".into());
         let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
         assert_eq!(changed.incidences[0].percent.to_string(), "15.5");
-        assert_eq!(changed.incidences[0].base_lines, original.incidences[0].base_lines);
+        assert_eq!(
+            changed.incidences[0].base_lines,
+            original.incidences[0].base_lines
+        );
         assert_eq!(original.incidences[0].percent.to_string(), "12");
         assert_eq!(changed.lines, original.lines);
 
