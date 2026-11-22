@@ -243,7 +243,17 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     .fetch_one(&fixture.admin)
     .await
     .unwrap();
-    assert_eq!((state.as_str(), attempts), ("queued", 0));
+    assert_eq!((state.as_str(), attempts), ("queued", 1));
+    let notice_attempts: i32 = sqlx::query_scalar(
+        "SELECT attempts FROM canteiro.user_notices
+         WHERE tenant_id=$1 AND event_id=$2",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(notice_attempts, 1);
     let retry_count: i32 = sqlx::query_scalar(
         "SELECT attempts FROM canteiro_meta.user_notice_queue
          WHERE tenant_id=$1 AND event_id=$2",
@@ -310,6 +320,19 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     .await
     .unwrap();
     assert_eq!((failed, acknowledged), (1, 1));
+    let (successful_attempt, outbox_attempts): (i32, i32) = sqlx::query_as(
+        "SELECT h.attempt, o.attempts
+         FROM canteiro.user_notice_delivery_history h
+         JOIN canteiro.user_notice_outbox o
+           USING(tenant_id,recipient_id,event_id,kind,channel)
+         WHERE h.tenant_id=$1 AND h.event_id=$2 AND h.outcome='acknowledged'",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!((successful_attempt, outbox_attempts), (2, 2));
     database.close().await;
     fixture.cleanup().await;
 }
