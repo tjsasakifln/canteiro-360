@@ -83,10 +83,8 @@ fn edition_from_csv(input: &CatalogCsvImportCommand) -> Result<CatalogEdition, A
         .published_on
         .parse()
         .map_err(|_| invalid("Informe a data de publicação no formato AAAA-MM-DD."))?;
-    let items =
-        canteiro_domain::catalog_csv::preview_import(&input.csv, input.locale).map_err(|_| {
-            invalid("Arquivo CSV inválido. Confira cada célula, os códigos e o formato oficial.")
-        })?;
+    let items = canteiro_domain::catalog_csv::preview_import(&input.csv, input.locale)
+        .map_err(|error| invalid(error.to_string()))?;
     CatalogEdition::assemble(
         input.catalog_id.clone(),
         input.edition,
