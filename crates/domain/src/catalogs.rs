@@ -379,6 +379,48 @@ mod tests {
         );
     }
     #[test]
+    fn historical_diff_of_ten_thousand_prices_keeps_every_record_and_source() {
+        let before_rows: Vec<_> = (0..10_000)
+            .map(|index| item(&format!("SERV-{index:05}")))
+            .collect();
+        let mut after_rows = before_rows.clone();
+        after_rows.remove(20);
+        after_rows[30].price = "456.000000".parse().unwrap();
+        after_rows.push(item("NOVO"));
+        let before = CatalogEdition::assemble(
+            "grande".into(),
+            1,
+            "2026-01-01".parse().unwrap(),
+            source("2026-01"),
+            before_rows,
+        )
+        .unwrap();
+        let after = CatalogEdition::assemble(
+            "grande".into(),
+            2,
+            "2026-11-01".parse().unwrap(),
+            source("2026-11"),
+            after_rows,
+        )
+        .unwrap();
+        let difference = before.compare_to(&after).unwrap();
+        assert_eq!(
+            (difference.added.len(), difference.changed.len(), difference.removed.len()),
+            (1, 1, 1)
+        );
+        assert_eq!(difference.added[0].code, "NOVO");
+        assert_eq!(difference.removed[0].code, "SERV-00020");
+        assert_eq!(difference.changed[0].before.code, "SERV-00031");
+        assert_eq!(
+            before.get("SERV-00031").unwrap().price.to_string(),
+            "123.456789"
+        );
+        assert_eq!(before.items.len(), 10_000);
+        assert_eq!(after.items.len(), 10_000);
+        assert_eq!(difference.before_source.competence, "2026-01");
+        assert_eq!(difference.after_source.competence, "2026-11");
+    }
+    #[test]
     fn wrong_units_and_failed_import_do_not_publish_partial_edition() {
         let price = "10".parse().unwrap();
         assert!(matches!(
