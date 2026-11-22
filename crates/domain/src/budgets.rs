@@ -267,6 +267,7 @@ impl BudgetRevision {
             return Err(BudgetError::Definitive);
         }
         if !bounded(new_id, 120)
+            || !crate::budget_csv::safe(new_id)
             || self.lines.len() >= 100_000
             || self.lines.iter().any(|line| line.id == new_id)
             || !self
