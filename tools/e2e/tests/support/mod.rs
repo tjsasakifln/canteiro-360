@@ -308,9 +308,23 @@ impl Browser {
     }
 
     pub async fn click(&self, selector: &str) -> TestResult {
-        let id = self.element(selector).await?;
-        self.post(&format!("element/{id}/click"), json!({})).await?;
-        Ok(())
+        // Hydration may replace a control between locating it and clicking it.
+        // A W3C stale-element error means that particular element is detached:
+        // resolve the selector again once rather than using the old element ID.
+        // Other failures remain fatal, and a second stale error is reported.
+        for attempt in 0..2 {
+            let id = self.element(selector).await?;
+            match self.post(&format!("element/{id}/click"), json!({})).await {
+                Ok(_) => return Ok(()),
+                Err(error)
+                    if attempt == 0 && error.to_string().contains("stale element reference") =>
+                {
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                }
+                Err(error) => return Err(error),
+            }
+        }
+        Err(format!("Element was replaced while clicking: {selector}").into())
     }
 
     pub async fn key(&self, key: &str) -> TestResult {
