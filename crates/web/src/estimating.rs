@@ -394,6 +394,16 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
     let historical = line.catalog_id.as_ref().zip(line.catalog_edition).map(|(id, edition)| {
         format!("Preço fixado pela fonte histórica {id}, edição {edition}. Edite apenas a quantidade.")
     });
+    let copy_context = context.clone();
+    let copy_scope = record.scope_id.clone();
+    let copy_item = line.id.clone();
+    let copy_csrf = ctx.csrf.clone();
+    let variation_options = record.snapshot.variations.clone().into_iter().map(|variation| {
+        let selected = variation.id == line.variation_id;
+        view! {
+            <option value=variation.id selected=selected>{variation.scope}</option>
+        }
+    }).collect_view();
     shell(
         "Editar serviço do orçamento",
         view! {
@@ -429,6 +439,31 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
                         <input type="text" name="reason" maxlength="240" required=true/>
                     </label>
                     <button type="submit" class="primary-button">"Salvar nova revisão do serviço"</button>
+                </form>
+            </section>
+            <section class="foundation-card">
+                <h2>"Copiar serviço para outra variação"</h2>
+                <p>"O novo serviço mantém unidade, preço e referência de catálogo. A cópia cria outra revisão e preserva o cronograma existente."</p>
+                <form action="/orcamentos/servicos/copiar" method="post" class="record-form">
+                    <input type="hidden" name="organization_id" value=copy_context.organization_id/>
+                    <input type="hidden" name="context_version" value=copy_context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=copy_scope/>
+                    <input type="hidden" name="expected_version" value=record.version.to_string()/>
+                    <input type="hidden" name="item_id" value=copy_item/>
+                    <input type="hidden" name="csrf" value=copy_csrf/>
+                    <label class="record-field">
+                        <span>"Identificador único do serviço copiado"</span>
+                        <input type="text" name="new_item_id" maxlength="120" required=true/>
+                    </label>
+                    <label class="record-field">
+                        <span>"Variação de destino"</span>
+                        <select name="variation_id" required=true>{variation_options}</select>
+                    </label>
+                    <label class="record-field">
+                        <span>"Justificativa da cópia"</span>
+                        <input type="text" name="reason" maxlength="240" required=true/>
+                    </label>
+                    <button type="submit" class="secondary-button">"Criar cópia e salvar nova revisão"</button>
                 </form>
             </section>
             <section class="foundation-card">
