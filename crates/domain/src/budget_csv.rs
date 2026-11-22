@@ -248,6 +248,11 @@ pub(crate) fn parse_csv(
         rows.push(row);
         starts.push(record_start);
     }
+    // A última linha também conta, mesmo sem quebra de linha no fim.
+    // O limite não pode depender de como o editor salvou o arquivo.
+    if rows.len() > max_rows {
+        return Err(err(record_start, 1, "Limite de linhas excedido."));
+    }
     for (i, row) in rows.iter().enumerate() {
         if row.len() != columns {
             return Err(err(
@@ -651,6 +656,20 @@ mod tests {
         // A prévia não expõe nenhum subconjunto como importação válida.
         assert!(preview_import(&corrupted, NumberLocale::PtBr).is_err());
     }
+    #[test]
+    fn row_limit_applies_to_final_record_without_newline() {
+        // Um registro final sem LF era aceito apesar de ultrapassar max_rows.
+        let without_newline = "codigo;descricao\nA;regular";
+        let error = parse_csv(without_newline, 2, 1).unwrap_err();
+        assert_eq!(error.row, 2);
+        assert_eq!(error.column, 1);
+        assert!(error.cause.contains("Limite de linhas"));
+
+        let with_newline = "codigo;descricao\nA;regular\n";
+        assert!(parse_csv(with_newline, 2, 1).is_err());
+        assert_eq!(parse_csv(without_newline, 2, 2).unwrap().0.len(), 2);
+    }
+
     #[test]
     fn csv_reports_physical_lines_after_multiline_quoted_fields() {
         let wrong_columns = "a;b\r\n\"nota\nrevisada\";ok\r\nx;y;extra\r\n";
