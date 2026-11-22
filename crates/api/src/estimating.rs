@@ -407,6 +407,10 @@ fn changed_composition_from_form(
                 .clone();
             let mut copied = original;
             copied.id = field(data, "new_line_id").to_owned();
+            // Evita identificadores interpretáveis como fórmulas ao exportar uma planilha.
+            if matches!(copied.id.chars().next(), Some('=' | '+' | '-' | '@')) {
+                return None;
+            }
             copied.coefficient = field(data, "coefficient").parse().ok()?;
             composition.lines.push(copied);
         }
