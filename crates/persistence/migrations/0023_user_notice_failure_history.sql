@@ -22,14 +22,14 @@ BEGIN
     -- Failed attempts count for the recipient and for the outbox as well;
     -- otherwise a later success would reuse attempt 1 and conceal the retry.
     UPDATE canteiro.user_notice_outbox
-       SET attempts = attempts + 1, state = 'queued', claimed_until = NULL
+       SET attempts = GREATEST(attempts + 1, NEW.attempts), state = 'queued', claimed_until = NULL
      WHERE tenant_id = NEW.tenant_id AND recipient_id = NEW.recipient_id
        AND event_id = NEW.event_id AND kind = NEW.kind AND channel = NEW.channel;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Não foi possível contabilizar a tentativa de comunicação';
     END IF;
     UPDATE canteiro.user_notices
-       SET attempts = attempts + 1, last_attempt = clock_timestamp()
+       SET attempts = GREATEST(attempts + 1, NEW.attempts), last_attempt = clock_timestamp()
      WHERE tenant_id = NEW.tenant_id AND recipient_id = NEW.recipient_id
        AND event_id = NEW.event_id AND kind = NEW.kind;
 
