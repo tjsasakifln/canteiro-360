@@ -834,7 +834,9 @@ pub fn preview(
     result: BudgetImportPreviewReply,
     input: BudgetImportPreviewCommand,
 ) -> String {
-    let expected_version = result.base_version.map_or_else(String::new, |v| v.to_string());
+    let expected_version = result
+        .base_version
+        .map_or_else(String::new, |v| v.to_string());
     let csrf = ctx.csrf.clone();
     let total = result.total;
     let changed_metadata = result.change_details.changed_metadata.join(", ");
