@@ -691,6 +691,37 @@ mod composition_form_tests {
     }
 
     #[test]
+    fn incidence_base_can_change_only_to_existing_distinct_lines() {
+        use canteiro_domain::compositions::CostIncidence;
+        let mut original = saved();
+        let mut second = original.lines[0].clone();
+        second.id = "insumo-02".into();
+        original.lines.push(second);
+        original.incidences = vec![CostIncidence {
+            id: "encargo".into(),
+            percent: "15".parse().unwrap(),
+            base_lines: vec!["insumo-01".into()],
+        }];
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "incidence_base".into());
+        fields.insert("incidence_id".into(), "encargo".into());
+        fields.insert("base_lines".into(), "insumo-02".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(changed.incidences[0].base_lines, vec!["insumo-02"]);
+        assert_eq!(changed.incidences[0].percent, original.incidences[0].percent);
+        assert_eq!(changed.lines, original.lines);
+        assert_eq!(original.incidences[0].base_lines, vec!["insumo-01"]);
+
+        for invalid in ["", "insumo-03", "insumo-01, insumo-01", "insumo-01,"] {
+            fields.insert("base_lines".into(), invalid.into());
+            assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        }
+        fields.insert("base_lines".into(), "insumo-02".into());
+        fields.insert("incidence_id".into(), "inexistente".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
     fn informed_cost_can_change_without_switching_formula_mode() {
         let original = saved();
         let mut fields = BTreeMap::new();
