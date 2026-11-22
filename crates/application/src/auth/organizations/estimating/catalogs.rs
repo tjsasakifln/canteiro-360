@@ -367,7 +367,7 @@ mod import_diagnostics_tests {
                 "{}\ncodigo;descricao;categoria;unidade;preco\nA;Serviço;service;m;=2+2",
                 canteiro_domain::catalog_csv::FORMAT_VERSION
             ),
-            locale: NumberLocale::PtBr,
+            locale: canteiro_domain::budget_csv::NumberLocale::PtBr,
         };
         let error = edition_from_csv(&command).unwrap_err();
         assert!(error.message().contains("Linha 3, coluna 5"));
