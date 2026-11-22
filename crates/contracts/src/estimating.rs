@@ -156,5 +156,7 @@ pub struct BudgetImportPreviewReply {
     pub change_details: ImportLineChanges,
     pub total: BudgetSummary,
     pub base_version: Option<i64>,
+    /// Identificador da previsualização persistida, quando já existe revisão-base.
+    pub batch_id: Option<String>,
     pub format: &'static str,
 }
