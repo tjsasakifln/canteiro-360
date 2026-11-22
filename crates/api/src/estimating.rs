@@ -86,6 +86,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         )
         .route("/orcamentos", get(page))
         .route("/orcamentos/conferir-csv", post(preview_form))
+        .route("/orcamentos/publicar-csv", post(publish_budget_csv_form))
         .layer(DefaultBodyLimit::max(9_000_000))
 }
 async fn context(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response {
@@ -1392,12 +1393,113 @@ async fn preview_form(
     };
     match auth
         .service()
-        .estimating_budget_import_preview(&token, command)
+        .estimating_budget_import_preview(&token, command.clone())
         .await
     {
         Ok(value) => match auth.service().estimating_context(&token).await {
             Ok(ctx) => html_page(
-                canteiro_web::estimating::preview(ctx, value),
+                canteiro_web::estimating::preview(ctx, value, command),
+                StatusCode::OK,
+            ),
+            Err(error) => application_failure(error),
+        },
+        Err(error) => application_failure(error),
+    }
+}
+
+async fn publish_budget_csv_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
+) -> Response {
+    let Ok(Form(data)) = input else {
+        return bad_input();
+    };
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let context = match form_context(&data) {
+        Ok(value) => value,
+        Err(_) => return bad_input(),
+    };
+    let expected_version = if field(&data, "expected_version").is_empty() {
+        None
+    } else {
+        match field(&data, "expected_version").parse::<i64>() {
+            Ok(value) if value > 0 => Some(value),
+            _ => return bad_input(),
+        }
+    };
+    let input = BudgetImportPreviewCommand {
+        context: context.clone(),
+        scope_id: field(&data, "scope_id").to_owned(),
+        csv: field(&data, "csv").to_owned(),
+        locale: NumberLocale::PtBr,
+    };
+    // Refazer toda a validação no servidor: o resultado mostrado na prévia
+    // não é uma autorização para gravar um CSV alterado ou uma revisão antiga.
+    let preview = match auth
+        .service()
+        .estimating_budget_import_preview(&token, input.clone())
+        .await
+    {
+        Ok(value) => value,
+        Err(error) => return application_failure(error),
+    };
+    if preview.base_version != expected_version {
+        let mut response = (
+            StatusCode::CONFLICT,
+            "O orçamento mudou desde a prévia. Confira novamente o arquivo antes de publicar.",
+        )
+            .into_response();
+        private_headers(&mut response);
+        return response;
+    }
+    let lease_key = uuid::Uuid::new_v4().to_string();
+    let lease = match auth
+        .service()
+        .estimating_budget_lease(
+            &token,
+            BudgetLeaseCommand {
+                context: context.clone(),
+                scope_id: input.scope_id.clone(),
+                lease_key: lease_key.clone(),
+            },
+        )
+        .await
+    {
+        Ok(value) => value,
+        Err(error) => return application_failure(error),
+    };
+    if lease.revision != preview.snapshot.revision {
+        let mut response = (
+            StatusCode::CONFLICT,
+            "A revisão foi alterada durante a importação. Refaça a conferência.",
+        )
+            .into_response();
+        private_headers(&mut response);
+        return response;
+    }
+    let command = BudgetCommand {
+        context,
+        scope_id: input.scope_id,
+        operation_key: uuid::Uuid::new_v4().to_string(),
+        expected_version,
+        lease_key: Some(lease_key),
+        reason: field(&data, "reason").to_owned(),
+        change: BudgetChange::Save {
+            snapshot: preview.snapshot,
+        },
+    };
+    match auth.service().estimating_budget_execute(&token, command).await {
+        Ok(saved) => match auth.service().estimating_context(&token).await {
+            Ok(ctx) => html_page(
+                canteiro_web::estimating::budget_csv_published(ctx, saved),
                 StatusCode::OK,
             ),
             Err(error) => application_failure(error),
