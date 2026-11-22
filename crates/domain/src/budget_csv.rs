@@ -3,7 +3,7 @@ use crate::{
     ActorId, CivilDate, EntityId,
     budgets::{
         BudgetLine, BudgetRevision, BudgetSchedule, BudgetState, BudgetVariation, PeriodBasis,
-        SchedulePeriod,
+        SchedulePeriod, bounded,
     },
     decimal::{Percent, Quantity, UnitPrice},
     units::MeasureUnit,
@@ -512,6 +512,62 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
         }
     }
     let result = budget.ok_or_else(|| err(3, 1, "Metadados ausentes."))?;
+    // Os tipos numéricos e o formato já foram conferidos em todas as células.
+    // Agora localizar a primeira falha estrutural na linha física do CSV, em vez
+    // de atribuir toda falha de uma importação extensa aos metadados da linha 3.
+    let mut service_ids = BTreeSet::new();
+    let mut variation_scopes = BTreeSet::new();
+    let variation_ids: BTreeSet<_> = result.variations.iter().map(|v| v.id.as_str()).collect();
+    for (index, fields) in data.iter().enumerate().skip(1) {
+        let row_number = starts[index] + 1;
+        match fields[0].as_str() {
+            "META" => {
+                if !bounded(&fields[1], 120) {
+                    return Err(err(row_number, 2, "Identificação do orçamento inválida."));
+                }
+                if result.revision == 0 {
+                    return Err(err(row_number, 3, "A revisão precisa ser positiva."));
+                }
+            }
+            "VAR" => {
+                if !bounded(&fields[5], 120) {
+                    return Err(err(row_number, 6, "Identificação da variação inválida."));
+                }
+                if !bounded(&fields[7], 500) {
+                    return Err(err(row_number, 8, "Escopo da variação inválido."));
+                }
+                if !variation_scopes.insert((fields[6].as_str(), fields[7].as_str())) {
+                    return Err(err(row_number, 8, "Obra e escopo repetidos em outra variação."));
+                }
+            }
+            "ITEM" => {
+                for (column, limit) in [
+                    (9, 160), (10, 160), (11, 160), (12, 120), (13, 80), (14, 800),
+                ] {
+                    if !bounded(&fields[column - 1], limit) {
+                        return Err(err(row_number, column, "Campo obrigatório ou tamanho inválido."));
+                    }
+                }
+                if !service_ids.insert(fields[11].as_str()) {
+                    return Err(err(row_number, 12, "Identificador de serviço repetido."));
+                }
+                if !variation_ids.contains(fields[5].as_str()) {
+                    return Err(err(row_number, 6, "Variação do serviço não encontrada."));
+                }
+                if fields[17].is_empty() != fields[18].is_empty() {
+                    return Err(err(
+                        row_number,
+                        if fields[17].is_empty() { 18 } else { 19 },
+                        "Informe catálogo e edição juntos, ou deixe ambos vazios.",
+                    ));
+                }
+                if fields[18] == "0" {
+                    return Err(err(row_number, 19, "A edição do catálogo precisa ser positiva."));
+                }
+            }
+            _ => {}
+        }
+    }
     result.validate().map_err(|e| err(3, 1, &e.to_string()))?;
     result.summarize().map_err(|e| err(3, 1, &e.to_string()))?;
     Ok(result)
@@ -941,6 +997,26 @@ mod tests {
         assert_eq!(error.row, 10_004);
         // A prévia não expõe nenhum subconjunto como importação válida.
         assert!(preview_import(&corrupted, NumberLocale::PtBr).is_err());
+    }
+    #[test]
+    fn structural_errors_report_actual_cells_in_ten_thousand_row_import() {
+        let original = sample(10_000);
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+        let duplicated_id = csv.replacen("item-9999;C-9999", "item-0;C-9999", 1);
+        assert_ne!(duplicated_id, csv);
+        let error = preview_import(&duplicated_id, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (10_004, 12));
+        assert!(error.cause.contains("repetido"));
+
+        let without_edition = csv.replacen(";ref-2021;3\r\n", ";ref-2021;\r\n", 1);
+        assert_ne!(without_edition, csv);
+        let error = preview_import(&without_edition, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (5, 19));
+
+        let missing_variation = csv.replacen("v1;Pavimento", "v-inexistente;Pavimento", 1);
+        assert_ne!(missing_variation, csv);
+        let error = preview_import(&missing_variation, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (5, 6));
     }
     #[test]
     fn row_limit_applies_to_final_record_without_newline() {
