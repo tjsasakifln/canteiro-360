@@ -640,6 +640,58 @@ mod composition_form_tests {
     }
 
     #[test]
+    fn catalog_input_is_added_without_editing_old_revision_or_price_source() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "add_catalog_line".into());
+        fields.insert("new_line_id".into(), "novo-equipamento".into());
+        fields.insert("catalog_id".into(), "SINAPI".into());
+        fields.insert("catalog_edition".into(), "3".into());
+        fields.insert("catalog_code".into(), "EQ-401".into());
+        fields.insert("unit".into(), "h".into());
+        fields.insert("coefficient".into(), "1.25".into());
+        let added = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(original.lines.len(), 1);
+        assert_eq!(added.lines.len(), 2);
+        assert_eq!(added.lines[0], original.lines[0]);
+        assert_eq!(added.lines[1].id, "novo-equipamento");
+        assert_eq!(added.lines[1].coefficient.to_string(), "1.25");
+        assert_eq!(added.lines[1].unit, MeasureUnit::Hour);
+        assert_eq!(added.lines[1].conversion, None);
+        assert_eq!(
+            added.lines[1].source,
+            ComponentSource::Catalog {
+                catalog_id: "SINAPI".into(),
+                edition: 3,
+                code: "EQ-401".into(),
+            }
+        );
+        assert_eq!(added.incidences, original.incidences);
+        assert_eq!(added.cost_mode, original.cost_mode);
+
+        for invalid_id in ["novo-equipamento", "insumo-01", "=SOMA(1)"] {
+            if invalid_id == "novo-equipamento" {
+                continue;
+            }
+            fields.insert("new_line_id".into(), invalid_id.into());
+            assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        }
+        fields.insert("new_line_id".into(), "novo-equipamento".into());
+        for (key, value) in [
+            ("catalog_edition", "0"),
+            ("catalog_edition", "invalid"),
+            ("unit", "unidade-desconhecida"),
+            ("coefficient", "-10"),
+            ("coefficient", "=1+1"),
+        ] {
+            let original_value = fields.get(key).unwrap().clone();
+            fields.insert(key.into(), value.into());
+            assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+            fields.insert(key.into(), original_value);
+        }
+    }
+
+    #[test]
     fn remove_line_rejects_incidence_references_and_preserves_source_revision() {
         use canteiro_domain::compositions::CostIncidence;
         let mut original = saved();
