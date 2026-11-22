@@ -793,7 +793,11 @@ mod tests {
         assert_eq!(delta.records.len(), 0);
         assert_eq!(delta.changed_metadata, vec!["revisão"]);
         assert_eq!(
-            (delta.variations_included, delta.variations_changed, delta.variations_removed),
+            (
+                delta.variations_included,
+                delta.variations_changed,
+                delta.variations_removed
+            ),
             (1, 1, 1)
         );
         assert_eq!(delta.previous_schedule, previous.schedule);
