@@ -865,12 +865,12 @@ pub fn preview(
         .change_details
         .previous_schedule
         .as_ref()
-        .map(&schedule_label);
+        .map(schedule_label);
     let after_schedule = result
         .change_details
         .imported_schedule
         .as_ref()
-        .map(&schedule_label);
+        .map(schedule_label);
     let detail_count = result.change_details.records.len();
     let omitted_count = result.change_details.omitted;
     let detail_rows = result
