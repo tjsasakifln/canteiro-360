@@ -641,13 +641,22 @@ mod tests {
         assert_eq!(draft.lines[0].variation_id, "v-02");
         assert_eq!(draft.lines[0].price, original.lines[0].price);
         assert_eq!(draft.lines[0].catalog_id, original.lines[0].catalog_id);
-        assert_eq!(draft.lines[0].catalog_edition, original.lines[0].catalog_edition);
+        assert_eq!(
+            draft.lines[0].catalog_edition,
+            original.lines[0].catalog_edition
+        );
         assert_eq!(draft.schedule, original.schedule);
         assert_eq!(draft.summarize().unwrap().total.to_string(), "230.00");
 
         let stable = draft.clone();
-        assert_eq!(draft.move_line("l-1", "unknown"), Err(BudgetError::Structure));
-        assert_eq!(draft.move_line("unknown", "v-02"), Err(BudgetError::Structure));
+        assert_eq!(
+            draft.move_line("l-1", "unknown"),
+            Err(BudgetError::Structure)
+        );
+        assert_eq!(
+            draft.move_line("unknown", "v-02"),
+            Err(BudgetError::Structure)
+        );
         assert_eq!(draft, stable);
         draft.status = BudgetState::Approved;
         assert_eq!(draft.move_line("l-1", "v-01"), Err(BudgetError::Definitive));
