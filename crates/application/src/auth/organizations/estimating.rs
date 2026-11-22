@@ -50,6 +50,7 @@ fn budget_view(row: StoredBudgetVersion) -> Result<BudgetRecord, AuthError> {
         scope_id: row.scope_id.to_string(),
         version: row.version,
         snapshot,
+        operation_key: row.operation_key.to_string(),
         actor_id: row.actor_id.to_string(),
         reason: row.reason,
         recorded_at: row.created_at.to_rfc3339(),
