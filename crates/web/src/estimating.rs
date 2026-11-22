@@ -109,6 +109,30 @@ pub fn page(ctx: EstimatingContext) -> String {
                             }
                         })
                         .collect_view();
+                    let copy_line_options = entry
+                        .composition
+                        .lines
+                        .clone()
+                        .into_iter()
+                        .map(|line| {
+                            view! {
+                                <option value=line.id.clone()>
+                                    {format!("{} · fonte e unidade preservadas", line.id)}
+                                </option>
+                            }
+                        })
+                        .collect_view();
+                    let remove_line_options = entry
+                        .composition
+                        .lines
+                        .clone()
+                        .into_iter()
+                        .map(|line| {
+                            view! {
+                                <option value=line.id.clone()>{line.id}</option>
+                            }
+                        })
+                        .collect_view();
                     let has_incidences = !entry.composition.incidences.is_empty();
                     let incidence_options = entry
                         .composition
@@ -132,7 +156,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                     };
                     view! {
                         <details>
-                            <summary>"Editar descrição, índices, coeficientes e incidências"</summary>
+                            <summary>"Editar composição, insumos, índices e incidências"</summary>
                         <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
                             <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
                             <input type="hidden" name="context_version" value=context.context_version.to_string()/>
@@ -200,6 +224,55 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <input type="text" name="reason" maxlength="240" required=true/>
                                 </label>
                                 <button type="submit" class="secondary-button">"Salvar coeficiente em nova revisão"</button>
+                            </form>
+                        })}
+                        {has_lines.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="duplicate_line"/>
+                                <label class="record-field">
+                                    <span>"Linha de origem (fonte e unidade preservadas)"</span>
+                                    <select name="line_id" required=true>{copy_line_options}</select>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Identificador da nova linha"</span>
+                                    <input type="text" name="new_line_id" maxlength="80" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Coeficiente da nova linha (use ponto)"</span>
+                                    <input type="text" name="coefficient" inputmode="decimal" maxlength="40" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Justificativa da inclusão"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Duplicar insumo em nova revisão"</button>
+                            </form>
+                        })}
+                        {has_lines.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="remove_line"/>
+                                <label class="record-field">
+                                    <span>"Linha de insumo a excluir"</span>
+                                    <select name="line_id" required=true>{remove_line_options}</select>
+                                </label>
+                                <p>"Linhas utilizadas como base de incidência não podem ser excluídas."</p>
+                                <label class="record-field">
+                                    <span>"Justificativa da exclusão"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Excluir linha em nova revisão"</button>
                             </form>
                         })}
                         {has_incidences.then(|| view! {
