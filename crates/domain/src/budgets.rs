@@ -607,7 +607,10 @@ mod tests {
         assert_eq!(draft.lines[2].id, "l-3");
         assert_eq!(draft.lines[2].variation_id, "v-02");
         assert_eq!(draft.lines[2].catalog_id, original.lines[0].catalog_id);
-        assert_eq!(draft.lines[2].catalog_edition, original.lines[0].catalog_edition);
+        assert_eq!(
+            draft.lines[2].catalog_edition,
+            original.lines[0].catalog_edition
+        );
         assert_eq!(draft.lines[2].price, original.lines[0].price);
         assert_eq!(draft.schedule, original.schedule);
         assert_eq!(draft.summarize().unwrap().total.to_string(), "430.00");
