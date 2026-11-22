@@ -179,8 +179,47 @@ impl AuthService {
                     snapshot.validate_catalog_lineage(&old).map_err(|_| {
                         invalid("A referência histórica do serviço não pode ser alterada.")
                     })?;
+                    snapshot.validate_no_implicit_removals(&old).map_err(|_| {
+                        invalid("Exclusões exigem comando específico e conferência das referências.")
+                    })?;
                 }
                 snapshot.clone()
+            }
+            BudgetChange::RemoveLine { line_id } => {
+                let previous = current.as_ref().ok_or_else(record_denied)?;
+                if previous.state == "approved" {
+                    return Err(invalid("Uma revisão aprovada não pode ser excluída."));
+                }
+                let lease = input
+                    .lease_key
+                    .as_deref()
+                    .ok_or_else(|| invalid("Reserve o orçamento nesta sessão antes de excluir."))?;
+                let lease = operation_id(lease)?;
+                if !tx
+                    .budget_lease_usable(
+                        a.tenant,
+                        scope,
+                        a.actor.id,
+                        a.actor.session,
+                        lease,
+                        next_version,
+                    )
+                    .await?
+                {
+                    return Err(AuthError::new(
+                        AuthErrorKind::Conflict,
+                        "edit_expired",
+                        "A reserva venceu ou outra sessão alterou o orçamento.",
+                    ));
+                }
+                let mut next = budget_view(previous.clone())?.snapshot;
+                next.remove_unlinked_line(line_id).map_err(|_| {
+                    invalid("A exclusão está restrita a serviço manual sem fonte vinculada.")
+                })?;
+                next.revision = u32::try_from(next_version)
+                    .map_err(|_| invalid("Limite de revisões alcançado."))?;
+                next.status = BudgetState::Draft;
+                next
             }
             BudgetChange::Approve => {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
