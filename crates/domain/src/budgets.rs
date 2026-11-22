@@ -227,6 +227,43 @@ impl BudgetRevision {
         }
         Ok(())
     }
+    /// Gravações integrais não podem ocultar exclusões de serviços antigos.
+    /// Remover um serviço exige o comando específico, com validação no servidor.
+    pub fn validate_no_implicit_removals(&self, previous: &Self) -> Result<(), BudgetError> {
+        let current_ids = self
+            .lines
+            .iter()
+            .map(|line| line.id.as_str())
+            .collect::<BTreeSet<_>>();
+        if previous
+            .lines
+            .iter()
+            .any(|line| !current_ids.contains(line.id.as_str()))
+        {
+            return Err(BudgetError::ReferencedItem);
+        }
+        Ok(())
+    }
+    /// Apenas serviços manuais, sem fonte histórica vinculada, podem ser
+    /// excluídos por este comando. O orçamento e o cronograma são atômicos.
+    pub fn remove_unlinked_line(&mut self, line_id: &str) -> Result<(), BudgetError> {
+        if self.status == BudgetState::Approved {
+            return Err(BudgetError::Definitive);
+        }
+        let selected = self
+            .lines
+            .iter()
+            .find(|line| line.id == line_id)
+            .ok_or(BudgetError::Structure)?;
+        if selected.catalog_id.is_some() || selected.catalog_edition.is_some() {
+            return Err(BudgetError::ReferencedItem);
+        }
+        let mut candidate = self.clone();
+        candidate.lines.retain(|line| line.id != line_id);
+        candidate.summarize()?;
+        *self = candidate;
+        Ok(())
+    }
     /// Edição de serviço sem perder cronograma e sem substituir preço de fonte
     /// histórica por valor manual mantendo a referência de catálogo.
     /// O serviço de aplicação ainda exige reserva, versão e autorização atuais.
@@ -660,6 +697,41 @@ mod tests {
         assert_eq!(draft, stable);
         draft.status = BudgetState::Approved;
         assert_eq!(draft.move_line("l-1", "v-01"), Err(BudgetError::Definitive));
+    }
+    #[test]
+    fn deletion_requires_explicit_command_and_preserves_original_on_failure() {
+        let original = budget();
+        let mut edited = original.clone();
+        edited.lines.retain(|line| line.id != "l-2");
+        assert_eq!(
+            edited.validate_no_implicit_removals(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+        let mut snapshot = original.clone();
+        assert_eq!(
+            snapshot.remove_unlinked_line("l-1"),
+            Err(BudgetError::ReferencedItem)
+        );
+        assert_eq!(
+            snapshot.remove_unlinked_line("missing"),
+            Err(BudgetError::Structure)
+        );
+        assert_eq!(snapshot, original);
+        snapshot.remove_unlinked_line("l-2").unwrap();
+        assert_eq!(snapshot.lines.len(), 1);
+        assert_eq!(snapshot.lines[0].id, "l-1");
+        assert_eq!(snapshot.schedule, original.schedule);
+        assert_eq!(snapshot.summarize().unwrap().total.to_string(), "200.00");
+        assert_eq!(
+            snapshot.validate_no_implicit_removals(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+        let mut approved = original.clone();
+        approved.status = BudgetState::Approved;
+        assert_eq!(
+            approved.remove_unlinked_line("l-2"),
+            Err(BudgetError::Definitive)
+        );
     }
     #[test]
     fn stale_reservation_and_referenced_item_cannot_delete() {
