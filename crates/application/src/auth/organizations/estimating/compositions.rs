@@ -41,6 +41,31 @@ async fn calculating_book(
             .publish(loaded)
             .map_err(|_| AuthError::unavailable())?;
     }
+    // Uma composição de custo informado também precisa apontar para
+    // itens reais de edições históricas publicadas. O preço informado não
+    // autoriza referências de catálogo inexistentes ou unidades implícitas.
+    for line in &candidate.lines {
+        if let ComponentSource::Catalog {
+            catalog_id,
+            edition,
+            code,
+        } = &line.source
+        {
+            let edition = catalogs
+                .edition(catalog_id, *edition)
+                .map_err(|_| invalid("A edição histórica da linha não está disponível."))?;
+            let item = edition
+                .get(code)
+                .ok_or_else(|| invalid("O código do insumo não existe na edição informada."))?;
+            canteiro_domain::catalogs::require_matching_units(
+                item.unit,
+                line.unit,
+                line.conversion.as_ref(),
+                item.price,
+            )
+            .map_err(|_| invalid("Confira a unidade da linha e a conversão documentada."))?;
+        }
+    }
     Ok((book, catalogs, sources.into_iter().collect()))
 }
 impl AuthService {
