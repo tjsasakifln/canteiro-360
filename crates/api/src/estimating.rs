@@ -1086,8 +1086,6 @@ async fn budget_transfer_line_form(
     if result.is_err() {
         return bad_input();
     }
-    snapshot.revision = revision;
-    snapshot.status = BudgetState::Draft;
     let lease_key = uuid::Uuid::new_v4().to_string();
     match auth
         .service()
@@ -1120,12 +1118,20 @@ async fn budget_transfer_line_form(
         expected_version: Some(version),
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
-        change: if field(&data, "operation") == "delete" {
-            BudgetChange::RemoveLine {
+        change: match field(&data, "operation") {
+            "copy" => BudgetChange::CopyLine {
+                source_id: field(&data, "item_id").to_owned(),
+                new_id: field(&data, "new_item_id").to_owned(),
+                target_variation_id: field(&data, "variation_id").to_owned(),
+            },
+            "move" => BudgetChange::MoveLine {
                 line_id: field(&data, "item_id").to_owned(),
-            }
-        } else {
-            BudgetChange::Save { snapshot }
+                target_variation_id: field(&data, "variation_id").to_owned(),
+            },
+            "delete" => BudgetChange::RemoveLine {
+                line_id: field(&data, "item_id").to_owned(),
+            },
+            _ => return bad_input(),
         },
     };
     match auth
