@@ -125,6 +125,7 @@ pub struct BudgetCommand {
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum BudgetChange {
     Save { snapshot: BudgetRevision },
+    RemoveLine { line_id: String },
     Approve,
 }
 #[derive(Clone, Debug, Serialize)]
