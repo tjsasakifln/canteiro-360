@@ -56,7 +56,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/orcamentos/composicoes/editar-descricao",
             post(composition_edit_description_form),
         )
-        .route("/orcamentos/cronograma/salvar", post(budget_save_schedule_form))
+        .route(
+            "/orcamentos/cronograma/salvar",
+            post(budget_save_schedule_form),
+        )
         .route("/orcamentos/servicos/editar", get(budget_edit_line_page))
         .route("/orcamentos/servicos/salvar", post(budget_save_line_form))
         .route(
