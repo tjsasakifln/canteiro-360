@@ -94,6 +94,23 @@ impl AuthTransaction {
             .bind(notice.kind)
             .execute(&mut *self.tx)
             .await?;
+        } else {
+            // Uma chave repetida só é idempotente se o conteúdo do aviso é idêntico.
+            // Não redirecionar silenciosamente uma pendência para outro alvo.
+            let original: Option<(Uuid, Uuid, Option<NaiveDate>, bool)> = sqlx::query_as(
+                "SELECT scope_id,target_id,due_on,essential
+                 FROM canteiro.user_notices
+                 WHERE tenant_id=$1 AND recipient_id=$2 AND event_id=$3 AND kind=$4",
+            )
+            .bind(notice.tenant)
+            .bind(notice.recipient)
+            .bind(notice.event)
+            .bind(notice.kind)
+            .fetch_optional(&mut *self.tx)
+            .await?;
+            if original != Some((notice.scope, notice.target, notice.due, notice.essential)) {
+                return Err(AuthStoreError);
+            }
         }
         Ok(inserted)
     }
