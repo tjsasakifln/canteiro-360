@@ -80,7 +80,11 @@ impl Inbox {
     /// Mesmo evento, empresa, destinatário e tipo nunca criam duas pendências.
     pub fn record(&mut self, notice: Notice) -> Result<DeliveryEffect, NoticeError> {
         if let Some(existing) = self.entries.get(&notice.identity) {
-            if existing.scope != notice.scope || existing.target != notice.target {
+            if existing.scope != notice.scope
+                || existing.target != notice.target
+                || existing.due_on != notice.due_on
+                || existing.essential != notice.essential
+            {
                 return Err(NoticeError::Unauthorized);
             }
             return Ok(DeliveryEffect::AlreadySeen);
