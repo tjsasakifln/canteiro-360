@@ -12,11 +12,7 @@ fn brazilian_competence() -> String {
 }
 
 /// A edição é uma revisão editorial, não uma garantia de competência mais recente.
-fn competence_flags(
-    competence: &str,
-    previous: Option<&str>,
-    today: &str,
-) -> (bool, bool) {
+fn competence_flags(competence: &str, previous: Option<&str>, today: &str) -> (bool, bool) {
     (
         competence < today,
         previous.is_some_and(|earlier| competence < earlier),
@@ -1106,8 +1102,11 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
         .collect_view();
     let before = result.before_source;
     let after = result.after_source;
-    let (_, competence_regressed) =
-        competence_flags(&after.competence, Some(&before.competence), &brazilian_competence());
+    let (_, competence_regressed) = competence_flags(
+        &after.competence,
+        Some(&before.competence),
+        &brazilian_competence(),
+    );
     shell(
         "Comparar edições de custos",
         view! {
@@ -1349,10 +1348,7 @@ mod competence_tests {
             competence_flags("2026-09", Some("2026-10"), "2026-11"),
             (true, true)
         );
-        assert_eq!(
-            competence_flags("2026-09", None, "2026-11"),
-            (true, false)
-        );
+        assert_eq!(competence_flags("2026-09", None, "2026-11"), (true, false));
         assert_eq!(
             competence_flags("2026-12", Some("2026-11"), "2026-11"),
             (false, false)
