@@ -381,6 +381,27 @@ async fn composition_write(
         Err(e) => application_failure(e),
     }
 }
+fn changed_composition_from_form(
+    mut composition: Composition,
+    data: &BTreeMap<String, String>,
+) -> Option<Composition> {
+    match field(data, "change_kind") {
+        "" => composition.description = field(data, "description").to_owned(),
+        "costs" => {
+            composition.bdi = field(data, "bdi").parse().ok()?;
+            composition.discount = field(data, "discount").parse().ok()?;
+        }
+        "coefficient" => {
+            let line_id = field(data, "line_id");
+            let line = composition.lines.iter_mut().find(|line| line.id == line_id)?;
+            line.coefficient = field(data, "coefficient").parse().ok()?;
+        }
+        _ => return None,
+    }
+    composition.validate().ok()?;
+    Some(composition)
+}
+
 /// Alteração pontual preserva a estrutura, as referências e o cálculo da
 /// composição salva. A versão e a autorização são revalidadas no comando.
 async fn composition_edit_description_form(
@@ -432,44 +453,10 @@ async fn composition_edit_description_form(
         private_headers(&mut response);
         return response;
     }
-    let mut composition = record.composition.clone();
-    match field(&data, "change_kind") {
-        "" => {
-            composition.description = field(&data, "description").to_owned();
-        }
-        "costs" => {
-            composition.bdi = match field(&data, "bdi")
-                .parse::<canteiro_domain::decimal::Percent>()
-            {
-                Ok(value) => value,
-                Err(_) => return bad_input(),
-            };
-            composition.discount = match field(&data, "discount")
-                .parse::<canteiro_domain::decimal::Percent>()
-            {
-                Ok(value) => value,
-                Err(_) => return bad_input(),
-            };
-        }
-        "coefficient" => {
-            let line_id = field(&data, "line_id");
-            let coefficient = match field(&data, "coefficient")
-                .parse::<canteiro_domain::decimal::Quantity>()
-            {
-                Ok(value) => value,
-                Err(_) => return bad_input(),
-            };
-            let Some(line) = composition
-                .lines
-                .iter_mut()
-                .find(|line| line.id == line_id)
-            else {
-                return bad_input();
-            };
-            line.coefficient = coefficient;
-        }
-        _ => return bad_input(),
-    }
+    let Some(composition) = changed_composition_from_form(record.composition.clone(), &data)
+    else {
+        return bad_input();
+    };
     let command = CompositionWriteCommand {
         context,
         scope_id: scope_id.to_owned(),
@@ -488,6 +475,74 @@ async fn composition_edit_description_form(
             Err(error) => application_failure(error),
         },
         Err(error) => application_failure(error),
+    }
+}
+#[cfg(test)]
+mod composition_form_tests {
+    use super::*;
+    use canteiro_domain::{
+        compositions::{ComponentLine, ComponentSource, CostMode},
+        units::MeasureUnit,
+    };
+
+    fn saved() -> Composition {
+        Composition {
+            code: "COMP-01".into(),
+            description: "Composição de ensaio".into(),
+            unit: MeasureUnit::Unit,
+            cost_mode: CostMode::Informed {
+                cost: "100".parse().unwrap(),
+                reason: "Custo informado e documentado".into(),
+            },
+            lines: vec![ComponentLine {
+                id: "insumo-01".into(),
+                source: ComponentSource::Composition { code: "BASE-01".into() },
+                coefficient: "1".parse().unwrap(),
+                unit: MeasureUnit::Unit,
+                conversion: None,
+            }],
+            incidences: vec![],
+            bdi: "20".parse().unwrap(),
+            discount: "10".parse().unwrap(),
+        }
+    }
+
+    #[test]
+    fn coefficient_change_preserves_provenance_and_rejects_unknown_or_invalid_lines() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "coefficient".into());
+        fields.insert("line_id".into(), "insumo-01".into());
+        fields.insert("coefficient".into(), "2.5".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(changed.lines[0].coefficient.to_string(), "2.5");
+        assert_eq!(original.lines[0].coefficient.to_string(), "1");
+        assert_eq!(changed.lines[0].source, original.lines[0].source);
+
+        fields.insert("line_id".into(), "absent".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("line_id".into(), "insumo-01".into());
+        fields.insert("coefficient".into(), "-1".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
+    fn indices_change_is_validated_without_overwriting_the_saved_composition() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "costs".into());
+        fields.insert("bdi".into(), "25".into());
+        fields.insert("discount".into(), "5".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(changed.bdi.to_string(), "25");
+        assert_eq!(changed.discount.to_string(), "5");
+        assert_eq!(original.bdi.to_string(), "20");
+        assert_eq!(changed.lines, original.lines);
+
+        fields.insert("bdi".into(), "25%".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("change_kind".into(), "invalid".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
     }
 }
 #[derive(Deserialize)]
