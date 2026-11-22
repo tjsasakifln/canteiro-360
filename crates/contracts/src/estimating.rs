@@ -2,7 +2,7 @@ use crate::reliability::ReliabilityScope;
 pub use canteiro_domain::{
     budget_csv::{ImportDifference, ImportLineChanges, NumberLocale},
     budgets::{BudgetRevision, BudgetSchedule, BudgetState, BudgetSummary},
-    catalogs::{CatalogComparison, CatalogEdition, CatalogItem, CostSource},
+    catalogs::{CatalogComparison, CatalogEdition, CatalogItem, CatalogItemChange, CostSource},
     compositions::{Composition, CostMemory},
 };
 use serde::{Deserialize, Serialize};
@@ -76,6 +76,10 @@ pub struct CatalogCsvPreviewReply {
     pub included: usize,
     pub changed: usize,
     pub removed: usize,
+    /// Amostras limitadas; as contagens consideram todas as linhas importadas.
+    pub added_sample: Vec<CatalogItem>,
+    pub changed_sample: Vec<CatalogItemChange>,
+    pub removed_sample: Vec<CatalogItem>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
