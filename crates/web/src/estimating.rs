@@ -398,6 +398,16 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
     let copy_scope = record.scope_id.clone();
     let copy_item = line.id.clone();
     let copy_csrf = ctx.csrf.clone();
+    let move_context = context.clone();
+    let move_scope = record.scope_id.clone();
+    let move_item = line.id.clone();
+    let move_csrf = ctx.csrf.clone();
+    let move_variation_options = record.snapshot.variations.clone().into_iter().map(|variation| {
+        let selected = variation.id == line.variation_id;
+        view! {
+            <option value=variation.id selected=selected>{variation.scope}</option>
+        }
+    }).collect_view();
     let variation_options = record.snapshot.variations.clone().into_iter().map(|variation| {
         let selected = variation.id == line.variation_id;
         view! {
@@ -445,6 +455,7 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
                 <h2>"Copiar serviço para outra variação"</h2>
                 <p>"O novo serviço mantém unidade, preço e referência de catálogo. A cópia cria outra revisão e preserva o cronograma existente."</p>
                 <form action="/orcamentos/servicos/copiar" method="post" class="record-form">
+                    <input type="hidden" name="operation" value="copy"/>
                     <input type="hidden" name="organization_id" value=copy_context.organization_id/>
                     <input type="hidden" name="context_version" value=copy_context.context_version.to_string()/>
                     <input type="hidden" name="scope_id" value=copy_scope/>
@@ -464,6 +475,28 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
                         <input type="text" name="reason" maxlength="240" required=true/>
                     </label>
                     <button type="submit" class="secondary-button">"Criar cópia e salvar nova revisão"</button>
+                </form>
+            </section>
+            <section class="foundation-card">
+                <h2>"Mover serviço entre variações"</h2>
+                <p>"O serviço mantém o mesmo identificador, preço, unidade e referência. Confirme a variação de destino; a alteração cria outra revisão sem mudar o cronograma."</p>
+                <form action="/orcamentos/servicos/mover" method="post" class="record-form">
+                    <input type="hidden" name="operation" value="move"/>
+                    <input type="hidden" name="organization_id" value=move_context.organization_id/>
+                    <input type="hidden" name="context_version" value=move_context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=move_scope/>
+                    <input type="hidden" name="expected_version" value=record.version.to_string()/>
+                    <input type="hidden" name="item_id" value=move_item/>
+                    <input type="hidden" name="csrf" value=move_csrf/>
+                    <label class="record-field">
+                        <span>"Variação de destino do serviço"</span>
+                        <select name="variation_id" required=true>{move_variation_options}</select>
+                    </label>
+                    <label class="record-field">
+                        <span>"Justificativa da movimentação"</span>
+                        <input type="text" name="reason" maxlength="240" required=true/>
+                    </label>
+                    <button type="submit" class="secondary-button">"Mover serviço e salvar nova revisão"</button>
                 </form>
             </section>
             <section class="foundation-card">
