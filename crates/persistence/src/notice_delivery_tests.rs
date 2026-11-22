@@ -283,3 +283,75 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     database.close().await;
     fixture.cleanup().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL"]
+async fn repeated_notice_key_rejects_changed_scope_target_due_or_priority() {
+    let fixture = Fixture::ready().await;
+    let database = fixture.database(TransactionLimits::default()).await;
+    let s = subject(&fixture).await;
+    let mut tx = scoped(&database, &s).await;
+    assert!(record(&mut tx, &s).await);
+
+    let alternatives = [
+        (Uuid::new_v4(), s.target, None, true),
+        (s.scope, Uuid::new_v4(), None, true),
+        (
+            s.scope,
+            s.target,
+            Some(chrono::NaiveDate::from_ymd_opt(2027, 1, 1).unwrap()),
+            true,
+        ),
+        (s.scope, s.target, None, false),
+    ];
+    for (scope, target, due, essential) in alternatives {
+        assert!(
+            tx.user_notice_record(&NewNotice {
+                tenant: s.tenant,
+                recipient: s.actor,
+                event: s.event,
+                kind: "technical_obligation",
+                scope,
+                target,
+                due,
+                essential,
+            })
+            .await
+            .is_err(),
+            "a mesma chave não pode ocultar conteúdo diferente"
+        );
+    }
+    assert!(!record(&mut tx, &s).await);
+    tx.commit().await.unwrap();
+
+    let (scope, target, due, essential): (
+        Uuid,
+        Uuid,
+        Option<chrono::NaiveDate>,
+        bool,
+    ) = sqlx::query_as(
+        "SELECT scope_id,target_id,due_on,essential FROM canteiro.user_notices
+         WHERE tenant_id=$1 AND recipient_id=$2 AND event_id=$3",
+    )
+    .bind(s.tenant)
+    .bind(s.actor)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!((scope, target, due, essential), (s.scope, s.target, None, true));
+
+    let pending: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro.user_notice_outbox
+         WHERE tenant_id=$1 AND recipient_id=$2 AND event_id=$3",
+    )
+    .bind(s.tenant)
+    .bind(s.actor)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(pending, 1);
+    database.close().await;
+    fixture.cleanup().await;
+}
