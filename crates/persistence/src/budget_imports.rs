@@ -93,6 +93,32 @@ impl AuthTransaction {
         }
     }
 
+    /// Identifica uma operação de importação da sessão sem confundi-la com um
+    /// comando de edição ordinário.
+    pub async fn budget_import_exists(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+        actor: Uuid,
+        session: Uuid,
+        id: Uuid,
+    ) -> Result<bool, AuthStoreError> {
+        Ok(sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS (
+                SELECT 1 FROM canteiro.budget_import_batches
+                WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3
+                  AND session_id=$4 AND id=$5
+            )",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .bind(actor)
+        .bind(session)
+        .bind(id)
+        .fetch_one(&mut *self.tx)
+        .await?)
+    }
+
     /// Só confirma o lote se a revisão imediatamente posterior existe NA MESMA
     /// transação, pertence ao autor e possui o snapshot validado, sem substituições.
     /// Uma falha posterior deve cancelar a transação inteira do chamador.
