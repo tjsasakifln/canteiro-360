@@ -205,6 +205,28 @@ impl BudgetRevision {
         }
         Ok(())
     }
+    /// Uma edição não pode apagar a origem de preço mantendo a identidade do item.
+    /// A exclusão explícita é tratada separadamente do comando de alteração.
+    pub fn validate_catalog_lineage(&self, previous: &Self) -> Result<(), BudgetError> {
+        let new_by_id = self
+            .lines
+            .iter()
+            .map(|line| (line.id.as_str(), line))
+            .collect::<BTreeMap<_, _>>();
+        for old in &previous.lines {
+            if old.catalog_id.is_some()
+                && let Some(updated) = new_by_id.get(old.id.as_str())
+                && (updated.catalog_id != old.catalog_id
+                    || updated.catalog_edition != old.catalog_edition
+                    || updated.code != old.code
+                    || updated.unit != old.unit
+                    || updated.price != old.price)
+            {
+                return Err(BudgetError::ReferencedItem);
+            }
+        }
+        Ok(())
+    }
     /// Edição de serviço sem perder cronograma e sem substituir preço de fonte
     /// histórica por valor manual mantendo a referência de catálogo.
     /// O serviço de aplicação ainda exige reserva, versão e autorização atuais.
@@ -457,6 +479,29 @@ mod tests {
             altered.validate_catalog_references(&official),
             Err(BudgetError::ReferencedItem)
         );
+    }
+    #[test]
+    fn snapshot_save_cannot_strip_or_replace_existing_catalog_provenance() {
+        let old = budget();
+        let mut changed = old.clone();
+        changed.lines[0].catalog_id = None;
+        changed.lines[0].catalog_edition = None;
+        changed.lines[0].price = "999".parse().unwrap();
+        assert_eq!(
+            changed.validate_catalog_lineage(&old),
+            Err(BudgetError::ReferencedItem)
+        );
+        changed = old.clone();
+        changed.lines[0].catalog_edition = Some(2);
+        assert_eq!(
+            changed.validate_catalog_lineage(&old),
+            Err(BudgetError::ReferencedItem)
+        );
+        changed = old.clone();
+        changed.lines[0].quantity = "3".parse().unwrap();
+        changed.validate_catalog_lineage(&old).unwrap();
+        changed.lines[1].price = "45".parse().unwrap();
+        changed.validate_catalog_lineage(&old).unwrap();
     }
     #[test]
     fn editing_service_preserves_schedule_and_historical_catalog_price() {
