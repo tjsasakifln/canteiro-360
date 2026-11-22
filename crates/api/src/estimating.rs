@@ -66,6 +66,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/orcamentos/servicos/mover",
             post(budget_transfer_line_form),
         )
+        .route(
+            "/orcamentos/servicos/excluir",
+            post(budget_transfer_line_form),
+        )
         .route("/api/estimating/budget/lease", post(budget_lease))
         .route("/api/estimating/budget/command", post(budget_write))
         .route(
@@ -697,6 +701,7 @@ async fn budget_transfer_line_form(
             field(&data, "variation_id"),
         ),
         "move" => snapshot.move_line(field(&data, "item_id"), field(&data, "variation_id")),
+        "delete" => snapshot.remove_unlinked_line(field(&data, "item_id")),
         _ => return bad_input(),
     };
     if result.is_err() {
@@ -736,7 +741,13 @@ async fn budget_transfer_line_form(
         expected_version: Some(version),
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
-        change: BudgetChange::Save { snapshot },
+        change: if field(&data, "operation") == "delete" {
+            BudgetChange::RemoveLine {
+                line_id: field(&data, "item_id").to_owned(),
+            }
+        } else {
+            BudgetChange::Save { snapshot }
+        },
     };
     match auth
         .service()
