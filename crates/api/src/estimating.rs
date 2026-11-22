@@ -399,6 +399,29 @@ fn changed_composition_from_form(
                 .find(|line| line.id == line_id)?;
             line.coefficient = field(data, "coefficient").parse().ok()?;
         }
+        "duplicate_line" => {
+            let original = composition
+                .lines
+                .iter()
+                .find(|line| line.id == field(data, "line_id"))?
+                .clone();
+            let mut copied = original;
+            copied.id = field(data, "new_line_id").to_owned();
+            copied.coefficient = field(data, "coefficient").parse().ok()?;
+            composition.lines.push(copied);
+        }
+        "remove_line" => {
+            let line_id = field(data, "line_id");
+            if composition
+                .incidences
+                .iter()
+                .any(|incidence| incidence.base_lines.iter().any(|base| base == line_id))
+            {
+                return None;
+            }
+            let index = composition.lines.iter().position(|line| line.id == line_id)?;
+            composition.lines.remove(index);
+        }
         "incidence" => {
             let incidence_id = field(data, "incidence_id");
             let incidence = composition
@@ -541,6 +564,56 @@ mod composition_form_tests {
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("line_id".into(), "insumo-01".into());
         fields.insert("coefficient".into(), "-1".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
+    fn duplicate_line_keeps_historical_source_and_rejects_invalid_copies() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "duplicate_line".into());
+        fields.insert("line_id".into(), "insumo-01".into());
+        fields.insert("new_line_id".into(), "insumo-02".into());
+        fields.insert("coefficient".into(), "2.5".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(changed.lines.len(), 2);
+        assert_eq!(changed.lines[1].id, "insumo-02");
+        assert_eq!(changed.lines[1].source, original.lines[0].source);
+        assert_eq!(changed.lines[1].unit, original.lines[0].unit);
+        assert_eq!(changed.lines[1].coefficient.to_string(), "2.5");
+        assert_eq!(original.lines.len(), 1);
+
+        fields.insert("new_line_id".into(), "insumo-01".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("new_line_id".into(), "=1+1".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("new_line_id".into(), "insumo-02".into());
+        fields.insert("coefficient".into(), "-1".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("coefficient".into(), "2".into());
+        fields.insert("line_id".into(), "absent".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
+    fn remove_line_rejects_incidence_references_and_preserves_source_revision() {
+        use canteiro_domain::compositions::CostIncidence;
+        let mut original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "remove_line".into());
+        fields.insert("line_id".into(), "insumo-01".into());
+        original.incidences = vec![CostIncidence {
+            id: "encargo".into(),
+            percent: "10".parse().unwrap(),
+            base_lines: vec!["insumo-01".into()],
+        }];
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        original.incidences.clear();
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert!(changed.lines.is_empty());
+        assert_eq!(original.lines.len(), 1);
+        assert_eq!(changed.code, original.code);
+        fields.insert("line_id".into(), "absent".into());
         assert!(changed_composition_from_form(original, &fields).is_none());
     }
 
