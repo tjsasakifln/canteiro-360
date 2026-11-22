@@ -94,10 +94,70 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     assert_eq!(parsed.lines.len(), 10_000);
     let fingerprint = [17_u8; 32];
 
+    // Uma sessão efetiva, e não apenas o ator, é parte da chave do lote.
+    let session = Uuid::new_v4();
+    let mut identity = AuthStore::new(database.clone()).begin().await.unwrap();
+    identity
+        .insert_session(
+            session,
+            &[42_u8; 32],
+            Some((actor, 1)),
+            "authenticated",
+            true,
+            3600,
+        )
+        .await
+        .unwrap();
+    identity.commit().await.unwrap();
+
     let mut first = AuthStore::new(database.clone()).begin().await.unwrap();
     first.org_set_actor(actor).await.unwrap();
     first.org_set_tenant(tenant).await.unwrap();
     let first_json = serde_json::to_string(&parsed).unwrap();
+    // A primeira importação também recebe prévia durável, sem revisão de origem.
+    let first_batch_id = Uuid::new_v4();
+    let first_hash = [98_u8; 32];
+    let first_preview = NewBudgetImport {
+        tenant,
+        id: first_batch_id,
+        scope,
+        actor,
+        session,
+        base_version: None,
+        locale: "pt-BR",
+        sha256: &first_hash,
+        preview: &first_json,
+        included: 10_000,
+        changed: 0,
+        removed: 0,
+    };
+    assert_eq!(
+        first.budget_import_stage(&first_preview).await.unwrap(),
+        Some(first_batch_id)
+    );
+    assert_eq!(
+        first
+            .budget_import_stage(&NewBudgetImport {
+                id: Uuid::new_v4(),
+                ..first_preview
+            })
+            .await
+            .unwrap(),
+        Some(first_batch_id)
+    );
+    assert!(
+        !first
+            .budget_import_mark_applied(
+                tenant,
+                scope,
+                actor,
+                session,
+                first_batch_id,
+                first_batch_id
+            )
+            .await
+            .unwrap()
+    );
     assert_eq!(
         first
             .budget_write(&BudgetWrite {
@@ -105,7 +165,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
                 scope,
                 expected: None,
                 actor,
-                operation_key: Uuid::new_v4(),
+                operation_key: first_batch_id,
                 fingerprint: &fingerprint,
                 reason: "Primeira importação integral",
                 payload: &first_json,
@@ -117,7 +177,29 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             .version,
         1
     );
+    assert!(
+        first
+            .budget_import_mark_applied(
+                tenant,
+                scope,
+                actor,
+                session,
+                first_batch_id,
+                first_batch_id
+            )
+            .await
+            .unwrap()
+    );
     first.commit().await.unwrap();
+    let first_status: String = sqlx::query_scalar(
+        "SELECT status FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(first_batch_id)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(first_status, "applied");
 
     original.revision = 2;
     original.lines[9_999].quantity = "3.00".parse().unwrap();
@@ -135,22 +217,6 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let updated_json = serde_json::to_string(&updated).unwrap();
 
     // Identidade e arquivo da prévia persistem antes da confirmação.
-    // Uma sessão efetiva, e não apenas o ator, é parte da chave do lote.
-    let session = Uuid::new_v4();
-    let mut identity = AuthStore::new(database.clone()).begin().await.unwrap();
-    identity
-        .insert_session(
-            session,
-            &[42_u8; 32],
-            Some((actor, 1)),
-            "authenticated",
-            true,
-            3600,
-        )
-        .await
-        .unwrap();
-    identity.commit().await.unwrap();
-
     let batch_id = Uuid::new_v4();
     let file_hash = [99_u8; 32];
     let mut stage = AuthStore::new(database.clone()).begin().await.unwrap();
@@ -162,7 +228,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         scope,
         actor,
         session,
-        base_version: 1,
+        base_version: Some(1),
         locale: "pt-BR",
         sha256: &file_hash,
         preview: &updated_json,
@@ -194,7 +260,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
                 scope,
                 actor,
                 session,
-                base_version: 1,
+                base_version: Some(1),
                 locale: "pt-BR",
                 sha256: &file_hash,
                 preview: "{\"outro\":true}",
