@@ -777,7 +777,10 @@ mod tests {
         let mut reordered = original.clone();
         reordered.schedule.as_mut().unwrap().periods.swap(0, 2);
         reordered.validate().unwrap();
-        assert_eq!(reordered.summarize().unwrap(), original.summarize().unwrap());
+        assert_eq!(
+            reordered.summarize().unwrap(),
+            original.summarize().unwrap()
+        );
     }
 
     #[test]
