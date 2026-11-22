@@ -176,9 +176,9 @@ impl AuthService {
                 }
                 if let Some(previous) = &current {
                     let old = budget_view(previous.clone())?.snapshot;
-                    snapshot
-                        .validate_catalog_lineage(&old)
-                        .map_err(|_| invalid("A referência histórica do serviço não pode ser alterada."))?;
+                    snapshot.validate_catalog_lineage(&old).map_err(|_| {
+                        invalid("A referência histórica do serviço não pode ser alterada.")
+                    })?;
                 }
                 snapshot.clone()
             }
