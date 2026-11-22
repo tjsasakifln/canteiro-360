@@ -13,7 +13,7 @@ pub struct NewBudgetImport<'a> {
     pub scope: Uuid,
     pub actor: Uuid,
     pub session: Uuid,
-    pub base_version: i64,
+    pub base_version: Option<i64>,
     pub locale: &'a str,
     pub sha256: &'a [u8; 32],
     pub preview: &'a str,
@@ -31,7 +31,7 @@ impl AuthTransaction {
     ) -> Result<Option<Uuid>, AuthStoreError> {
         let payload: Value = serde_json::from_str(batch.preview).map_err(|_| AuthStoreError)?;
         if !payload.is_object()
-            || batch.base_version <= 0
+            || batch.base_version.is_some_and(|version| version <= 0)
             || batch.included < 0
             || batch.changed < 0
             || batch.removed < 0
@@ -68,7 +68,7 @@ impl AuthTransaction {
             "SELECT id,preview,status,included_count,changed_count,removed_count
              FROM canteiro.budget_import_batches
              WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3 AND session_id=$4
-               AND base_version=$5 AND sha256=$6 AND format='CANTEIRO-ORCAMENTO-CSV-1'
+               AND base_version IS NOT DISTINCT FROM $5 AND sha256=$6 AND format='CANTEIRO-ORCAMENTO-CSV-1'
                AND locale=$7 AND expires_at>clock_timestamp()",
         )
         .bind(batch.tenant)
@@ -140,7 +140,7 @@ impl AuthTransaction {
                AND EXISTS (
                    SELECT 1 FROM canteiro.budget_versions v
                     WHERE v.tenant_id=b.tenant_id AND v.scope_id=b.scope_id
-                      AND v.version=b.base_version+1 AND v.actor_id=b.actor_id
+                      AND v.version=COALESCE(b.base_version,0)+1 AND v.actor_id=b.actor_id
                       AND v.operation_key=$6 AND v.payload=b.preview AND v.state='draft'
                )
              RETURNING b.id",
