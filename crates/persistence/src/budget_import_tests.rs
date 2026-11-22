@@ -139,7 +139,14 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let session = Uuid::new_v4();
     let mut identity = AuthStore::new(database.clone()).begin().await.unwrap();
     identity
-        .insert_session(session, &[42_u8; 32], Some((actor, 1)), "authenticated", true, 3600)
+        .insert_session(
+            session,
+            &[42_u8; 32],
+            Some((actor, 1)),
+            "authenticated",
+            true,
+            3600,
+        )
         .await
         .unwrap();
     identity.commit().await.unwrap();
@@ -169,25 +176,43 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     );
     // Retomar a mesma prévia não gera outra operação.
     assert_eq!(
-        stage.budget_import_stage(&NewBudgetImport {
-            id: Uuid::new_v4(),
-            ..candidate
-        }).await.unwrap(),
+        stage
+            .budget_import_stage(&NewBudgetImport {
+                id: Uuid::new_v4(),
+                ..candidate
+            })
+            .await
+            .unwrap(),
         Some(batch_id)
     );
     // Mesmo hash/versão, mas conteúdo diferente: não reaproveitar silenciosamente.
     assert!(
-        stage.budget_import_stage(&NewBudgetImport {
-            tenant, id: Uuid::new_v4(), scope, actor, session, base_version: 1,
-            locale: "pt-BR", sha256: &file_hash, preview: "{\"outro\":true}",
-            included: 0, changed: 1, removed: 0,
-        }).await.unwrap().is_none()
+        stage
+            .budget_import_stage(&NewBudgetImport {
+                tenant,
+                id: Uuid::new_v4(),
+                scope,
+                actor,
+                session,
+                base_version: 1,
+                locale: "pt-BR",
+                sha256: &file_hash,
+                preview: "{\"outro\":true}",
+                included: 0,
+                changed: 1,
+                removed: 0,
+            })
+            .await
+            .unwrap()
+            .is_none()
     );
     // Não existe revisão 2 neste momento: marcar como aplicado deve falhar.
-    assert!(!stage
-        .budget_import_mark_applied(tenant, scope, actor, session, batch_id, Uuid::new_v4())
-        .await
-        .unwrap());
+    assert!(
+        !stage
+            .budget_import_mark_applied(tenant, scope, actor, session, batch_id, Uuid::new_v4())
+            .await
+            .unwrap()
+    );
     stage.commit().await.unwrap();
 
     let mut second = AuthStore::new(database.clone()).begin().await.unwrap();
@@ -213,29 +238,41 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             .version,
         2
     );
-    assert!(second
-        .budget_import_mark_applied(tenant, scope, actor, session, batch_id, import_operation)
-        .await
-        .unwrap());
-    assert!(!second
-        .budget_import_mark_applied(tenant, scope, actor, session, batch_id, import_operation)
-        .await
-        .unwrap());
-    second.commit().await.unwrap();
-    let (status, applied_at): (String, Option<chrono::DateTime<chrono::Utc>>) =
-        sqlx::query_as("SELECT status,applied_at FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2")
-            .bind(tenant)
-            .bind(batch_id)
-            .fetch_one(&fixture.admin)
+    assert!(
+        second
+            .budget_import_mark_applied(tenant, scope, actor, session, batch_id, import_operation)
             .await
-            .unwrap();
+            .unwrap()
+    );
+    assert!(
+        !second
+            .budget_import_mark_applied(tenant, scope, actor, session, batch_id, import_operation)
+            .await
+            .unwrap()
+    );
+    second.commit().await.unwrap();
+    let (status, applied_at): (String, Option<chrono::DateTime<chrono::Utc>>) = sqlx::query_as(
+        "SELECT status,applied_at FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(batch_id)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
     assert_eq!(status, "applied");
     assert!(applied_at.is_some());
     // Reescrever data de criação ou estado de lote aplicado deve ser recusado.
-    assert!(sqlx::query(
-        "UPDATE canteiro.budget_import_batches
+    assert!(
+        sqlx::query(
+            "UPDATE canteiro.budget_import_batches
          SET created_at=created_at+interval '1 second' WHERE tenant_id=$1 AND id=$2"
-    ).bind(tenant).bind(batch_id).execute(&fixture.admin).await.is_err());
+        )
+        .bind(tenant)
+        .bind(batch_id)
+        .execute(&fixture.admin)
+        .await
+        .is_err()
+    );
 
     // CAS obsoleto não cria revisão nem sobrescreve a reimportação.
     let mut stale = AuthStore::new(database.clone()).begin().await.unwrap();
