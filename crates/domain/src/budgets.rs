@@ -471,6 +471,11 @@ impl BudgetSchedule {
             }
             sum = sum.checked_add(period.percentage.value())?;
         }
+        // Cada posição identifica um período cronológico. Lacunas (ou início
+        // diferente de zero) tornam o rateio ambíguo mesmo quando soma 100%.
+        if positions.iter().copied().ne(0..self.periods.len() as u32) {
+            return Err(BudgetError::Schedule);
+        }
         if sum != "100".parse()? {
             return Err(BudgetError::Schedule);
         }
@@ -754,6 +759,27 @@ mod tests {
             Err(BudgetError::Definitive)
         );
     }
+    #[test]
+    fn schedule_rejects_position_gaps_without_changing_a_valid_rateio() {
+        let original = budget();
+        let mut missing_first = original.clone();
+        for period in &mut missing_first.schedule.as_mut().unwrap().periods {
+            period.position += 1;
+        }
+        assert_eq!(missing_first.validate(), Err(BudgetError::Schedule));
+
+        let mut distant_period = original.clone();
+        distant_period.schedule.as_mut().unwrap().periods[2].position = 99;
+        assert_eq!(distant_period.validate(), Err(BudgetError::Schedule));
+        assert_eq!(distant_period.summarize(), Err(BudgetError::Schedule));
+
+        // A ordem física dos registros não altera sua posição temporal.
+        let mut reordered = original.clone();
+        reordered.schedule.as_mut().unwrap().periods.swap(0, 2);
+        reordered.validate().unwrap();
+        assert_eq!(reordered.summarize().unwrap(), original.summarize().unwrap());
+    }
+
     #[test]
     fn rescheduling_is_atomic_keeps_costs_and_rejects_definitive_versions() {
         let mut draft = budget();
