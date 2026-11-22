@@ -1158,11 +1158,13 @@ pub fn catalog_csv_preview(
     let added = preview
         .added_sample
         .into_iter()
-        .map(|item| view! {
-            <article class="record-summary">
-                <p>{format!("Incluído: {} · {} · {:?} · {} · R$ {}",
-                    item.code,item.description,item.category,item.unit,item.price)}</p>
-            </article>
+        .map(|item| {
+            view! {
+                <article class="record-summary">
+                    <p>{format!("Incluído: {} · {} · {:?} · {} · R$ {}",
+                        item.code,item.description,item.category,item.unit,item.price)}</p>
+                </article>
+            }
         })
         .collect_view();
     let changed = preview
@@ -1181,11 +1183,13 @@ pub fn catalog_csv_preview(
     let removed = preview
         .removed_sample
         .into_iter()
-        .map(|item| view! {
-            <article class="record-summary">
-                <p>{format!("Removido: {} · {} · {:?} · {} · R$ {}",
-                    item.code,item.description,item.category,item.unit,item.price)}</p>
-            </article>
+        .map(|item| {
+            view! {
+                <article class="record-summary">
+                    <p>{format!("Removido: {} · {} · {:?} · {} · R$ {}",
+                        item.code,item.description,item.category,item.unit,item.price)}</p>
+                </article>
+            }
         })
         .collect_view();
     shell(
