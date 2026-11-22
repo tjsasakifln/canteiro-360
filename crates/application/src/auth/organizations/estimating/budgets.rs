@@ -512,3 +512,52 @@ mod budget_import_diagnostics_tests {
         assert!(error.message().contains("Linha 2, coluna 1"));
     }
 }
+
+#[cfg(test)]
+mod budget_transfer_contract_tests {
+    use super::*;
+
+    #[test]
+    fn copy_move_requests_cannot_inject_prices_or_entire_snapshots() {
+        let copy = serde_json::json!({
+            "action": "copy_line",
+            "source_id": "existing",
+            "new_id": "duplicate",
+            "target_variation_id": "v2"
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(copy.clone()).unwrap(),
+            BudgetChange::CopyLine {
+                source_id,
+                new_id,
+                target_variation_id,
+            } if source_id == "existing" && new_id == "duplicate" && target_variation_id == "v2"
+        ));
+        let mut forged = copy;
+        forged["price"] = serde_json::json!("0.01");
+        assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+
+        let moved = serde_json::json!({
+            "action": "move_line",
+            "line_id": "existing",
+            "target_variation_id": "v2"
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(moved.clone()).unwrap(),
+            BudgetChange::MoveLine {
+                line_id,
+                target_variation_id,
+            } if line_id == "existing" && target_variation_id == "v2"
+        ));
+        let mut forged = moved;
+        forged["snapshot"] = serde_json::json!({"lines": []});
+        assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+
+        assert!(serde_json::from_value::<BudgetChange>(serde_json::json!({
+            "action": "copy_line",
+            "source_id": "existing",
+            "target_variation_id": "v2"
+        }))
+        .is_err());
+    }
+}
