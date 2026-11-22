@@ -433,7 +433,43 @@ async fn composition_edit_description_form(
         return response;
     }
     let mut composition = record.composition.clone();
-    composition.description = field(&data, "description").to_owned();
+    match field(&data, "change_kind") {
+        "" => {
+            composition.description = field(&data, "description").to_owned();
+        }
+        "costs" => {
+            composition.bdi = match field(&data, "bdi")
+                .parse::<canteiro_domain::decimal::Percent>()
+            {
+                Ok(value) => value,
+                Err(_) => return bad_input(),
+            };
+            composition.discount = match field(&data, "discount")
+                .parse::<canteiro_domain::decimal::Percent>()
+            {
+                Ok(value) => value,
+                Err(_) => return bad_input(),
+            };
+        }
+        "coefficient" => {
+            let line_id = field(&data, "line_id");
+            let coefficient = match field(&data, "coefficient")
+                .parse::<canteiro_domain::decimal::Quantity>()
+            {
+                Ok(value) => value,
+                Err(_) => return bad_input(),
+            };
+            let Some(line) = composition
+                .lines
+                .iter_mut()
+                .find(|line| line.id == line_id)
+            else {
+                return bad_input();
+            };
+            line.coefficient = coefficient;
+        }
+        _ => return bad_input(),
+    }
     let command = CompositionWriteCommand {
         context,
         scope_id: scope_id.to_owned(),
