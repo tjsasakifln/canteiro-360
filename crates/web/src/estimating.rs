@@ -1,6 +1,7 @@
 //! Visão orçamentária nativa, com fontes históricas visíveis e exportação autorizada.
 use crate::projects::shell;
 use canteiro_contracts::estimating::*;
+use canteiro_domain::budgets::BudgetLine;
 use leptos::prelude::*;
 
 pub fn page(ctx: EstimatingContext) -> String {
