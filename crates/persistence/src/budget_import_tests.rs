@@ -2,10 +2,7 @@
 //! O teste exercita o mesmo leitor CSV versionado e a gravação de revisões.
 //! Não considera uma prévia ou uma gravação parcial como importação concluída.
 use super::*;
-use crate::{
-    auth::AuthStore,
-    budgets::BudgetWrite,
-};
+use crate::{auth::AuthStore, budgets::BudgetWrite};
 use canteiro_domain::{
     ActorId, EntityId,
     budget_csv::{NumberLocale, export_csv, preview_import},
@@ -128,6 +125,10 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let updated = preview_import(&updated_csv, NumberLocale::PtBr).unwrap();
     assert_eq!(updated.lines.len(), 10_000);
     assert_eq!(updated.lines[9_999].quantity, original.lines[9_999].quantity);
+    // Uma célula maliciosa no último serviço invalida o lote inteiro antes da gravação.
+    let malformed = updated_csv.replacen("T-09999", "=1+1", 1);
+    let diagnostic = preview_import(&malformed, NumberLocale::PtBr).unwrap_err();
+    assert_eq!((diagnostic.row, diagnostic.column), (10_004, 13));
     let updated_json = serde_json::to_string(&updated).unwrap();
 
     let mut second = AuthStore::new(database.clone()).begin().await.unwrap();
