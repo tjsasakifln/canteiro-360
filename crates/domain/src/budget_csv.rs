@@ -675,7 +675,7 @@ pub fn compare_details(
             .filter(|(id, variation)| {
                 previous_variations
                     .get(*id)
-                    .is_some_and(|previous| *previous != *variation)
+                    .is_some_and(|previous| *previous != **variation)
             })
             .count(),
         variations_removed: previous_variations
