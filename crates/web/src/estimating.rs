@@ -73,7 +73,8 @@ pub fn page(ctx: EstimatingContext) -> String {
                 })
             });
             let source = catalog.source;
-            let (historical, _) = competence_flags(&source.competence, None, &current_competence);
+            let (historical, _) =
+                competence_flags(&source.competence, None, &current_competence);
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · edição {}",catalog.catalog_id,catalog.edition)}</h3>
@@ -1340,9 +1341,21 @@ mod competence_tests {
 
     #[test]
     fn warns_on_historical_and_backdated_catalog_editions_without_rejecting_them() {
-        assert_eq!(competence_flags("2026-11", Some("2026-10"), "2026-11"), (false, false));
-        assert_eq!(competence_flags("2026-09", Some("2026-10"), "2026-11"), (true, true));
-        assert_eq!(competence_flags("2026-09", None, "2026-11"), (true, false));
-        assert_eq!(competence_flags("2026-12", Some("2026-11"), "2026-11"), (false, false));
+        assert_eq!(
+            competence_flags("2026-11", Some("2026-10"), "2026-11"),
+            (false, false)
+        );
+        assert_eq!(
+            competence_flags("2026-09", Some("2026-10"), "2026-11"),
+            (true, true)
+        );
+        assert_eq!(
+            competence_flags("2026-09", None, "2026-11"),
+            (true, false)
+        );
+        assert_eq!(
+            competence_flags("2026-12", Some("2026-11"), "2026-11"),
+            (false, false)
+        );
     }
 }
