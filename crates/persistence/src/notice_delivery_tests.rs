@@ -193,6 +193,54 @@ async fn internal_notice_delivery_is_atomic_private_and_idempotent() {
     );
     read.commit().await.unwrap();
 
+    // Mesmo na mesma empresa, o histórico de outra pessoa é privado.
+    let coworker = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO canteiro_auth.users(id,email,password_hash,verified)
+         VALUES($1,$2,'fixture-only',true)",
+    )
+    .bind(coworker)
+    .bind(format!("{coworker}@example.invalid"))
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO canteiro.organization_members(tenant_id,user_id,role)
+         VALUES($1,$2,'viewer')",
+    )
+    .bind(first.tenant)
+    .bind(coworker)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    let mut coworker_tx = AuthStore::new(database.clone()).begin().await.unwrap();
+    coworker_tx.org_set_actor(coworker).await.unwrap();
+    coworker_tx.org_set_tenant(first.tenant).await.unwrap();
+    let foreign_history: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro.user_notice_delivery_history
+         WHERE tenant_id=$1 AND recipient_id=$2",
+    )
+    .bind(first.tenant)
+    .bind(first.actor)
+    .fetch_one(&mut *coworker_tx.tx)
+    .await
+    .unwrap();
+    assert_eq!(foreign_history, 0);
+    coworker_tx.commit().await.unwrap();
+
+    let mut own_tx = scoped(&database, &first).await;
+    let own_history: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro.user_notice_delivery_history
+         WHERE tenant_id=$1 AND recipient_id=$2",
+    )
+    .bind(first.tenant)
+    .bind(first.actor)
+    .fetch_one(&mut *own_tx.tx)
+    .await
+    .unwrap();
+    assert_eq!(own_history, 1);
+    own_tx.commit().await.unwrap();
+
     let no_global_queue_access: bool = sqlx::query_scalar(
         "SELECT NOT has_table_privilege(current_user,'canteiro_meta.user_notice_queue','SELECT')",
     )
