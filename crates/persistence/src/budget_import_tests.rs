@@ -124,7 +124,10 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let updated_csv = export_csv(&original, NumberLocale::PtBr).unwrap();
     let updated = preview_import(&updated_csv, NumberLocale::PtBr).unwrap();
     assert_eq!(updated.lines.len(), 10_000);
-    assert_eq!(updated.lines[9_999].quantity, original.lines[9_999].quantity);
+    assert_eq!(
+        updated.lines[9_999].quantity,
+        original.lines[9_999].quantity
+    );
     // Uma célula maliciosa no último serviço invalida o lote inteiro antes da gravação.
     let malformed = updated_csv.replacen("T-09999", "=1+1", 1);
     let diagnostic = preview_import(&malformed, NumberLocale::PtBr).unwrap_err();
@@ -203,7 +206,11 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let mut inspect = AuthStore::new(database.clone()).begin().await.unwrap();
     inspect.org_set_actor(actor).await.unwrap();
     inspect.org_set_tenant(tenant).await.unwrap();
-    let current = inspect.budget_current(tenant, scope).await.unwrap().unwrap();
+    let current = inspect
+        .budget_current(tenant, scope)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(current.version, 2);
     let stored: BudgetRevision = serde_json::from_str(&current.payload).unwrap();
     assert_eq!(stored, original);
