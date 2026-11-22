@@ -808,8 +808,8 @@ mod tests {
     fn formula_masked_inside_description_is_rejected() {
         let mut original = sample(1);
         for hidden in [
-            '\u{00ad}', '\u{034f}', '\u{061c}', '\u{180e}', '\u{200c}', '\u{200d}',
-            '\u{200f}', '\u{202a}', '\u{2061}', '\u{2064}', '\u{2069}',
+            '\u{00ad}', '\u{034f}', '\u{061c}', '\u{180e}', '\u{200c}', '\u{200d}', '\u{200f}',
+            '\u{202a}', '\u{2061}', '\u{2064}', '\u{2069}',
         ] {
             original.lines[0].description = format!("Mobilização{hidden} administrativa");
             assert!(export_csv(&original, NumberLocale::Canonical).is_err());
