@@ -412,7 +412,7 @@ fn changed_composition_from_form(
                 *cost = field(data, "informed_cost").parse().ok()?;
             }
             canteiro_domain::compositions::CostMode::Formula => return None,
-        }
+        },
         _ => return None,
     }
     composition.validate().ok()?;
