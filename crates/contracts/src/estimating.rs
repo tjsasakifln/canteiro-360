@@ -28,6 +28,9 @@ pub struct BudgetRecord {
     pub scope_id: String,
     pub version: i64,
     pub snapshot: BudgetRevision,
+    /// Identificador persistido da operação, para rastrear o recibo sem expor dados internos.
+    #[serde(default)]
+    pub operation_key: String,
     pub actor_id: String,
     pub reason: String,
     pub recorded_at: String,
