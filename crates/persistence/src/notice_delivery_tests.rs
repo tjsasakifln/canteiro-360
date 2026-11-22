@@ -217,7 +217,12 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     sqlx::raw_sql(
         "CREATE FUNCTION canteiro_meta.fail_notice_ack() RETURNS TRIGGER
          LANGUAGE plpgsql AS $$
-         BEGIN RAISE EXCEPTION 'Falha fictícia no recibo'; END $$;
+         BEGIN
+             IF NEW.outcome = 'acknowledged' THEN
+                 RAISE EXCEPTION 'Falha fictícia no recibo';
+             END IF;
+             RETURN NEW;
+         END $;
          CREATE TRIGGER fail_notice_ack
          BEFORE INSERT ON canteiro.user_notice_delivery_history
          FOR EACH ROW EXECUTE FUNCTION canteiro_meta.fail_notice_ack()",
@@ -250,6 +255,19 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     .unwrap();
     assert_eq!(retry_count, 1);
 
+    // A falha de recibo não muda o estado da entrega, mas deixa uma
+    // tentativa fracassada rastreável e imutável, no mesmo commit do retry.
+    let (failed_attempt, failed_outcome): (i32, String) = sqlx::query_as(
+        "SELECT attempt,outcome FROM canteiro.user_notice_delivery_history
+         WHERE tenant_id=$1 AND event_id=$2",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!((failed_attempt, failed_outcome.as_str()), (1, "failed"));
+
     sqlx::raw_sql(
         "DROP TRIGGER fail_notice_ack ON canteiro.user_notice_delivery_history;
          DROP FUNCTION canteiro_meta.fail_notice_ack()",
@@ -279,7 +297,19 @@ async fn internal_notice_ack_failure_rolls_back_and_is_retried() {
     .fetch_one(&fixture.admin)
     .await
     .unwrap();
-    assert_eq!(history, 1);
+    assert_eq!(history, 2);
+    let (failed, acknowledged): (i64, i64) = sqlx::query_as(
+        "SELECT count(*) FILTER (WHERE outcome='failed'),
+                count(*) FILTER (WHERE outcome='acknowledged')
+         FROM canteiro.user_notice_delivery_history
+         WHERE tenant_id=$1 AND event_id=$2",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!((failed, acknowledged), (1, 1));
     database.close().await;
     fixture.cleanup().await;
 }
