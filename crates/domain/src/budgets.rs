@@ -189,6 +189,22 @@ impl BudgetRevision {
             total: Money::new(total)?,
         })
     }
+    /// Vinculação a uma fonte histórica exige o código, unidade e preço oficiais.
+    /// A checagem vale para qualquer snapshot, inclusive importação e edição integral.
+    pub fn validate_catalog_references(
+        &self,
+        published: &BTreeMap<(String, u32, String), (MeasureUnit, UnitPrice)>,
+    ) -> Result<(), BudgetError> {
+        for line in &self.lines {
+            if let (Some(catalog), Some(edition)) = (&line.catalog_id, line.catalog_edition) {
+                let key = (catalog.clone(), edition, line.code.clone());
+                if published.get(&key) != Some(&(line.unit, line.price)) {
+                    return Err(BudgetError::ReferencedItem);
+                }
+            }
+        }
+        Ok(())
+    }
     /// Edição de serviço sem perder cronograma e sem substituir preço de fonte
     /// histórica por valor manual mantendo a referência de catálogo.
     /// O serviço de aplicação ainda exige reserva, versão e autorização atuais.
@@ -406,6 +422,40 @@ mod tests {
                 .map(|p| p.percentage.to_string())
                 .collect::<Vec<_>>(),
             vec!["33.34", "33.33", "33.33"]
+        );
+    }
+    #[test]
+    fn every_snapshot_must_match_immutable_catalog_prices() {
+        let original = budget();
+        let mut official = BTreeMap::new();
+        official.insert(
+            ("ref".into(), 1, "SIN-A".into()),
+            (MeasureUnit::CubicMetre, "100".parse().unwrap()),
+        );
+        original.validate_catalog_references(&official).unwrap();
+        let mut altered = original.clone();
+        altered.lines[0].price = "999".parse().unwrap();
+        assert_eq!(
+            altered.validate_catalog_references(&official),
+            Err(BudgetError::ReferencedItem)
+        );
+        altered = original.clone();
+        altered.lines[0].code = "SIN-B".into();
+        assert_eq!(
+            altered.validate_catalog_references(&official),
+            Err(BudgetError::ReferencedItem)
+        );
+        altered = original.clone();
+        altered.lines[0].unit = MeasureUnit::SquareMetre;
+        assert_eq!(
+            altered.validate_catalog_references(&official),
+            Err(BudgetError::ReferencedItem)
+        );
+        altered = original;
+        altered.lines[0].catalog_edition = Some(2);
+        assert_eq!(
+            altered.validate_catalog_references(&official),
+            Err(BudgetError::ReferencedItem)
         );
     }
     #[test]
