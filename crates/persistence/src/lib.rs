@@ -33,6 +33,7 @@ pub mod obligations;
 
 pub mod notifications;
 
+pub mod budget_imports;
 pub mod budgets;
 pub mod catalogs;
 pub mod compositions;
