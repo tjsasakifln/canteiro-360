@@ -3,6 +3,10 @@ use canteiro_domain::budget_csv::{ImportDifference, NumberLocale};
 
 use std::collections::BTreeMap;
 
+fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision, AuthError> {
+    preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
+}
+
 /// Sempre confronta a referência informada com a edição publicada no mesmo escopo.
 /// Impede substituir o preço ou o código por payload direto ou importação CSV.
 async fn require_catalog_snapshot(
@@ -326,8 +330,7 @@ impl AuthService {
                 "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
             ));
         }
-        let mut snapshot = preview_import(&input.csv, input.locale)
-            .map_err(|error| invalid(error.to_string()))?;
+        let mut snapshot = preview_budget_csv(&input.csv, input.locale)?;
         if snapshot.budget_id != scope.to_string() {
             return Err(invalid("O CSV não pertence ao orçamento selecionado."));
         }
@@ -392,5 +395,20 @@ impl AuthService {
             .await?;
         tx.commit().await?;
         Ok(csv)
+    }
+}
+
+#[cfg(test)]
+mod budget_import_diagnostics_tests {
+    use super::*;
+
+    #[test]
+    fn malformed_budget_csv_retains_physical_error_coordinates() {
+        let input = "CANTEIRO-ORCAMENTO-CSV-1\ncoluna_invalida";
+        let error = match preview_budget_csv(input, NumberLocale::PtBr) {
+            Ok(_) => panic!("O CSV incompleto deve ser rejeitado."),
+            Err(error) => error,
+        };
+        assert!(error.message().contains("Linha 2, coluna 1"));
     }
 }
