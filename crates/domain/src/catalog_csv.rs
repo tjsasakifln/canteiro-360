@@ -1,7 +1,7 @@
 //! Importação de custos sem persistir a prévia. A edição e a fonte são validadas separadamente.
 //! Não interpreta fórmulas, nem converte unidades ou competências silenciosamente.
 use crate::{
-    budget_csv::{CellError, NumberLocale, locale_number, parse_csv},
+    budget_csv::{CellError, MAX_BYTES, NumberLocale, locale_number, parse_csv},
     catalogs::{CatalogItem, CostCategory},
     decimal::UnitPrice,
     units::MeasureUnit,
@@ -23,6 +23,9 @@ fn issue(row: usize, column: usize, cause: &str) -> CellError {
 /// Confere todas as células antes de devolver itens. Uma falha impede a edição inteira.
 /// Cabeçalho fixo e formato versionado tornam a interpretação reproduzível.
 pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogItem>, CellError> {
+    if input.len() > MAX_BYTES {
+        return Err(issue(1, 1, "Arquivo acima do limite de 8 MiB."));
+    }
     let input = input.strip_prefix('\u{feff}').unwrap_or(input);
     let rest = input
         .strip_prefix(FORMAT_VERSION)
@@ -85,6 +88,14 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rejects_oversized_catalog_including_version_header() {
+        let oversized = format!("{FORMAT_VERSION}\n{}", "x".repeat(MAX_BYTES));
+        let error = preview_import(&oversized, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (1, 1));
+        assert_eq!(error.cause, "Arquivo acima do limite de 8 MiB.");
+    }
 
     #[test]
     fn preserves_quoted_description_and_exact_brazilian_price() {
