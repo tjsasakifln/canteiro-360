@@ -819,8 +819,16 @@ pub fn preview(ctx: EstimatingContext, result: BudgetImportPreviewReply) -> Stri
             schedule.starts_on, schedule.deadline_days, basis, periods
         )
     };
-    let before_schedule = result.change_details.previous_schedule.as_ref().map(&schedule_label);
-    let after_schedule = result.change_details.imported_schedule.as_ref().map(&schedule_label);
+    let before_schedule = result
+        .change_details
+        .previous_schedule
+        .as_ref()
+        .map(&schedule_label);
+    let after_schedule = result
+        .change_details
+        .imported_schedule
+        .as_ref()
+        .map(&schedule_label);
     let detail_count = result.change_details.records.len();
     let omitted_count = result.change_details.omitted;
     let detail_rows = result
