@@ -109,9 +109,30 @@ pub fn page(ctx: EstimatingContext) -> String {
                             }
                         })
                         .collect_view();
+                    let has_incidences = !entry.composition.incidences.is_empty();
+                    let incidence_options = entry
+                        .composition
+                        .incidences
+                        .clone()
+                        .into_iter()
+                        .map(|incidence| {
+                            view! {
+                                <option value=incidence.id.clone()>
+                                    {format!("{} · {}% (base: {})",
+                                        incidence.id, incidence.percent, incidence.base_lines.join(", "))}
+                                </option>
+                            }
+                        })
+                        .collect_view();
+                    let informed_cost = match &entry.composition.cost_mode {
+                        canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
+                            Some(cost.to_string())
+                        }
+                        canteiro_domain::compositions::CostMode::Formula => None,
+                    };
                     view! {
                         <details>
-                            <summary>"Editar descrição, índices e coeficientes"</summary>
+                            <summary>"Editar descrição, índices, coeficientes e incidências"</summary>
                         <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
                             <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
                             <input type="hidden" name="context_version" value=context.context_version.to_string()/>
@@ -179,6 +200,52 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <input type="text" name="reason" maxlength="240" required=true/>
                                 </label>
                                 <button type="submit" class="secondary-button">"Salvar coeficiente em nova revisão"</button>
+                            </form>
+                        })}
+                        {has_incidences.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="incidence"/>
+                                <label class="record-field">
+                                    <span>"Incidência a alterar (bases preservadas)"</span>
+                                    <select name="incidence_id" required=true>{incidence_options}</select>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Novo percentual da incidência (use ponto)"</span>
+                                    <input type="text" name="incidence_percent" inputmode="decimal"
+                                        maxlength="40" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Motivo da alteração da incidência"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Salvar incidência em nova revisão"</button>
+                            </form>
+                        })}
+                        {informed_cost.map(|amount| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="informed_cost"/>
+                                <label class="record-field">
+                                    <span>"Novo custo unitário informado (R$, use ponto)"</span>
+                                    <input type="text" name="informed_cost" inputmode="decimal"
+                                        maxlength="40" value=amount required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Justificativa da revisão de custo"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Salvar custo em nova revisão"</button>
                             </form>
                         })}
                         </details>
