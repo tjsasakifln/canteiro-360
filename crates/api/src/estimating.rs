@@ -58,8 +58,14 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         )
         .route("/orcamentos/servicos/editar", get(budget_edit_line_page))
         .route("/orcamentos/servicos/salvar", post(budget_save_line_form))
-        .route("/orcamentos/servicos/copiar", post(budget_transfer_line_form))
-        .route("/orcamentos/servicos/mover", post(budget_transfer_line_form))
+        .route(
+            "/orcamentos/servicos/copiar",
+            post(budget_transfer_line_form),
+        )
+        .route(
+            "/orcamentos/servicos/mover",
+            post(budget_transfer_line_form),
+        )
         .route("/api/estimating/budget/lease", post(budget_lease))
         .route("/api/estimating/budget/command", post(budget_write))
         .route(
