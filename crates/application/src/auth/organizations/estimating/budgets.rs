@@ -1,9 +1,9 @@
 use super::*;
 use canteiro_domain::budget_csv::{ImportDifference, NumberLocale, compare_details};
 
-use std::collections::BTreeMap;
-use sha2::{Digest, Sha256};
 use canteiro_persistence::budget_imports::NewBudgetImport;
+use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 
 fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision, AuthError> {
     preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
@@ -295,14 +295,7 @@ impl AuthService {
                 .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
                 .await?
             && !tx
-                .budget_import_mark_applied(
-                    a.tenant,
-                    scope,
-                    a.actor.id,
-                    a.actor.session,
-                    key,
-                    key,
-                )
+                .budget_import_mark_applied(a.tenant, scope, a.actor.id, a.actor.session, key, key)
                 .await?
         {
             return Err(record_conflict());
@@ -391,8 +384,7 @@ impl AuthService {
         // Novos orçamentos sem revisão-base continuam no fluxo de primeira gravação.
         let batch_id = if let Some(version) = base_version {
             let sha256: [u8; 32] = Sha256::digest(input.csv.as_bytes()).into();
-            let payload =
-                serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
+            let payload = serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
             let count = |n: usize| {
                 i32::try_from(n).map_err(|_| invalid("A quantidade de serviços excede o limite."))
             };
