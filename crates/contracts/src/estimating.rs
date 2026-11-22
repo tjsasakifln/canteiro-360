@@ -131,8 +131,12 @@ pub struct BudgetCommand {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum BudgetChange {
-    Save { snapshot: BudgetRevision },
-    RemoveLine { line_id: String },
+    Save {
+        snapshot: BudgetRevision,
+    },
+    RemoveLine {
+        line_id: String,
+    },
     /// Copia o serviço existente sem aceitar preço ou referência fornecidos pelo cliente.
     CopyLine {
         source_id: String,
