@@ -28,14 +28,14 @@ pub enum AuthErrorKind {
 pub struct AuthError {
     kind: AuthErrorKind,
     code: &'static str,
-    message: &'static str,
+    message: String,
 }
 impl AuthError {
-    fn new(kind: AuthErrorKind, code: &'static str, message: &'static str) -> Self {
+    fn new(kind: AuthErrorKind, code: &'static str, message: impl Into<String>) -> Self {
         Self {
             kind,
             code,
-            message,
+            message: message.into(),
         }
     }
     fn unavailable() -> Self {
@@ -79,8 +79,8 @@ impl AuthError {
     pub fn code(&self) -> &'static str {
         self.code
     }
-    pub fn message(&self) -> &'static str {
-        self.message
+    pub fn message(&self) -> &str {
+        &self.message
     }
 }
 impl From<AuthStoreError> for AuthError {
