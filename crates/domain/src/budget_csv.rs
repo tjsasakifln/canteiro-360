@@ -522,6 +522,85 @@ pub fn compare(existing: &BudgetRevision, incoming: &BudgetRevision) -> ImportDi
         removed: old.keys().filter(|id| !new.contains_key(*id)).count(),
     }
 }
+/// Amostra limitada para comparação humana. A contagem inclui todas as linhas;
+/// somente os detalhes são limitados para evitar respostas enormes com 10 mil itens.
+pub const MAX_IMPORT_CHANGE_DETAILS: usize = 30;
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct ImportLineChange {
+    pub id: String,
+    pub kind: &'static str,
+    pub fields: Vec<&'static str>,
+    pub before: Option<BudgetLine>,
+    pub after: Option<BudgetLine>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct ImportLineChanges {
+    pub records: Vec<ImportLineChange>,
+    pub omitted: usize,
+}
+
+/// Compara uma importação com a revisão existente sem modificar nenhuma delas.
+/// O conjunto é ordenado pelo identificador estável, não pela ordem no arquivo.
+pub fn compare_details(
+    existing: Option<&BudgetRevision>,
+    incoming: &BudgetRevision,
+) -> ImportLineChanges {
+    let old: std::collections::BTreeMap<_, _> = existing
+        .into_iter()
+        .flat_map(|budget| budget.lines.iter())
+        .map(|line| (&line.id, line))
+        .collect();
+    let new: std::collections::BTreeMap<_, _> =
+        incoming.lines.iter().map(|line| (&line.id, line)).collect();
+    let keys: BTreeSet<_> = old.keys().chain(new.keys()).copied().collect();
+    let mut records = Vec::new();
+    let mut total = 0_usize;
+    for key in keys {
+        let before = old.get(key).copied();
+        let after = new.get(key).copied();
+        if before == after {
+            continue;
+        }
+        total += 1;
+        if records.len() >= MAX_IMPORT_CHANGE_DETAILS {
+            continue;
+        }
+        let (kind, fields) = match (before, after) {
+            (None, Some(_)) => ("included", Vec::new()),
+            (Some(_), None) => ("removed", Vec::new()),
+            (Some(a), Some(b)) => {
+                let mut fields = Vec::new();
+                if a.variation_id != b.variation_id { fields.push("variação"); }
+                if a.group != b.group { fields.push("grupo"); }
+                if a.stage != b.stage { fields.push("etapa"); }
+                if a.substage != b.substage { fields.push("subetapa"); }
+                if a.code != b.code { fields.push("código"); }
+                if a.description != b.description { fields.push("descrição"); }
+                if a.unit != b.unit { fields.push("unidade"); }
+                if a.quantity != b.quantity { fields.push("quantidade"); }
+                if a.price != b.price { fields.push("preço"); }
+                if a.catalog_id != b.catalog_id { fields.push("catálogo"); }
+                if a.catalog_edition != b.catalog_edition { fields.push("edição"); }
+                ("changed", fields)
+            }
+            (None, None) => continue,
+        };
+        records.push(ImportLineChange {
+            id: key.clone(),
+            kind,
+            fields,
+            before: before.cloned(),
+            after: after.cloned(),
+        });
+    }
+    ImportLineChanges {
+        omitted: total.saturating_sub(records.len()),
+        records,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -557,6 +636,38 @@ mod tests {
             });
         }
         v
+    }
+    #[test]
+    fn detailed_comparison_preserves_original_and_identifies_changed_fields() {
+        let original = sample(3);
+        let mut incoming = original.clone();
+        incoming.lines[0].quantity = "2345.67".parse().unwrap();
+        incoming.lines[0].description = "Nova descrição".into();
+        incoming.lines.remove(1);
+        incoming.lines.push(BudgetLine {
+            id: "novo-servico".into(),
+            ..original.lines[2].clone()
+        });
+        let comparison = compare_details(Some(&original), &incoming);
+        assert_eq!(comparison.omitted, 0);
+        assert_eq!(comparison.records.len(), 3);
+        let changed = comparison.records.iter().find(|row| row.id == "item-0").unwrap();
+        assert_eq!(changed.kind, "changed");
+        assert_eq!(changed.fields, vec!["descrição", "quantidade"]);
+        assert_eq!(changed.before.as_ref().unwrap(), &original.lines[0]);
+        assert_eq!(changed.after.as_ref().unwrap(), &incoming.lines[0]);
+        assert!(comparison.records.iter().any(|row| row.id == "item-1" && row.kind == "removed"));
+        assert!(comparison.records.iter().any(|row| row.id == "novo-servico" && row.kind == "included"));
+        assert_eq!(original.lines.len(), 3);
+    }
+
+    #[test]
+    fn detailed_comparison_limits_display_but_counts_ten_thousand_services() {
+        let incoming = sample(10_000);
+        let comparison = compare_details(None, &incoming);
+        assert_eq!(comparison.records.len(), MAX_IMPORT_CHANGE_DETAILS);
+        assert_eq!(comparison.omitted, 10_000 - MAX_IMPORT_CHANGE_DETAILS);
+        assert!(comparison.records.iter().all(|row| row.kind == "included"));
     }
     #[test]
     fn schedule_survives_csv_roundtrip() {
