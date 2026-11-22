@@ -47,9 +47,11 @@ async fn require_catalog_snapshot(
             official.insert((catalog.clone(), edition, row.code), (unit, price));
         }
     }
-    snapshot.validate_catalog_references(&official).map_err(|_| {
-        invalid("O código, a unidade ou o preço não coincide com a edição histórica publicada.")
-    })
+    snapshot
+        .validate_catalog_references(&official)
+        .map_err(|_| {
+            invalid("O código, a unidade ou o preço não coincide com a edição histórica publicada.")
+        })
 }
 
 impl AuthService {
