@@ -572,17 +572,39 @@ pub fn compare_details(
             (Some(_), None) => ("removed", Vec::new()),
             (Some(a), Some(b)) => {
                 let mut fields = Vec::new();
-                if a.variation_id != b.variation_id { fields.push("variação"); }
-                if a.group != b.group { fields.push("grupo"); }
-                if a.stage != b.stage { fields.push("etapa"); }
-                if a.substage != b.substage { fields.push("subetapa"); }
-                if a.code != b.code { fields.push("código"); }
-                if a.description != b.description { fields.push("descrição"); }
-                if a.unit != b.unit { fields.push("unidade"); }
-                if a.quantity != b.quantity { fields.push("quantidade"); }
-                if a.price != b.price { fields.push("preço"); }
-                if a.catalog_id != b.catalog_id { fields.push("catálogo"); }
-                if a.catalog_edition != b.catalog_edition { fields.push("edição"); }
+                if a.variation_id != b.variation_id {
+                    fields.push("variação");
+                }
+                if a.group != b.group {
+                    fields.push("grupo");
+                }
+                if a.stage != b.stage {
+                    fields.push("etapa");
+                }
+                if a.substage != b.substage {
+                    fields.push("subetapa");
+                }
+                if a.code != b.code {
+                    fields.push("código");
+                }
+                if a.description != b.description {
+                    fields.push("descrição");
+                }
+                if a.unit != b.unit {
+                    fields.push("unidade");
+                }
+                if a.quantity != b.quantity {
+                    fields.push("quantidade");
+                }
+                if a.price != b.price {
+                    fields.push("preço");
+                }
+                if a.catalog_id != b.catalog_id {
+                    fields.push("catálogo");
+                }
+                if a.catalog_edition != b.catalog_edition {
+                    fields.push("edição");
+                }
                 ("changed", fields)
             }
             (None, None) => continue,
@@ -651,13 +673,27 @@ mod tests {
         let comparison = compare_details(Some(&original), &incoming);
         assert_eq!(comparison.omitted, 0);
         assert_eq!(comparison.records.len(), 3);
-        let changed = comparison.records.iter().find(|row| row.id == "item-0").unwrap();
+        let changed = comparison
+            .records
+            .iter()
+            .find(|row| row.id == "item-0")
+            .unwrap();
         assert_eq!(changed.kind, "changed");
         assert_eq!(changed.fields, vec!["descrição", "quantidade"]);
         assert_eq!(changed.before.as_ref().unwrap(), &original.lines[0]);
         assert_eq!(changed.after.as_ref().unwrap(), &incoming.lines[0]);
-        assert!(comparison.records.iter().any(|row| row.id == "item-1" && row.kind == "removed"));
-        assert!(comparison.records.iter().any(|row| row.id == "novo-servico" && row.kind == "included"));
+        assert!(
+            comparison
+                .records
+                .iter()
+                .any(|row| row.id == "item-1" && row.kind == "removed")
+        );
+        assert!(
+            comparison
+                .records
+                .iter()
+                .any(|row| row.id == "novo-servico" && row.kind == "included")
+        );
         assert_eq!(original.lines.len(), 3);
     }
 
