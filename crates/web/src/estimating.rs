@@ -402,6 +402,11 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
     let move_scope = record.scope_id.clone();
     let move_item = line.id.clone();
     let move_csrf = ctx.csrf.clone();
+    let delete_context = context.clone();
+    let delete_scope = record.scope_id.clone();
+    let delete_item = line.id.clone();
+    let delete_csrf = ctx.csrf.clone();
+    let delete_disabled = line.catalog_id.is_some();
     let move_variation_options = record
         .snapshot
         .variations
@@ -509,6 +514,30 @@ pub fn budget_line_editor(ctx: EstimatingContext, record: BudgetRecord, item_id:
                         <input type="text" name="reason" maxlength="240" required=true/>
                     </label>
                     <button type="submit" class="secondary-button">"Mover serviço e salvar nova revisão"</button>
+                </form>
+            </section>
+            <section class="foundation-card">
+                <h2>"Excluir serviço manual"</h2>
+                <p>"A exclusão exige confirmação, motivo e versão atual. Serviços vinculados a preços históricos não podem ser excluídos aqui. Revisões anteriores e cronograma permanecem preservados."</p>
+                <form action="/orcamentos/servicos/excluir" method="post" class="record-form">
+                    <input type="hidden" name="operation" value="delete"/>
+                    <input type="hidden" name="organization_id" value=delete_context.organization_id/>
+                    <input type="hidden" name="context_version" value=delete_context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=delete_scope/>
+                    <input type="hidden" name="expected_version" value=record.version.to_string()/>
+                    <input type="hidden" name="item_id" value=delete_item/>
+                    <input type="hidden" name="csrf" value=delete_csrf/>
+                    <label class="record-field">
+                        <span>"Motivo da exclusão"</span>
+                        <input type="text" name="reason" maxlength="240" required=true/>
+                    </label>
+                    <label class="record-field">
+                        <input type="checkbox" name="confirm_delete" value="yes" required=true disabled=delete_disabled/>
+                        <span>"Confirmo a exclusão deste serviço da nova revisão."</span>
+                    </label>
+                    <button type="submit" class="secondary-button" disabled=delete_disabled>
+                        "Excluir serviço e registrar revisão"
+                    </button>
                 </form>
             </section>
             <section class="foundation-card">
