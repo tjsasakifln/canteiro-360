@@ -393,7 +393,10 @@ fn changed_composition_from_form(
         }
         "coefficient" => {
             let line_id = field(data, "line_id");
-            let line = composition.lines.iter_mut().find(|line| line.id == line_id)?;
+            let line = composition
+                .lines
+                .iter_mut()
+                .find(|line| line.id == line_id)?;
             line.coefficient = field(data, "coefficient").parse().ok()?;
         }
         _ => return None,
@@ -453,8 +456,7 @@ async fn composition_edit_description_form(
         private_headers(&mut response);
         return response;
     }
-    let Some(composition) = changed_composition_from_form(record.composition.clone(), &data)
-    else {
+    let Some(composition) = changed_composition_from_form(record.composition.clone(), &data) else {
         return bad_input();
     };
     let command = CompositionWriteCommand {
@@ -496,7 +498,9 @@ mod composition_form_tests {
             },
             lines: vec![ComponentLine {
                 id: "insumo-01".into(),
-                source: ComponentSource::Composition { code: "BASE-01".into() },
+                source: ComponentSource::Composition {
+                    code: "BASE-01".into(),
+                },
                 coefficient: "1".parse().unwrap(),
                 unit: MeasureUnit::Unit,
                 conversion: None,
