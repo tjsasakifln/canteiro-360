@@ -32,6 +32,9 @@ mod reliability_outbox;
 #[path = "notice_delivery_tests.rs"]
 mod notice_delivery;
 
+#[path = "budget_import_tests.rs"]
+mod budget_import;
+
 fn tenant() -> TenantId {
     TenantId::from_uuid(Uuid::new_v4()).unwrap()
 }
