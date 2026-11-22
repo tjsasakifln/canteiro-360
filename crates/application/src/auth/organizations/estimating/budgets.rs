@@ -180,7 +180,9 @@ impl AuthService {
                         invalid("A referência histórica do serviço não pode ser alterada.")
                     })?;
                     snapshot.validate_no_implicit_removals(&old).map_err(|_| {
-                        invalid("Exclusões exigem comando específico e conferência das referências.")
+                        invalid(
+                            "Exclusões exigem comando específico e conferência das referências.",
+                        )
                     })?;
                 }
                 snapshot.clone()
