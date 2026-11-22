@@ -229,6 +229,54 @@ impl AuthService {
                 next.status = BudgetState::Draft;
                 next
             }
+            BudgetChange::CopyLine { .. } | BudgetChange::MoveLine { .. } => {
+                let previous = current.as_ref().ok_or_else(record_denied)?;
+                if previous.state == "approved" {
+                    return Err(invalid("Uma revisão aprovada não admite cópia ou movimentação."));
+                }
+                let lease = input
+                    .lease_key
+                    .as_deref()
+                    .ok_or_else(|| invalid("Reserve o orçamento antes de alterar um serviço."))?;
+                let lease = operation_id(lease)?;
+                if !tx
+                    .budget_lease_usable(
+                        a.tenant,
+                        scope,
+                        a.actor.id,
+                        a.actor.session,
+                        lease,
+                        next_version,
+                    )
+                    .await?
+                {
+                    return Err(AuthError::new(
+                        AuthErrorKind::Conflict,
+                        "edit_expired",
+                        "A reserva venceu ou outra sessão alterou o orçamento.",
+                    ));
+                }
+                let mut next = budget_view(previous.clone())?.snapshot;
+                let changed = match &input.change {
+                    BudgetChange::CopyLine {
+                        source_id,
+                        new_id,
+                        target_variation_id,
+                    } => next.copy_line(source_id, new_id, target_variation_id),
+                    BudgetChange::MoveLine {
+                        line_id,
+                        target_variation_id,
+                    } => next.move_line(line_id, target_variation_id),
+                    _ => return Err(AuthError::unavailable()),
+                };
+                changed.map_err(|_| {
+                    invalid("Confira o serviço, a identificação e a variação de destino.")
+                })?;
+                next.revision = u32::try_from(next_version)
+                    .map_err(|_| invalid("Limite de revisões alcançado."))?;
+                next.status = BudgetState::Draft;
+                next
+            }
             BudgetChange::Approve => {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
                 if previous.state != "review" || previous.actor_id == a.actor.id {
