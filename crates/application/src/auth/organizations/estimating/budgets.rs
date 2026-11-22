@@ -1,5 +1,5 @@
 use super::*;
-use canteiro_domain::budget_csv::{ImportDifference, NumberLocale};
+use canteiro_domain::budget_csv::{ImportDifference, NumberLocale, compare_details};
 
 use std::collections::BTreeMap;
 
@@ -342,7 +342,7 @@ impl AuthService {
             .summarize()
             .map_err(|_| invalid("Valores ou grupos inválidos no CSV."))?;
         require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
-        let difference = if let Some(old) = current {
+        let (difference, change_details) = if let Some(old) = current {
             let before = budget_view(old)?;
             snapshot
                 .validate_catalog_lineage(&before.snapshot)
@@ -352,13 +352,19 @@ impl AuthService {
                     "O CSV não pode excluir serviços silenciosamente. Use a exclusão individual validada.",
                 )
             })?;
-            compare(&before.snapshot, &snapshot)
+            (
+                compare(&before.snapshot, &snapshot),
+                compare_details(Some(&before.snapshot), &snapshot),
+            )
         } else {
-            ImportDifference {
-                included: snapshot.lines.len(),
-                changed: 0,
-                removed: 0,
-            }
+            (
+                ImportDifference {
+                    included: snapshot.lines.len(),
+                    changed: 0,
+                    removed: 0,
+                },
+                compare_details(None, &snapshot),
+            )
         };
         self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
             .await?;
@@ -366,6 +372,7 @@ impl AuthService {
         Ok(BudgetImportPreviewReply {
             snapshot,
             difference,
+            change_details,
             total,
             base_version,
             format: FORMAT_VERSION,
