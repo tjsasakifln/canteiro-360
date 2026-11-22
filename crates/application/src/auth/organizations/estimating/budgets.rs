@@ -326,9 +326,8 @@ impl AuthService {
                 "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
             ));
         }
-        let mut snapshot = preview_import(&input.csv, input.locale).map_err(|_| {
-            invalid("Confira a linha e a coluna do arquivo CSV conforme o formato oficial.")
-        })?;
+        let mut snapshot = preview_import(&input.csv, input.locale)
+            .map_err(|error| invalid(error.to_string()))?;
         if snapshot.budget_id != scope.to_string() {
             return Err(invalid("O CSV não pertence ao orçamento selecionado."));
         }
