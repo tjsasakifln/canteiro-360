@@ -232,7 +232,9 @@ impl AuthService {
             BudgetChange::CopyLine { .. } | BudgetChange::MoveLine { .. } => {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
                 if previous.state == "approved" {
-                    return Err(invalid("Uma revisão aprovada não admite cópia ou movimentação."));
+                    return Err(invalid(
+                        "Uma revisão aprovada não admite cópia ou movimentação.",
+                    ));
                 }
                 let lease = input
                     .lease_key
@@ -553,11 +555,13 @@ mod budget_transfer_contract_tests {
         forged["snapshot"] = serde_json::json!({"lines": []});
         assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
 
-        assert!(serde_json::from_value::<BudgetChange>(serde_json::json!({
-            "action": "copy_line",
-            "source_id": "existing",
-            "target_variation_id": "v2"
-        }))
-        .is_err());
+        assert!(
+            serde_json::from_value::<BudgetChange>(serde_json::json!({
+                "action": "copy_line",
+                "source_id": "existing",
+                "target_variation_id": "v2"
+            }))
+            .is_err()
+        );
     }
 }
