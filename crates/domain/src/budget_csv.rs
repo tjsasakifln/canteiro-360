@@ -75,7 +75,8 @@ pub(crate) fn safe(s: &str) -> bool {
     // marcador de fórmula do revisor sem alterar sua aparência na planilha.
     // Rejeitamos esses caracteres em qualquer posição, não apenas no início.
     if s.chars().any(|c| {
-        matches!(
+        (c.is_control() && !matches!(c, '\t' | '\n' | '\r'))
+            || matches!(
             c,
             '\u{00ad}' | '\u{034f}' | '\u{061c}' | '\u{180e}' | '\u{feff}'
                 | '\u{200b}'..='\u{200f}' | '\u{202a}'..='\u{202e}'
@@ -196,7 +197,14 @@ pub(crate) fn parse_csv(
                     closed = true;
                 }
             } else {
-                if ch == '\n' || (ch == '\r' && chars.peek() != Some(&'\n')) {
+                if ch == '\r' && chars.peek() != Some(&'\n') {
+                    return Err(err(
+                        physical_line,
+                        row.len() + 1,
+                        "Quebra de linha CR isolada não permitida; use LF ou CRLF.",
+                    ));
+                }
+                if ch == '\n' {
                     physical_line += 1;
                 }
                 cell.push(ch);
@@ -1140,6 +1148,25 @@ mod tests {
         assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
     }
 
+    #[test]
+    fn control_chars_and_quoted_carriage_returns_reject_whole_batch() {
+        let original = sample(10_000);
+        let valid = export_csv(&original, NumberLocale::Canonical).unwrap();
+        let mut invalid = valid.clone();
+        let target = "Descrição técnica";
+        let pos = invalid.rfind(target).unwrap();
+        invalid.replace_range(pos..pos + target.len(), "Descrição\u{001b}[31m");
+        let error = preview_import(&invalid, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (10_004, 14));
+        assert!(error.cause.contains("Conteúdo executável"));
+
+        let mut quoted = valid;
+        let pos = quoted.rfind(target).unwrap();
+        quoted.replace_range(pos..pos + target.len(), "\"Nota\rmaliciosa\"");
+        let error = preview_import(&quoted, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (10_004, 14));
+        assert!(error.cause.contains("CR isolada"));
+    }
     #[test]
     fn quote_and_delimiter_are_not_executable() {
         let mut original = sample(1);
