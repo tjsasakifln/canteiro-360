@@ -19,6 +19,20 @@ BEGIN
 
     PERFORM set_config('canteiro.tenant_id', NEW.tenant_id::TEXT, true);
     PERFORM set_config('canteiro.actor_id', NEW.recipient_id::TEXT, true);
+    -- Failed attempts count for the recipient and for the outbox as well;
+    -- otherwise a later success would reuse attempt 1 and conceal the retry.
+    UPDATE canteiro.user_notice_outbox
+       SET attempts = attempts + 1, state = 'queued', claimed_until = NULL
+     WHERE tenant_id = NEW.tenant_id AND recipient_id = NEW.recipient_id
+       AND event_id = NEW.event_id AND kind = NEW.kind AND channel = NEW.channel;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Não foi possível contabilizar a tentativa de comunicação';
+    END IF;
+    UPDATE canteiro.user_notices
+       SET attempts = attempts + 1, last_attempt = clock_timestamp()
+     WHERE tenant_id = NEW.tenant_id AND recipient_id = NEW.recipient_id
+       AND event_id = NEW.event_id AND kind = NEW.kind;
+
     INSERT INTO canteiro.user_notice_delivery_history
         (tenant_id, id, recipient_id, event_id, kind, channel, attempt, outcome)
     VALUES (NEW.tenant_id, gen_random_uuid(), NEW.recipient_id, NEW.event_id,
