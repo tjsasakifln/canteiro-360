@@ -1169,6 +1169,9 @@ async fn budget_save_schedule_form(
         Some(value) => value,
         None => return bad_input(),
     };
+    if field(&data, "confirm_schedule") != "yes" {
+        return bad_input();
+    }
     let starts_on = match field(&data, "starts_on").parse::<canteiro_domain::CivilDate>() {
         Ok(value) => value,
         Err(_) => return bad_input(),
