@@ -1013,7 +1013,11 @@ mod tests {
         let error = preview_import(&without_edition, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (5, 19));
 
-        let missing_variation = csv.replacen("v1;Pavimento", "v-inexistente;Pavimento", 1);
+        let missing_variation = csv.replacen(
+            "ITEM;;;;;v1;;;Pavimento",
+            "ITEM;;;;;v-inexistente;;;Pavimento",
+            1,
+        );
         assert_ne!(missing_variation, csv);
         let error = preview_import(&missing_variation, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (5, 6));
