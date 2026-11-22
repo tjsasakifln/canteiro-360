@@ -380,40 +380,36 @@ impl AuthService {
                 compare_details(None, &snapshot),
             )
         };
-        // Vincula a prévia a um hash do arquivo integral, à sessão e à revisão-base.
-        // Novos orçamentos sem revisão-base continuam no fluxo de primeira gravação.
-        let batch_id = if let Some(version) = base_version {
-            let sha256: [u8; 32] = Sha256::digest(input.csv.as_bytes()).into();
-            let payload = serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
-            let count = |n: usize| {
-                i32::try_from(n).map_err(|_| invalid("A quantidade de serviços excede o limite."))
-            };
-            let batch = NewBudgetImport {
-                tenant: a.tenant,
-                id: Uuid::new_v4(),
-                scope,
-                actor: a.actor.id,
-                session: a.actor.session,
-                base_version: version,
-                locale: match input.locale {
-                    NumberLocale::Canonical => "canonical",
-                    NumberLocale::PtBr => "pt-BR",
-                },
-                sha256: &sha256,
-                preview: &payload,
-                included: count(difference.included)?,
-                changed: count(difference.changed)?,
-                removed: count(difference.removed)?,
-            };
-            Some(
-                tx.budget_import_stage(&batch)
-                    .await?
-                    .ok_or_else(record_conflict)?
-                    .to_string(),
-            )
-        } else {
-            None
+        // Tanto a primeira importação quanto uma reimportação possuem identidade
+        // durável vinculada ao conteúdo integral, à sessão e à revisão-base.
+        let sha256: [u8; 32] = Sha256::digest(input.csv.as_bytes()).into();
+        let payload = serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
+        let count = |n: usize| {
+            i32::try_from(n).map_err(|_| invalid("A quantidade de serviços excede o limite."))
         };
+        let batch = NewBudgetImport {
+            tenant: a.tenant,
+            id: Uuid::new_v4(),
+            scope,
+            actor: a.actor.id,
+            session: a.actor.session,
+            base_version,
+            locale: match input.locale {
+                NumberLocale::Canonical => "canonical",
+                NumberLocale::PtBr => "pt-BR",
+            },
+            sha256: &sha256,
+            preview: &payload,
+            included: count(difference.included)?,
+            changed: count(difference.changed)?,
+            removed: count(difference.removed)?,
+        };
+        let batch_id = Some(
+            tx.budget_import_stage(&batch)
+                .await?
+                .ok_or_else(record_conflict)?
+                .to_string(),
+        );
         self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
             .await?;
         tx.commit().await?;
