@@ -537,15 +537,28 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     return Err(err(row_number, 8, "Escopo da variação inválido."));
                 }
                 if !variation_scopes.insert((fields[6].as_str(), fields[7].as_str())) {
-                    return Err(err(row_number, 8, "Obra e escopo repetidos em outra variação."));
+                    return Err(err(
+                        row_number,
+                        8,
+                        "Obra e escopo repetidos em outra variação.",
+                    ));
                 }
             }
             "ITEM" => {
                 for (column, limit) in [
-                    (9, 160), (10, 160), (11, 160), (12, 120), (13, 80), (14, 800),
+                    (9, 160),
+                    (10, 160),
+                    (11, 160),
+                    (12, 120),
+                    (13, 80),
+                    (14, 800),
                 ] {
                     if !bounded(&fields[column - 1], limit) {
-                        return Err(err(row_number, column, "Campo obrigatório ou tamanho inválido."));
+                        return Err(err(
+                            row_number,
+                            column,
+                            "Campo obrigatório ou tamanho inválido.",
+                        ));
                     }
                 }
                 if !service_ids.insert(fields[11].as_str()) {
@@ -562,7 +575,11 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     ));
                 }
                 if fields[18] == "0" {
-                    return Err(err(row_number, 19, "A edição do catálogo precisa ser positiva."));
+                    return Err(err(
+                        row_number,
+                        19,
+                        "A edição do catálogo precisa ser positiva.",
+                    ));
                 }
             }
             _ => {}
