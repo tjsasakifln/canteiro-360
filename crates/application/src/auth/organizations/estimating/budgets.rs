@@ -288,6 +288,25 @@ impl AuthService {
             })
             .await?
             .ok_or_else(record_conflict)?;
+        // O recibo de importação só se confirma junto com a revisão efetiva.
+        // Caso a transação falhe depois, ambos permanecem não aplicados.
+        if matches!(&input.change, BudgetChange::Save { .. })
+            && tx
+                .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
+                .await?
+            && !tx
+                .budget_import_mark_applied(
+                    a.tenant,
+                    scope,
+                    a.actor.id,
+                    a.actor.session,
+                    key,
+                    key,
+                )
+                .await?
+        {
+            return Err(record_conflict());
+        }
         if !approving && let Some(lease) = input.lease_key.as_deref() {
             let lease = operation_id(lease)?;
             tx.budget_release_lease(a.tenant, scope, a.actor.id, a.actor.session, lease)
