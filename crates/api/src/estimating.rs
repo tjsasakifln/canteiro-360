@@ -424,17 +424,19 @@ fn changed_composition_from_form(
             if edition == 0 {
                 return None;
             }
-            composition.lines.push(canteiro_domain::compositions::ComponentLine {
-                id: id.to_owned(),
-                source: canteiro_domain::compositions::ComponentSource::Catalog {
-                    catalog_id: field(data, "catalog_id").to_owned(),
-                    edition,
-                    code: field(data, "catalog_code").to_owned(),
-                },
-                coefficient: field(data, "coefficient").parse().ok()?,
-                unit: field(data, "unit").parse().ok()?,
-                conversion: None,
-            });
+            composition
+                .lines
+                .push(canteiro_domain::compositions::ComponentLine {
+                    id: id.to_owned(),
+                    source: canteiro_domain::compositions::ComponentSource::Catalog {
+                        catalog_id: field(data, "catalog_id").to_owned(),
+                        edition,
+                        code: field(data, "catalog_code").to_owned(),
+                    },
+                    coefficient: field(data, "coefficient").parse().ok()?,
+                    unit: field(data, "unit").parse().ok()?,
+                    conversion: None,
+                });
         }
         "remove_line" => {
             let line_id = field(data, "line_id");
@@ -1496,7 +1498,11 @@ async fn publish_budget_csv_form(
             snapshot: preview.snapshot,
         },
     };
-    match auth.service().estimating_budget_execute(&token, command).await {
+    match auth
+        .service()
+        .estimating_budget_execute(&token, command)
+        .await
+    {
         Ok(saved) => match auth.service().estimating_context(&token).await {
             Ok(ctx) => html_page(
                 canteiro_web::estimating::budget_csv_published(ctx, saved),
