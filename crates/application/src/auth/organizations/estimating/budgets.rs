@@ -174,6 +174,12 @@ impl AuthService {
                         "Sua reserva de edição expirou ou pertence a outra sessão. O rascunho deve ser preservado.",
                     ));
                 }
+                if let Some(previous) = &current {
+                    let old = budget_view(previous.clone())?.snapshot;
+                    snapshot.validate_catalog_lineage(&old).map_err(|_| {
+                        invalid("A origem de preço de um serviço existente não pode ser removida ou alterada.")
+                    })?;
+                }
                 snapshot.clone()
             }
             BudgetChange::Approve => {
@@ -295,6 +301,9 @@ impl AuthService {
         require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
         let difference = if let Some(old) = current {
             let before = budget_view(old)?;
+            snapshot.validate_catalog_lineage(&before.snapshot).map_err(|_| {
+                invalid("A origem histórica de um serviço existente não pode ser retirada na importação.")
+            })?;
             compare(&before.snapshot, &snapshot)
         } else {
             ImportDifference {
