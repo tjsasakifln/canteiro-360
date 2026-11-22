@@ -399,6 +399,22 @@ fn changed_composition_from_form(
                 .find(|line| line.id == line_id)?;
             line.coefficient = field(data, "coefficient").parse().ok()?;
         }
+        "incidence" => {
+            let incidence_id = field(data, "incidence_id");
+            let incidence = composition
+                .incidences
+                .iter_mut()
+                .find(|incidence| incidence.id == incidence_id)?;
+            incidence.percent = field(data, "incidence_percent").parse().ok()?;
+        }
+        "informed_cost" => {
+            match &mut composition.cost_mode {
+                canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
+                    *cost = field(data, "informed_cost").parse().ok()?;
+                }
+                canteiro_domain::compositions::CostMode::Formula => return None,
+            }
+        }
         _ => return None,
     }
     composition.validate().ok()?;
@@ -547,6 +563,60 @@ mod composition_form_tests {
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("change_kind".into(), "invalid".into());
         assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
+    fn incidence_percent_change_keeps_base_and_does_not_mutate_saved_revision() {
+        use canteiro_domain::compositions::CostIncidence;
+        let mut original = saved();
+        original.incidences = vec![CostIncidence {
+            id: "adicional-01".into(),
+            percent: "12".parse().unwrap(),
+            base_lines: vec!["insumo-01".into()],
+        }];
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "incidence".into());
+        fields.insert("incidence_id".into(), "adicional-01".into());
+        fields.insert("incidence_percent".into(), "15.5".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(changed.incidences[0].percent.to_string(), "15.5");
+        assert_eq!(changed.incidences[0].base_lines, original.incidences[0].base_lines);
+        assert_eq!(original.incidences[0].percent.to_string(), "12");
+        assert_eq!(changed.lines, original.lines);
+
+        fields.insert("incidence_percent".into(), "-1".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("incidence_percent".into(), "15%".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("incidence_percent".into(), "15".into());
+        fields.insert("incidence_id".into(), "inexistente".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
+    fn informed_cost_can_change_without_switching_formula_mode() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "informed_cost".into());
+        fields.insert("informed_cost".into(), "250.75".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        match changed.cost_mode {
+            CostMode::Informed { cost, reason } => {
+                assert_eq!(cost.to_string(), "250.750000");
+                assert_eq!(reason, "Custo informado e documentado");
+            }
+            CostMode::Formula => panic!("O custo informado não deve virar fórmula"),
+        }
+        assert_eq!(changed.lines, original.lines);
+        assert_eq!(changed.incidences, original.incidences);
+        assert_eq!(original.cost_mode, saved().cost_mode);
+
+        fields.insert("informed_cost".into(), "=100+20".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("informed_cost".into(), "200".into());
+        let mut formula = original;
+        formula.cost_mode = CostMode::Formula;
+        assert!(changed_composition_from_form(formula, &fields).is_none());
     }
 }
 #[derive(Deserialize)]
