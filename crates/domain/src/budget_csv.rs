@@ -74,8 +74,9 @@ pub(crate) fn safe(s: &str) -> bool {
     if s.chars().any(|c| {
         matches!(
             c,
-            '\u{feff}' | '\u{200b}'..='\u{200f}' | '\u{202a}'..='\u{202e}'
-                | '\u{2060}' | '\u{2066}'..='\u{2069}' | '\0'
+            '\u{00ad}' | '\u{034f}' | '\u{061c}' | '\u{180e}' | '\u{feff}'
+                | '\u{200b}'..='\u{200f}' | '\u{202a}'..='\u{202e}'
+                | '\u{2060}'..='\u{206f}' | '\0'
         )
     }) {
         return false;
@@ -806,7 +807,10 @@ mod tests {
     #[test]
     fn formula_masked_inside_description_is_rejected() {
         let mut original = sample(1);
-        for hidden in ['\u{200c}', '\u{200d}', '\u{200f}', '\u{202a}', '\u{2069}'] {
+        for hidden in [
+            '\u{00ad}', '\u{034f}', '\u{061c}', '\u{180e}', '\u{200c}', '\u{200d}',
+            '\u{200f}', '\u{202a}', '\u{2061}', '\u{2064}', '\u{2069}',
+        ] {
             original.lines[0].description = format!("Mobilização{hidden} administrativa");
             assert!(export_csv(&original, NumberLocale::Canonical).is_err());
         }
