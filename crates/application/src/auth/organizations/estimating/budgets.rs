@@ -346,7 +346,9 @@ impl AuthService {
                 .validate_catalog_lineage(&before.snapshot)
                 .map_err(|_| invalid("A referência histórica do serviço não pode ser alterada."))?;
             snapshot.validate_no_implicit_removals(&before.snapshot).map_err(|_| {
-                invalid("O CSV não pode excluir serviços silenciosamente. Use a exclusão individual validada.")
+                invalid(
+                    "O CSV não pode excluir serviços silenciosamente. Use a exclusão individual validada.",
+                )
             })?;
             compare(&before.snapshot, &snapshot)
         } else {
