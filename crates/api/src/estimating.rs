@@ -1223,13 +1223,8 @@ async fn budget_save_schedule_form(
         private_headers(&mut response);
         return response;
     };
-    if canteiro_domain::budgets::BudgetSchedule::linear(
-        starts_on,
-        deadline_days,
-        basis,
-        periods,
-    )
-    .is_err()
+    if canteiro_domain::budgets::BudgetSchedule::linear(starts_on, deadline_days, basis, periods)
+        .is_err()
     {
         return bad_input();
     }
