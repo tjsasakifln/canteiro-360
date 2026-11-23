@@ -1824,13 +1824,13 @@ async fn publish_budget_csv_form(
     ) {
         Some(batch) if preview.base_version == expected_version => batch.to_owned(),
         _ => {
-        let mut response = (
-            StatusCode::CONFLICT,
-            "O orçamento ou o lote mudou desde a prévia. Confira novamente o arquivo antes de publicar.",
-        )
-            .into_response();
-        private_headers(&mut response);
-        return response;
+            let mut response = (
+                StatusCode::CONFLICT,
+                "O orçamento ou o lote mudou desde a prévia. Confira novamente o arquivo antes de publicar.",
+            )
+                .into_response();
+            private_headers(&mut response);
+            return response;
         }
     };
     let lease_key = uuid::Uuid::new_v4().to_string();
