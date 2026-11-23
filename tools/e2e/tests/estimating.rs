@@ -38,8 +38,8 @@ async fn create_scope(
 #[ignore = "requires built SSR/WASM server, PostgreSQL and WebDriver"]
 async fn estimating_imports_reflow_and_work_by_keyboard_at_360_and_1280() -> TestResult {
     let h = Harness::start("estimating-interface").await?;
-    let owner = account(&h, "estimating-owner", true).await?;
-    let editor = account(&h, "estimating-editor", false).await?;
+    let owner = account(&h, "est-own", true).await?;
+    let editor = account(&h, "est-ed", false).await?;
     let company_id = company(&h, &owner, "Obra de teste de orcamentos").await?;
     join(&h, &owner, &editor, &company_id).await?;
 
