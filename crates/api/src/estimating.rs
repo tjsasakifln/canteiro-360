@@ -1044,7 +1044,7 @@ mod composition_form_tests {
 
         fields.insert("cost_reason".into(), "=HYPERLINK(\"http://host\")".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
-        fields.insert("cost_reason".into(), "Preço com\\u{202e} marca".into());
+        fields.insert("cost_reason".into(), "Preço com\u{202e} marca".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("cost_reason".into(), "Nova cotação verificada".into());
         fields.insert("informed_cost".into(), "=100+20".into());
