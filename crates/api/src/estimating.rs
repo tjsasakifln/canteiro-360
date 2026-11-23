@@ -1210,7 +1210,7 @@ async fn budget_save_schedule_form(
     {
         return bad_input();
     }
-    let Some(record) = page.budgets.iter().find(|entry| {
+    let Some(_record) = page.budgets.iter().find(|entry| {
         entry.scope_id == scope_id
             && entry.version == version
             && entry.snapshot.status != BudgetState::Approved
