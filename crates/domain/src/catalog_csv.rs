@@ -59,10 +59,18 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<Vec<CatalogIt
         // descrição está vazia, fora do limite ou contém controles.
         // Usa-se a mesma regra do domínio para não aceitar prévias divergentes.
         if !label(&row[0], 80) {
-            return Err(issue(line, 1, "Código vazio ou inválido (máximo de 80 bytes)."));
+            return Err(issue(
+                line,
+                1,
+                "Código vazio ou inválido (máximo de 80 bytes).",
+            ));
         }
         if !label(&row[1], 800) {
-            return Err(issue(line, 2, "Descrição vazia ou inválida (máximo de 800 bytes)."));
+            return Err(issue(
+                line,
+                2,
+                "Descrição vazia ou inválida (máximo de 800 bytes).",
+            ));
         }
         let category = match row[2].as_str() {
             "material" => CostCategory::Material,
