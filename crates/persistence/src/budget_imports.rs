@@ -1,6 +1,7 @@
 //! Lotes de importação identificados, vinculados a sessão e revisão histórica.
 //! O chamador mantém a transação aberta até persistir a revisão e concluir o lote.
 use crate::auth::{AuthStoreError, AuthTransaction};
+use canteiro_domain::budgets::{BudgetRevision, BudgetState};
 use serde_json::Value;
 use sqlx::types::Json;
 use uuid::Uuid;
@@ -38,6 +39,25 @@ impl AuthTransaction {
             || !matches!(batch.locale, "canonical" | "pt-BR")
         {
             return Err(AuthStoreError);
+        }
+        // A gravação de uma prévia não deve aceitar um JSON arbitrário,
+        // mesmo quando o chamador afirma que já verificou o arquivo.
+        // A revisão vinculada ao lote é sempre um rascunho do escopo esperado.
+        let expected_revision = batch
+            .base_version
+            .unwrap_or(0)
+            .checked_add(1)
+            .and_then(|value| u32::try_from(value).ok());
+        let valid_snapshot = serde_json::from_value::<BudgetRevision>(payload.clone())
+            .ok()
+            .is_some_and(|revision| {
+                Some(revision.revision) == expected_revision
+                    && revision.budget_id == batch.scope.to_string()
+                    && revision.status == BudgetState::Draft
+                    && revision.summarize().is_ok()
+            });
+        if !valid_snapshot {
+            return Ok(None);
         }
         let inserted: Option<Uuid> = sqlx::query_scalar(
             "INSERT INTO canteiro.budget_import_batches
