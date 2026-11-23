@@ -535,7 +535,10 @@ async fn ten_failed_internal_attempts_stop_without_forging_a_receipt() {
     .fetch_one(&fixture.admin)
     .await
     .unwrap();
-    assert_eq!((outbox_state.as_str(), attempts, receipt), ("failed", 10, None));
+    assert_eq!(
+        (outbox_state.as_str(), attempts, receipt),
+        ("failed", 10, None)
+    );
 
     let (notice_state, failure_count): (String, i64) = {
         let state: String = sqlx::query_scalar(
