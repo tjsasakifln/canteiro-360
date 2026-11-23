@@ -136,6 +136,8 @@ impl CatalogItem {
     pub fn validate(&self) -> Result<(), CatalogError> {
         if !label(&self.code, 80)
             || !label(&self.description, 800)
+            || !crate::budget_csv::safe(&self.code)
+            || !crate::budget_csv::safe(&self.description)
             || self.price.value().is_negative()
         {
             return Err(CatalogError::Item);
@@ -305,6 +307,26 @@ mod tests {
             category: CostCategory::Service,
             unit: MeasureUnit::SquareMetre,
             price: "123.456789".parse().unwrap(),
+        }
+    }
+    #[test]
+    fn direct_publish_rejects_executable_or_hidden_catalog_labels() {
+        for dangerous in ["=HYPERLINK(1)", "+SUM(1)", "@SUM(1)", "\u{200b}=1"] {
+            let mut by_code = item("A");
+            by_code.code = dangerous.into();
+            assert_eq!(by_code.validate(), Err(CatalogError::Item));
+            let mut by_description = item("A");
+            by_description.description = dangerous.into();
+            assert_eq!(
+                CatalogEdition::assemble(
+                    "ref".into(),
+                    1,
+                    "2026-11-01".parse().unwrap(),
+                    source("2026-11"),
+                    vec![by_description],
+                ),
+                Err(CatalogError::Item)
+            );
         }
     }
     #[test]
