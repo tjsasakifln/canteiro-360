@@ -2,8 +2,10 @@
 mod support;
 
 use canteiro_contracts::access::{AccessAction, AccessCommand, AccessRole, ScopeKind};
+use canteiro_contracts::estimating::{CatalogCsvImportCommand, CostSource, NumberLocale};
 use serde_json::{Value, json};
-use support::{Browser, Harness, TAB, TestResult, access_fixture::*, write_json};
+use std::time::Duration;
+use support::{Browser, ENTER, Harness, TAB, TestResult, access_fixture::*, write_json};
 
 async fn create_scope(
     h: &Harness,
@@ -189,6 +191,94 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
             .await?;
         viewports.push(report);
     }
+    // Publish two immutable editions through the authenticated application service.
+    let context = authorized.context.ok_or("Missing estimating context")?;
+    for edition in [1, 2] {
+        let mut csv = String::from(
+            "CANTEIRO-CUSTOS-CSV-1\ncodigo;descricao;categoria;unidade;preco\n",
+        );
+        for index in 1..=31 {
+            csv.push_str(&format!(
+                "HIST-{index:02};Servico de ensaio;service;m;{edition}.00\n"
+            ));
+        }
+        let input = CatalogCsvImportCommand {
+            context: context.clone(),
+            scope_id: budget.clone(),
+            catalog_id: "historico-e2e".into(),
+            edition,
+            published_on: "2026-11-01".into(),
+            source: CostSource {
+                title: "Tabela de ensaio".into(),
+                organization: "Fonte de ensaio".into(),
+                license: "Uso interno".into(),
+                locality: "SC".into(),
+                tax_regime: "regular".into(),
+                competence: "2026-11".into(),
+            },
+            reason: "Teste de comparacao historica".into(),
+            csv,
+            locale: NumberLocale::Canonical,
+        };
+        let preview = h
+            .auth
+            .estimating_catalog_csv_preview(&editor.session, input.clone())
+            .await?;
+        assert_eq!(preview.items_total, 31);
+        if edition == 2 {
+            assert_eq!(preview.changed, 31);
+            assert_eq!(preview.previous_edition, Some(1));
+        }
+        h.auth
+            .estimating_catalog_csv_publish(&editor.session, input)
+            .await?;
+    }
+
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        browser
+            .tab_to("form[action='/orcamentos/catalogos/comparar'] select[name='before']")
+            .await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('select[name=page]')?.value === '1';",
+                Duration::from_secs(5),
+            )
+            .await?;
+        assert_eq!(
+            browser
+                .execute("return document.body.innerText.includes('HIST-30') && !document.body.innerText.includes('HIST-31');")
+                .await?,
+            true
+        );
+        browser.choose("select[name='page']", 1, "2").await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('select[name=page]')?.value === '2' && location.search.includes('page=2');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        let report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,last:document.body.innerText.includes('HIST-31'),first:document.body.innerText.includes('HIST-01')};",
+            )
+            .await?;
+        assert_eq!(report["width"], width);
+        assert_eq!(report["last"], true);
+        assert_eq!(report["first"], false);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("catalog-history-{width}.png")))
+            .await?;
+    }
+
     write_json(
         &h.evidence.join("estimating-interface.json"),
         &json!({
@@ -200,7 +290,8 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
                 "labelled_import_controls",
                 "budget_and_catalog_imports_visible",
                 "tab_order_budget_csv_preview",
-                "tab_order_catalog_csv_preview"
+                "tab_order_catalog_csv_preview",
+                "historical_catalog_page_two_keyboard"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
