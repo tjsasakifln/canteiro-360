@@ -1818,9 +1818,12 @@ async fn publish_budget_csv_form(
         Ok(value) => value,
         Err(error) => return application_failure(error),
     };
-    let confirmed_batch_id =
-        confirmed_import_batch_id(preview.batch_id.as_deref(), field(&data, "batch_id"));
-    if preview.base_version != expected_version || confirmed_batch_id.is_none() {
+    let confirmed_batch_id = match confirmed_import_batch_id(
+        preview.batch_id.as_deref(),
+        field(&data, "batch_id"),
+    ) {
+        Some(batch) if preview.base_version == expected_version => batch.to_owned(),
+        _ => {
         let mut response = (
             StatusCode::CONFLICT,
             "O orçamento ou o lote mudou desde a prévia. Confira novamente o arquivo antes de publicar.",
@@ -1828,7 +1831,8 @@ async fn publish_budget_csv_form(
             .into_response();
         private_headers(&mut response);
         return response;
-    }
+        }
+    };
     let lease_key = uuid::Uuid::new_v4().to_string();
     let lease = match auth
         .service()
@@ -1858,9 +1862,7 @@ async fn publish_budget_csv_form(
         context,
         scope_id: input.scope_id,
         // A operação da importação é a identidade durável da prévia conferida.
-        operation_key: confirmed_batch_id
-            .expect("identidade conferida antes da reserva")
-            .to_owned(),
+        operation_key: confirmed_batch_id,
         expected_version,
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
@@ -1892,11 +1894,22 @@ mod budget_import_batch_confirmation_tests {
     fn confirmation_requires_a_canonical_staged_batch_without_fallback() {
         let id = "550e8400-e29b-41d4-a716-446655440000";
         assert_eq!(confirmed_import_batch_id(Some(id), id), Some(id));
-        for staged in [None, Some(""), Some("not-a-uuid"), Some("00000000-0000-0000-0000-000000000000")] {
+        for staged in [
+            None,
+            Some(""),
+            Some("not-a-uuid"),
+            Some("00000000-0000-0000-0000-000000000000"),
+        ] {
             assert_eq!(confirmed_import_batch_id(staged, id), None);
         }
         assert_eq!(confirmed_import_batch_id(Some(id), ""), None);
-        assert_eq!(confirmed_import_batch_id(Some(id), "550e8400-e29b-41d4-a716-446655440001"), None);
-        assert_eq!(confirmed_import_batch_id(Some("550E8400-E29B-41D4-A716-446655440000"), id), None);
+        assert_eq!(
+            confirmed_import_batch_id(Some(id), "550e8400-e29b-41d4-a716-446655440001"),
+            None
+        );
+        assert_eq!(
+            confirmed_import_batch_id(Some("550E8400-E29B-41D4-A716-446655440000"), id),
+            None
+        );
     }
 }
