@@ -1224,7 +1224,7 @@ async fn budget_save_schedule_form(
         return response;
     };
     if canteiro_domain::budgets::BudgetSchedule::linear(
-        starts_on.clone(),
+        starts_on,
         deadline_days,
         basis,
         periods,
