@@ -442,6 +442,27 @@ fn changed_composition_from_form(
                     conversion: None,
                 });
         }
+        "add_composition_line" => {
+            let id = field(data, "new_line_id");
+            if matches!(id.chars().next(), Some('=' | '+' | '-' | '@')) {
+                return None;
+            }
+            let source_code = field(data, "source_code");
+            if source_code == composition.code {
+                return None;
+            }
+            composition
+                .lines
+                .push(canteiro_domain::compositions::ComponentLine {
+                    id: id.to_owned(),
+                    source: canteiro_domain::compositions::ComponentSource::Composition {
+                        code: source_code.to_owned(),
+                    },
+                    coefficient: field(data, "coefficient").parse().ok()?,
+                    unit: field(data, "unit").parse().ok()?,
+                    conversion: None,
+                });
+        }
         "remove_line" => {
             let line_id = field(data, "line_id");
             if composition
@@ -723,6 +744,45 @@ mod composition_form_tests {
             fields.insert(key.into(), value.into());
             assert!(changed_composition_from_form(original.clone(), &fields).is_none());
             fields.insert(key.into(), original_value);
+        }
+    }
+
+    #[test]
+    fn nested_composition_input_preserves_history_and_rejects_self_reference() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "add_composition_line".into());
+        fields.insert("new_line_id".into(), "subcomposicao-02".into());
+        fields.insert("source_code".into(), "BASE-02".into());
+        fields.insert("coefficient".into(), "0.75".into());
+        fields.insert("unit".into(), "un".into());
+        let result = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(original.lines.len(), 1);
+        assert_eq!(result.lines.len(), 2);
+        assert_eq!(result.lines[0], original.lines[0]);
+        assert_eq!(result.lines[1].id, "subcomposicao-02");
+        assert_eq!(result.lines[1].coefficient.to_string(), "0.75");
+        assert_eq!(result.lines[1].unit, MeasureUnit::Unit);
+        assert_eq!(result.lines[1].conversion, None);
+        assert_eq!(
+            result.lines[1].source,
+            ComponentSource::Composition {
+                code: "BASE-02".into(),
+            }
+        );
+        for (key, invalid) in [
+            ("new_line_id", "insumo-01"),
+            ("new_line_id", "@soma"),
+            ("source_code", "COMP-01"),
+            ("source_code", ""),
+            ("coefficient", "-1"),
+            ("coefficient", "=1+1"),
+            ("unit", "desconhecida"),
+        ] {
+            let old = fields.get(key).unwrap().clone();
+            fields.insert(key.into(), invalid.into());
+            assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+            fields.insert(key.into(), old);
         }
     }
 
