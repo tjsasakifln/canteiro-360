@@ -801,6 +801,29 @@ pub fn composition_memory(
         CostMode::Formula => "Custo obtido dos insumos e incidências".to_owned(),
         CostMode::Informed { reason, .. } => format!("Custo informado: {reason}"),
     };
+    let informed = memory.informed;
+    let linked_references = record
+        .composition
+        .lines
+        .clone()
+        .into_iter()
+        .map(|line| {
+            let source = match &line.source {
+                ComponentSource::Catalog {
+                    catalog_id,
+                    edition,
+                    code,
+                } => format!("Tabela {catalog_id}, edição {edition}, insumo {code}"),
+                ComponentSource::Composition { code } => {
+                    format!("Composição vinculada {code}")
+                }
+            };
+            view! {
+                <p>{format!("{} · {} · coeficiente {} {}",
+                    line.id, source, line.coefficient, line.unit)}</p>
+            }
+        })
+        .collect_view();
     let categories = memory
         .category_totals
         .into_iter()
@@ -855,20 +878,41 @@ pub fn composition_memory(
             </section>
             <section class="foundation-card">
                 <h2>"Resumo financeiro por unidade da composição"</h2>
-                <p>{format!("Custo dos insumos: R$ {}",memory.base_cost)}</p>
-                <p>{format!("Incidências: R$ {}",memory.incidence_cost)}</p>
+                <p>{if informed {
+                    format!("Custo unitário informado: R$ {}",memory.base_cost)
+                } else {
+                    format!("Custo dos insumos: R$ {}",memory.base_cost)
+                }}</p>
+                {(!informed).then(||view!{
+                    <p>{format!("Incidências: R$ {}",memory.incidence_cost)}</p>
+                })}
                 <p>{format!("Custo direto: R$ {}",memory.direct_cost)}</p>
                 <p>{format!("Preço de venda, após BDI e desconto: R$ {}",memory.selling_price)}</p>
                 <p>{format!("BDI {}% · desconto {}%",
                     record.composition.bdi,record.composition.discount)}</p>
                 {memory.free_item.then(|| view! { <p class="record-status">"Item sem cobrança"</p> })}
-                <h3>"Custos por categoria, antes das incidências"</h3>
+                {(!informed).then(||view!{
+                    <h3>"Custos por categoria, antes das incidências"</h3>
+                })}
+                {informed.then(||view!{
+                    <p class="record-status">
+                        "O custo informado substitui a soma dos insumos e das incidências.
+                        Não há rateio por categoria calculado para esta revisão."
+                    </p>
+                })}
                 {categories}
             </section>
             <section class="foundation-card">
                 <h2>"Insumos e referências"</h2>
+                {informed.then(||view!{
+                    <p>"As fontes permanecem vinculadas e validadas, mas não foram
+                        utilizadas para calcular o preço informado nesta revisão."</p>
+                    {linked_references}
+                })}
                 {lines}
-                <h2>"Incidências e bases utilizadas"</h2>
+                {(!informed).then(||view!{
+                    <h2>"Incidências e bases utilizadas"</h2>
+                })}
                 {incidences}
                 <p>"Valores unitários são arredondados para exibição após cálculo decimal exato. Composições vinculadas aparecem como serviço nesta memória."</p>
             </section>
