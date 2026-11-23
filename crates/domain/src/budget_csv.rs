@@ -68,7 +68,8 @@ fn err(row: usize, col: usize, cause: &str) -> CellError {
         cause: cause.into(),
     }
 }
-pub(crate) fn safe(s: &str) -> bool {
+/// Verifica texto que será exibido ou exportado por planilhas sem executar fórmulas.
+pub fn safe(s: &str) -> bool {
     // Planilhas podem ignorar espaços e caracteres invisíveis antes de uma
     // fórmula. A verificação vale para entrada e saída, sem executar conteúdo.
     // Controles de direção e caracteres de largura zero podem esconder um
