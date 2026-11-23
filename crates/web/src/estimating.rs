@@ -178,6 +178,19 @@ pub fn page(ctx: EstimatingContext) -> String {
                             }
                         })
                         .collect_view();
+                    let remove_incidence_options = entry
+                        .composition
+                        .incidences
+                        .clone()
+                        .into_iter()
+                        .map(|incidence| {
+                            view! {
+                                <option value=incidence.id.clone()>
+                                    {format!("{} · {}%", incidence.id, incidence.percent)}
+                                </option>
+                            }
+                        })
+                        .collect_view();
                     let informed_cost = match &entry.composition.cost_mode {
                         canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
                             Some(cost.to_string())
@@ -337,6 +350,56 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <input type="text" name="reason" maxlength="240" required=true/>
                                 </label>
                                 <button type="submit" class="secondary-button">"Excluir linha em nova revisão"</button>
+                            </form>
+                        })}
+                        {has_lines.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="add_incidence"/>
+                                <label class="record-field">
+                                    <span>"Identificador da nova incidência"</span>
+                                    <input type="text" name="new_incidence_id" maxlength="80" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Percentual da nova incidência (use ponto)"</span>
+                                    <input type="text" name="incidence_percent" inputmode="decimal" maxlength="40" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Base de cálculo: IDs dos insumos, separados por vírgula"</span>
+                                    <input type="text" name="base_lines" maxlength="2000"
+                                        placeholder="insumo-01, insumo-02" required=true/>
+                                </label>
+                                <p>"A base deve conter apenas insumos já cadastrados, sem repetições."</p>
+                                <label class="record-field">
+                                    <span>"Justificativa para criar a incidência"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Adicionar incidência em nova revisão"</button>
+                            </form>
+                        })}
+                        {has_incidences.then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="remove_incidence"/>
+                                <label class="record-field">
+                                    <span>"Incidência a excluir"</span>
+                                    <select name="incidence_id" required=true>{remove_incidence_options}</select>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Justificativa para excluir a incidência"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Excluir incidência em nova revisão"</button>
                             </form>
                         })}
                         {has_incidences.then(|| view! {
