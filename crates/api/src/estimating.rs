@@ -413,7 +413,7 @@ fn changed_composition_from_form(
             let mut copied = original;
             copied.id = field(data, "new_line_id").to_owned();
             // Evita identificadores interpretáveis como fórmulas ao exportar uma planilha.
-            if matches!(copied.id.chars().next(), Some('=' | '+' | '-' | '@')) {
+            if !canteiro_domain::budget_csv::safe(&copied.id) {
                 return None;
             }
             copied.coefficient = field(data, "coefficient").parse().ok()?;
@@ -421,7 +421,7 @@ fn changed_composition_from_form(
         }
         "add_catalog_line" => {
             let id = field(data, "new_line_id");
-            if matches!(id.chars().next(), Some('=' | '+' | '-' | '@')) {
+            if !canteiro_domain::budget_csv::safe(id) {
                 return None;
             }
             let edition = field(data, "catalog_edition").parse::<u32>().ok()?;
@@ -444,7 +444,7 @@ fn changed_composition_from_form(
         }
         "add_composition_line" => {
             let id = field(data, "new_line_id");
-            if matches!(id.chars().next(), Some('=' | '+' | '-' | '@')) {
+            if !canteiro_domain::budget_csv::safe(id) {
                 return None;
             }
             let source_code = field(data, "source_code");
@@ -488,7 +488,7 @@ fn changed_composition_from_form(
         }
         "add_incidence" => {
             let id = field(data, "new_incidence_id");
-            if matches!(id.chars().next(), Some('=' | '+' | '-' | '@')) {
+            if !canteiro_domain::budget_csv::safe(id) {
                 return None;
             }
             let base_lines = field(data, "base_lines")
@@ -536,7 +536,7 @@ fn changed_composition_from_form(
                 ("formula", CostMode::Informed { .. }) => CostMode::Formula,
                 ("informed", CostMode::Formula) => {
                     let reason = field(data, "cost_reason");
-                    if matches!(reason.chars().next(), Some('=' | '+' | '-' | '@')) {
+                    if !canteiro_domain::budget_csv::safe(reason) {
                         return None;
                     }
                     CostMode::Informed {
@@ -752,6 +752,8 @@ mod composition_form_tests {
         fields.insert("new_line_id".into(), "insumo-01".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("new_line_id".into(), "=1+1".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("new_line_id".into(), "insumo\u{202e}ferido".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("new_line_id".into(), "insumo-02".into());
         fields.insert("coefficient".into(), "-1".into());
