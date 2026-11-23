@@ -138,6 +138,12 @@ pub enum BudgetChange {
     RemoveLine {
         line_id: String,
     },
+    /// Edita apenas quantidade e preço, preservando a origem histórica no servidor.
+    EditLineValues {
+        line_id: String,
+        quantity: canteiro_domain::decimal::Quantity,
+        price: canteiro_domain::decimal::UnitPrice,
+    },
     /// Copia o serviço existente sem aceitar preço ou referência fornecidos pelo cliente.
     CopyLine {
         source_id: String,

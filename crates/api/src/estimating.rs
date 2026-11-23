@@ -1191,8 +1191,6 @@ async fn budget_save_line_form(
     {
         return bad_input();
     }
-    snapshot.revision = revision;
-    snapshot.status = BudgetState::Draft;
     let lease_key = uuid::Uuid::new_v4().to_string();
     let lease = auth
         .service()
@@ -1225,7 +1223,11 @@ async fn budget_save_line_form(
         expected_version: Some(version),
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
-        change: BudgetChange::Save { snapshot },
+        change: BudgetChange::EditLineValues {
+            line_id: item_id,
+            quantity,
+            price,
+        },
     };
     match auth
         .service()

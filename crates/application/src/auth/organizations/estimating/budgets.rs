@@ -235,7 +235,8 @@ impl AuthService {
                 next.status = BudgetState::Draft;
                 next
             }
-            BudgetChange::CopyLine { .. }
+            BudgetChange::EditLineValues { .. }
+            | BudgetChange::CopyLine { .. }
             | BudgetChange::MoveLine { .. }
             | BudgetChange::RescheduleLinear { .. } => {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
@@ -267,6 +268,11 @@ impl AuthService {
                 }
                 let mut next = budget_view(previous.clone())?.snapshot;
                 let changed = match &input.change {
+                    BudgetChange::EditLineValues {
+                        line_id,
+                        quantity,
+                        price,
+                    } => next.edit_line_values(line_id, *quantity, *price),
                     BudgetChange::CopyLine {
                         source_id,
                         new_id,
@@ -572,6 +578,40 @@ mod budget_transfer_contract_tests {
         }
         let mut missing = schedule;
         missing.as_object_mut().unwrap().remove("periods");
+        assert!(serde_json::from_value::<BudgetChange>(missing).is_err());
+    }
+
+    #[test]
+    fn edit_values_command_cannot_replace_snapshot_or_catalog_provenance() {
+        let edit = serde_json::json!({
+            "action": "edit_line_values",
+            "line_id": "existing",
+            "quantity": "2.5",
+            "price": "10.00"
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(edit.clone()).unwrap(),
+            BudgetChange::EditLineValues {
+                line_id,
+                quantity,
+                price,
+            } if line_id == "existing"
+                && quantity == "2.5".parse::<canteiro_domain::decimal::Quantity>().unwrap()
+                && price == "10.00".parse::<canteiro_domain::decimal::UnitPrice>().unwrap()
+        ));
+        for extra in [
+            "snapshot",
+            "variation_id",
+            "catalog_id",
+            "catalog_edition",
+            "unit",
+        ] {
+            let mut forged = edit.clone();
+            forged[extra] = serde_json::json!("forged");
+            assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+        }
+        let mut missing = edit;
+        missing.as_object_mut().unwrap().remove("quantity");
         assert!(serde_json::from_value::<BudgetChange>(missing).is_err());
     }
 
