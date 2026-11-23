@@ -1185,6 +1185,9 @@ pub fn preview(
                 <p>"Nenhum serviço foi gravado. Confira as diferenças antes de iniciar uma nova revisão."</p>
                 <p>{format!("Formato: {} · revisão existente: {}",
                     result.format,result.base_version.map(|v|v.to_string()).unwrap_or_else(||"nova".into()))}</p>
+                {result.batch_id.as_ref().map(|batch| view! {
+                    <p>{format!("Identificador do lote para conferência: {batch}")}</p>
+                })}
             </section>
             <section class="foundation-card">
                 <h2>"Diferenças identificadas"</h2>
