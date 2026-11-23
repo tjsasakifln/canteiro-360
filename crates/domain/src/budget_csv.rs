@@ -302,7 +302,9 @@ fn row() -> Vec<String> {
     vec![String::new(); HEADER.len()]
 }
 pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String, CellError> {
-    value.validate().map_err(|e| err(1, 1, &e.to_string()))?;
+    if value.variations.len() > 500 || value.lines.len() > 100_000 {
+        return Err(err(1, 1, "Limite de variações ou serviços excedido."));
+    }
     let mut out = String::from(FORMAT_VERSION);
     out.push_str("\r\n");
     csv_row(&fields(), &mut out);
@@ -374,6 +376,10 @@ pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String
             )?;
         }
     }
+    // Conferir a segurança de cada célula primeiro preserva o endereço exato
+    // do campo ofensivo. A validação estrutural segue obrigatória antes de
+    // devolver qualquer arquivo, inclusive quando não há conteúdo executável.
+    value.validate().map_err(|e| err(1, 1, &e.to_string()))?;
     if out.len() > MAX_BYTES {
         return Err(err(1, 1, "Exportação acima do limite de 8 MiB."));
     }
