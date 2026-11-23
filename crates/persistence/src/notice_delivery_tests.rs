@@ -456,3 +456,131 @@ async fn repeated_notice_key_rejects_changed_scope_target_due_or_priority() {
     database.close().await;
     fixture.cleanup().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL"]
+async fn ten_failed_internal_attempts_stop_without_forging_a_receipt() {
+    let fixture = Fixture::ready().await;
+    let database = fixture.database(TransactionLimits::default()).await;
+    let s = subject(&fixture).await;
+    let mut tx = scoped(&database, &s).await;
+    assert!(record(&mut tx, &s).await);
+    tx.commit().await.unwrap();
+
+    // Simula falha persistente na gravação do recibo, não do banco inteiro.
+    sqlx::raw_sql(
+        "CREATE FUNCTION canteiro_meta.reject_notice_ack_limit() RETURNS TRIGGER
+         LANGUAGE plpgsql AS $$
+         BEGIN
+             IF NEW.outcome = 'acknowledged' THEN
+                 RAISE EXCEPTION 'Falha persistente fictícia';
+             END IF;
+             RETURN NEW;
+         END;
+         $$;
+         CREATE TRIGGER reject_notice_ack_limit
+         BEFORE INSERT ON canteiro.user_notice_delivery_history
+         FOR EACH ROW EXECUTE FUNCTION canteiro_meta.reject_notice_ack_limit()",
+    )
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+
+    for attempt in 1..=10 {
+        if attempt > 1 {
+            sqlx::query(
+                "UPDATE canteiro_meta.user_notice_queue SET ready_at=clock_timestamp()
+                 WHERE tenant_id=$1 AND event_id=$2",
+            )
+            .bind(s.tenant)
+            .bind(s.event)
+            .execute(&fixture.admin)
+            .await
+            .unwrap();
+        }
+        assert_eq!(
+            database.consume_user_notice_delivery().await.unwrap(),
+            NotificationStep::Deferred
+        );
+        let retries: i32 = sqlx::query_scalar(
+            "SELECT attempts FROM canteiro_meta.user_notice_queue
+             WHERE tenant_id=$1 AND event_id=$2",
+        )
+        .bind(s.tenant)
+        .bind(s.event)
+        .fetch_one(&fixture.admin)
+        .await
+        .unwrap();
+        assert_eq!(retries, attempt);
+    }
+
+    let (queue_attempts, stopped): (i32, bool) = sqlx::query_as(
+        "SELECT attempts, processed_at IS NOT NULL
+         FROM canteiro_meta.user_notice_queue
+         WHERE tenant_id=$1 AND event_id=$2",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!((queue_attempts, stopped), (10, true));
+
+    let (outbox_state, attempts, receipt): (String, i32, Option<String>) = sqlx::query_as(
+        "SELECT state,attempts,provider_receipt FROM canteiro.user_notice_outbox
+         WHERE tenant_id=$1 AND event_id=$2",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!((outbox_state.as_str(), attempts, receipt), ("failed", 10, None));
+
+    let (notice_state, failure_count): (String, i64) = {
+        let state: String = sqlx::query_scalar(
+            "SELECT state FROM canteiro.user_notices
+             WHERE tenant_id=$1 AND event_id=$2",
+        )
+        .bind(s.tenant)
+        .bind(s.event)
+        .fetch_one(&fixture.admin)
+        .await
+        .unwrap();
+        let failures: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM canteiro.user_notice_delivery_history
+             WHERE tenant_id=$1 AND event_id=$2 AND outcome='failed'",
+        )
+        .bind(s.tenant)
+        .bind(s.event)
+        .fetch_one(&fixture.admin)
+        .await
+        .unwrap();
+        (state, failures)
+    };
+    assert_eq!((notice_state.as_str(), failure_count), ("failed", 10));
+
+    sqlx::raw_sql(
+        "DROP TRIGGER reject_notice_ack_limit ON canteiro.user_notice_delivery_history;
+         DROP FUNCTION canteiro_meta.reject_notice_ack_limit()",
+    )
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    // Nem mesmo uma alteração posterior de ready_at reabre o lote terminal.
+    sqlx::query(
+        "UPDATE canteiro_meta.user_notice_queue SET ready_at=clock_timestamp()
+         WHERE tenant_id=$1 AND event_id=$2",
+    )
+    .bind(s.tenant)
+    .bind(s.event)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        database.consume_user_notice_delivery().await.unwrap(),
+        NotificationStep::Idle
+    );
+    database.close().await;
+    fixture.cleanup().await;
+}
