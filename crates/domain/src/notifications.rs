@@ -137,6 +137,11 @@ impl Notice {
         if self.state == NoticeState::Resolved {
             return Err(NoticeError::Resolved);
         }
+        // O limite da fila interna também vale antes de qualquer envio no domínio.
+        // Uma décima primeira tentativa exige decisão explícita, não repetição infinita.
+        if self.attempts >= 10 {
+            return Err(NoticeError::Attempts);
+        }
         self.attempts = self.attempts.checked_add(1).ok_or(NoticeError::Attempts)?;
         self.last_attempt = Some(when);
         self.state = if acknowledged {
@@ -237,6 +242,21 @@ mod tests {
         n.record_attempt(date(), true).unwrap();
         assert_eq!(n.state, NoticeState::Communicated);
         assert_eq!(n.attempts, 2);
+    }
+    #[test]
+    fn delivery_attempt_limit_is_terminal_without_false_acknowledgement() {
+        let mut notice = notice();
+        for attempt in 1..=10 {
+            notice.record_attempt(date(), false).unwrap();
+            assert_eq!(notice.attempts, attempt);
+            assert_eq!(notice.state, NoticeState::Failed);
+        }
+        let terminal = notice.clone();
+        assert_eq!(notice.record_attempt(date(), false), Err(NoticeError::Attempts));
+        assert_eq!(notice.record_attempt(date(), true), Err(NoticeError::Attempts));
+        assert_eq!(notice, terminal);
+        notice.resolve(date());
+        assert_eq!(notice.record_attempt(date(), true), Err(NoticeError::Resolved));
     }
     #[test]
     fn get_does_not_approve_and_revocation_closes_link() {
