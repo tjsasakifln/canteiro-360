@@ -1254,23 +1254,62 @@ pub fn preview(
     )
 }
 
-pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> String {
-    const MAX_VISIBLE_CHANGES: usize = 30;
+const CATALOG_CHANGES_PER_PAGE: usize = 30;
+
+fn catalog_page_window(count: usize, requested: usize) -> (usize, usize, usize) {
+    let pages = count.div_ceil(CATALOG_CHANGES_PER_PAGE).max(1);
+    let page = requested.clamp(1, pages);
+    (page, pages, (page - 1) * CATALOG_CHANGES_PER_PAGE)
+}
+
+pub fn catalog_comparison(
+    ctx: EstimatingContext,
+    result: CatalogComparison,
+    scope_id: String,
+    requested_page: usize,
+) -> String {
     let added_count = result.added.len();
     let removed_count = result.removed.len();
     let changed_count = result.changed.len();
-    let added_omitted = added_count.saturating_sub(MAX_VISIBLE_CHANGES);
-    let removed_omitted = removed_count.saturating_sub(MAX_VISIBLE_CHANGES);
-    let changed_omitted = changed_count.saturating_sub(MAX_VISIBLE_CHANGES);
+    let (page, pages, offset) = catalog_page_window(
+        added_count.max(removed_count).max(changed_count),
+        requested_page,
+    );
+    let navigation = ctx.context.as_ref().map(|context| {
+        view! {
+            <form action="/orcamentos/catalogos/comparar" method="get" class="record-form">
+                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                <input type="hidden" name="scope_id" value=scope_id/>
+                <input type="hidden" name="catalog_id" value=result.catalog_id.clone()/>
+                <input type="hidden" name="before" value=result.before_edition.to_string()/>
+                <input type="hidden" name="after" value=result.after_edition.to_string()/>
+                <p>{format!("Página {page} de {pages}. Até 30 registros de cada grupo por página.")}</p>
+                <label class="record-field">
+                    <span>"Página das diferenças"</span>
+                    <select name="page">
+                        {(1..=pages).map(|number| view! {
+                            <option value=number.to_string() selected=(number == page)>
+                                {number.to_string()}
+                            </option>
+                        }).collect_view()}
+                    </select>
+                </label>
+                <button type="submit" class="secondary-button">"Ir para página"</button>
+            </form>
+        }
+    });
     let added = result
         .added
         .into_iter()
-        .take(MAX_VISIBLE_CHANGES)
+        .skip(offset)
+        .take(CATALOG_CHANGES_PER_PAGE)
         .map(|item| {
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · {}",item.code,item.description)}</h3>
                     <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
+                    <p>{format!("Categoria: {:?}",item.category)}</p>
                 </article>
             }
         })
@@ -1278,12 +1317,14 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
     let removed = result
         .removed
         .into_iter()
-        .take(MAX_VISIBLE_CHANGES)
+        .skip(offset)
+        .take(CATALOG_CHANGES_PER_PAGE)
         .map(|item| {
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · {}",item.code,item.description)}</h3>
                     <p>{format!("{} · R$ {}",item.unit,item.price)}</p>
+                    <p>{format!("Categoria: {:?}",item.category)}</p>
                 </article>
             }
         })
@@ -1291,13 +1332,15 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
     let changed = result
         .changed
         .into_iter()
-        .take(MAX_VISIBLE_CHANGES)
+        .skip(offset)
+        .take(CATALOG_CHANGES_PER_PAGE)
         .map(|item| {
             view! {
                 <article class="record-summary">
                     <h3>{item.after.code.clone()}</h3>
                     <p>{format!("Antes: {} · {} · R$ {}",
                         item.before.description,item.before.unit,item.before.price)}</p>
+                    <p>{format!("Categoria anterior: {:?} · categoria posterior: {:?}",item.before.category,item.after.category)}</p>
                     <p>{format!("Depois: {} · {} · R$ {}",
                         item.after.description,item.after.unit,item.after.price)}</p>
                 </article>
@@ -1340,24 +1383,19 @@ pub fn catalog_comparison(ctx: EstimatingContext, result: CatalogComparison) -> 
                 <h2>"Mudanças identificadas"</h2>
                 <p>{format!("Incluídos: {} · removidos: {} · alterados: {}",
                     added_count,removed_count,changed_count)}</p>
+                {navigation}
                 <h3>"Valores alterados ou dados corrigidos"</h3>
                 {changed_count.eq(&0).then(||view!{<p>"Nenhum item alterado."</p>})}
                 {changed}
-                {(changed_omitted > 0).then(||view! {<p>{format!(
-                    "Outros {changed_omitted} itens alterados não exibidos. A contagem considera todos."
-                )}</p>})}
+                {(changed_count > 0 && offset >= changed_count).then(||view!{<p>"Nenhum item alterado nesta página."</p>})}
                 <h3>"Itens incluídos"</h3>
                 {added_count.eq(&0).then(||view!{<p>"Nenhum item incluído."</p>})}
                 {added}
-                {(added_omitted > 0).then(||view! {<p>{format!(
-                    "Outros {added_omitted} itens incluídos não exibidos. A contagem considera todos."
-                )}</p>})}
+                {(added_count > 0 && offset >= added_count).then(||view!{<p>"Nenhum item incluído nesta página."</p>})}
                 <h3>"Itens removidos"</h3>
                 {removed_count.eq(&0).then(||view!{<p>"Nenhum item removido."</p>})}
                 {removed}
-                {(removed_omitted > 0).then(||view! {<p>{format!(
-                    "Outros {removed_omitted} itens removidos não exibidos. A contagem considera todos."
-                )}</p>})}
+                {(removed_count > 0 && offset >= removed_count).then(||view!{<p>"Nenhum item removido nesta página."</p>})}
             </section>
             <section class="foundation-card">
                 <h2>"Empresa consultada"</h2>
@@ -1540,6 +1578,18 @@ pub fn budget_csv_published(ctx: EstimatingContext, result: BudgetReply) -> Stri
 
 #[cfg(test)]
 mod competence_tests {
+    #[test]
+    fn comparison_pages_cover_all_changes_without_overflow() {
+        assert_eq!(super::catalog_page_window(0, 0), (1, 1, 0));
+        assert_eq!(super::catalog_page_window(30, 1), (1, 1, 0));
+        assert_eq!(super::catalog_page_window(31, 2), (2, 2, 30));
+        assert_eq!(super::catalog_page_window(10_000, 334), (334, 334, 9_990));
+        assert_eq!(
+            super::catalog_page_window(10_000, usize::MAX),
+            (334, 334, 9_990)
+        );
+    }
+
     use super::competence_flags;
 
     #[test]

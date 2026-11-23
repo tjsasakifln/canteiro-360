@@ -152,6 +152,7 @@ struct CatalogCompareQuery {
     catalog_id: String,
     before: u32,
     after: u32,
+    page: Option<usize>,
 }
 async fn compare_catalog(
     auth: Option<Extension<AuthHttp>>,
@@ -184,7 +185,12 @@ async fn compare_catalog(
     {
         Ok(result) if as_page => match auth.service().estimating_context(&token).await {
             Ok(ctx) => html_page(
-                canteiro_web::estimating::catalog_comparison(ctx, result),
+                canteiro_web::estimating::catalog_comparison(
+                    ctx,
+                    result,
+                    query.scope_id,
+                    query.page.unwrap_or(1),
+                ),
                 StatusCode::OK,
             ),
             Err(error) => application_failure(error),
