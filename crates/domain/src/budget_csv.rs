@@ -1220,7 +1220,8 @@ mod tests {
         let (mut records, _) = parse_csv(
             csv.strip_prefix(FORMAT_VERSION)
                 .unwrap()
-                .trim_start_matches(['\r', '\n']),
+                .strip_prefix("\r\n")
+                .unwrap(),
             HEADER.len(),
             100,
         )
