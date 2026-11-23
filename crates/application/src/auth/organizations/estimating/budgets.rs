@@ -190,6 +190,9 @@ impl AuthService {
                             "Exclusões exigem comando específico e conferência das referências.",
                         )
                     })?;
+                    snapshot.validate_no_implicit_moves(&old).map_err(|_| {
+                        invalid("Use o comando de mover serviço para alterar sua variação.")
+                    })?;
                 }
                 snapshot.clone()
             }
@@ -421,6 +424,11 @@ impl AuthService {
             snapshot.validate_no_implicit_removals(&before.snapshot).map_err(|_| {
                 invalid(
                     "O CSV não pode excluir serviços silenciosamente. Use a exclusão individual validada.",
+                )
+            })?;
+            snapshot.validate_no_implicit_moves(&before.snapshot).map_err(|_| {
+                invalid(
+                    "O CSV não pode mover um serviço silenciosamente. Use o comando individual de movimentação.",
                 )
             })?;
             (
