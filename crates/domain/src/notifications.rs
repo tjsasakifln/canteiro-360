@@ -153,8 +153,11 @@ impl Notice {
     }
 
     pub fn resolve(&mut self, when: UtcInstant) {
-        self.state = NoticeState::Resolved;
-        self.resolved_at = Some(when);
+        // A resolução é idempotente: uma repetição nunca reescreve o fato inicial.
+        if self.state != NoticeState::Resolved {
+            self.state = NoticeState::Resolved;
+            self.resolved_at = Some(when);
+        }
     }
 
     /// Links carregam só identidade opaca, sem detalhes de orçamento ou obrigação.
@@ -257,6 +260,14 @@ mod tests {
         assert_eq!(notice, terminal);
         notice.resolve(date());
         assert_eq!(notice.record_attempt(date(), true), Err(NoticeError::Resolved));
+    }
+    #[test]
+    fn resolving_twice_preserves_original_resolution_time() {
+        let mut notice = notice();
+        notice.resolve(date());
+        let saved = notice.clone();
+        notice.resolve("2026-11-22T10:00:00Z".parse().unwrap());
+        assert_eq!(notice, saved);
     }
     #[test]
     fn get_does_not_approve_and_revocation_closes_link() {
