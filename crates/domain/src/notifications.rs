@@ -64,6 +64,8 @@ pub enum NoticeError {
     Resolved,
     #[error("Limite de tentativas excedido.")]
     Attempts,
+    #[error("O aviso novo não pode declarar tentativas, entrega ou resolução anteriores.")]
+    InvalidInitialState,
     #[error("As preferências de lembrete estão fora do limite.")]
     Preferences,
 }
@@ -79,6 +81,15 @@ pub struct Inbox {
 impl Inbox {
     /// Mesmo evento, empresa, destinatário e tipo nunca criam duas pendências.
     pub fn record(&mut self, notice: Notice) -> Result<DeliveryEffect, NoticeError> {
+        // O fato de criar a pendência nunca comprova uma tentativa ou entrega.
+        // Só o processador de comunicação pode evoluir esses estados.
+        if notice.state != NoticeState::Pending
+            || notice.attempts != 0
+            || notice.last_attempt.is_some()
+            || notice.resolved_at.is_some()
+        {
+            return Err(NoticeError::InvalidInitialState);
+        }
         if let Some(existing) = self.entries.get(&notice.identity) {
             if existing.scope != notice.scope
                 || existing.target != notice.target
@@ -247,6 +258,31 @@ mod tests {
         n.record_attempt(date(), true).unwrap();
         assert_eq!(n.state, NoticeState::Communicated);
         assert_eq!(n.attempts, 2);
+    }
+    #[test]
+    fn newly_recorded_notice_cannot_forge_provider_delivery_or_resolution() {
+        let mut inbox = Inbox::default();
+        let mut forged = notice();
+        forged.state = NoticeState::Communicated;
+        assert_eq!(inbox.record(forged), Err(NoticeError::InvalidInitialState));
+
+        let mut forged = notice();
+        forged.state = NoticeState::Resolved;
+        forged.resolved_at = Some(date());
+        assert_eq!(inbox.record(forged), Err(NoticeError::InvalidInitialState));
+
+        let mut forged = notice();
+        forged.attempts = 1;
+        forged.last_attempt = Some(date());
+        assert_eq!(inbox.record(forged), Err(NoticeError::InvalidInitialState));
+
+        let mut forged = notice();
+        forged.last_attempt = Some(date());
+        assert_eq!(inbox.record(forged), Err(NoticeError::InvalidInitialState));
+
+        assert!(inbox.for_recipient(tenant(1), actor(2)).is_empty());
+        assert_eq!(inbox.record(notice()), Ok(DeliveryEffect::Created));
+        assert_eq!(inbox.record(notice()), Ok(DeliveryEffect::AlreadySeen));
     }
     #[test]
     fn failed_followup_does_not_erase_an_earlier_delivery() {
