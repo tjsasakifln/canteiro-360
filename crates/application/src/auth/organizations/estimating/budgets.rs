@@ -193,6 +193,9 @@ impl AuthService {
                     snapshot.validate_no_implicit_moves(&old).map_err(|_| {
                         invalid("Use o comando de mover serviço para alterar sua variação.")
                     })?;
+                    snapshot.validate_no_implicit_reschedule(&old).map_err(|_| {
+                        invalid("Use a revisão explícita do cronograma para alterar datas ou rateios.")
+                    })?;
                 }
                 snapshot.clone()
             }
@@ -431,6 +434,13 @@ impl AuthService {
                     "O CSV não pode mover um serviço silenciosamente. Use o comando individual de movimentação.",
                 )
             })?;
+            snapshot
+                .validate_no_implicit_reschedule(&before.snapshot)
+                .map_err(|_| {
+                    invalid(
+                        "O CSV não pode substituir o cronograma existente. Use a revisão explícita do cronograma.",
+                    )
+                })?;
             (
                 compare(&before.snapshot, &snapshot),
                 compare_details(Some(&before.snapshot), &snapshot),
