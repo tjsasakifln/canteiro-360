@@ -1273,6 +1273,16 @@ mod tests {
         assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
     }
     #[test]
+    fn expensive_service_reports_its_price_cell_not_metadata() {
+        let mut original = sample(1);
+        original.lines[0].quantity = "99999999999999".parse().unwrap();
+        original.lines[0].price = "99999999999999".parse().unwrap();
+        let csv = export_csv(&original, NumberLocale::Canonical).unwrap();
+        let error = preview_import(&csv, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (5, 17));
+        assert!(error.cause.contains("Total do serviço"));
+    }
+    #[test]
     fn control_chars_and_quoted_carriage_returns_reject_whole_batch() {
         let original = sample(10_000);
         let valid = export_csv(&original, NumberLocale::Canonical).unwrap();
