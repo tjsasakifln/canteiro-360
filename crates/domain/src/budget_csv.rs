@@ -425,6 +425,25 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
     for (index, r) in data.iter().enumerate().skip(1) {
         // A versão fica na primeira linha física, antes dos registros CSV.
         let num = starts[index] + 1;
+        // O formato é versionado: dados em colunas reservadas não podem ser
+        // descartados silenciosamente durante a prévia ou a confirmação.
+        let used: &[usize] = match r[0].as_str() {
+            "META" => &[0, 1, 2, 3, 4],
+            "VAR" => &[0, 5, 6, 7],
+            "ITEM" => &[0, 5, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+            "SCHEDULE" => &[0, 1, 2, 3],
+            "PERIOD" => &[0, 5, 6, 15],
+            _ => return Err(err(num, 1, "Tipo de registro não reconhecido.")),
+        };
+        for (column, value) in r.iter().enumerate() {
+            if !value.is_empty() && !used.contains(&column) {
+                return Err(err(
+                    num,
+                    column + 1,
+                    "Coluna reservada deve permanecer vazia neste tipo de registro.",
+                ));
+            }
+        }
         match r[0].as_str() {
             "META" => {
                 if budget.is_some() {
@@ -1142,6 +1161,20 @@ mod tests {
         let error = preview_import(&missing_variation, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (5, 6));
     }
+    #[test]
+    fn unused_columns_cannot_silently_discard_imported_values() {
+        let csv = export_csv(&sample(10_000), NumberLocale::Canonical).unwrap();
+        assert!(preview_import(&csv, NumberLocale::Canonical).is_ok());
+        let mut rows: Vec<_> = csv.lines().collect();
+        let last = rows.pop().unwrap();
+        let corrupted = last.replacen("ITEM;", "ITEM;valor-ignorado", 1);
+        assert_ne!(last, corrupted);
+        rows.push(&corrupted);
+        let error = preview_import(&rows.join("\n"), NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (10_004, 2));
+        assert!(error.cause.contains("Coluna reservada"));
+    }
+
     #[test]
     fn oversized_record_is_rejected_before_accumulating_cells() {
         let excessive_columns = format!("a;b\n{}", ";".repeat(MAX_BYTES - 4));
