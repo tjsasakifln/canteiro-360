@@ -255,11 +255,20 @@ mod tests {
             assert_eq!(notice.state, NoticeState::Failed);
         }
         let terminal = notice.clone();
-        assert_eq!(notice.record_attempt(date(), false), Err(NoticeError::Attempts));
-        assert_eq!(notice.record_attempt(date(), true), Err(NoticeError::Attempts));
+        assert_eq!(
+            notice.record_attempt(date(), false),
+            Err(NoticeError::Attempts)
+        );
+        assert_eq!(
+            notice.record_attempt(date(), true),
+            Err(NoticeError::Attempts)
+        );
         assert_eq!(notice, terminal);
         notice.resolve(date());
-        assert_eq!(notice.record_attempt(date(), true), Err(NoticeError::Resolved));
+        assert_eq!(
+            notice.record_attempt(date(), true),
+            Err(NoticeError::Resolved)
+        );
     }
     #[test]
     fn resolving_twice_preserves_original_resolution_time() {
