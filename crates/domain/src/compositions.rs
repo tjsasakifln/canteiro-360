@@ -224,6 +224,30 @@ impl CompositionBook {
         }
         Ok(())
     }
+    /// Mudanças em uma composição também precisam preservar as unidades dos
+    /// vínculos que outras composições mantêm com ela, inclusive de custo informado.
+    /// Uma revisão do insumo não deve invalidar serviços já cadastrados.
+    pub fn validate_dependents_of(&self, code: &str) -> Result<(), CompositionError> {
+        let source = self
+            .compositions
+            .get(code)
+            .ok_or_else(|| CompositionError::Missing(code.into()))?;
+        for composition in self.compositions.values() {
+            for line in &composition.lines {
+                if let ComponentSource::Composition { code: dependency } = &line.source
+                    && dependency == code
+                {
+                    require_matching_units(
+                        source.unit,
+                        line.unit,
+                        line.conversion.as_ref(),
+                        UnitPrice::new(ExactDecimal::ZERO)?,
+                    )?;
+                }
+            }
+        }
+        Ok(())
+    }
     pub fn insert(&mut self, composition: Composition) -> Result<(), CompositionError> {
         composition.validate()?;
         if self.compositions.contains_key(&composition.code) {
@@ -449,6 +473,43 @@ mod tests {
             incompatible.validate_composition_links("A"),
             Err(CompositionError::Catalog(_))
         ));
+    }
+
+    #[test]
+    fn editing_a_source_unit_must_preserve_existing_dependent_links() {
+        let mut dependent = c("SERVICO");
+        dependent.lines.push(ComponentLine {
+            id: "parte".into(),
+            source: ComponentSource::Composition {
+                code: "INSUMO".into(),
+            },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::SquareMetre,
+            conversion: None,
+        });
+        let mut revised = c("INSUMO");
+        revised.unit = MeasureUnit::Kilogram;
+        let mut book = CompositionBook::default();
+        book.insert(dependent).unwrap();
+        book.insert(revised).unwrap();
+        // Verificar apenas os vínculos de saída da revisão não detectaria
+        // uma referência de entrada tornada inválida por troca de unidade.
+        assert!(book.validate_composition_links("INSUMO").is_ok());
+        assert!(matches!(
+            book.validate_dependents_of("INSUMO"),
+            Err(CompositionError::Catalog(_))
+        ));
+
+        let mut compatible = c("INSUMO");
+        compatible.unit = MeasureUnit::SquareMetre;
+        let mut valid = CompositionBook::default();
+        valid.insert(c("OUTRA")).unwrap();
+        valid.insert(compatible).unwrap();
+        assert!(valid.validate_dependents_of("INSUMO").is_ok());
+        assert_eq!(
+            valid.validate_dependents_of("AUSENTE"),
+            Err(CompositionError::Missing("AUSENTE".into()))
+        );
     }
 
     #[test]
