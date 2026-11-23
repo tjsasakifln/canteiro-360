@@ -465,6 +465,34 @@ fn changed_composition_from_form(
                 .find(|incidence| incidence.id == incidence_id)?;
             incidence.percent = field(data, "incidence_percent").parse().ok()?;
         }
+        "add_incidence" => {
+            let id = field(data, "new_incidence_id");
+            if matches!(id.chars().next(), Some('=' | '+' | '-' | '@')) {
+                return None;
+            }
+            let base_lines = field(data, "base_lines")
+                .split(',')
+                .map(str::trim)
+                .map(str::to_owned)
+                .collect::<Vec<_>>();
+            if base_lines.iter().any(String::is_empty) {
+                return None;
+            }
+            composition
+                .incidences
+                .push(canteiro_domain::compositions::CostIncidence {
+                    id: id.to_owned(),
+                    percent: field(data, "incidence_percent").parse().ok()?,
+                    base_lines,
+                });
+        }
+        "remove_incidence" => {
+            let index = composition
+                .incidences
+                .iter()
+                .position(|incidence| incidence.id == field(data, "incidence_id"))?;
+            composition.incidences.remove(index);
+        }
         "incidence_base" => {
             let incidence_id = field(data, "incidence_id");
             let bases = field(data, "base_lines")
@@ -766,6 +794,69 @@ mod composition_form_tests {
         fields.insert("incidence_percent".into(), "15%".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("incidence_percent".into(), "15".into());
+        fields.insert("incidence_id".into(), "inexistente".into());
+        assert!(changed_composition_from_form(original, &fields).is_none());
+    }
+
+    #[test]
+    fn add_incidence_creates_versionable_basis_without_touching_original() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "add_incidence".into());
+        fields.insert("new_incidence_id".into(), "encargos-equipe".into());
+        fields.insert("incidence_percent".into(), "12.5".into());
+        fields.insert("base_lines".into(), "insumo-01".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert!(original.incidences.is_empty());
+        assert_eq!(changed.incidences.len(), 1);
+        assert_eq!(changed.incidences[0].id, "encargos-equipe");
+        assert_eq!(changed.incidences[0].percent.to_string(), "12.5");
+        assert_eq!(changed.incidences[0].base_lines, vec!["insumo-01"]);
+        assert_eq!(changed.lines, original.lines);
+        assert_eq!(changed.cost_mode, original.cost_mode);
+
+        for (key, invalid) in [
+            ("new_incidence_id", "=1+1"),
+            ("new_incidence_id", ""),
+            ("incidence_percent", "-2"),
+            ("incidence_percent", "=12"),
+            ("base_lines", "nao-existe"),
+            ("base_lines", "insumo-01, insumo-01"),
+            ("base_lines", "insumo-01,"),
+        ] {
+            let valid = fields.get(key).unwrap().clone();
+            fields.insert(key.into(), invalid.into());
+            assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+            fields.insert(key.into(), valid);
+        }
+        let mut existing = original;
+        existing.incidences = changed.incidences;
+        assert!(changed_composition_from_form(existing, &fields).is_none());
+    }
+
+    #[test]
+    fn remove_incidence_keeps_inputs_and_other_bases_without_mutating_history() {
+        use canteiro_domain::compositions::CostIncidence;
+        let mut original = saved();
+        original.incidences = vec![
+            CostIncidence {
+                id: "encargos-equipe".into(),
+                percent: "12".parse().unwrap(),
+                base_lines: vec!["insumo-01".into()],
+            },
+            CostIncidence {
+                id: "transporte".into(),
+                percent: "5".parse().unwrap(),
+                base_lines: vec!["insumo-01".into()],
+            },
+        ];
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "remove_incidence".into());
+        fields.insert("incidence_id".into(), "encargos-equipe".into());
+        let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(changed.incidences, original.incidences[1..]);
+        assert_eq!(changed.lines, original.lines);
+        assert_eq!(original.incidences.len(), 2);
         fields.insert("incidence_id".into(), "inexistente".into());
         assert!(changed_composition_from_form(original, &fields).is_none());
     }
