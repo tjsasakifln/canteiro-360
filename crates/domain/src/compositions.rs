@@ -173,6 +173,57 @@ impl Composition {
     }
 }
 impl CompositionBook {
+    /// Valida a árvore de referências mesmo quando o custo é informado.
+    /// A travessia iterativa impede estouro de pilha em cadeias profundas.
+    pub fn validate_composition_links(&self, code: &str) -> Result<(), CompositionError> {
+        let mut status = BTreeMap::<String, u8>::new();
+        let mut path = Vec::<String>::new();
+        let mut pending = vec![(code.to_owned(), false)];
+        while let Some((current, closing)) = pending.pop() {
+            if closing {
+                status.insert(current, 2);
+                path.pop();
+                continue;
+            }
+            match status.get(&current) {
+                Some(2) => continue,
+                Some(1) => {
+                    let start = path.iter().position(|entry| entry == &current).unwrap_or(0);
+                    let mut cycle = path[start..].to_vec();
+                    cycle.push(current);
+                    return Err(CompositionError::Cycle(cycle.join(" -> ")));
+                }
+                _ => {}
+            }
+            let item = self
+                .compositions
+                .get(&current)
+                .ok_or_else(|| CompositionError::Missing(current.clone()))?;
+            let mut children = Vec::new();
+            for line in &item.lines {
+                if let ComponentSource::Composition { code: dependency } = &line.source {
+                    let source = self
+                        .compositions
+                        .get(dependency)
+                        .ok_or_else(|| CompositionError::Missing(dependency.clone()))?;
+                    require_matching_units(
+                        source.unit,
+                        line.unit,
+                        line.conversion.as_ref(),
+                        UnitPrice::new(ExactDecimal::ZERO)?,
+                    )?;
+                    children.push(dependency.clone());
+                }
+            }
+            path.push(current.clone());
+            status.insert(current.clone(), 1);
+            pending.push((current, true));
+            for dependency in children.into_iter().rev() {
+                pending.push((dependency, false));
+            }
+        }
+        Ok(())
+    }
     pub fn insert(&mut self, composition: Composition) -> Result<(), CompositionError> {
         composition.validate()?;
         if self.compositions.contains_key(&composition.code) {
@@ -347,6 +398,54 @@ mod tests {
             discount: "10".parse().unwrap(),
         }
     }
+    #[test]
+    fn informed_compositions_still_require_existing_acyclic_compatible_dependencies() {
+        let link = |source: &str| ComponentLine {
+            id: "base".into(),
+            source: ComponentSource::Composition {
+                code: source.into(),
+            },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::SquareMetre,
+            conversion: None,
+        };
+        let mut a = c("A");
+        a.lines.push(link("B"));
+        let b = c("B");
+        let mut valid = CompositionBook::default();
+        valid.insert(a.clone()).unwrap();
+        valid.insert(b.clone()).unwrap();
+        assert!(valid.validate_composition_links("A").is_ok());
+        assert_eq!(valid.calculate("A", &CatalogLibrary::default()).unwrap().informed, true);
+
+        let mut missing = CompositionBook::default();
+        missing.insert(a.clone()).unwrap();
+        assert_eq!(
+            missing.validate_composition_links("A"),
+            Err(CompositionError::Missing("B".into()))
+        );
+
+        let mut circular = CompositionBook::default();
+        let mut recursive = b.clone();
+        recursive.lines.push(link("A"));
+        circular.insert(a.clone()).unwrap();
+        circular.insert(recursive).unwrap();
+        assert_eq!(
+            circular.validate_composition_links("A"),
+            Err(CompositionError::Cycle("A -> B -> A".into()))
+        );
+
+        let mut incompatible = CompositionBook::default();
+        let mut b_wrong_unit = b;
+        b_wrong_unit.unit = MeasureUnit::Kilogram;
+        incompatible.insert(a).unwrap();
+        incompatible.insert(b_wrong_unit).unwrap();
+        assert!(matches!(
+            incompatible.validate_composition_links("A"),
+            Err(CompositionError::Catalog(_))
+        ));
+    }
+
     #[test]
     fn bdi_and_discount_apply_once_and_free_item_is_explicit() {
         let mut book = CompositionBook::default();
