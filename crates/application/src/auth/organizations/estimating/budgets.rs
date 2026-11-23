@@ -238,10 +238,9 @@ impl AuthService {
                         "Uma revisão aprovada não admite alterações de serviços ou cronograma.",
                     ));
                 }
-                let lease = input
-                    .lease_key
-                    .as_deref()
-                    .ok_or_else(|| invalid("Reserve o orçamento antes de alterar serviços ou cronograma."))?;
+                let lease = input.lease_key.as_deref().ok_or_else(|| {
+                    invalid("Reserve o orçamento antes de alterar serviços ou cronograma.")
+                })?;
                 let lease = operation_id(lease)?;
                 if !tx
                     .budget_lease_usable(
@@ -276,7 +275,9 @@ impl AuthService {
                         deadline_days,
                         basis,
                         periods,
-                    } => next.reschedule_linear(starts_on.clone(), *deadline_days, *basis, *periods),
+                    } => {
+                        next.reschedule_linear(starts_on.clone(), *deadline_days, *basis, *periods)
+                    }
                     _ => return Err(AuthError::unavailable()),
                 };
                 changed.map_err(|_| {
