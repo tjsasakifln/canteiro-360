@@ -276,7 +276,7 @@ impl AuthService {
                         basis,
                         periods,
                     } => {
-                        next.reschedule_linear(starts_on.clone(), *deadline_days, *basis, *periods)
+                        next.reschedule_linear(*starts_on, *deadline_days, *basis, *periods)
                     }
                     _ => return Err(AuthError::unavailable()),
                 };
