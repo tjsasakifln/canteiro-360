@@ -72,8 +72,9 @@ async fn calculating_book(
         .map_err(|_| invalid("Composição vinculada inexistente, incompatível ou circular."))?;
     // Uma mudança de unidade na composição revisada não pode romper
     // referências que outros serviços já possuem para esta composição.
-    book.validate_dependents_of(&candidate.code)
-        .map_err(|_| invalid("A unidade informada é incompatível com composições vinculadas existentes."))?;
+    book.validate_dependents_of(&candidate.code).map_err(|_| {
+        invalid("A unidade informada é incompatível com composições vinculadas existentes.")
+    })?;
     Ok((book, catalogs, sources.into_iter().collect()))
 }
 impl AuthService {
