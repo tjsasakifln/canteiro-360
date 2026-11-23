@@ -528,6 +528,37 @@ mod budget_transfer_contract_tests {
     use super::*;
 
     #[test]
+    fn schedule_command_accepts_only_its_fields_and_cannot_inject_budget_lines() {
+        let schedule = serde_json::json!({
+            "action": "reschedule_linear",
+            "starts_on": "2026-12-01",
+            "deadline_days": 120,
+            "basis": "civil_months",
+            "periods": 4
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(schedule.clone()).unwrap(),
+            BudgetChange::RescheduleLinear {
+                starts_on,
+                deadline_days: 120,
+                basis: canteiro_domain::budgets::PeriodBasis::CivilMonths,
+                periods: 4,
+            } if starts_on.to_string() == "2026-12-01"
+        ));
+        for extra in ["snapshot", "lines", "price", "catalog_id"] {
+            let mut forged = schedule.clone();
+            forged[extra] = serde_json::json!({"lines": [], "price": "0.01"});
+            assert!(
+                serde_json::from_value::<BudgetChange>(forged).is_err(),
+                "Unexpected budget mutation field accepted: {extra}"
+            );
+        }
+        let mut missing = schedule;
+        missing.as_object_mut().unwrap().remove("periods");
+        assert!(serde_json::from_value::<BudgetChange>(missing).is_err());
+    }
+
+    #[test]
     fn copy_move_requests_cannot_inject_prices_or_entire_snapshots() {
         let copy = serde_json::json!({
             "action": "copy_line",
