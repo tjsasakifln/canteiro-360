@@ -245,9 +245,21 @@ impl BudgetRevision {
         Ok(())
     }
     /// Uma gravação integral ou importação não pode deslocar um serviço
-    /// existente para outra variação. O deslocamento exige MoveLine, que
-    /// reconstrói o snapshot a partir da revisão persistida no servidor.
+    /// existente nem apontar uma variação antiga para outra obra.
+    /// O deslocamento exige MoveLine, que reconstrói o snapshot no servidor.
     pub fn validate_no_implicit_moves(&self, previous: &Self) -> Result<(), BudgetError> {
+        let works = self
+            .variations
+            .iter()
+            .map(|variation| (variation.id.as_str(), variation.work_id))
+            .collect::<BTreeMap<_, _>>();
+        if previous.variations.iter().any(|variation| {
+            works
+                .get(variation.id.as_str())
+                .is_some_and(|work| *work != variation.work_id)
+        }) {
+            return Err(BudgetError::ReferencedItem);
+        }
         let current = self
             .lines
             .iter()
@@ -749,6 +761,14 @@ mod tests {
         altered.lines[0].variation_id = "v-02".into();
         assert_eq!(
             altered.validate_no_implicit_moves(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+        // Trocar a obra de uma variação antiga moveria todos os seus serviços
+        // sem jamais alterar o identificador de variação de cada item.
+        let mut retargeted = original.clone();
+        retargeted.variations[0].work_id = entity(12);
+        assert_eq!(
+            retargeted.validate_no_implicit_moves(&original),
             Err(BudgetError::ReferencedItem)
         );
         // Alterações normais de quantidade e inclusões não são proibidas.
