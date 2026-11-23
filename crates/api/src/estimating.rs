@@ -548,8 +548,13 @@ fn changed_composition_from_form(
             };
         }
         "informed_cost" => match &mut composition.cost_mode {
-            canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
+            canteiro_domain::compositions::CostMode::Informed { cost, reason } => {
+                let technical_basis = field(data, "cost_reason");
+                if !canteiro_domain::budget_csv::safe(technical_basis) {
+                    return None;
+                }
                 *cost = field(data, "informed_cost").parse().ok()?;
+                *reason = technical_basis.to_owned();
             }
             canteiro_domain::compositions::CostMode::Formula => return None,
         },
@@ -1022,11 +1027,14 @@ mod composition_form_tests {
         let mut fields = BTreeMap::new();
         fields.insert("change_kind".into(), "informed_cost".into());
         fields.insert("informed_cost".into(), "250.75".into());
+        // Uma revisão de preço precisa atualizar também o fundamento técnico.
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("cost_reason".into(), "Nova cotação verificada".into());
         let changed = changed_composition_from_form(original.clone(), &fields).unwrap();
         match changed.cost_mode {
             CostMode::Informed { cost, reason } => {
                 assert_eq!(cost.to_string(), "250.750000");
-                assert_eq!(reason, "Custo informado e documentado");
+                assert_eq!(reason, "Nova cotação verificada");
             }
             CostMode::Formula => panic!("O custo informado não deve virar fórmula"),
         }
@@ -1034,6 +1042,11 @@ mod composition_form_tests {
         assert_eq!(changed.incidences, original.incidences);
         assert_eq!(original.cost_mode, saved().cost_mode);
 
+        fields.insert("cost_reason".into(), "=HYPERLINK(\"http://host\")".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("cost_reason".into(), "Preço com\\u{202e} marca".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("cost_reason".into(), "Nova cotação verificada".into());
         fields.insert("informed_cost".into(), "=100+20".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
         fields.insert("informed_cost".into(), "200".into());
