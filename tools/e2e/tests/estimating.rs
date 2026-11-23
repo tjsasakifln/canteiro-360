@@ -157,6 +157,33 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
             true,
             "The preview action must be reachable immediately after the CSV field"
         );
+        // A tabela de preços também deve ser navegável só pelo teclado.
+        browser
+            .tab_to("form[action='/orcamentos/catalogos/conferir'] select[name='scope_id']")
+            .await?;
+        browser.key(TAB).await?;
+        assert_eq!(
+            browser
+                .execute(
+                    "return document.activeElement?.matches(\"form[action='/orcamentos/catalogos/conferir'] input[name='catalog_id']\");"
+                )
+                .await?,
+            true,
+            "O identificador da fonte deve vir após o escopo, inclusive no mobile"
+        );
+        browser
+            .tab_to("form[action='/orcamentos/catalogos/conferir'] textarea[name='csv']")
+            .await?;
+        browser.key(TAB).await?;
+        assert_eq!(
+            browser
+                .execute(
+                    "return document.activeElement?.matches(\"form[action='/orcamentos/catalogos/conferir'] button[type='submit']\");"
+                )
+                .await?,
+            true,
+            "A conferência de preços deve seguir o CSV na ordem de teclado"
+        );
         browser
             .full_screenshot(&h.evidence.join(format!("estimating-interface-{width}.png")))
             .await?;
@@ -172,7 +199,8 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
                 "no_horizontal_overflow",
                 "labelled_import_controls",
                 "budget_and_catalog_imports_visible",
-                "tab_order_budget_csv_preview"
+                "tab_order_budget_csv_preview",
+                "tab_order_catalog_csv_preview"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
