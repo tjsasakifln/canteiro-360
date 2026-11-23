@@ -229,7 +229,9 @@ impl AuthService {
                 next.status = BudgetState::Draft;
                 next
             }
-            BudgetChange::CopyLine { .. } | BudgetChange::MoveLine { .. } => {
+            BudgetChange::CopyLine { .. }
+            | BudgetChange::MoveLine { .. }
+            | BudgetChange::RescheduleLinear { .. } => {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
                 if previous.state == "approved" {
                     return Err(invalid(
@@ -269,10 +271,16 @@ impl AuthService {
                         line_id,
                         target_variation_id,
                     } => next.move_line(line_id, target_variation_id),
+                    BudgetChange::RescheduleLinear {
+                        starts_on,
+                        deadline_days,
+                        basis,
+                        periods,
+                    } => next.reschedule_linear(starts_on.clone(), *deadline_days, *basis, *periods),
                     _ => return Err(AuthError::unavailable()),
                 };
                 changed.map_err(|_| {
-                    invalid("Confira o serviço, a identificação e a variação de destino.")
+                    invalid("Confira os dados da alteração do orçamento ou cronograma.")
                 })?;
                 next.revision = u32::try_from(next_version)
                     .map_err(|_| invalid("Limite de revisões alcançado."))?;
