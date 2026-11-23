@@ -186,8 +186,8 @@ impl CompositionBook {
                 continue;
             }
             match status.get(&current) {
-                Some(2) => continue,
-                Some(1) => {
+                Some(&2) => continue,
+                Some(&1) => {
                     let start = path.iter().position(|entry| entry == &current).unwrap_or(0);
                     let mut cycle = path[start..].to_vec();
                     cycle.push(current);
