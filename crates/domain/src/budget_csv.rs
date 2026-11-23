@@ -565,7 +565,9 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     .next()
                     .ok_or_else(|| err(row_number, 1, "Serviço ausente."))?
                     .total()
-                    .map_err(|_| err(row_number, 17, "Total do serviço fora da escala admitida."))?;
+                    .map_err(|_| {
+                        err(row_number, 17, "Total do serviço fora da escala admitida.")
+                    })?;
                 for (column, limit) in [
                     (9, 160),
                     (10, 160),
@@ -658,7 +660,11 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 .rfind(|(_, fields)| fields[0] == "PERIOD")
                 .map(|(index, _)| starts[index] + 1)
                 .unwrap_or(schedule_row);
-            return Err(err(last_period_row, 16, "A soma dos períodos deve ser 100%."));
+            return Err(err(
+                last_period_row,
+                16,
+                "A soma dos períodos deve ser 100%.",
+            ));
         }
     }
     result.validate().map_err(|e| err(3, 1, &e.to_string()))?;
