@@ -834,7 +834,9 @@ mod tests {
 
         // A ausência de serviços não prova ausência de vínculos externos.
         let mut deleted = original.clone();
-        deleted.variations.retain(|variation| variation.id != "v-empty");
+        deleted
+            .variations
+            .retain(|variation| variation.id != "v-empty");
         deleted.validate().unwrap();
         assert_eq!(
             deleted.validate_no_implicit_removals(&original),
