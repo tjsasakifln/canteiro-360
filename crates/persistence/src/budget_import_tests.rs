@@ -131,6 +131,54 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         changed: 0,
         removed: 0,
     };
+    // Prévia incorreta não deve ocupar um lote nem mesmo se o JSON for bem formado.
+    // A camada de persistência confere escopo, revisão e estado independentemente da API.
+    let bad_hash = [77_u8; 32];
+    let mut invalid_revision = parsed.clone();
+    invalid_revision.revision = 2;
+    let invalid_revision_json = serde_json::to_string(&invalid_revision).unwrap();
+    assert!(
+        first
+            .budget_import_stage(&NewBudgetImport {
+                id: Uuid::new_v4(),
+                sha256: &bad_hash,
+                preview: &invalid_revision_json,
+                ..first_preview
+            })
+            .await
+            .unwrap()
+            .is_none()
+    );
+    let mut invalid_scope = parsed.clone();
+    invalid_scope.budget_id = Uuid::new_v4().to_string();
+    let invalid_scope_json = serde_json::to_string(&invalid_scope).unwrap();
+    assert!(
+        first
+            .budget_import_stage(&NewBudgetImport {
+                id: Uuid::new_v4(),
+                sha256: &[78_u8; 32],
+                preview: &invalid_scope_json,
+                ..first_preview
+            })
+            .await
+            .unwrap()
+            .is_none()
+    );
+    let mut invalid_state = parsed.clone();
+    invalid_state.status = BudgetState::Approved;
+    let invalid_state_json = serde_json::to_string(&invalid_state).unwrap();
+    assert!(
+        first
+            .budget_import_stage(&NewBudgetImport {
+                id: Uuid::new_v4(),
+                sha256: &[79_u8; 32],
+                preview: &invalid_state_json,
+                ..first_preview
+            })
+            .await
+            .unwrap()
+            .is_none()
+    );
     assert_eq!(
         first.budget_import_stage(&first_preview).await.unwrap(),
         Some(first_batch_id)
