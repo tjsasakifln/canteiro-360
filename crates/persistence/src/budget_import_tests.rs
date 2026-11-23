@@ -281,6 +281,77 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     );
     stage.commit().await.unwrap();
 
+    // Um recibo de lote não pode acompanhar outra versão dos mesmos 10 mil serviços.
+    // A falha da conferência deve reverter também o incremento da revisão.
+    let mut tampered = updated.clone();
+    tampered.lines[0].quantity = "9.00".parse().unwrap();
+    let tampered_json = serde_json::to_string(&tampered).unwrap();
+    let mut mismatched = AuthStore::new(database.clone()).begin().await.unwrap();
+    mismatched.org_set_actor(actor).await.unwrap();
+    mismatched.org_set_tenant(tenant).await.unwrap();
+    let forged_operation = Uuid::new_v4();
+    assert_eq!(
+        mismatched
+            .budget_write(&BudgetWrite {
+                tenant,
+                scope,
+                expected: Some(1),
+                actor,
+                operation_key: forged_operation,
+                fingerprint: &fingerprint,
+                reason: "Prévia adulterada após conferência",
+                payload: &tampered_json,
+                state: "draft",
+            })
+            .await
+            .unwrap()
+            .unwrap()
+            .version,
+        2
+    );
+    assert!(
+        !mismatched
+            .budget_import_mark_applied(
+                tenant,
+                scope,
+                actor,
+                session,
+                batch_id,
+                forged_operation
+            )
+            .await
+            .unwrap()
+    );
+    drop(mismatched);
+    // A consulta fora da transação demonstra que o lote e a revisão não foram aplicados.
+    let persisted_version: i64 = sqlx::query_scalar(
+        "SELECT current_version FROM canteiro.budget_records WHERE tenant_id=$1 AND scope_id=$2",
+    )
+    .bind(tenant)
+    .bind(scope)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(persisted_version, 1);
+    let revision_count: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro.budget_versions WHERE tenant_id=$1 AND scope_id=$2",
+    )
+    .bind(tenant)
+    .bind(scope)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(revision_count, 1);
+    let pending_batch_status: String = sqlx::query_scalar(
+        "SELECT status FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(batch_id)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(pending_batch_status, "ready");
+
     let mut second = AuthStore::new(database.clone()).begin().await.unwrap();
     second.org_set_actor(actor).await.unwrap();
     second.org_set_tenant(tenant).await.unwrap();
