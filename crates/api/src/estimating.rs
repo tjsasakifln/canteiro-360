@@ -1223,15 +1223,16 @@ async fn budget_save_schedule_form(
         private_headers(&mut response);
         return response;
     };
-    let mut snapshot = record.snapshot.clone();
-    if snapshot
-        .reschedule_linear(starts_on, deadline_days, basis, periods)
-        .is_err()
+    if canteiro_domain::budgets::BudgetSchedule::linear(
+        starts_on.clone(),
+        deadline_days,
+        basis,
+        periods,
+    )
+    .is_err()
     {
         return bad_input();
     }
-    snapshot.revision = revision;
-    snapshot.status = BudgetState::Draft;
     let lease_key = uuid::Uuid::new_v4().to_string();
     match auth
         .service()
@@ -1264,7 +1265,12 @@ async fn budget_save_schedule_form(
         expected_version: Some(version),
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
-        change: BudgetChange::Save { snapshot },
+        change: BudgetChange::RescheduleLinear {
+            starts_on,
+            deadline_days,
+            basis,
+            periods,
+        },
     };
     match auth
         .service()
