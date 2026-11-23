@@ -244,6 +244,24 @@ impl BudgetRevision {
         }
         Ok(())
     }
+    /// Uma gravação integral ou importação não pode deslocar um serviço
+    /// existente para outra variação. O deslocamento exige MoveLine, que
+    /// reconstrói o snapshot a partir da revisão persistida no servidor.
+    pub fn validate_no_implicit_moves(&self, previous: &Self) -> Result<(), BudgetError> {
+        let current = self
+            .lines
+            .iter()
+            .map(|line| (line.id.as_str(), line.variation_id.as_str()))
+            .collect::<BTreeMap<_, _>>();
+        if previous.lines.iter().any(|line| {
+            current
+                .get(line.id.as_str())
+                .is_some_and(|variation| *variation != line.variation_id.as_str())
+        }) {
+            return Err(BudgetError::ReferencedItem);
+        }
+        Ok(())
+    }
     /// Apenas serviços manuais, sem fonte histórica vinculada, podem ser
     /// excluídos por este comando. O orçamento e o cronograma são atômicos.
     pub fn remove_unlinked_line(&mut self, line_id: &str) -> Result<(), BudgetError> {
@@ -723,6 +741,37 @@ mod tests {
         assert_eq!(draft, stable);
         draft.status = BudgetState::Approved;
         assert_eq!(draft.move_line("l-1", "v-01"), Err(BudgetError::Definitive));
+    }
+    #[test]
+    fn whole_snapshot_cannot_move_services_without_explicit_command() {
+        let original = budget();
+        let mut altered = original.clone();
+        altered.lines[0].variation_id = "v-02".into();
+        assert_eq!(
+            altered.validate_no_implicit_moves(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+        // Alterações normais de quantidade e inclusões não são proibidas.
+        let mut quantity = original.clone();
+        quantity.lines[0].quantity = "4".parse().unwrap();
+        quantity.validate_no_implicit_moves(&original).unwrap();
+        quantity.copy_line("l-1", "l-3", "v-02").unwrap();
+        quantity.validate_no_implicit_moves(&original).unwrap();
+        // A operação explícita continua autorizada no domínio, mas um Save
+        // forjado com o mesmo resultado não pode substituí-la.
+        let mut moved = original.clone();
+        moved.move_line("l-1", "v-02").unwrap();
+        assert_eq!(moved.lines[0].variation_id, "v-02");
+        assert_eq!(
+            moved.validate_no_implicit_moves(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+        let mut missing = original.clone();
+        missing.lines.retain(|line| line.id != "l-1");
+        assert_eq!(
+            missing.validate_no_implicit_removals(&original),
+            Err(BudgetError::ReferencedItem)
+        );
     }
     #[test]
     fn deletion_requires_explicit_command_and_preserves_original_on_failure() {
