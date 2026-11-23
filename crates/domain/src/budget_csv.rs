@@ -528,7 +528,9 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
     // de atribuir toda falha de uma importação extensa aos metadados da linha 3.
     let mut service_ids = BTreeSet::new();
     let mut variation_scopes = BTreeSet::new();
+    let mut period_ids = BTreeSet::new();
     let mut period_positions = BTreeMap::new();
+    let mut service_rows = result.lines.iter();
     let variation_ids: BTreeSet<_> = result.variations.iter().map(|v| v.id.as_str()).collect();
     for (index, fields) in data.iter().enumerate().skip(1) {
         let row_number = starts[index] + 1;
@@ -557,6 +559,13 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 }
             }
             "ITEM" => {
+                // A avaliação monetária é identificada pela célula real, mesmo
+                // quando há milhares de serviços antes da linha defeituosa.
+                service_rows
+                    .next()
+                    .ok_or_else(|| err(row_number, 1, "Serviço ausente."))?
+                    .total()
+                    .map_err(|_| err(row_number, 17, "Total do serviço fora da escala admitida."))?;
                 for (column, limit) in [
                     (9, 160),
                     (10, 160),
@@ -594,7 +603,22 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     ));
                 }
             }
+            "SCHEDULE" => {
+                if result
+                    .schedule
+                    .as_ref()
+                    .is_some_and(|schedule| schedule.deadline_days == 0)
+                {
+                    return Err(err(row_number, 3, "O prazo deve ser positivo."));
+                }
+            }
             "PERIOD" => {
+                if !bounded(&fields[5], 128) {
+                    return Err(err(row_number, 6, "Identificação do período inválida."));
+                }
+                if !period_ids.insert(fields[5].as_str()) {
+                    return Err(err(row_number, 6, "Identificador de período repetido."));
+                }
                 let position = fields[6]
                     .parse::<u32>()
                     .map_err(|_| err(row_number, 7, "Posição de período inválida."))?;
@@ -612,6 +636,29 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 7,
                 "O cronograma deve usar posições consecutivas a partir de zero.",
             ));
+        }
+    }
+    if let Some(schedule) = &result.schedule {
+        let schedule_row = data
+            .iter()
+            .enumerate()
+            .find(|(_, fields)| fields[0] == "SCHEDULE")
+            .map(|(index, _)| starts[index] + 1)
+            .unwrap_or(3);
+        if schedule.periods.is_empty() {
+            return Err(err(schedule_row, 1, "O cronograma precisa de períodos."));
+        }
+        // Datas, prazo, identificação e sequência já foram verificadas.
+        // A inconsistência residual do rateio pertence ao percentual
+        // do último período, não aos metadados da linha 3.
+        if schedule.validate().is_err() {
+            let last_period_row = data
+                .iter()
+                .enumerate()
+                .rfind(|(_, fields)| fields[0] == "PERIOD")
+                .map(|(index, _)| starts[index] + 1)
+                .unwrap_or(schedule_row);
+            return Err(err(last_period_row, 16, "A soma dos períodos deve ser 100%."));
         }
     }
     result.validate().map_err(|e| err(3, 1, &e.to_string()))?;
@@ -1148,6 +1195,58 @@ mod tests {
         assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
     }
 
+    #[test]
+    fn schedule_errors_identify_the_real_cell_instead_of_budget_metadata() {
+        let mut original = sample(2);
+        original.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                90,
+                PeriodBasis::Fixed30Days,
+                3,
+            )
+            .unwrap(),
+        );
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+
+        let zero_deadline = csv.replacen("SCHEDULE;2026-11-01;90;", "SCHEDULE;2026-11-01;0;", 1);
+        let error = preview_import(&zero_deadline, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (7, 3));
+
+        let duplicated = csv.replacen("periodo-3;2;", "periodo-2;2;", 1);
+        let error = preview_import(&duplicated, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (10, 6));
+
+        let (mut records, _) = parse_csv(
+            csv.strip_prefix(FORMAT_VERSION)
+                .unwrap()
+                .trim_start_matches(['\r', '\n']),
+            HEADER.len(),
+            100,
+        )
+        .unwrap();
+        records
+            .iter_mut()
+            .rfind(|record| record[0] == "PERIOD")
+            .unwrap()[15] = "0".into();
+        let mut bad_rateio = format!("{FORMAT_VERSION}\r\n");
+        for record in &records {
+            csv_row(record, &mut bad_rateio);
+        }
+        let error = preview_import(&bad_rateio, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (10, 16));
+        assert!(error.cause.contains("100%"));
+
+        let no_periods = csv
+            .lines()
+            .filter(|line| !line.starts_with("PERIOD;"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let error = preview_import(&no_periods, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (7, 1));
+
+        assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
+    }
     #[test]
     fn control_chars_and_quoted_carriage_returns_reject_whole_batch() {
         let original = sample(10_000);
