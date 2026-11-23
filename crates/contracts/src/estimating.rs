@@ -1,4 +1,5 @@
 use crate::reliability::ReliabilityScope;
+use canteiro_domain::CivilDate;
 pub use canteiro_domain::{
     budget_csv::{ImportDifference, ImportLineChanges, NumberLocale},
     budgets::{BudgetRevision, BudgetSchedule, BudgetState, BudgetSummary},
@@ -147,6 +148,13 @@ pub enum BudgetChange {
     MoveLine {
         line_id: String,
         target_variation_id: String,
+    },
+    /// Altera somente o cronograma no servidor, sem aceitar serviços ou preços no pedido.
+    RescheduleLinear {
+        starts_on: CivilDate,
+        deadline_days: u32,
+        basis: canteiro_domain::budgets::PeriodBasis,
+        periods: u32,
     },
     Approve,
 }
