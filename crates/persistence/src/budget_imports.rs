@@ -48,7 +48,7 @@ impl AuthTransaction {
             .unwrap_or(0)
             .checked_add(1)
             .and_then(|value| u32::try_from(value).ok());
-        let valid_snapshot = serde_json::from_value::<BudgetRevision>(payload.clone())
+        let valid_snapshot = serde_json::from_str::<BudgetRevision>(batch.preview)
             .ok()
             .is_some_and(|revision| {
                 Some(revision.revision) == expected_revision
