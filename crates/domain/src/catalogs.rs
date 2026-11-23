@@ -99,7 +99,7 @@ pub enum CatalogError {
     #[error(transparent)]
     Decimal(#[from] DecimalError),
 }
-fn label(value: &str, max: usize) -> bool {
+pub(crate) fn label(value: &str, max: usize) -> bool {
     !value.trim().is_empty()
         && value.trim() == value
         && value.len() <= max
