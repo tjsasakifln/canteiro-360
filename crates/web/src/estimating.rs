@@ -1289,7 +1289,7 @@ pub fn catalog_comparison(
                     <span>"Página das diferenças"</span>
                     <select name="page">
                         {(1..=pages).map(|number| view! {
-                            <option value=number.to_string() selected=(number == page)>
+                            <option value=number.to_string() selected=number == page>
                                 {number.to_string()}
                             </option>
                         }).collect_view()}
