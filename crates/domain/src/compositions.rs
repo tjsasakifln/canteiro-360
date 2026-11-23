@@ -416,7 +416,12 @@ mod tests {
         valid.insert(a.clone()).unwrap();
         valid.insert(b.clone()).unwrap();
         assert!(valid.validate_composition_links("A").is_ok());
-        assert_eq!(valid.calculate("A", &CatalogLibrary::default()).unwrap().informed, true);
+        assert!(
+            valid
+                .calculate("A", &CatalogLibrary::default())
+                .unwrap()
+                .informed
+        );
 
         let mut missing = CompositionBook::default();
         missing.insert(a.clone()).unwrap();
