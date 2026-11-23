@@ -311,14 +311,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     );
     assert!(
         !mismatched
-            .budget_import_mark_applied(
-                tenant,
-                scope,
-                actor,
-                session,
-                batch_id,
-                forged_operation
-            )
+            .budget_import_mark_applied(tenant, scope, actor, session, batch_id, forged_operation)
             .await
             .unwrap()
     );
