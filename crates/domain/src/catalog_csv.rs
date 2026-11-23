@@ -139,28 +139,28 @@ mod tests {
 
     #[test]
     fn invalid_code_or_description_points_to_its_own_cell() {
-        let base = format!("{FORMAT_VERSION}\\ncodigo;descricao;categoria;unidade;preco\\n");
+        let base = format!("{FORMAT_VERSION}\ncodigo;descricao;categoria;unidade;preco\n");
         for (record, column) in [
             (" ;Descrição;service;m;2,00", 1),
             ("A;  ;service;m;2,00", 2),
             ("A; Descrição;service;m;2,00", 2),
         ] {
             let error =
-                preview_import(&format!("{base}{record}\\n"), NumberLocale::PtBr).unwrap_err();
+                preview_import(&format!("{base}{record}\n"), NumberLocale::PtBr).unwrap_err();
             assert_eq!((error.row, error.column), (3, column));
         }
-        let overlong = format!("{base}A;{};service;m;2,00\\n", "a".repeat(801));
+        let overlong = format!("{base}A;{};service;m;2,00\n", "a".repeat(801));
         let error = preview_import(&overlong, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (3, 2));
     }
 
     #[test]
     fn invalid_description_in_ten_thousandth_row_blocks_entire_edition() {
-        let mut csv = format!("{FORMAT_VERSION}\\ncodigo;descricao;categoria;unidade;preco\\n");
+        let mut csv = format!("{FORMAT_VERSION}\ncodigo;descricao;categoria;unidade;preco\n");
         for n in 0..9_999 {
-            csv.push_str(&format!("I{n};Serviço {n};service;m;2,00\\n"));
+            csv.push_str(&format!("I{n};Serviço {n};service;m;2,00\n"));
         }
-        csv.push_str("I9999; ;service;m;2,00\\n");
+        csv.push_str("I9999; ;service;m;2,00\n");
         let error = preview_import(&csv, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (10_002, 2));
     }
