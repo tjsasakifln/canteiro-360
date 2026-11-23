@@ -210,11 +210,22 @@ pub(crate) fn parse_csv(
                 }
                 cell.push(ch);
             }
+            if cell.len() > 10_000 {
+                return Err(err(record_start, row.len() + 1, "Célula excede o limite."));
+            }
             continue;
         }
         match ch {
             '"' if cell.is_empty() && !closed => quoted = true,
             ';' => {
+                // Não alocar milhões de células vazias em um registro malformado.
+                if row.len() + 1 >= columns {
+                    return Err(err(
+                        record_start,
+                        columns + 1,
+                        "Quantidade de colunas incompatível com o formato oficial.",
+                    ));
+                }
                 row.push(std::mem::take(&mut cell));
                 closed = false;
             }
@@ -251,6 +262,9 @@ pub(crate) fn parse_csv(
             }
             '"' => return Err(err(physical_line, row.len() + 1, "Aspas sem abertura.")),
             _ => cell.push(ch),
+        }
+        if cell.len() > 10_000 {
+            return Err(err(record_start, row.len() + 1, "Célula excede o limite."));
         }
         if rows.len() > max_rows {
             return Err(err(physical_line, 1, "Limite de linhas excedido."));
@@ -1128,6 +1142,19 @@ mod tests {
         let error = preview_import(&missing_variation, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (5, 6));
     }
+    #[test]
+    fn oversized_record_is_rejected_before_accumulating_cells() {
+        let excessive_columns = format!("a;b\n{}", ";".repeat(MAX_BYTES - 4));
+        let error = parse_csv(&excessive_columns, 2, 10).unwrap_err();
+        assert_eq!((error.row, error.column), (2, 3));
+        let excessive_cell = format!("a;b\nx;\"{}\"", "á".repeat(5_001));
+        let error = parse_csv(&excessive_cell, 2, 10).unwrap_err();
+        assert_eq!((error.row, error.column), (2, 2));
+        assert!(error.cause.contains("Célula excede"));
+        let valid = format!("a;b\nx;{}", "á".repeat(5_000));
+        assert!(parse_csv(&valid, 2, 10).is_ok());
+    }
+
     #[test]
     fn row_limit_applies_to_final_record_without_newline() {
         // Um registro final sem LF era aceito apesar de ultrapassar max_rows.
