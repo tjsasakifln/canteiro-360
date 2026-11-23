@@ -258,18 +258,25 @@ impl BudgetRevision {
         Ok(())
     }
     /// Uma gravação integral ou importação não pode deslocar um serviço
-    /// existente nem apontar uma variação antiga para outra obra.
+    /// existente nem alterar a obra ou o escopo de uma variação antiga.
     /// O deslocamento exige MoveLine, que reconstrói o snapshot no servidor.
     pub fn validate_no_implicit_moves(&self, previous: &Self) -> Result<(), BudgetError> {
-        let works = self
+        let assignments = self
             .variations
             .iter()
-            .map(|variation| (variation.id.as_str(), variation.work_id))
+            .map(|variation| {
+                (
+                    variation.id.as_str(),
+                    (variation.work_id, variation.scope.as_str()),
+                )
+            })
             .collect::<BTreeMap<_, _>>();
         if previous.variations.iter().any(|variation| {
-            works
+            assignments
                 .get(variation.id.as_str())
-                .is_some_and(|work| *work != variation.work_id)
+                .is_some_and(|assignment| {
+                    *assignment != (variation.work_id, variation.scope.as_str())
+                })
         }) {
             return Err(BudgetError::ReferencedItem);
         }
@@ -782,6 +789,15 @@ mod tests {
         retargeted.variations[0].work_id = entity(12);
         assert_eq!(
             retargeted.validate_no_implicit_moves(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+        // Alterar o escopo mantendo a obra também altera implicitamente a
+        // classificação de todos os serviços vinculados à variação.
+        let mut relabeled = original.clone();
+        relabeled.variations[0].scope = "Outro escopo".into();
+        relabeled.validate().unwrap();
+        assert_eq!(
+            relabeled.validate_no_implicit_moves(&original),
             Err(BudgetError::ReferencedItem)
         );
         // Alterações normais de quantidade e inclusões não são proibidas.
