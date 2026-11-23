@@ -298,6 +298,14 @@ impl BudgetRevision {
         }
         Ok(())
     }
+    /// Um salvamento integral ou CSV não pode substituir silenciosamente
+    /// o cronograma: a alteração exige comando explícito e confirmação.
+    pub fn validate_no_implicit_reschedule(&self, previous: &Self) -> Result<(), BudgetError> {
+        if self.schedule != previous.schedule {
+            return Err(BudgetError::Schedule);
+        }
+        Ok(())
+    }
     /// Apenas serviços manuais, sem fonte histórica vinculada, podem ser
     /// excluídos por este comando. O orçamento e o cronograma são atômicos.
     pub fn remove_unlinked_line(&mut self, line_id: &str) -> Result<(), BudgetError> {
@@ -942,6 +950,36 @@ mod tests {
         );
     }
 
+    #[test]
+    fn snapshots_cannot_bypass_explicit_schedule_confirmation() {
+        let original = budget();
+        let mut removed = original.clone();
+        removed.schedule = None;
+        assert_eq!(
+            removed.validate_no_implicit_reschedule(&original),
+            Err(BudgetError::Schedule)
+        );
+
+        let mut changed = original.clone();
+        changed
+            .reschedule_linear(
+                "2026-12-01".parse().unwrap(),
+                120,
+                PeriodBasis::CivilMonths,
+                4,
+            )
+            .unwrap();
+        assert_eq!(
+            changed.validate_no_implicit_reschedule(&original),
+            Err(BudgetError::Schedule)
+        );
+
+        let mut ordinary_edit = original.clone();
+        ordinary_edit.lines[1].quantity = "3".parse().unwrap();
+        ordinary_edit
+            .validate_no_implicit_reschedule(&original)
+            .unwrap();
+    }
     #[test]
     fn rescheduling_is_atomic_keeps_costs_and_rejects_definitive_versions() {
         let mut draft = budget();
