@@ -493,6 +493,50 @@ pub fn page(ctx: EstimatingContext) -> String {
                                 <button type="submit" class="secondary-button">"Salvar base da incidência em nova revisão"</button>
                             </form>
                         })}
+                        {informed_cost.is_some().then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="cost_mode"/>
+                                <input type="hidden" name="target_mode" value="formula"/>
+                                <p>"Ao adotar cálculo por fórmula, o valor informado deixa de ser utilizado. O servidor conferirá insumos, unidades, incidências e composições vinculadas antes de criar a revisão."</p>
+                                <label class="record-field">
+                                    <span>"Motivo da adoção do custo calculado"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Calcular por fórmula em nova revisão"</button>
+                            </form>
+                        })}
+                        {informed_cost.is_none().then(|| view! {
+                            <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                                <input type="hidden" name="code" value=entry.code.clone()/>
+                                <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                                <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                                <input type="hidden" name="change_kind" value="cost_mode"/>
+                                <input type="hidden" name="target_mode" value="informed"/>
+                                <p>"O custo informado exige uma justificativa técnica própria e não exclui a validação das referências históricas. O BDI e o desconto serão preservados."</p>
+                                <label class="record-field">
+                                    <span>"Custo unitário informado (R$, use ponto)"</span>
+                                    <input type="text" name="informed_cost" inputmode="decimal" maxlength="40" required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Fundamento técnico do custo informado"</span>
+                                    <textarea name="cost_reason" rows="2" maxlength="500" required=true></textarea>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Motivo da mudança de modalidade"</span>
+                                    <input type="text" name="reason" maxlength="240" required=true/>
+                                </label>
+                                <button type="submit" class="secondary-button">"Registrar custo informado em nova revisão"</button>
+                            </form>
+                        })}
                         {informed_cost.map(|amount| view! {
                             <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
                                 <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
