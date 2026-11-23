@@ -66,6 +66,10 @@ async fn calculating_book(
             .map_err(|_| invalid("Confira a unidade da linha e a conversão documentada."))?;
         }
     }
+    // Custo informado não pode mascarar fonte inexistente, unidade incompatível
+    // ou ciclo. O cálculo monetário isolado não percorre tais dependências.
+    book.validate_composition_links(&candidate.code)
+        .map_err(|_| invalid("Composição vinculada inexistente, incompatível ou circular."))?;
     Ok((book, catalogs, sources.into_iter().collect()))
 }
 impl AuthService {
