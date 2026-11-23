@@ -227,8 +227,9 @@ impl BudgetRevision {
         }
         Ok(())
     }
-    /// Gravações integrais não podem ocultar exclusões de serviços antigos.
-    /// Remover um serviço exige o comando específico, com validação no servidor.
+    /// Gravações integrais não podem ocultar exclusões de serviços ou variações,
+    /// inclusive variações vazias que podem ter referências externas.
+    /// A remoção exige um comando específico com validação no servidor.
     pub fn validate_no_implicit_removals(&self, previous: &Self) -> Result<(), BudgetError> {
         let current_ids = self
             .lines
@@ -239,6 +240,18 @@ impl BudgetRevision {
             .lines
             .iter()
             .any(|line| !current_ids.contains(line.id.as_str()))
+        {
+            return Err(BudgetError::ReferencedItem);
+        }
+        let variation_ids = self
+            .variations
+            .iter()
+            .map(|variation| variation.id.as_str())
+            .collect::<BTreeSet<_>>();
+        if previous
+            .variations
+            .iter()
+            .any(|variation| !variation_ids.contains(variation.id.as_str()))
         {
             return Err(BudgetError::ReferencedItem);
         }
@@ -792,6 +805,47 @@ mod tests {
             missing.validate_no_implicit_removals(&original),
             Err(BudgetError::ReferencedItem)
         );
+    }
+    #[test]
+    fn snapshot_cannot_delete_or_replace_an_empty_variation() {
+        let mut original = budget();
+        original.variations.push(BudgetVariation {
+            id: "v-empty".into(),
+            work_id: entity(99),
+            scope: "Variação sem serviços".into(),
+        });
+        original.validate().unwrap();
+
+        // A ausência de serviços não prova ausência de vínculos externos.
+        let mut deleted = original.clone();
+        deleted.variations.retain(|variation| variation.id != "v-empty");
+        deleted.validate().unwrap();
+        assert_eq!(
+            deleted.validate_no_implicit_removals(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+
+        let mut replaced = deleted.clone();
+        replaced.variations.push(BudgetVariation {
+            id: "v-replacement".into(),
+            work_id: entity(99),
+            scope: "Variação sem serviços".into(),
+        });
+        replaced.validate().unwrap();
+        assert_eq!(
+            replaced.validate_no_implicit_removals(&original),
+            Err(BudgetError::ReferencedItem)
+        );
+
+        let mut added = original.clone();
+        added.variations.push(BudgetVariation {
+            id: "v-additional".into(),
+            work_id: entity(100),
+            scope: "Variação adicional".into(),
+        });
+        added.validate().unwrap();
+        added.validate_no_implicit_removals(&original).unwrap();
+        assert_eq!(original.variations.len(), 3);
     }
     #[test]
     fn deletion_requires_explicit_command_and_preserves_original_on_failure() {
