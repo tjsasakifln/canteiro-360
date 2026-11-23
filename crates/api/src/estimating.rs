@@ -184,7 +184,7 @@ async fn compare_catalog(
         .await
     {
         Ok(result) if as_page => match auth.service().estimating_context(&token).await {
-            Ok(ctx) => html_page(
+            Ok(ctx) if ctx.context.as_ref() == Some(&context) => html_page(
                 canteiro_web::estimating::catalog_comparison(
                     ctx,
                     result,
@@ -193,6 +193,7 @@ async fn compare_catalog(
                 ),
                 StatusCode::OK,
             ),
+            Ok(_) => bad_input(),
             Err(error) => application_failure(error),
         },
         Ok(result) => private_json(result),
