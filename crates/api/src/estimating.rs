@@ -530,6 +530,23 @@ fn changed_composition_from_form(
                 .find(|incidence| incidence.id == incidence_id)?;
             incidence.base_lines = bases;
         }
+        "cost_mode" => {
+            use canteiro_domain::compositions::CostMode;
+            composition.cost_mode = match (field(data, "target_mode"), &composition.cost_mode) {
+                ("formula", CostMode::Informed { .. }) => CostMode::Formula,
+                ("informed", CostMode::Formula) => {
+                    let reason = field(data, "cost_reason");
+                    if matches!(reason.chars().next(), Some('=' | '+' | '-' | '@')) {
+                        return None;
+                    }
+                    CostMode::Informed {
+                        cost: field(data, "informed_cost").parse().ok()?,
+                        reason: reason.to_owned(),
+                    }
+                }
+                _ => return None,
+            };
+        }
         "informed_cost" => match &mut composition.cost_mode {
             canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
                 *cost = field(data, "informed_cost").parse().ok()?;
@@ -645,6 +662,50 @@ mod composition_form_tests {
             incidences: vec![],
             bdi: "20".parse().unwrap(),
             discount: "10".parse().unwrap(),
+        }
+    }
+
+    #[test]
+    fn changing_cost_mode_requires_explicit_direction_and_informed_justification() {
+        let original = saved();
+        let mut fields = BTreeMap::new();
+        fields.insert("change_kind".into(), "cost_mode".into());
+        fields.insert("target_mode".into(), "formula".into());
+        let formula = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert!(matches!(formula.cost_mode, CostMode::Formula));
+        assert_eq!(formula.lines, original.lines);
+        assert_eq!(formula.incidences, original.incidences);
+        assert!(matches!(original.cost_mode, CostMode::Informed { .. }));
+        assert!(changed_composition_from_form(formula.clone(), &fields).is_none());
+
+        fields.insert("target_mode".into(), "informed".into());
+        fields.insert("informed_cost".into(), "145.50".into());
+        fields.insert("cost_reason".into(), "Preço aferido em vistoria".into());
+        let restored = changed_composition_from_form(formula.clone(), &fields).unwrap();
+        assert_eq!(restored.lines, formula.lines);
+        assert_eq!(restored.incidences, formula.incidences);
+        match restored.cost_mode {
+            CostMode::Informed { cost, reason } => {
+                assert_eq!(cost.to_string(), "145.500000");
+                assert_eq!(reason, "Preço aferido em vistoria");
+            }
+            CostMode::Formula => panic!("A revisão deveria ter custo informado."),
+        }
+        assert!(matches!(formula.cost_mode, CostMode::Formula));
+        for (key, invalid) in [
+            ("target_mode", "desconhecido"),
+            ("target_mode", "formula"),
+            ("informed_cost", "-1"),
+            ("informed_cost", "=20"),
+            ("cost_reason", ""),
+            ("cost_reason", "=soma(1;2)"),
+        ] {
+            let previous = fields.get(key).cloned();
+            fields.insert(key.into(), invalid.into());
+            assert!(changed_composition_from_form(formula.clone(), &fields).is_none());
+            if let Some(value) = previous {
+                fields.insert(key.into(), value);
+            }
         }
     }
 
