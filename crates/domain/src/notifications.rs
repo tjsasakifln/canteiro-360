@@ -144,7 +144,9 @@ impl Notice {
         }
         self.attempts = self.attempts.checked_add(1).ok_or(NoticeError::Attempts)?;
         self.last_attempt = Some(when);
-        self.state = if acknowledged {
+        // Uma tentativa posterior sem confirmação não apaga uma entrega já comprovada.
+        // Os canais podem ter resultados distintos, mas o êxito permanece no aviso.
+        self.state = if acknowledged || self.state == NoticeState::Communicated {
             NoticeState::Communicated
         } else {
             NoticeState::Failed
@@ -245,6 +247,18 @@ mod tests {
         n.record_attempt(date(), true).unwrap();
         assert_eq!(n.state, NoticeState::Communicated);
         assert_eq!(n.attempts, 2);
+    }
+    #[test]
+    fn failed_followup_does_not_erase_an_earlier_delivery() {
+        let mut n = notice();
+        n.record_attempt(date(), true).unwrap();
+        let communicated_at = n.last_attempt;
+        assert_eq!(n.state, NoticeState::Communicated);
+        n.record_attempt("2026-11-22T10:00:00Z".parse().unwrap(), false)
+            .unwrap();
+        assert_eq!(n.state, NoticeState::Communicated);
+        assert_eq!(n.attempts, 2);
+        assert_ne!(n.last_attempt, communicated_at);
     }
     #[test]
     fn delivery_attempt_limit_is_terminal_without_false_acknowledgement() {
