@@ -109,7 +109,11 @@ pub enum BudgetError {
     Decimal(#[from] DecimalError),
 }
 pub(crate) fn bounded(s: &str, limit: usize) -> bool {
-    !s.trim().is_empty() && s.trim() == s && s.len() <= limit && !s.chars().any(char::is_control)
+    !s.trim().is_empty()
+        && s.trim() == s
+        && s.len() <= limit
+        && !s.chars().any(char::is_control)
+        && crate::budget_csv::safe(s)
 }
 impl BudgetLine {
     pub fn total(&self) -> Result<Money, BudgetError> {
@@ -598,6 +602,20 @@ mod tests {
                 )
                 .unwrap(),
             ),
+        }
+    }
+    #[test]
+    fn direct_revision_rejects_spreadsheet_formulas_before_persistence() {
+        for dangerous in ["=1+1", "@SUM(1)", "\u{202e}manual"] {
+            let mut changed = budget();
+            changed.lines[1].description = dangerous.into();
+            assert_eq!(changed.validate(), Err(BudgetError::Structure));
+            changed = budget();
+            changed.lines[1].code = dangerous.into();
+            assert_eq!(changed.validate(), Err(BudgetError::Structure));
+            changed = budget();
+            changed.variations[0].scope = dangerous.into();
+            assert_eq!(changed.validate(), Err(BudgetError::Structure));
         }
     }
     #[test]
