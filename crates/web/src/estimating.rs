@@ -192,8 +192,8 @@ pub fn page(ctx: EstimatingContext) -> String {
                         })
                         .collect_view();
                     let informed_cost = match &entry.composition.cost_mode {
-                        canteiro_domain::compositions::CostMode::Informed { cost, .. } => {
-                            Some(cost.to_string())
+                        canteiro_domain::compositions::CostMode::Informed { cost, reason } => {
+                            Some((cost.to_string(), reason.clone()))
                         }
                         canteiro_domain::compositions::CostMode::Formula => None,
                     };
@@ -537,7 +537,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                                 <button type="submit" class="secondary-button">"Registrar custo informado em nova revisão"</button>
                             </form>
                         })}
-                        {informed_cost.map(|amount| view! {
+                        {informed_cost.map(|(amount, basis)| view! {
                             <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
                                 <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
                                 <input type="hidden" name="context_version" value=context.context_version.to_string()/>
@@ -550,6 +550,10 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <span>"Novo custo unitário informado (R$, use ponto)"</span>
                                     <input type="text" name="informed_cost" inputmode="decimal"
                                         maxlength="40" value=amount required=true/>
+                                </label>
+                                <label class="record-field">
+                                    <span>"Fundamento técnico atualizado para o novo custo"</span>
+                                    <textarea name="cost_reason" rows="2" maxlength="500" required=true>{basis}</textarea>
                                 </label>
                                 <label class="record-field">
                                     <span>"Justificativa da revisão de custo"</span>
