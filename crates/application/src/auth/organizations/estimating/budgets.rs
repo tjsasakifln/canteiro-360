@@ -235,13 +235,13 @@ impl AuthService {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
                 if previous.state == "approved" {
                     return Err(invalid(
-                        "Uma revisão aprovada não admite cópia ou movimentação.",
+                        "Uma revisão aprovada não admite alterações de serviços ou cronograma.",
                     ));
                 }
                 let lease = input
                     .lease_key
                     .as_deref()
-                    .ok_or_else(|| invalid("Reserve o orçamento antes de alterar um serviço."))?;
+                    .ok_or_else(|| invalid("Reserve o orçamento antes de alterar serviços ou cronograma."))?;
                 let lease = operation_id(lease)?;
                 if !tx
                     .budget_lease_usable(
