@@ -1249,6 +1249,24 @@ mod tests {
         assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
     }
     #[test]
+    fn last_period_error_after_ten_thousand_services_reports_physical_cell() {
+        let mut original = sample(10_000);
+        original.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                90,
+                PeriodBasis::Fixed30Days,
+                3,
+            )
+            .unwrap(),
+        );
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+        let corrupted = csv.replacen("periodo-3;2;", "periodo-2;2;", 1);
+        let error = preview_import(&corrupted, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (10_008, 6));
+        assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
+    }
+    #[test]
     fn control_chars_and_quoted_carriage_returns_reject_whole_batch() {
         let original = sample(10_000);
         let valid = export_csv(&original, NumberLocale::Canonical).unwrap();
