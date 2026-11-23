@@ -278,6 +278,46 @@ pub fn page(ctx: EstimatingContext) -> String {
                                 <input type="text" name="reason" maxlength="240" required=true/></label>
                             <button type="submit" class="secondary-button">"Adicionar insumo em nova revisão"</button>
                         </form>
+                        <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
+                            <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                            <input type="hidden" name="code" value=entry.code.clone()/>
+                            <input type="hidden" name="expected_version" value=entry.version.to_string()/>
+                            <input type="hidden" name="csrf" value=composition_csrf.clone()/>
+                            <input type="hidden" name="change_kind" value="add_composition_line"/>
+                            <p>"Inclua uma composição já cadastrada no mesmo escopo. O servidor confirma a fonte, as unidades e a ausência de ciclos antes de salvar."</p>
+                            <label class="record-field">
+                                <span>"Identificador da nova linha"</span>
+                                <input type="text" name="new_line_id" maxlength="80" required=true/>
+                            </label>
+                            <label class="record-field">
+                                <span>"Código da composição referenciada"</span>
+                                <input type="text" name="source_code" maxlength="80" required=true/>
+                            </label>
+                            <label class="record-field">
+                                <span>"Unidade da composição referenciada"</span>
+                                <select name="unit" required=true>
+                                    <option value="un">"un"</option>
+                                    <option value="m">"m"</option>
+                                    <option value="m²">"m²"</option>
+                                    <option value="m³">"m³"</option>
+                                    <option value="kg">"kg"</option>
+                                    <option value="t">"t"</option>
+                                    <option value="L">"L"</option>
+                                    <option value="h">"h"</option>
+                                </select>
+                            </label>
+                            <label class="record-field">
+                                <span>"Coeficiente da composição (use ponto)"</span>
+                                <input type="text" name="coefficient" inputmode="decimal" maxlength="40" required=true/>
+                            </label>
+                            <label class="record-field">
+                                <span>"Justificativa da nova linha"</span>
+                                <input type="text" name="reason" maxlength="240" required=true/>
+                            </label>
+                            <button type="submit" class="secondary-button">"Vincular composição em nova revisão"</button>
+                        </form>
                         {has_lines.then(|| view! {
                             <form action="/orcamentos/composicoes/editar-descricao" method="post" class="record-form">
                                 <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
