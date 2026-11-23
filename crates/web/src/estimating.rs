@@ -802,28 +802,31 @@ pub fn composition_memory(
         CostMode::Informed { reason, .. } => format!("Custo informado: {reason}"),
     };
     let informed = memory.informed;
-    let linked_references = record
-        .composition
-        .lines
-        .clone()
-        .into_iter()
-        .map(|line| {
-            let source = match &line.source {
-                ComponentSource::Catalog {
-                    catalog_id,
-                    edition,
-                    code,
-                } => format!("Tabela {catalog_id}, edição {edition}, insumo {code}"),
-                ComponentSource::Composition { code } => {
-                    format!("Composição vinculada {code}")
+    let linked_count = record.composition.lines.len();
+    let linked_references = informed.then(|| {
+        record
+            .composition
+            .lines
+            .iter()
+            .take(200)
+            .map(|line| {
+                let source = match &line.source {
+                    ComponentSource::Catalog {
+                        catalog_id,
+                        edition,
+                        code,
+                    } => format!("Tabela {catalog_id}, edição {edition}, insumo {code}"),
+                    ComponentSource::Composition { code } => {
+                        format!("Composição vinculada {code}")
+                    }
+                };
+                view! {
+                    <p>{format!("{} · {} · coeficiente {} {}",
+                        line.id, source, line.coefficient, line.unit)}</p>
                 }
-            };
-            view! {
-                <p>{format!("{} · {} · coeficiente {} {}",
-                    line.id, source, line.coefficient, line.unit)}</p>
-            }
-        })
-        .collect_view();
+            })
+            .collect_view()
+    });
     let categories = memory
         .category_totals
         .into_iter()
@@ -908,6 +911,9 @@ pub fn composition_memory(
                     <p>"As fontes permanecem vinculadas e validadas, mas não foram
                         utilizadas para calcular o preço informado nesta revisão."</p>
                     {linked_references}
+                    {(linked_count > 200).then(||view!{
+                        <p>{format!("Exibidas as primeiras 200 de {linked_count} referências cadastradas.")}</p>
+                    })}
                 })}
                 {lines}
                 {(!informed).then(||view!{
