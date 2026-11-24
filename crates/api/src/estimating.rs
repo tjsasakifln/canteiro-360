@@ -5,10 +5,10 @@ use crate::{
 };
 use axum::{
     Extension, Form, Json, Router,
-    body::Bytes,
+    body::to_bytes,
     extract::{
-        DefaultBodyLimit, Path, Query,
-        rejection::{BytesRejection, JsonRejection, QueryRejection},
+        DefaultBodyLimit, Path, Query, Request,
+        rejection::{JsonRejection, QueryRejection},
     },
     http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
@@ -103,9 +103,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .layer(DefaultBodyLimit::max(9_000_000))
         .route(
             "/api/estimating/budget/{scope}/import/xlsx/preview",
-            post(import_xlsx_preview).layer(DefaultBodyLimit::max(
-                canteiro_domain::budget_xlsx::MAX_PACKAGE_BYTES,
-            )),
+            post(import_xlsx_preview),
         )
 }
 async fn context(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response {
@@ -1595,7 +1593,7 @@ async fn import_xlsx_preview(
     headers: HeaderMap,
     Path(scope): Path<String>,
     query: Result<Query<ReliabilityScope>, QueryRejection>,
-    input: Result<Bytes, BytesRejection>,
+    request: Request,
 ) -> Response {
     let (auth, token) = match authenticated(auth, &headers, true) {
         Ok(value) => value,
@@ -1613,17 +1611,22 @@ async fn import_xlsx_preview(
         private_headers(&mut response);
         return response;
     }
-    let bytes = match input {
+    let bytes = match to_bytes(
+        request.into_body(),
+        canteiro_domain::budget_xlsx::MAX_PACKAGE_BYTES,
+    )
+    .await
+    {
         Ok(value) => value,
-        Err(error) => {
-            let mut response = error.into_response();
+        Err(_) => {
+            let mut response = StatusCode::PAYLOAD_TOO_LARGE.into_response();
             private_headers(&mut response);
             return response;
         }
     };
     match auth
         .service()
-        .estimating_budget_xlsx_import_preview(&token, &context, &scope, &bytes)
+        .estimating_budget_xlsx_import_preview(&token, &context, &scope, bytes.to_vec())
         .await
     {
         Ok(result) => private_json(result),
