@@ -685,6 +685,15 @@ pub fn page(ctx: EstimatingContext) -> String {
         }
     }).collect_view();
     let catalog_selected = selected.clone();
+    let xlsx_selected = selected.clone();
+    let xlsx_scope_options = ctx
+        .scopes
+        .iter()
+        .map(|scope| {
+            let disabled = !scope.can_edit;
+            view! { <option value=scope.id.clone() disabled=disabled>{scope.name.clone()}</option> }
+        })
+        .collect_view();
     let catalog_scope_options = ctx
         .scopes
         .clone()
@@ -741,6 +750,23 @@ pub fn page(ctx: EstimatingContext) -> String {
                 })}
             </section>
 
+            <section class="foundation-card">
+                <h2>"Importar orçamento XLSX"</h2>
+                <p>"Selecione um arquivo no formato oficial e confira todas as diferenças antes de confirmar. A prévia não altera o orçamento."</p>
+                {xlsx_selected.map(|context| view! {
+                    <form action="/orcamentos/conferir-xlsx" method="post" enctype="multipart/form-data" class="record-form">
+                        <input type="hidden" name="organization_id" value=context.organization_id/>
+                        <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                        <input type="hidden" name="csrf" value=ctx.csrf.clone()/>
+                        <label class="record-field"><span>"Orçamento de destino do XLSX"</span>
+                            <select name="scope_id" required=true>{xlsx_scope_options}</select></label>
+                        <label class="record-field"><span>"Arquivo XLSX oficial"</span>
+                            <input type="file" name="xlsx" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required=true/>
+                        </label>
+                        <button class="primary-button" type="submit">"Conferir arquivo XLSX"</button>
+                    </form>
+                })}
+            </section>
             <section class="foundation-card">
                 <h2>"Importar tabela de preços"</h2>
                 <p>"Informe a fonte e cole o CSV versionado. A prévia examina todas as linhas sem gravar e compara os valores com a edição histórica anterior. A publicação exige confirmação."</p>
@@ -1138,6 +1164,15 @@ pub fn preview(
     result: BudgetImportPreviewReply,
     input: BudgetImportPreviewCommand,
 ) -> String {
+    preview_for_scope(ctx, result, input.context, input.scope_id)
+}
+
+pub fn preview_for_scope(
+    ctx: EstimatingContext,
+    result: BudgetImportPreviewReply,
+    context: canteiro_contracts::reliability::ReliabilityScope,
+    scope_id: String,
+) -> String {
     let expected_version = result
         .base_version
         .map_or_else(String::new, |v| v.to_string());
@@ -1178,7 +1213,7 @@ pub fn preview(
     let details_link = result.batch_id.as_ref().map(|batch| {
         format!(
             "/orcamentos/importacao/diferencas?organization_id={}&context_version={}&scope_id={}&batch_id={}&page=1",
-            input.context.organization_id, input.context.context_version, input.scope_id, batch
+            context.organization_id, context.context_version, scope_id, batch
         )
     });
     let detail_count = result.change_details.records.len();
@@ -1271,9 +1306,9 @@ pub fn preview(
                 <h2>"Confirmar importação integral"</h2>
                 <p>"Todos os serviços serão revalidados. O servidor exige a mesma revisão examinada, uma reserva de edição da sessão e gravação atômica. Se houver erro ou concorrência, nenhum serviço será importado."</p>
                 <form action="/orcamentos/publicar-lote" method="post" class="record-form">
-                    <input type="hidden" name="organization_id" value=input.context.organization_id/>
-                    <input type="hidden" name="context_version" value=input.context.context_version.to_string()/>
-                    <input type="hidden" name="scope_id" value=input.scope_id/>
+                    <input type="hidden" name="organization_id" value=context.organization_id/>
+                    <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=scope_id/>
                     <input type="hidden" name="expected_version" value=expected_version/>
                     <input type="hidden" name="batch_id" value=result.batch_id.unwrap_or_default()/>
                     <input type="hidden" name="csrf" value=csrf/>
