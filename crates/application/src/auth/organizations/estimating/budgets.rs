@@ -135,6 +135,7 @@ impl AuthService {
         let key = operation_id(&input.operation_key)?;
         let reason = reason(&input.reason)?;
         let approving = matches!(&input.change, BudgetChange::Approve);
+        let importing = matches!(&input.change, BudgetChange::ApplyImport {});
         let action = if approving {
             AccessAction::ApproveBudget
         } else {
@@ -148,6 +149,13 @@ impl AuthService {
         let (mut tx, access) = self.record_access(token, Some(&input.context)).await?;
         let a = access.ok_or_else(record_denied)?;
         require_budget(&a, scope, action, tx.now().await?)?;
+        if importing
+            && !tx
+                .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
+                .await?
+        {
+            return Err(record_denied());
+        }
         if let Some(saved) = tx.budget_operation(a.tenant, key).await? {
             if saved.actor_id != a.actor.id
                 || saved.scope_id != scope
@@ -179,7 +187,32 @@ impl AuthService {
             .checked_add(1)
             .ok_or_else(record_conflict)?;
         let snapshot = match &input.change {
-            BudgetChange::Save { snapshot } => {
+            BudgetChange::Save { .. } | BudgetChange::ApplyImport {} => {
+                let snapshot = match &input.change {
+                    BudgetChange::Save { snapshot } => snapshot.clone(),
+                    BudgetChange::ApplyImport {} => {
+                        let (base, payload) = tx
+                            .budget_import_ready_snapshot(
+                                a.tenant,
+                                scope,
+                                a.actor.id,
+                                a.actor.session,
+                                key,
+                            )
+                            .await?
+                            .ok_or_else(record_conflict)?;
+                        if base != input.expected_version {
+                            return Err(record_conflict());
+                        }
+                        let staged: BudgetRevision = serde_json::from_str(&payload)
+                            .map_err(|_| AuthError::unavailable())?;
+                        if staged.status != BudgetState::Draft {
+                            return Err(AuthError::unavailable());
+                        }
+                        staged
+                    }
+                    _ => return Err(AuthError::unavailable()),
+                };
                 if current.as_ref().is_some_and(|r| r.state == "approved")
                     || snapshot.status == BudgetState::Approved
                 {
@@ -226,7 +259,7 @@ impl AuthService {
                         invalid("Use a revisão explícita do cronograma para alterar datas ou rateios.")
                     })?;
                 }
-                snapshot.clone()
+                snapshot
             }
             BudgetChange::RemoveLine { line_id } => {
                 let previous = current.as_ref().ok_or_else(record_denied)?;
@@ -388,10 +421,12 @@ impl AuthService {
             .ok_or_else(record_conflict)?;
         // O recibo de importação só se confirma junto com a revisão efetiva.
         // Caso a transação falhe depois, ambos permanecem não aplicados.
-        if matches!(&input.change, BudgetChange::Save { .. })
-            && tx
-                .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
-                .await?
+        let confirms_batch = importing
+            || (matches!(&input.change, BudgetChange::Save { .. })
+                && tx
+                    .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
+                    .await?);
+        if confirms_batch
             && !tx
                 .budget_import_mark_applied(a.tenant, scope, a.actor.id, a.actor.session, key, key)
                 .await?
@@ -651,6 +686,20 @@ mod budget_import_diagnostics_tests {
 #[cfg(test)]
 mod budget_transfer_contract_tests {
     use super::*;
+
+    #[test]
+    fn import_confirmation_cannot_supply_a_snapshot_or_replace_the_batch() {
+        let action = serde_json::json!({"action": "apply_import"});
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(action.clone()).unwrap(),
+            BudgetChange::ApplyImport {}
+        ));
+        for extra in ["snapshot", "lines", "price", "batch_id", "csv", "xlsx"] {
+            let mut forged = action.clone();
+            forged[extra] = serde_json::json!("forged");
+            assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+        }
+    }
 
     #[test]
     fn schedule_command_accepts_only_its_fields_and_cannot_inject_budget_lines() {

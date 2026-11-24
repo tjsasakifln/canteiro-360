@@ -135,6 +135,9 @@ pub enum BudgetChange {
     Save {
         snapshot: BudgetRevision,
     },
+    /// Confirma a prévia persistida identificada pela chave da operação.
+    /// Não recebe serviços, preços ou o conteúdo do arquivo novamente.
+    ApplyImport {},
     RemoveLine {
         line_id: String,
     },

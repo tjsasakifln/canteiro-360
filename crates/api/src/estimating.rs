@@ -2044,9 +2044,7 @@ async fn publish_budget_csv_form(
         expected_version,
         lease_key: Some(lease_key),
         reason: field(&data, "reason").to_owned(),
-        change: BudgetChange::Save {
-            snapshot: preview.snapshot,
-        },
+        change: BudgetChange::ApplyImport {},
     };
     match auth
         .service()
