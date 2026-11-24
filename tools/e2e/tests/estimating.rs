@@ -3,8 +3,7 @@ mod support;
 
 use canteiro_contracts::access::{AccessAction, AccessCommand, AccessRole, ScopeKind};
 use canteiro_contracts::estimating::{
-    BudgetChange, BudgetCommand, BudgetImportPreviewCommand, BudgetLeaseCommand,
-    CatalogCsvImportCommand, CostSource, NumberLocale,
+    BudgetChange, BudgetCommand, BudgetLeaseCommand, CatalogCsvImportCommand, CostSource, NumberLocale,
 };
 use serde_json::{Value, json};
 use std::time::Duration;
@@ -344,19 +343,55 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         line[16] = "2".into();
         csv.push_str(&format!("{}\n", line.join(";")));
     }
-    let staged = h
-        .auth
-        .estimating_budget_import_preview(
-            &editor.session,
-            BudgetImportPreviewCommand {
-                context: context.clone(),
-                scope_id: budget.clone(),
-                locale: NumberLocale::Canonical,
-                csv,
-            },
-        )
-        .await?;
-    let batch = staged.batch_id.ok_or("Missing persisted preview")?;
+    let mut batch = String::new();
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        let script = format!(
+            "const f=document.querySelector(\"form[action='/orcamentos/conferir-csv']\"); f.elements.scope_id.value={}; f.elements.csv.value={}; f.requestSubmit(); return true;",
+            serde_json::to_string(&budget)?,
+            serde_json::to_string(&csv)?
+        );
+        browser.execute(&script).await?;
+        browser
+            .wait(
+                "return location.pathname==='/orcamentos/conferir-csv' && !!document.querySelector(\"form[action='/orcamentos/publicar-lote'] input[name='batch_id']\");",
+                Duration::from_secs(10),
+            )
+            .await?;
+        let report = browser
+            .execute(
+                r#"const f=document.querySelector("form[action='/orcamentos/publicar-lote']");
+return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document.documentElement.scrollWidth};"#,
+            )
+            .await?;
+        assert_eq!(report["hasFile"], false);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        let id = report["batch"].as_str().ok_or("Missing persisted preview")?;
+        assert!(!uuid::Uuid::parse_str(id)?.is_nil());
+        if batch.is_empty() {
+            batch = id.to_owned();
+        } else {
+            assert_eq!(batch, id);
+        }
+        browser
+            .tab_to("form[action='/orcamentos/publicar-lote'] input[name='reason']")
+            .await?;
+        browser.key(TAB).await?;
+        assert_eq!(
+            browser
+                .execute(
+                    "return document.activeElement?.matches(\"form[action='/orcamentos/publicar-lote'] button[type='submit']\");",
+                )
+                .await?,
+            true
+        );
+        browser
+            .full_screenshot(&h.evidence.join(format!("budget-import-preview-{width}.png")))
+            .await?;
+    }
     let report_url = format!(
         "{}/orcamentos/importacao/diferencas?organization_id={}&context_version={}&scope_id={budget}&batch_id={batch}&page=1",
         h.app_url, context.organization_id, context.context_version
