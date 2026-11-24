@@ -695,6 +695,23 @@ async fn historical_catalog_reference_is_not_limited_to_recent_headers() {
     assert!(publish.catalog_publish(&header, &items).await.unwrap());
     publish.commit().await.unwrap();
 
+    // A identidade do catálogo não pode mudar, mesmo ao publicar outra edição.
+    let wrong_scope = crate::catalogs::NewCatalogEdition {
+        scope: Uuid::new_v4(),
+        edition: 2,
+        ..header
+    };
+    let mut denied = AuthStore::new(database.clone()).begin().await.unwrap();
+    denied.org_set_actor(actor).await.unwrap();
+    denied.org_set_tenant(tenant).await.unwrap();
+    assert!(
+        !denied
+            .catalog_publish(&wrong_scope, &items[..1])
+            .await
+            .unwrap()
+    );
+    denied.commit().await.unwrap();
+
     let mut inspect = AuthStore::new(database.clone()).begin().await.unwrap();
     inspect.org_set_actor(actor).await.unwrap();
     inspect.org_set_tenant(tenant).await.unwrap();
