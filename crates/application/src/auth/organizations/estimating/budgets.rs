@@ -792,6 +792,37 @@ mod budget_import_diagnostics_tests {
         assert_eq!(processing.available_permits(), 2);
     }
 
+    #[tokio::test]
+    async fn cancelling_import_request_does_not_release_running_worker_slot() {
+        static ADMISSION: Semaphore = Semaphore::const_new(1);
+        static PROCESSING: Semaphore = Semaphore::const_new(1);
+        let (started, running) = tokio::sync::oneshot::channel();
+        let (release, wait_for_release) = std::sync::mpsc::channel();
+        let (finished, done) = tokio::sync::oneshot::channel();
+        let request = tokio::spawn(async move {
+            let permits = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::from_secs(1))
+                .await
+                .unwrap();
+            tokio::task::spawn_blocking(move || {
+                started.send(()).unwrap();
+                wait_for_release.recv().unwrap();
+                drop(permits);
+                finished.send(()).unwrap();
+            })
+            .await
+            .unwrap();
+        });
+        running.await.unwrap();
+        request.abort();
+        assert!(request.await.unwrap_err().is_cancelled());
+        assert_eq!(ADMISSION.available_permits(), 0);
+        assert_eq!(PROCESSING.available_permits(), 0);
+        release.send(()).unwrap();
+        done.await.unwrap();
+        assert_eq!(ADMISSION.available_permits(), 1);
+        assert_eq!(PROCESSING.available_permits(), 1);
+    }
+
     #[test]
     fn malformed_budget_csv_retains_physical_error_coordinates() {
         let input = "CANTEIRO-ORCAMENTO-CSV-1\ncoluna_invalida";
