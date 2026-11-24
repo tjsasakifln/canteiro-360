@@ -496,11 +496,7 @@ fn native_number(
     })
 }
 
-fn read_row(
-    rest: &mut &str,
-    row: usize,
-    locale: NumberLocale,
-) -> Result<Vec<String>, CellError> {
+fn read_row(rest: &mut &str, row: usize, locale: NumberLocale) -> Result<Vec<String>, CellError> {
     let invalid = |col| error(row, col, "Linha ou célula fora do formato XLSX oficial.");
     let prefix = format!("<row r=\"{row}\">");
     *rest = rest.strip_prefix(&prefix).ok_or_else(|| invalid(1))?;
@@ -862,7 +858,10 @@ mod tests {
         ]);
         let (imported, locale) = preview_import_with_locale(&bytes).unwrap();
         assert_eq!(locale, NumberLocale::PtBr);
-        assert_eq!(crate::budget_csv::export_csv(&imported, locale).unwrap(), csv);
+        assert_eq!(
+            crate::budget_csv::export_csv(&imported, locale).unwrap(),
+            csv
+        );
         assert_eq!(imported.lines[0].code, "00000");
     }
 
