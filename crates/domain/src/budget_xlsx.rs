@@ -1036,6 +1036,101 @@ mod tests {
     }
 
     #[test]
+    fn shared_strings_reject_invalid_indices_markup_and_metadata() {
+        let xml = format!(
+            "{SHARED_START} count=\"3\" uniqueCount=\"3\"><si><t>ITEM</t></si><si><t>00001</t></si><si><t/></si></sst>"
+        );
+        let values = read_shared_strings(&xml).unwrap();
+        assert_eq!(values, ["ITEM", "00001", ""]);
+        let mut row = r#"<row r="3"><c r="A3" t="s"><v>0</v></c><c r="M3" t="s"><v>1</v></c></row>"#;
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical, &values).unwrap();
+        assert_eq!(cells[0], "ITEM");
+        assert_eq!(cells[12], "00001");
+        for raw in ["3", "-1", "1.0", "", "<f>0</f>"] {
+            let row = format!(r#"<row r="3"><c r="M3" t="s"><v>{raw}</v></c></row>"#);
+            let err = read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &values)
+                .unwrap_err();
+            assert_eq!((err.row, err.column), (3, 13));
+        }
+        for body in [
+            r#" uniqueCount="2"><si><t>abc</t></si></sst>"#,
+            r#" uniqueCount="250001"></sst>"#,
+            r#"><si><t>_x003D_1+1</t></si></sst>"#,
+            r#"><si><t>&external;</t></si></sst>"#,
+            r#"><si><r><t>abc</t></r></si></sst>"#,
+        ] {
+            assert!(read_shared_strings(&format!("{SHARED_START}{body}")).is_err());
+        }
+    }
+
+    #[test]
+    fn shared_strings_roundtrip_full_budget_and_reject_external_relationship() {
+        use crate::budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation};
+        use crate::units::MeasureUnit;
+
+        let original = BudgetRevision {
+            budget_id: "Teste XLSX".into(),
+            revision: 3,
+            status: BudgetState::Review,
+            responsible_id: format!("{:032x}", 1_u8).parse().unwrap(),
+            variations: vec![BudgetVariation {
+                id: "v1".into(),
+                work_id: format!("{:032x}", 2_u8).parse().unwrap(),
+                scope: "Obra fictícia".into(),
+            }],
+            lines: (0..10_000)
+                .map(|i| BudgetLine {
+                    id: format!("item-{i}"),
+                    variation_id: "v1".into(),
+                    group: "Pavimento".into(),
+                    stage: "Revestimento".into(),
+                    substage: "Preparação".into(),
+                    code: format!("{i:05}"),
+                    description: "Descrição técnica".into(),
+                    unit: MeasureUnit::SquareMetre,
+                    quantity: "1234.56".parse().unwrap(),
+                    price: "78.90".parse().unwrap(),
+                    catalog_id: Some("ref-2021".into()),
+                    catalog_edition: Some(3),
+                })
+                .collect(),
+            schedule: None,
+        };
+        let csv = crate::budget_csv::export_csv(&original, NumberLocale::PtBr).unwrap();
+        let package = export_from_csv(&csv, NumberLocale::PtBr).unwrap();
+        let sheet = official_sheet(&package).unwrap().replace(
+            r#" t="inlineStr"><is><t xml:space="preserve">Descrição técnica</t></is></c>"#,
+            r#" t="s"><v>0</v></c>"#,
+        );
+        assert_eq!(sheet.matches(r#" t="s">"#).count(), 10_000);
+        let shared = format!(
+            "{SHARED_START} count=\"10000\" uniqueCount=\"1\"><si><t>Descrição técnica</t></si></sst>"
+        );
+        let types = shared_content_types();
+        let rels = shared_workbook_rels();
+        let mut parts = [
+            (PART_NAMES[0], types.as_bytes()),
+            (PART_NAMES[1], ROOT_RELS.as_bytes()),
+            (PART_NAMES[2], WORKBOOK.as_bytes()),
+            (PART_NAMES[3], rels.as_bytes()),
+            (PART_NAMES[4], sheet.as_bytes()),
+            (PART_NAMES[5], shared.as_bytes()),
+        ];
+        let bytes = stored_zip(&parts);
+        for bytes in [bytes.clone(), recompress_for_test(&bytes)] {
+            let (imported, locale) = preview_import_with_locale(&bytes).unwrap();
+            assert_eq!(locale, NumberLocale::PtBr);
+            assert_eq!(crate::budget_csv::export_csv(&imported, locale).unwrap(), csv);
+        }
+        let external = rels.replace(
+            r#"Target="sharedStrings.xml""#,
+            r#"Target="https://invalid.example/" TargetMode="External""#,
+        );
+        parts[3].1 = external.as_bytes();
+        assert!(preview_import(&stored_zip(&parts)).is_err());
+    }
+
+    #[test]
     fn malformed_xlsx_cell_reports_its_actual_column() {
         let mut formula = r#"<row r="3"><c r="Q3"><f>1+1</f></c></row>"#;
         let error = read_row(&mut formula, 3, NumberLocale::Canonical, &[]).unwrap_err();
