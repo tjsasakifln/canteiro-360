@@ -139,7 +139,10 @@ fn crc32(data: &[u8]) -> u32 {
 // ZIP32 armazenado, com tamanho e CRC conhecidos antes de escrever cada cabeçalho.
 // Somente chamado com cinco partes fixas e XML limitado a 64 MiB.
 fn stored_zip(parts: &[(&str, &[u8])]) -> Vec<u8> {
-    let entries: Vec<_> = parts.iter().map(|&(name, data)| (name, data, data, 0)).collect();
+    let entries: Vec<_> = parts
+        .iter()
+        .map(|&(name, data)| (name, data, data, 0))
+        .collect();
     zip_package(&entries)
 }
 
@@ -281,7 +284,14 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
         }
         let name = central.get(46..46 + name_len)?;
         let index = PART_NAMES.iter().position(|part| part.as_bytes() == name)?;
-        if parts[index].is_some() {
+        let fixed_size = match index {
+            0 => Some(CONTENT_TYPES.len()),
+            1 => Some(ROOT_RELS.len()),
+            2 => Some(WORKBOOK.len()),
+            3 => Some(WORKBOOK_RELS.len()),
+            _ => None,
+        };
+        if parts[index].is_some() || fixed_size.is_some_and(|expected| size != expected) {
             return None;
         }
         central = central.get(46 + name_len..)?;
@@ -483,6 +493,28 @@ pub fn preview_import_with_locale(
             err.row = starts.partition_point(|&start| start <= err.row).max(1);
             err
         })
+}
+
+#[cfg(test)]
+pub(crate) fn recompress_for_test(bytes: &[u8]) -> Vec<u8> {
+    use flate2::{Compression, write::DeflateEncoder};
+    use std::io::Write as _;
+
+    let parts = unpack_official(bytes).unwrap();
+    let compressed: Vec<_> = parts
+        .iter()
+        .map(|data| {
+            let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
+            encoder.write_all(data).unwrap();
+            encoder.finish().unwrap()
+        })
+        .collect();
+    let entries: Vec<_> = PART_NAMES
+        .into_iter()
+        .zip(parts.iter().zip(&compressed))
+        .map(|(name, (data, encoded))| (name, data.as_slice(), encoded.as_slice(), 8))
+        .collect();
+    zip_package(&entries)
 }
 
 #[cfg(test)]

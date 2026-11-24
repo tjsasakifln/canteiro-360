@@ -1118,6 +1118,14 @@ mod tests {
         assert_eq!(locale, NumberLocale::PtBr);
         assert_eq!(compare(&original, &imported).changed, 0);
         assert_eq!(export_csv(&imported, NumberLocale::PtBr).unwrap(), csv);
+
+        let compressed = crate::budget_xlsx::recompress_for_test(&bytes);
+        assert!(compressed.len() < bytes.len());
+        let (imported, locale) =
+            crate::budget_xlsx::preview_import_with_locale(&compressed).unwrap();
+        assert_eq!(locale, NumberLocale::PtBr);
+        assert_eq!(compare(&original, &imported).changed, 0);
+        assert_eq!(export_csv(&imported, NumberLocale::PtBr).unwrap(), csv);
     }
     #[test]
     fn a_single_invalid_cell_rejects_entire_batch() {
