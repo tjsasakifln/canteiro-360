@@ -189,7 +189,10 @@ mod tests {
             created_at: Utc::now(),
         })
         .unwrap_or_else(|_| panic!("aviso válido"));
-        assert_eq!(entry.destination, format!("/obrigacoes?obligation={target}"));
+        assert_eq!(
+            entry.destination,
+            format!("/obrigacoes?obligation={target}")
+        );
         assert_eq!(entry.state, NoticeState::Pending);
     }
 }
