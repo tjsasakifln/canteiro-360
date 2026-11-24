@@ -20,6 +20,7 @@ pub mod portfolio;
 pub mod projects;
 
 pub mod budget_csv;
+pub mod budget_xlsx;
 pub mod budgets;
 pub mod catalog_csv;
 pub mod catalogs;
