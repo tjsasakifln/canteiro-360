@@ -8,11 +8,14 @@ use canteiro_persistence::notifications::StoredNotice;
 
 fn notice_view(row: StoredNotice) -> Result<NoticeEntry, AuthError> {
     let (kind, destination) = match row.kind.as_str() {
-        "technical_obligation" => (NoticeKind::TechnicalObligation, "/obrigacoes"),
-        "invitation" => (NoticeKind::Invitation, "/organizacoes"),
-        "approval" => (NoticeKind::Approval, "/permissoes"),
-        "deadline" => (NoticeKind::Deadline, "/carteira"),
-        "assigned_task" => (NoticeKind::AssignedTask, "/projetos"),
+        "technical_obligation" => (
+            NoticeKind::TechnicalObligation,
+            format!("/obrigacoes?obligation={}", row.target_id),
+        ),
+        "invitation" => (NoticeKind::Invitation, "/organizacoes".into()),
+        "approval" => (NoticeKind::Approval, "/permissoes".into()),
+        "deadline" => (NoticeKind::Deadline, "/carteira".into()),
+        "assigned_task" => (NoticeKind::AssignedTask, "/projetos".into()),
         _ => return Err(AuthError::unavailable()),
     };
     let state = match row.state.as_str() {
@@ -33,7 +36,7 @@ fn notice_view(row: StoredNotice) -> Result<NoticeEntry, AuthError> {
             .try_into()
             .map_err(|_| AuthError::unavailable())?,
         created_at: row.created_at.to_rfc3339(),
-        destination: destination.into(),
+        destination,
     })
 }
 fn preference_view(
@@ -164,5 +167,29 @@ impl AuthService {
         let view = preference_view(Some(saved))?;
         tx.commit().await?;
         Ok(view)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn technical_notice_links_to_the_target_not_the_event_or_scope() {
+        let target = Uuid::new_v4();
+        let entry = notice_view(StoredNotice {
+            event_id: Uuid::new_v4(),
+            kind: "technical_obligation".into(),
+            scope_id: Uuid::new_v4(),
+            target_id: target,
+            due_on: None,
+            essential: true,
+            state: "pending".into(),
+            attempts: 0,
+            created_at: Utc::now(),
+        })
+        .unwrap_or_else(|_| panic!("aviso válido"));
+        assert_eq!(entry.destination, format!("/obrigacoes?obligation={target}"));
+        assert_eq!(entry.state, NoticeState::Pending);
     }
 }
