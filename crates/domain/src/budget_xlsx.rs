@@ -184,9 +184,79 @@ fn stored_zip(parts: &[(&str, &[u8])]) -> Vec<u8> {
     out
 }
 
+/// Extracts only the five fixed parts of the official stored ZIP package.
+/// Compressed archives and alternate layouts are deliberately not accepted here.
+/// Checking the complete canonical package also verifies the central directory,
+/// local headers, CRCs, entry order, and absence of trailing or additional data.
+pub fn official_sheet(bytes: &[u8]) -> Result<&str, CellError> {
+    let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial armazenado.");
+    if bytes.len() > MAX_XML + 8192 {
+        return Err(invalid());
+    }
+    let mut rest = bytes;
+    let mut parts = Vec::with_capacity(5);
+    for name in [
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "xl/workbook.xml",
+        "xl/_rels/workbook.xml.rels",
+        "xl/worksheets/sheet1.xml",
+    ] {
+        let header = rest.get(..30).ok_or_else(invalid)?;
+        if &header[..4] != b"PK\x03\x04" {
+            return Err(invalid());
+        }
+        let size = u32::from_le_bytes(header[18..22].try_into().expect("quatro bytes")) as usize;
+        if size > MAX_XML {
+            return Err(invalid());
+        }
+        let start = 30 + name.len();
+        let end = start.checked_add(size).ok_or_else(invalid)?;
+        if rest.get(30..start) != Some(name.as_bytes()) {
+            return Err(invalid());
+        }
+        let data = rest.get(start..end).ok_or_else(invalid)?;
+        parts.push((name, data));
+        rest = rest.get(end..).ok_or_else(invalid)?;
+    }
+    if parts[0].1 != CONTENT_TYPES.as_bytes()
+        || parts[1].1 != ROOT_RELS.as_bytes()
+        || parts[2].1 != WORKBOOK.as_bytes()
+        || parts[3].1 != WORKBOOK_RELS.as_bytes()
+        || stored_zip(&parts) != bytes
+    {
+        return Err(invalid());
+    }
+    std::str::from_utf8(parts[4].1).map_err(|_| invalid())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn official_archive_rejects_tampered_and_additional_parts() {
+        let csv = format!(
+            "{FORMAT_VERSION}\r\n{}\r\n",
+            crate::budget_csv::HEADER.join(";")
+        );
+        let bytes = export_from_csv(&csv, NumberLocale::Canonical).unwrap();
+        assert!(official_sheet(&bytes).unwrap().contains(XLSX_VERSION));
+        let mut corrupted = bytes.clone();
+        corrupted[14] ^= 1;
+        assert!(official_sheet(&corrupted).is_err());
+        let mut trailing = bytes.clone();
+        trailing.push(0);
+        assert!(official_sheet(&trailing).is_err());
+        assert!(official_sheet(&bytes[..bytes.len() - 1]).is_err());
+        let mut compressed = bytes.clone();
+        compressed[8] = 8;
+        assert!(official_sheet(&compressed).is_err());
+        let mut directory = bytes.clone();
+        let end = directory.len() - 22;
+        directory[end + 10] = 6;
+        assert!(official_sheet(&directory).is_err());
+    }
 
     #[test]
     fn crc_matches_zip_reference_vector() {
