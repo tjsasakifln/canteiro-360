@@ -1170,6 +1170,12 @@ pub fn preview(
         .imported_schedule
         .as_ref()
         .map(schedule_label);
+    let details_link = result.batch_id.as_ref().map(|batch| {
+        format!(
+            "/orcamentos/importacao/diferencas?organization_id={}&context_version={}&scope_id={}&batch_id={}&page=1",
+            input.context.organization_id, input.context.context_version, input.scope_id, batch
+        )
+    });
     let detail_count = result.change_details.records.len();
     let omitted_count = result.change_details.omitted;
     let detail_rows = result
@@ -1249,6 +1255,9 @@ pub fn preview(
                     <p>"Mostramos as primeiras diferenças por identificador. Valores anteriores permanecem na revisão histórica."</p>
                     <ol>{detail_rows}</ol>
                     {(omitted_count > 0).then(||view!{<p>{format!("Outros {omitted_count} serviços não exibidos nesta amostra. Os totais acima consideram todos.")}</p>})}
+                    {details_link.map(|href| view! {
+                        <p><a href=href target="_blank" rel="noopener noreferrer">"Conferir todas as diferenças (nova aba)"</a></p>
+                    })}
                 </details>
                 <p>"A prévia não constitui aprovação nem altera a revisão histórica."</p>
                 <a href="/orcamentos">"Voltar para os orçamentos"</a>
@@ -1273,6 +1282,86 @@ pub fn preview(
             </section>
             <section class="foundation-card">
                 <h2>"Empresa selecionada"</h2><p>{ctx.organization_name}</p>
+            </section>
+        },
+    )
+}
+
+/// Relatório somente para conferência. A confirmação permanece na prévia original.
+pub fn import_details_page(
+    context: canteiro_contracts::reliability::ReliabilityScope,
+    scope_id: String,
+    batch_id: String,
+    page: usize,
+    details: canteiro_domain::budget_csv::ImportLineChanges,
+) -> String {
+    let count = details.omitted + details.records.len();
+    let pages = count
+        .div_ceil(canteiro_domain::budget_csv::MAX_IMPORT_CHANGE_DETAILS)
+        .max(1);
+    let rows = details
+        .records
+        .into_iter()
+        .map(|change| {
+            let kind = match change.kind {
+                "included" => "Incluído",
+                "removed" => "Removido",
+                _ => "Alterado",
+            };
+            let fields = change.fields.join(", ");
+            let display = |line: BudgetLine| {
+                format!(
+                    "{} · {} · {} · {} · {} · {} · {} {} × R$ {} · catálogo {} · edição {}",
+                    line.code,
+                    line.description,
+                    line.variation_id,
+                    line.group,
+                    line.stage,
+                    line.substage,
+                    line.quantity,
+                    line.unit,
+                    line.price,
+                    line.catalog_id.unwrap_or_default(),
+                    line.catalog_edition.map_or_else(String::new, |v| v.to_string())
+                )
+            };
+            let before = change.before.map(display);
+            let after = change.after.map(display);
+            view! {
+                <li class="record-summary">
+                    <strong>{format!("{kind} · serviço {}", change.id)}</strong>
+                    {(!fields.is_empty()).then(|| view! { <p>{format!("Campos: {fields}")}</p> })}
+                    {before.map(|text| view! { <p>{format!("Antes: {text}")}</p> })}
+                    {after.map(|text| view! { <p>{format!("Depois: {text}")}</p> })}
+                </li>
+            }
+        })
+        .collect_view();
+    shell(
+        "Diferenças da importação",
+        view! {
+            <section class="record-heading">
+                <h1>"Diferenças da importação"</h1>
+                <p>{format!("{count} diferenças no lote {batch_id}. Nenhum serviço foi gravado.")}</p>
+                <p>"A confirmação continua disponível na prévia original."</p>
+            </section>
+            <section class="foundation-card">
+                <h2>"Conferência por serviço"</h2>
+                <form action="/orcamentos/importacao/diferencas" method="get" class="record-form">
+                    <input type="hidden" name="organization_id" value=context.organization_id/>
+                    <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=scope_id/>
+                    <input type="hidden" name="batch_id" value=batch_id/>
+                    <label class="record-field">
+                        <span>{format!("Página (1 a {pages})")}</span>
+                        <input type="number" name="page" min="1" max=pages.to_string() value=page.min(pages).to_string() required=true/>
+                    </label>
+                    <button class="secondary-button" type="submit">"Ir para página"</button>
+                </form>
+                <p>{format!("Página solicitada: {page} de {pages}")}</p>
+                {(page > pages).then(|| view! { <p>"Página inexistente. Escolha uma página válida."</p> })}
+                <ol>{rows}</ol>
+                <a href="/orcamentos">"Voltar para os orçamentos"</a>
             </section>
         },
     )
