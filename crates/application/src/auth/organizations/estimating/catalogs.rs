@@ -28,19 +28,13 @@ pub(super) async fn load_catalog(
     catalog: &str,
     edition: u32,
 ) -> Result<CatalogEdition, AuthError> {
+    let edition_number = i32::try_from(edition).map_err(|_| invalid("Edição inválida."))?;
     let header = tx
-        .catalog_headers(tenant, &[scope])
+        .catalog_header(tenant, scope, catalog, edition_number)
         .await?
-        .into_iter()
-        .find(|h| h.catalog_id == catalog && h.edition as u32 == edition)
         .ok_or_else(record_denied)?;
     let rows = tx
-        .catalog_lines(
-            tenant,
-            scope,
-            catalog,
-            i32::try_from(edition).map_err(|_| invalid("Edição inválida."))?,
-        )
+        .catalog_lines(tenant, scope, catalog, edition_number)
         .await?;
     let items = rows
         .into_iter()
@@ -269,13 +263,8 @@ impl AuthService {
             return Err(record_conflict());
         }
         let previous = tx
-            .catalog_headers(a.tenant, &[scope])
-            .await?
-            .into_iter()
-            .filter(|header| {
-                header.catalog_id == edition.catalog_id && header.edition < edition_number
-            })
-            .max_by_key(|header| header.edition);
+            .catalog_previous_header(a.tenant, scope, &edition.catalog_id, edition_number)
+            .await?;
         let (
             previous_edition,
             included,
