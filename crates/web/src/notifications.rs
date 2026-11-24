@@ -3,7 +3,14 @@ use crate::projects::{hidden, shell};
 use canteiro_contracts::notifications::*;
 use leptos::prelude::*;
 pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String {
+    let grouped = ctx.preferences.settings.group_by_day;
+    let mut previous_day = None;
     let notice_rows=ctx.notices.clone().into_iter().map(|row|{
+        let heading = if grouped {
+            day_heading(&mut previous_day, &row)
+        } else {
+            None
+        };
         let kind=match row.kind{
             NoticeKind::TechnicalObligation=>"Documento técnico",
             NoticeKind::Invitation=>"Convite",
@@ -18,6 +25,7 @@ pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String
             NoticeState::Resolved=>"Resolvido",
         };
         view!{
+            {heading.map(|heading| view!{<p class="eyebrow" data-notice-day="true">{heading}</p>})}
             <article class="record-summary">
                 <h3>{kind}</h3>
                 <p class="record-status">{state}</p>
@@ -67,7 +75,7 @@ pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String
                             </label>
                             <label class="record-check">
                                 <input type="checkbox" name="group_by_day" value="true" checked=prefs.group_by_day/>
-                                "Agrupar lembretes por dia"
+                                "Agrupar pendências por dia de vencimento"
                             </label>
                             <label class="record-field">
                                 <span>"Avisar com quantos dias de antecedência (separados por vírgula)"</span>
@@ -81,4 +89,64 @@ pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String
             </div>
         },
     )
+}
+
+/// A consulta entrega pendências primeiro, por vencimento, e resolvidas ao final.
+/// O agrupamento mantém essa prioridade, inclusive quando não há prazo definido.
+fn day_heading(previous: &mut Option<(bool, Option<String>)>, row: &NoticeEntry) -> Option<String> {
+    let resolved = row.state == NoticeState::Resolved;
+    let key = (resolved, row.due_on.clone());
+    if previous.as_ref() == Some(&key) {
+        return None;
+    }
+    let heading = match (resolved, row.due_on.as_deref()) {
+        (false, Some(day)) => format!("Vencimento: {day}"),
+        (false, None) => "Pendências sem prazo informado".into(),
+        (true, Some(day)) => format!("Resolvidas, vencimento: {day}"),
+        (true, None) => "Resolvidas sem prazo informado".into(),
+    };
+    *previous = Some(key);
+    Some(heading)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn grouping_keeps_due_dates_and_resolved_notices_separate() {
+        let mut previous = None;
+        let mut row = NoticeEntry {
+            event_id: String::new(),
+            kind: NoticeKind::TechnicalObligation,
+            scope_id: String::new(),
+            due_on: Some("2027-01-01".into()),
+            state: NoticeState::Pending,
+            attempts: 0,
+            created_at: String::new(),
+            destination: "/obrigacoes".into(),
+        };
+        assert_eq!(
+            day_heading(&mut previous, &row).as_deref(),
+            Some("Vencimento: 2027-01-01")
+        );
+        row.state = NoticeState::Failed;
+        assert_eq!(day_heading(&mut previous, &row), None);
+        row.due_on = None;
+        assert_eq!(
+            day_heading(&mut previous, &row).as_deref(),
+            Some("Pendências sem prazo informado")
+        );
+        row.state = NoticeState::Resolved;
+        row.due_on = Some("2027-01-01".into());
+        assert_eq!(
+            day_heading(&mut previous, &row).as_deref(),
+            Some("Resolvidas, vencimento: 2027-01-01")
+        );
+        row.due_on = None;
+        assert_eq!(
+            day_heading(&mut previous, &row).as_deref(),
+            Some("Resolvidas sem prazo informado")
+        );
+    }
 }
