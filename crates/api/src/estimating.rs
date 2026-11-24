@@ -88,6 +88,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             "/api/estimating/budget/{scope}/export.csv",
             get(budget_export),
         )
+        .route(
+            "/api/estimating/budget/{scope}/export.xlsx",
+            get(budget_export_xlsx),
+        )
         .route("/orcamentos", get(page))
         .route("/orcamentos/conferir-csv", post(preview_form))
         .route(
@@ -1640,6 +1644,54 @@ async fn budget_export(
             response.headers_mut().insert(
                 header::CONTENT_DISPOSITION,
                 HeaderValue::from_static("attachment; filename=\"canteiro-orcamento.csv\""),
+            );
+            response
+        }
+        Err(e) => application_failure(e),
+    }
+}
+async fn budget_export_xlsx(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    Path(scope): Path<String>,
+    query: Result<Query<ExportQuery>, QueryRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, false) {
+        Ok(v) => v,
+        Err(e) => return *e,
+    };
+    let Ok(Query(query)) = query else {
+        return bad_input();
+    };
+    let context = ReliabilityScope {
+        organization_id: query.organization_id,
+        context_version: query.context_version,
+    };
+    match auth
+        .service()
+        .estimating_budget_export_csv(&token, &context, &scope, query.locale)
+        .await
+    {
+        Ok(csv) => {
+            let locale = query.locale;
+            let result = tokio::task::spawn_blocking(move || {
+                canteiro_domain::budget_xlsx::export_from_csv(&csv, locale)
+            })
+            .await;
+            let Ok(Ok(bytes)) = result else {
+                return bad_input();
+            };
+            let mut response = bytes.into_response();
+            private_headers(&mut response);
+            response.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ),
+            );
+            response.headers_mut().insert(
+                header::CONTENT_DISPOSITION,
+                HeaderValue::from_static("attachment; filename=\"canteiro-orcamento.xlsx\""),
             );
             response
         }
