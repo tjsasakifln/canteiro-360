@@ -465,11 +465,47 @@ fn decode_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellErro
     Ok(value)
 }
 
-fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
+// Native SpreadsheetML numbers use a dot regardless of the workbook locale.
+// Only fields declared numeric by the CSV schema may use this representation.
+fn native_number(
+    raw: &str,
+    record_type: &str,
+    index: usize,
+    locale: NumberLocale,
+) -> Option<String> {
+    let decimal = matches!((record_type, index), ("ITEM", 15 | 16) | ("PERIOD", 15));
+    let integer = matches!(
+        (record_type, index),
+        ("META" | "SCHEDULE", 2) | ("ITEM", 18) | ("PERIOD", 6)
+    );
+    if (!decimal && !integer) || raw.len() > 128 {
+        return None;
+    }
+    let (whole, fraction) = raw.split_once('.').unwrap_or((raw, ""));
+    if whole.is_empty()
+        || !whole.bytes().all(|b| b.is_ascii_digit())
+        || !fraction.bytes().all(|b| b.is_ascii_digit())
+        || (raw.contains('.') && (!decimal || fraction.is_empty()))
+    {
+        return None;
+    }
+    Some(if decimal && locale == NumberLocale::PtBr {
+        raw.replace('.', ",")
+    } else {
+        raw.to_owned()
+    })
+}
+
+fn read_row(
+    rest: &mut &str,
+    row: usize,
+    locale: NumberLocale,
+) -> Result<Vec<String>, CellError> {
     let invalid = |col| error(row, col, "Linha ou célula fora do formato XLSX oficial.");
     let prefix = format!("<row r=\"{row}\">");
     *rest = rest.strip_prefix(&prefix).ok_or_else(|| invalid(1))?;
     let mut cells = vec![String::new(); crate::budget_csv::HEADER.len()];
+    let mut record_type = String::new();
     for (index, cell) in cells.iter_mut().enumerate() {
         let letter = char::from(b'A' + index as u8);
         let address = format!("<c r=\"{letter}{row}\"");
@@ -485,6 +521,16 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
                 .ok_or_else(|| invalid(index + 1))?;
             *cell = decode_text(raw, row, index + 1)?;
             *rest = next;
+        } else if let Some(next) = suffix
+            .strip_prefix(" t=\"n\"><v>")
+            .or_else(|| suffix.strip_prefix("><v>"))
+        {
+            let (raw, next) = next
+                .split_once("</v></c>")
+                .ok_or_else(|| invalid(index + 1))?;
+            *cell = native_number(raw, &record_type, index, locale)
+                .ok_or_else(|| invalid(index + 1))?;
+            *rest = next;
         } else if let Some(next) = [
             "/>",
             "></c>",
@@ -497,6 +543,9 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
             *rest = next;
         } else {
             return Err(invalid(index + 1));
+        }
+        if index == 0 {
+            record_type.clone_from(cell);
         }
     }
     if let Some(next) = rest.strip_prefix("</row>") {
@@ -535,7 +584,7 @@ pub fn preview_import_with_locale(
     let mut rest = sheet
         .strip_prefix(SHEET_START)
         .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
-    let version = read_row(&mut rest, 1)?;
+    let version = read_row(&mut rest, 1, NumberLocale::Canonical)?;
     if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
         return Err(error(1, 1, "Versão XLSX inválida."));
     }
@@ -552,7 +601,7 @@ pub fn preview_import_with_locale(
         if row > 101_001 {
             return Err(error(row, 1, "Limite de registros XLSX excedido."));
         }
-        let cells = read_row(&mut rest, row)?;
+        let cells = read_row(&mut rest, row, locale)?;
         starts.push(physical);
         physical += cells
             .iter()
@@ -689,7 +738,7 @@ mod tests {
             assert!(decode_text(value, 3, 2).is_err(), "{value}");
         }
         let mut wrong = r#"<row r="3"><c r="A3"><f>1+1</f></c></row>"#;
-        assert!(read_row(&mut wrong, 3).is_err());
+        assert!(read_row(&mut wrong, 3, NumberLocale::Canonical).is_err());
     }
 
     #[test]
@@ -712,35 +761,64 @@ mod tests {
     #[test]
     fn inline_text_without_space_attribute_and_explicit_empty_cells_are_safe() {
         let mut row = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c><c r="B3" t="inlineStr"><is><t></t></is></c></row>"#;
-        let cells = read_row(&mut row, 3).unwrap();
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical).unwrap();
         assert_eq!(cells[0], "ITEM");
         assert_eq!(cells[1], "");
         assert!(row.is_empty());
 
         let mut row = r#"<row r="3"><c r="A3"/><c r="B3"></c><c r="C3" t="inlineStr"><is><t/></is></c><c r="D3" t="inlineStr"><is/></c><c r="E3" t="inlineStr"><is><t>ITEM</t></is></c></row>"#;
-        let cells = read_row(&mut row, 3).unwrap();
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical).unwrap();
         assert!(cells[..4].iter().all(String::is_empty));
         assert_eq!(cells[4], "ITEM");
         assert!(row.is_empty());
 
         let mut formula = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>=1+1</t></is></c></row>"#;
-        assert!(read_row(&mut formula, 3).is_err());
+        assert!(read_row(&mut formula, 3, NumberLocale::Canonical).is_err());
         let mut markup = r#"<row r="3"><c r="A3" t="inlineStr"><is><t><f>1</f></t></is></c></row>"#;
-        assert!(read_row(&mut markup, 3).is_err());
+        assert!(read_row(&mut markup, 3, NumberLocale::Canonical).is_err());
+    }
+
+    #[test]
+    fn native_numeric_cells_are_exact_and_schema_limited() {
+        let original = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c><c r="M3" t="inlineStr"><is><t>00001</t></is></c><c r="P3" t="n"><v>1.234567</v></c><c r="Q3"><v>123456789.12</v></c></row>"#;
+        for (locale, quantity, price) in [
+            (NumberLocale::Canonical, "1.234567", "123456789.12"),
+            (NumberLocale::PtBr, "1,234567", "123456789,12"),
+        ] {
+            let mut row = original;
+            let cells = read_row(&mut row, 3, locale).unwrap();
+            assert_eq!(cells[12], "00001");
+            assert_eq!(cells[15], quantity);
+            assert_eq!(cells[16], price);
+            assert!(row.is_empty());
+        }
+        for raw in ["1e3", "-1", "+1", "1,2", "1.", ".5", "1.2.3", "<f>1</f>"] {
+            assert!(native_number(raw, "ITEM", 15, NumberLocale::Canonical).is_none());
+        }
+        assert!(native_number("00001", "ITEM", 12, NumberLocale::Canonical).is_none());
+        assert!(native_number("1.5", "META", 2, NumberLocale::Canonical).is_none());
+        assert_eq!(
+            native_number("12", "PERIOD", 6, NumberLocale::PtBr).as_deref(),
+            Some("12")
+        );
+
+        let mut formula = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c><c r="P3" t="n"><f>1+1</f><v>2</v></c></row>"#;
+        let error = read_row(&mut formula, 3, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (3, 16));
     }
 
     #[test]
     fn malformed_xlsx_cell_reports_its_actual_column() {
         let mut formula = r#"<row r="3"><c r="Q3"><f>1+1</f></c></row>"#;
-        let error = read_row(&mut formula, 3).unwrap_err();
+        let error = read_row(&mut formula, 3, NumberLocale::Canonical).unwrap_err();
         assert_eq!((error.row, error.column), (3, 17));
 
         let mut extra = r#"<row r="4"><c r="AA4" t="n"><v>1</v></c></row>"#;
-        let error = read_row(&mut extra, 4).unwrap_err();
+        let error = read_row(&mut extra, 4, NumberLocale::Canonical).unwrap_err();
         assert_eq!((error.row, error.column), (4, 27));
 
         let mut wrong_row = r#"<row r="5"><c r="N6" t="n"><v>1</v></c></row>"#;
-        let error = read_row(&mut wrong_row, 5).unwrap_err();
+        let error = read_row(&mut wrong_row, 5, NumberLocale::Canonical).unwrap_err();
         assert_eq!((error.row, error.column), (5, 14));
     }
 
