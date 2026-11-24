@@ -93,7 +93,7 @@ pub fn safe(s: &str) -> bool {
         .is_some_and(|c| matches!(c, '=' | '+' | '-' | '@'))
         && !s.chars().any(|c| c == '\0')
 }
-fn csv_row(cells: &[String], out: &mut String) {
+pub(crate) fn csv_row(cells: &[String], out: &mut String) {
     for (idx, cell) in cells.iter().enumerate() {
         if idx > 0 {
             out.push(';');
@@ -1114,6 +1114,9 @@ mod tests {
         assert!(content.contains(">1234,56</t>"));
         assert!(content.contains(">78,900000</t>"));
         assert!(content.contains(">ref-2021</t>"));
+        let imported = crate::budget_xlsx::preview_import(&bytes).unwrap();
+        assert_eq!(compare(&original, &imported).changed, 0);
+        assert_eq!(export_csv(&imported, NumberLocale::PtBr).unwrap(), csv);
     }
     #[test]
     fn a_single_invalid_cell_rejects_entire_batch() {
