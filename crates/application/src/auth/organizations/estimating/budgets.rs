@@ -9,23 +9,23 @@ fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision,
     preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
 }
 
-enum BudgetImportSource<'a> {
-    Csv(&'a str, NumberLocale),
-    Xlsx(&'a [u8]),
+enum BudgetImportSource {
+    Csv(String, NumberLocale),
+    Xlsx(Vec<u8>),
 }
 
-impl BudgetImportSource<'_> {
+impl BudgetImportSource {
     fn parse(self) -> Result<(BudgetRevision, NumberLocale, &'static str, [u8; 32]), AuthError> {
         match self {
             Self::Csv(csv, locale) => Ok((
-                preview_budget_csv(csv, locale)?,
+                preview_budget_csv(&csv, locale)?,
                 locale,
                 FORMAT_VERSION,
                 Sha256::digest(csv.as_bytes()).into(),
             )),
             Self::Xlsx(bytes) => {
                 let (snapshot, locale) =
-                    canteiro_domain::budget_xlsx::preview_import_with_locale(bytes)
+                    canteiro_domain::budget_xlsx::preview_import_with_locale(&bytes)
                         .map_err(|error| invalid(error.to_string()))?;
                 Ok((
                     snapshot,
@@ -434,7 +434,7 @@ impl AuthService {
             token,
             &input.context,
             &input.scope_id,
-            BudgetImportSource::Csv(&input.csv, input.locale),
+            BudgetImportSource::Csv(input.csv, input.locale),
         )
         .await
     }
@@ -444,7 +444,7 @@ impl AuthService {
         token: &str,
         context: &ReliabilityScope,
         scope_id: &str,
-        bytes: &[u8],
+        bytes: Vec<u8>,
     ) -> Result<BudgetImportPreviewReply, AuthError> {
         self.stage_budget_import(token, context, scope_id, BudgetImportSource::Xlsx(bytes))
             .await
@@ -455,7 +455,7 @@ impl AuthService {
         token: &str,
         context: &ReliabilityScope,
         scope_id: &str,
-        source: BudgetImportSource<'_>,
+        source: BudgetImportSource,
     ) -> Result<BudgetImportPreviewReply, AuthError> {
         self.limit("estimating-budget-import", token, 10, 60)
             .await?;
@@ -469,7 +469,10 @@ impl AuthService {
                 "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
             ));
         }
-        let (mut snapshot, locale, format, sha256) = source.parse()?;
+        let (mut snapshot, locale, format, sha256) =
+            tokio::task::spawn_blocking(move || source.parse())
+                .await
+                .map_err(|_| AuthError::unavailable())??;
         if snapshot.budget_id != scope.to_string() {
             return Err(invalid("O arquivo não pertence ao orçamento selecionado."));
         }
