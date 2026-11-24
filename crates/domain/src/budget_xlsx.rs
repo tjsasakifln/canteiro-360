@@ -1,6 +1,6 @@
 //! Exportação XLSX oficial, sem fórmulas, macros, relações externas ou perda decimal.
 //! O pacote usa somente entradas ZIP armazenadas (sem compressão), com nomes fixos.
-use crate::budget_csv::{CellError, FORMAT_VERSION, MAX_BYTES, NumberLocale, parse_csv};
+use crate::budget_csv::{CellError, FORMAT_VERSION, MAX_BYTES, NumberLocale, parse_csv, safe};
 use std::fmt::Write;
 
 pub const XLSX_VERSION: &str = "CANTEIRO-ORCAMENTO-XLSX-1";
@@ -51,6 +51,13 @@ fn worksheet_cell(out: &mut String, row: usize, col: usize, value: &str) -> Resu
     if value.is_empty() {
         return Ok(());
     }
+    if !safe(value) {
+        return Err(error(
+            row,
+            col,
+            "Conteúdo executável ou fórmula não permitido.",
+        ));
+    }
     let letter = char::from(b'A' + (col - 1) as u8);
     write!(
         out,
@@ -73,6 +80,13 @@ pub fn export_from_csv(csv: &str, locale: NumberLocale) -> Result<Vec<u8>, CellE
         .and_then(|s| s.strip_prefix("\r\n"))
         .ok_or_else(|| error(1, 1, "Versão CSV inválida para exportação XLSX."))?;
     let (rows, _) = parse_csv(rest, 19, 111_000)?;
+    if rows.first().is_none_or(|row| {
+        row.iter()
+            .map(String::as_str)
+            .ne(crate::budget_csv::HEADER.iter().copied())
+    }) {
+        return Err(error(2, 1, "Cabeçalho oficial do orçamento inválido."));
+    }
     let mut sheet = String::from(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1">"#,
     );
@@ -193,7 +207,9 @@ mod tests {
     #[test]
     fn ten_thousand_rows_are_emitted_with_exact_text_and_fixed_package_parts() {
         let mut csv = format!("{FORMAT_VERSION}\r\n");
-        for _ in 0..10_001 {
+        csv.push_str(&crate::budget_csv::HEADER.join(";"));
+        csv.push_str("\r\n");
+        for _ in 0..10_000 {
             csv.push_str("ITEM;;;;;;;;;;;;00001;Descrição & texto;m;1,234567;1234,56;;\r\n");
         }
         let bytes = export_from_csv(&csv, NumberLocale::PtBr).unwrap();
