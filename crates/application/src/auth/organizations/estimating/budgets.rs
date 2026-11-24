@@ -9,6 +9,35 @@ fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision,
     preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
 }
 
+enum BudgetImportSource<'a> {
+    Csv(&'a str, NumberLocale),
+    Xlsx(&'a [u8]),
+}
+
+impl BudgetImportSource<'_> {
+    fn parse(self) -> Result<(BudgetRevision, NumberLocale, &'static str, [u8; 32]), AuthError> {
+        match self {
+            Self::Csv(csv, locale) => Ok((
+                preview_budget_csv(csv, locale)?,
+                locale,
+                FORMAT_VERSION,
+                Sha256::digest(csv.as_bytes()).into(),
+            )),
+            Self::Xlsx(bytes) => {
+                let (snapshot, locale) =
+                    canteiro_domain::budget_xlsx::preview_import_with_locale(bytes)
+                        .map_err(|error| invalid(error.to_string()))?;
+                Ok((
+                    snapshot,
+                    locale,
+                    canteiro_domain::budget_xlsx::XLSX_VERSION,
+                    Sha256::digest(bytes).into(),
+                ))
+            }
+        }
+    }
+}
+
 /// Sempre confronta a referência informada com a edição publicada no mesmo escopo.
 /// Impede substituir o preço ou o código por payload direto ou importação CSV.
 async fn require_catalog_snapshot(
@@ -401,11 +430,38 @@ impl AuthService {
         token: &str,
         input: BudgetImportPreviewCommand,
     ) -> Result<BudgetImportPreviewReply, AuthError> {
+        self.stage_budget_import(
+            token,
+            &input.context,
+            &input.scope_id,
+            BudgetImportSource::Csv(&input.csv, input.locale),
+        )
+        .await
+    }
+
+    pub async fn estimating_budget_xlsx_import_preview(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_id: &str,
+        bytes: &[u8],
+    ) -> Result<BudgetImportPreviewReply, AuthError> {
+        self.stage_budget_import(token, context, scope_id, BudgetImportSource::Xlsx(bytes))
+            .await
+    }
+
+    async fn stage_budget_import(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_id: &str,
+        source: BudgetImportSource<'_>,
+    ) -> Result<BudgetImportPreviewReply, AuthError> {
         self.limit("estimating-budget-import", token, 10, 60)
             .await?;
-        let (mut tx, access) = self.record_access(token, Some(&input.context)).await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
         let a = access.ok_or_else(record_denied)?;
-        let scope = id(&input.scope_id)?;
+        let scope = id(scope_id)?;
         require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
         let current = tx.budget_current(a.tenant, scope).await?;
         if current.as_ref().is_some_and(|r| r.state == "approved") {
@@ -413,9 +469,9 @@ impl AuthService {
                 "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
             ));
         }
-        let mut snapshot = preview_budget_csv(&input.csv, input.locale)?;
+        let (mut snapshot, locale, format, sha256) = source.parse()?;
         if snapshot.budget_id != scope.to_string() {
-            return Err(invalid("O CSV não pertence ao orçamento selecionado."));
+            return Err(invalid("O arquivo não pertence ao orçamento selecionado."));
         }
         let base_version = current.as_ref().map(|r| r.version);
         snapshot.revision = u32::try_from(base_version.unwrap_or(0).saturating_add(1))
@@ -423,7 +479,7 @@ impl AuthService {
         snapshot.status = BudgetState::Draft;
         let total = snapshot
             .summarize()
-            .map_err(|_| invalid("Valores ou grupos inválidos no CSV."))?;
+            .map_err(|_| invalid("Valores ou grupos inválidos no arquivo."))?;
         require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
         let (difference, change_details) = if let Some(old) = current {
             let before = budget_view(old)?;
@@ -432,19 +488,19 @@ impl AuthService {
                 .map_err(|_| invalid("A referência histórica do serviço não pode ser alterada."))?;
             snapshot.validate_no_implicit_removals(&before.snapshot).map_err(|_| {
                 invalid(
-                    "O CSV não pode excluir serviços silenciosamente. Use a exclusão individual validada.",
+                    "O arquivo não pode excluir serviços silenciosamente. Use a exclusão individual validada.",
                 )
             })?;
             snapshot.validate_no_implicit_moves(&before.snapshot).map_err(|_| {
                 invalid(
-                    "O CSV não pode mover um serviço silenciosamente. Use o comando individual de movimentação.",
+                    "O arquivo não pode mover um serviço silenciosamente. Use o comando individual de movimentação.",
                 )
             })?;
             snapshot
                 .validate_no_implicit_reschedule(&before.snapshot)
                 .map_err(|_| {
                     invalid(
-                        "O CSV não pode substituir o cronograma existente. Use a revisão explícita do cronograma.",
+                        "O arquivo não pode substituir o cronograma existente. Use a revisão explícita do cronograma.",
                     )
                 })?;
             (
@@ -463,7 +519,6 @@ impl AuthService {
         };
         // Tanto a primeira importação quanto uma reimportação possuem identidade
         // durável vinculada ao conteúdo integral, à sessão e à revisão-base.
-        let sha256: [u8; 32] = Sha256::digest(input.csv.as_bytes()).into();
         let payload = serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
         let count = |n: usize| {
             i32::try_from(n).map_err(|_| invalid("A quantidade de serviços excede o limite."))
@@ -475,7 +530,7 @@ impl AuthService {
             actor: a.actor.id,
             session: a.actor.session,
             base_version,
-            locale: match input.locale {
+            locale: match locale {
                 NumberLocale::Canonical => "canonical",
                 NumberLocale::PtBr => "pt-BR",
             },
@@ -501,7 +556,7 @@ impl AuthService {
             total,
             base_version,
             batch_id,
-            format: FORMAT_VERSION,
+            format,
         })
     }
     /// Inspeção paginada de lote existente: não cria lote, revisão ou reserva.
