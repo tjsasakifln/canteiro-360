@@ -95,6 +95,29 @@ impl AuthService {
         token: &str,
         input: BudgetLeaseCommand,
     ) -> Result<BudgetLeaseReply, AuthError> {
+        self.estimating_budget_lease_inner(token, input, None).await
+    }
+
+    /// Reserve only after checking that the staged import belongs to this session
+    /// and still corresponds to the reviewed revision.
+    pub async fn estimating_budget_import_lease(
+        &self,
+        token: &str,
+        input: BudgetLeaseCommand,
+        batch_id: &str,
+        expected_version: Option<i64>,
+    ) -> Result<BudgetLeaseReply, AuthError> {
+        let batch = operation_id(batch_id)?;
+        self.estimating_budget_lease_inner(token, input, Some((batch, expected_version)))
+            .await
+    }
+
+    async fn estimating_budget_lease_inner(
+        &self,
+        token: &str,
+        input: BudgetLeaseCommand,
+        import: Option<(Uuid, Option<i64>)>,
+    ) -> Result<BudgetLeaseReply, AuthError> {
         self.limit("estimating-budget-lease", token, 30, 60).await?;
         let key = operation_id(&input.lease_key)?;
         let (mut tx, access) = self.record_access(token, Some(&input.context)).await?;
@@ -106,6 +129,18 @@ impl AuthService {
             return Err(invalid(
                 "Este orçamento já foi aprovado. Abra uma alteração formal para uma nova revisão.",
             ));
+        }
+        if let Some((batch, expected_version)) = import {
+            if current.as_ref().map(|row| row.version) != expected_version {
+                return Err(record_conflict());
+            }
+            let (base, _) = tx
+                .budget_import_ready_snapshot(a.tenant, scope, a.actor.id, a.actor.session, batch)
+                .await?
+                .ok_or_else(record_denied)?;
+            if base != expected_version {
+                return Err(record_conflict());
+            }
         }
         let next = current.as_ref().map_or(1, |r| r.version.saturating_add(1));
         let revision = u32::try_from(next)
