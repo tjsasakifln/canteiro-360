@@ -2075,7 +2075,13 @@ async fn publish_budget_batch_form(
     if data.keys().any(|key| {
         !matches!(
             key.as_str(),
-            "organization_id" | "context_version" | "scope_id" | "expected_version" | "batch_id" | "csrf" | "reason"
+            "organization_id"
+                | "context_version"
+                | "scope_id"
+                | "expected_version"
+                | "batch_id"
+                | "csrf"
+                | "reason"
         )
     }) {
         return bad_input();
