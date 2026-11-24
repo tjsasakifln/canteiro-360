@@ -276,6 +276,32 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         browser
             .full_screenshot(&h.evidence.join(format!("catalog-history-{width}.png")))
             .await?;
+
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        browser
+            .tab_to("details:has(input[name='before']) > summary")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .tab_to("form:has(input[name='before']) input[name='catalog_id']")
+            .await?;
+        for character in "historico-e2e".chars() {
+            browser.key(&character.to_string()).await?;
+        }
+        browser.key(TAB).await?;
+        browser.key("1").await?;
+        browser.key(TAB).await?;
+        browser.key("2").await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search.includes('before=1') && location.search.includes('after=2') && document.body.innerText.includes('HIST-30');",
+                Duration::from_secs(5),
+            )
+            .await?;
     }
 
     write_json(
@@ -290,7 +316,8 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
                 "budget_and_catalog_imports_visible",
                 "tab_order_budget_csv_preview",
                 "tab_order_catalog_csv_preview",
-                "historical_catalog_page_two_keyboard"
+                "historical_catalog_page_two_keyboard",
+                "historical_catalog_explicit_edition_keyboard"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
