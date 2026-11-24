@@ -550,10 +550,7 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
         let id = report["batch"].as_str().ok_or("Missing XLSX batch")?;
         assert!(!uuid::Uuid::parse_str(id)?.is_nil());
         browser
-            .full_screenshot(
-                &h.evidence
-                    .join(format!("budget-xlsx-preview-{width}.png")),
-            )
+            .full_screenshot(&h.evidence.join(format!("budget-xlsx-preview-{width}.png")))
             .await?;
     }
 
