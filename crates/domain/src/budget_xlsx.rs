@@ -194,12 +194,13 @@ fn zip_package(parts: &[(&str, &[u8], &[u8], u16)]) -> Vec<u8> {
     out
 }
 
-const PART_NAMES: [&str; 5] = [
+const PART_NAMES: [&str; 6] = [
     "[Content_Types].xml",
     "_rels/.rels",
     "xl/workbook.xml",
     "xl/_rels/workbook.xml.rels",
     "xl/worksheets/sheet1.xml",
+    "xl/sharedStrings.xml",
 ];
 
 fn word(bytes: &[u8], at: usize) -> u16 {
@@ -230,7 +231,7 @@ fn inflate_part(data: &[u8], size: usize) -> Option<Vec<u8>> {
     Some(output)
 }
 
-/// Read only a single-disk ZIP32 with the five named parts, stored or DEFLATE.
+/// Read only a single-disk ZIP32 with the named parts, stored or DEFLATE.
 /// Every local entry must agree with the central directory and CRC. No
 /// descriptors, comments, extra fields, encryption, overlaps or hidden data.
 fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
@@ -239,11 +240,12 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
     }
     let end = bytes.len().checked_sub(22)?;
     let trailer = bytes.get(end..)?;
+    let count = usize::from(word(trailer, 10));
     if dword(trailer, 0) != 0x0605_4b50
         || word(trailer, 4) != 0
         || word(trailer, 6) != 0
-        || word(trailer, 8) != 5
-        || word(trailer, 10) != 5
+        || !matches!(count, 5 | 6)
+        || usize::from(word(trailer, 8)) != count
         || word(trailer, 20) != 0
     {
         return None;
@@ -254,10 +256,11 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
         return None;
     }
     let mut central = bytes.get(central_start..end)?;
-    let mut parts = vec![None; PART_NAMES.len()];
-    let mut ranges = Vec::with_capacity(PART_NAMES.len());
+    let names = &PART_NAMES[..count];
+    let mut parts = vec![None; count];
+    let mut ranges = Vec::with_capacity(count);
     let mut total_size = 0_usize;
-    for _ in PART_NAMES {
+    for _ in names {
         let entry = central.get(..46)?;
         let flags = word(entry, 8);
         let method = word(entry, 10);
@@ -283,15 +286,18 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
             return None;
         }
         let name = central.get(46..46 + name_len)?;
-        let index = PART_NAMES.iter().position(|part| part.as_bytes() == name)?;
+        let index = names.iter().position(|part| part.as_bytes() == name)?;
         let fixed_size = match index {
-            0 => Some(CONTENT_TYPES.len()),
+            0 if count == 5 => Some(CONTENT_TYPES.len()),
             1 => Some(ROOT_RELS.len()),
             2 => Some(WORKBOOK.len()),
-            3 => Some(WORKBOOK_RELS.len()),
+            3 if count == 5 => Some(WORKBOOK_RELS.len()),
             _ => None,
         };
-        if parts[index].is_some() || fixed_size.is_some_and(|expected| size != expected) {
+        if parts[index].is_some()
+            || fixed_size.is_some_and(|expected| size != expected)
+            || (index < 4 && size > 8192)
+        {
             return None;
         }
         central = central.get(46 + name_len..)?;
@@ -343,17 +349,54 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
     parts.into_iter().collect()
 }
 
-fn official_sheet(bytes: &[u8]) -> Result<String, CellError> {
+const SHARED_CONTENT_TYPE: &str = r#"<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>"#;
+const SHARED_RELATIONSHIP: &str = r#"<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>"#;
+
+fn shared_content_types() -> String {
+    CONTENT_TYPES.replace("</Types>", &format!("{SHARED_CONTENT_TYPE}</Types>"))
+}
+
+fn shared_workbook_rels() -> String {
+    WORKBOOK_RELS.replace(
+        "</Relationships>",
+        &format!("{SHARED_RELATIONSHIP}</Relationships>"),
+    )
+}
+
+fn official_workbook(bytes: &[u8]) -> Result<(String, Vec<String>), CellError> {
     let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial seguro.");
     let mut parts = unpack_official(bytes).ok_or_else(invalid)?;
-    if parts[0] != CONTENT_TYPES.as_bytes()
+    let has_shared = parts.len() == 6;
+    let content_types = if has_shared {
+        shared_content_types()
+    } else {
+        CONTENT_TYPES.to_owned()
+    };
+    let relationships = if has_shared {
+        shared_workbook_rels()
+    } else {
+        WORKBOOK_RELS.to_owned()
+    };
+    if parts[0] != content_types.as_bytes()
         || parts[1] != ROOT_RELS.as_bytes()
         || parts[2] != WORKBOOK.as_bytes()
-        || parts[3] != WORKBOOK_RELS.as_bytes()
+        || parts[3] != relationships.as_bytes()
     {
         return Err(invalid());
     }
-    String::from_utf8(parts.pop().ok_or_else(invalid)?).map_err(|_| invalid())
+    let shared = if has_shared {
+        let xml = parts.pop().ok_or_else(invalid)?;
+        read_shared_strings(std::str::from_utf8(&xml).map_err(|_| invalid())?)?
+    } else {
+        Vec::new()
+    };
+    let sheet = String::from_utf8(parts.pop().ok_or_else(invalid)?).map_err(|_| invalid())?;
+    Ok((sheet, shared))
+}
+
+#[cfg(test)]
+fn official_sheet(bytes: &[u8]) -> Result<String, CellError> {
+    official_workbook(bytes).map(|(sheet, _)| sheet)
 }
 
 const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>"#;
@@ -465,6 +508,58 @@ fn decode_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellErro
     Ok(value)
 }
 
+// Accept a bounded plain-text shared string table; rich text, phonetic runs,
+// external references and arbitrary XML remain outside this official subset.
+const SHARED_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main""#;
+const MAX_SHARED_STRINGS: usize = 250_000;
+
+fn read_shared_strings(xml: &str) -> Result<Vec<String>, CellError> {
+    let invalid = || error(1, 1, "Tabela de textos XLSX fora do formato seguro.");
+    let mut rest = xml.strip_prefix(SHARED_START).ok_or_else(invalid)?;
+    let mut unique = None;
+    if let Some(tail) = rest.strip_prefix(" count=\"") {
+        let (count, tail) = tail.split_once('"').ok_or_else(invalid)?;
+        let count = count.parse::<usize>().map_err(|_| invalid())?;
+        if count > 101_001 * 19 {
+            return Err(invalid());
+        }
+        rest = tail;
+    }
+    if let Some(tail) = rest.strip_prefix(" uniqueCount=\"") {
+        let (count, tail) = tail.split_once('"').ok_or_else(invalid)?;
+        let count = count.parse::<usize>().map_err(|_| invalid())?;
+        if count > MAX_SHARED_STRINGS {
+            return Err(invalid());
+        }
+        unique = Some(count);
+        rest = tail;
+    }
+    rest = rest.strip_prefix('>').ok_or_else(invalid)?;
+    let mut values = Vec::new();
+    while rest != "</sst>" {
+        if values.len() >= MAX_SHARED_STRINGS {
+            return Err(invalid());
+        }
+        let next = rest.strip_prefix("<si>").ok_or_else(invalid)?;
+        if let Some(tail) = next.strip_prefix("<t/></si>") {
+            values.push(String::new());
+            rest = tail;
+            continue;
+        }
+        let next = next
+            .strip_prefix("<t xml:space=\"preserve\">")
+            .or_else(|| next.strip_prefix("<t>"))
+            .ok_or_else(invalid)?;
+        let (raw, tail) = next.split_once("</t></si>").ok_or_else(invalid)?;
+        values.push(decode_text(raw, 1, 1)?);
+        rest = tail;
+    }
+    if unique.is_some_and(|expected| expected != values.len()) {
+        return Err(invalid());
+    }
+    Ok(values)
+}
+
 // Native SpreadsheetML numbers use a dot regardless of the workbook locale.
 // Only fields declared numeric by the CSV schema may use this representation.
 fn native_number(
@@ -525,7 +620,12 @@ fn native_number(
     })
 }
 
-fn read_row(rest: &mut &str, row: usize, locale: NumberLocale) -> Result<Vec<String>, CellError> {
+fn read_row(
+    rest: &mut &str,
+    row: usize,
+    locale: NumberLocale,
+    shared: &[String],
+) -> Result<Vec<String>, CellError> {
     let invalid = |col| error(row, col, "Linha ou célula fora do formato XLSX oficial.");
     let prefix = format!("<row r=\"{row}\">");
     *rest = rest.strip_prefix(&prefix).ok_or_else(|| invalid(1))?;
@@ -545,6 +645,16 @@ fn read_row(rest: &mut &str, row: usize, locale: NumberLocale) -> Result<Vec<Str
                 .split_once("</t></is></c>")
                 .ok_or_else(|| invalid(index + 1))?;
             *cell = decode_text(raw, row, index + 1)?;
+            *rest = next;
+        } else if let Some(next) = suffix.strip_prefix(" t=\"s\"><v>") {
+            let (raw, next) = next
+                .split_once("</v></c>")
+                .ok_or_else(|| invalid(index + 1))?;
+            if raw.is_empty() || raw.len() > 8 || !raw.bytes().all(|b| b.is_ascii_digit()) {
+                return Err(invalid(index + 1));
+            }
+            let key = raw.parse::<usize>().map_err(|_| invalid(index + 1))?;
+            *cell = shared.get(key).ok_or_else(|| invalid(index + 1))?.clone();
             *rest = next;
         } else if let Some(next) = suffix
             .strip_prefix(" t=\"n\"><v>")
@@ -594,7 +704,7 @@ fn read_row(rest: &mut &str, row: usize, locale: NumberLocale) -> Result<Vec<Str
     Ok(cells)
 }
 
-/// Reimports the versioned package, stored or DEFLATE, with canonical XML.
+/// Reimports the versioned package, stored or DEFLATE, with canonical XML or plain shared strings.
 /// General Office XML variants are not supported by this strict reader.
 /// Reuses the authoritative CSV semantic validation without persisting anything.
 pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, CellError> {
@@ -605,11 +715,11 @@ pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, Ce
 pub fn preview_import_with_locale(
     bytes: &[u8],
 ) -> Result<(crate::budgets::BudgetRevision, NumberLocale), CellError> {
-    let sheet = official_sheet(bytes)?;
+    let (sheet, shared) = official_workbook(bytes)?;
     let mut rest = sheet
         .strip_prefix(SHEET_START)
         .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
-    let version = read_row(&mut rest, 1, NumberLocale::Canonical)?;
+    let version = read_row(&mut rest, 1, NumberLocale::Canonical, &shared)?;
     if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
         return Err(error(1, 1, "Versão XLSX inválida."));
     }
@@ -626,7 +736,7 @@ pub fn preview_import_with_locale(
         if row > 101_001 {
             return Err(error(row, 1, "Limite de registros XLSX excedido."));
         }
-        let cells = read_row(&mut rest, row, locale)?;
+        let cells = read_row(&mut rest, row, locale, &shared)?;
         starts.push(physical);
         physical += cells
             .iter()
@@ -763,7 +873,7 @@ mod tests {
             assert!(decode_text(value, 3, 2).is_err(), "{value}");
         }
         let mut wrong = r#"<row r="3"><c r="A3"><f>1+1</f></c></row>"#;
-        assert!(read_row(&mut wrong, 3, NumberLocale::Canonical).is_err());
+        assert!(read_row(&mut wrong, 3, NumberLocale::Canonical, &[]).is_err());
     }
 
     #[test]
@@ -786,21 +896,21 @@ mod tests {
     #[test]
     fn inline_text_without_space_attribute_and_explicit_empty_cells_are_safe() {
         let mut row = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c><c r="B3" t="inlineStr"><is><t></t></is></c></row>"#;
-        let cells = read_row(&mut row, 3, NumberLocale::Canonical).unwrap();
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical, &[]).unwrap();
         assert_eq!(cells[0], "ITEM");
         assert_eq!(cells[1], "");
         assert!(row.is_empty());
 
         let mut row = r#"<row r="3"><c r="A3"/><c r="B3"></c><c r="C3" t="inlineStr"><is><t/></is></c><c r="D3" t="inlineStr"><is/></c><c r="E3" t="inlineStr"><is><t>ITEM</t></is></c></row>"#;
-        let cells = read_row(&mut row, 3, NumberLocale::Canonical).unwrap();
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical, &[]).unwrap();
         assert!(cells[..4].iter().all(String::is_empty));
         assert_eq!(cells[4], "ITEM");
         assert!(row.is_empty());
 
         let mut formula = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>=1+1</t></is></c></row>"#;
-        assert!(read_row(&mut formula, 3, NumberLocale::Canonical).is_err());
+        assert!(read_row(&mut formula, 3, NumberLocale::Canonical, &[]).is_err());
         let mut markup = r#"<row r="3"><c r="A3" t="inlineStr"><is><t><f>1</f></t></is></c></row>"#;
-        assert!(read_row(&mut markup, 3, NumberLocale::Canonical).is_err());
+        assert!(read_row(&mut markup, 3, NumberLocale::Canonical, &[]).is_err());
     }
 
     #[test]
@@ -811,7 +921,7 @@ mod tests {
             (NumberLocale::PtBr, "1,234567", "123456789,12"),
         ] {
             let mut row = original;
-            let cells = read_row(&mut row, 3, locale).unwrap();
+            let cells = read_row(&mut row, 3, locale, &[]).unwrap();
             assert_eq!(cells[12], "00001");
             assert_eq!(cells[15], quantity);
             assert_eq!(cells[16], price);
@@ -859,7 +969,7 @@ mod tests {
         );
 
         let mut formula = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c><c r="P3" t="n"><f>1+1</f><v>2</v></c></row>"#;
-        let error = read_row(&mut formula, 3, NumberLocale::Canonical).unwrap_err();
+        let error = read_row(&mut formula, 3, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((error.row, error.column), (3, 16));
     }
 
@@ -928,15 +1038,15 @@ mod tests {
     #[test]
     fn malformed_xlsx_cell_reports_its_actual_column() {
         let mut formula = r#"<row r="3"><c r="Q3"><f>1+1</f></c></row>"#;
-        let error = read_row(&mut formula, 3, NumberLocale::Canonical).unwrap_err();
+        let error = read_row(&mut formula, 3, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((error.row, error.column), (3, 17));
 
         let mut extra = r#"<row r="4"><c r="AA4" t="n"><v>1</v></c></row>"#;
-        let error = read_row(&mut extra, 4, NumberLocale::Canonical).unwrap_err();
+        let error = read_row(&mut extra, 4, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((error.row, error.column), (4, 27));
 
         let mut wrong_row = r#"<row r="5"><c r="N6" t="n"><v>1</v></c></row>"#;
-        let error = read_row(&mut wrong_row, 5, NumberLocale::Canonical).unwrap_err();
+        let error = read_row(&mut wrong_row, 5, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((error.row, error.column), (5, 14));
     }
 
