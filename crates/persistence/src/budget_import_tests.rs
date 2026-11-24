@@ -1,5 +1,5 @@
 //! Issue #19: reimportação integral de 10 mil serviços em PostgreSQL real.
-//! O teste exercita o mesmo leitor CSV versionado e a gravação de revisões.
+//! O teste exercita os leitores CSV e XLSX versionados e a gravação de revisões.
 //! Não considera uma prévia ou uma gravação parcial como importação concluída.
 use super::*;
 use crate::{auth::AuthStore, budget_imports::NewBudgetImport, budgets::BudgetWrite};
@@ -151,6 +151,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         actor,
         session,
         base_version: None,
+        format: canteiro_domain::budget_csv::FORMAT_VERSION,
         locale: "pt-BR",
         sha256: &first_hash,
         preview: &first_json,
@@ -298,7 +299,13 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let malformed = updated_csv.replacen("T-09999", "=1+1", 1);
     let diagnostic = preview_import(&malformed, NumberLocale::PtBr).unwrap_err();
     assert_eq!((diagnostic.row, diagnostic.column), (10_004, 13));
-    let updated_json = serde_json::to_string(&updated).unwrap();
+    let xlsx = canteiro_domain::budget_xlsx::export_from_csv(&updated_csv, NumberLocale::PtBr)
+        .unwrap();
+    let (xlsx_snapshot, locale) =
+        canteiro_domain::budget_xlsx::preview_import_with_locale(&xlsx).unwrap();
+    assert_eq!(locale, NumberLocale::PtBr);
+    assert_eq!(xlsx_snapshot, updated);
+    let updated_json = serde_json::to_string(&xlsx_snapshot).unwrap();
 
     // Identidade e arquivo da prévia persistem antes da confirmação.
     let batch_id = Uuid::new_v4();
@@ -313,6 +320,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         actor,
         session,
         base_version: Some(1),
+        format: canteiro_domain::budget_xlsx::XLSX_VERSION,
         locale: "pt-BR",
         sha256: &file_hash,
         preview: &updated_json,
@@ -367,6 +375,18 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             .unwrap(),
         Some(batch_id)
     );
+    // O mesmo hash não pode ser reinterpretado como outro formato.
+    assert!(
+        stage
+            .budget_import_stage(&NewBudgetImport {
+                id: Uuid::new_v4(),
+                format: canteiro_domain::budget_csv::FORMAT_VERSION,
+                ..candidate
+            })
+            .await
+            .unwrap()
+            .is_none()
+    );
     // Mesmo hash/versão, mas conteúdo diferente: não reaproveitar silenciosamente.
     assert!(
         stage
@@ -377,6 +397,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
                 actor,
                 session,
                 base_version: Some(1),
+                format: canteiro_domain::budget_xlsx::XLSX_VERSION,
                 locale: "pt-BR",
                 sha256: &file_hash,
                 preview: "{\"outro\":true}",
@@ -507,6 +528,15 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     .unwrap();
     assert_eq!(status, "applied");
     assert!(applied_at.is_some());
+    let format: String = sqlx::query_scalar(
+        "SELECT format FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(batch_id)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(format, canteiro_domain::budget_xlsx::XLSX_VERSION);
     // Reescrever data de criação ou estado de lote aplicado deve ser recusado.
     assert!(
         sqlx::query(

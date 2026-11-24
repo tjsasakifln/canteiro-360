@@ -15,6 +15,7 @@ pub struct NewBudgetImport<'a> {
     pub actor: Uuid,
     pub session: Uuid,
     pub base_version: Option<i64>,
+    pub format: &'a str,
     pub locale: &'a str,
     pub sha256: &'a [u8; 32],
     pub preview: &'a str,
@@ -37,6 +38,11 @@ impl AuthTransaction {
             || batch.changed < 0
             || batch.removed < 0
             || !matches!(batch.locale, "canonical" | "pt-BR")
+            || !matches!(
+                batch.format,
+                canteiro_domain::budget_csv::FORMAT_VERSION
+                    | canteiro_domain::budget_xlsx::XLSX_VERSION
+            )
         {
             return Err(AuthStoreError);
         }
@@ -65,7 +71,7 @@ impl AuthTransaction {
             "UPDATE canteiro.budget_import_batches SET status='cancelled'
              WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3 AND session_id=$4
                AND base_version IS NOT DISTINCT FROM $5 AND sha256=$6
-               AND status='ready' AND expires_at<=clock_timestamp()",
+               AND format=$7 AND status='ready' AND expires_at<=clock_timestamp()",
         )
         .bind(batch.tenant)
         .bind(batch.scope)
@@ -73,13 +79,14 @@ impl AuthTransaction {
         .bind(batch.session)
         .bind(batch.base_version)
         .bind(batch.sha256.as_slice())
+        .bind(batch.format)
         .execute(&mut *self.tx)
         .await?;
         let inserted: Option<Uuid> = sqlx::query_scalar(
             "INSERT INTO canteiro.budget_import_batches
                (tenant_id,id,scope_id,actor_id,session_id,base_version,format,locale,
                 sha256,preview,included_count,changed_count,removed_count)
-             VALUES ($1,$2,$3,$4,$5,$6,'CANTEIRO-ORCAMENTO-CSV-1',$7,$8,$9,$10,$11,$12)
+             VALUES ($1,$2,$3,$4,$5,$6,$13,$7,$8,$9,$10,$11,$12)
              ON CONFLICT DO NOTHING RETURNING id",
         )
         .bind(batch.tenant)
@@ -94,6 +101,7 @@ impl AuthTransaction {
         .bind(batch.included)
         .bind(batch.changed)
         .bind(batch.removed)
+        .bind(batch.format)
         .fetch_optional(&mut *self.tx)
         .await?;
         if inserted.is_some() {
@@ -104,7 +112,7 @@ impl AuthTransaction {
             "SELECT id,preview,status,included_count,changed_count,removed_count
              FROM canteiro.budget_import_batches
              WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3 AND session_id=$4
-               AND base_version IS NOT DISTINCT FROM $5 AND sha256=$6 AND format='CANTEIRO-ORCAMENTO-CSV-1'
+               AND base_version IS NOT DISTINCT FROM $5 AND sha256=$6 AND format=$8
                AND locale=$7 AND status='ready' AND expires_at>clock_timestamp()",
         )
         .bind(batch.tenant)
@@ -114,6 +122,7 @@ impl AuthTransaction {
         .bind(batch.base_version)
         .bind(batch.sha256.as_slice())
         .bind(batch.locale)
+        .bind(batch.format)
         .fetch_optional(&mut *self.tx)
         .await?;
         match prior {

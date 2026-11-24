@@ -533,6 +533,7 @@ impl AuthService {
             actor: a.actor.id,
             session: a.actor.session,
             base_version,
+            format,
             locale: match locale {
                 NumberLocale::Canonical => "canonical",
                 NumberLocale::PtBr => "pt-BR",
