@@ -1,5 +1,5 @@
 //! Exportação XLSX oficial, sem fórmulas, macros, relações externas ou perda decimal.
-//! O pacote usa somente entradas ZIP armazenadas (sem compressão), com nomes fixos.
+//! Exporta ZIP armazenado e admite também DEFLATE limitado, com partes fixas.
 use crate::budget_csv::{CellError, FORMAT_VERSION, MAX_BYTES, NumberLocale, parse_csv, safe};
 use std::fmt::Write;
 
@@ -139,30 +139,36 @@ fn crc32(data: &[u8]) -> u32 {
 // ZIP32 armazenado, com tamanho e CRC conhecidos antes de escrever cada cabeçalho.
 // Somente chamado com cinco partes fixas e XML limitado a 64 MiB.
 fn stored_zip(parts: &[(&str, &[u8])]) -> Vec<u8> {
+    let entries: Vec<_> = parts.iter().map(|&(name, data)| (name, data, data, 0)).collect();
+    zip_package(&entries)
+}
+
+fn zip_package(parts: &[(&str, &[u8], &[u8], u16)]) -> Vec<u8> {
     let mut out = Vec::new();
     let mut central = Vec::new();
-    for (name, data) in parts {
+    for &(name, data, encoded, method) in parts {
         let offset = out.len() as u32;
         let size = data.len() as u32;
+        let compressed = encoded.len() as u32;
         let crc = crc32(data);
         let name_len = name.len() as u16;
         u32le(&mut out, 0x0403_4b50);
-        for v in [20, 0, 0, 0, 33] {
+        for v in [20, 0, method, 0, 33] {
             u16le(&mut out, v);
         }
-        for v in [crc, size, size] {
+        for v in [crc, compressed, size] {
             u32le(&mut out, v);
         }
         u16le(&mut out, name_len);
         u16le(&mut out, 0);
         out.extend_from_slice(name.as_bytes());
-        out.extend_from_slice(data);
+        out.extend_from_slice(encoded);
 
         u32le(&mut central, 0x0201_4b50);
-        for v in [20, 20, 0, 0, 0, 33] {
+        for v in [20, 20, 0, method, 0, 33] {
             u16le(&mut central, v);
         }
-        for v in [crc, size, size] {
+        for v in [crc, compressed, size] {
             u32le(&mut central, v);
         }
         for v in [name_len, 0, 0, 0, 0] {
@@ -185,50 +191,159 @@ fn stored_zip(parts: &[(&str, &[u8])]) -> Vec<u8> {
     out
 }
 
-/// Extracts only the five fixed parts of the official stored ZIP package.
-/// Compressed archives and alternate layouts are deliberately not accepted here.
-/// Checking the complete canonical package also verifies the central directory,
-/// local headers, CRCs, entry order, and absence of trailing or additional data.
-fn official_sheet(bytes: &[u8]) -> Result<&str, CellError> {
-    let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial armazenado.");
+const PART_NAMES: [&str; 5] = [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "xl/workbook.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/worksheets/sheet1.xml",
+];
+
+fn word(bytes: &[u8], at: usize) -> u16 {
+    u16::from_le_bytes(bytes[at..at + 2].try_into().expect("dois bytes"))
+}
+
+fn dword(bytes: &[u8], at: usize) -> u32 {
+    u32::from_le_bytes(bytes[at..at + 4].try_into().expect("quatro bytes"))
+}
+
+// Reject a dishonest advertised length, incomplete stream, additional compressed
+// streams and trailing bytes. Allocate at most the advertised size plus one byte.
+fn inflate_part(data: &[u8], size: usize) -> Option<Vec<u8>> {
+    use flate2::{Decompress, FlushDecompress, Status};
+
+    let mut decoder = Decompress::new(false);
+    let mut output = vec![0; size.checked_add(1)?];
+    let status = decoder
+        .decompress(data, &mut output, FlushDecompress::Finish)
+        .ok()?;
+    if status != Status::StreamEnd
+        || decoder.total_in() != data.len() as u64
+        || decoder.total_out() != size as u64
+    {
+        return None;
+    }
+    output.truncate(size);
+    Some(output)
+}
+
+/// Read only a single-disk ZIP32 with the five named parts, stored or DEFLATE.
+/// Every local entry must agree with the central directory and CRC. No
+/// descriptors, comments, extra fields, encryption, overlaps or hidden data.
+fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
     if bytes.len() > MAX_PACKAGE_BYTES {
-        return Err(invalid());
+        return None;
     }
-    let mut rest = bytes;
-    let mut parts = Vec::with_capacity(5);
-    for name in [
-        "[Content_Types].xml",
-        "_rels/.rels",
-        "xl/workbook.xml",
-        "xl/_rels/workbook.xml.rels",
-        "xl/worksheets/sheet1.xml",
-    ] {
-        let header = rest.get(..30).ok_or_else(invalid)?;
-        if &header[..4] != b"PK\x03\x04" {
-            return Err(invalid());
-        }
-        let size = u32::from_le_bytes(header[18..22].try_into().expect("quatro bytes")) as usize;
-        if size > MAX_XML {
-            return Err(invalid());
-        }
-        let start = 30 + name.len();
-        let end = start.checked_add(size).ok_or_else(invalid)?;
-        if rest.get(30..start) != Some(name.as_bytes()) {
-            return Err(invalid());
-        }
-        let data = rest.get(start..end).ok_or_else(invalid)?;
-        parts.push((name, data));
-        rest = rest.get(end..).ok_or_else(invalid)?;
+    let end = bytes.len().checked_sub(22)?;
+    let trailer = bytes.get(end..)?;
+    if dword(trailer, 0) != 0x0605_4b50
+        || word(trailer, 4) != 0
+        || word(trailer, 6) != 0
+        || word(trailer, 8) != 5
+        || word(trailer, 10) != 5
+        || word(trailer, 20) != 0
+    {
+        return None;
     }
-    if parts[0].1 != CONTENT_TYPES.as_bytes()
-        || parts[1].1 != ROOT_RELS.as_bytes()
-        || parts[2].1 != WORKBOOK.as_bytes()
-        || parts[3].1 != WORKBOOK_RELS.as_bytes()
-        || stored_zip(&parts) != bytes
+    let central_start = dword(trailer, 16) as usize;
+    let central_size = dword(trailer, 12) as usize;
+    if central_start.checked_add(central_size)? != end {
+        return None;
+    }
+    let mut central = bytes.get(central_start..end)?;
+    let mut parts = vec![None; PART_NAMES.len()];
+    let mut ranges = Vec::with_capacity(PART_NAMES.len());
+    let mut total_size = 0_usize;
+    for _ in PART_NAMES {
+        let entry = central.get(..46)?;
+        let flags = word(entry, 8);
+        let method = word(entry, 10);
+        let checksum = dword(entry, 16);
+        let compressed = dword(entry, 20) as usize;
+        let size = dword(entry, 24) as usize;
+        let name_len = usize::from(word(entry, 28));
+        let offset = dword(entry, 42) as usize;
+        if dword(entry, 0) != 0x0201_4b50
+            || word(entry, 6) > 20
+            || flags & !0x0806 != 0
+            || !matches!(method, 0 | 8)
+            || (method == 0 && (compressed != size || flags & 6 != 0))
+            || word(entry, 30) != 0
+            || word(entry, 32) != 0
+            || word(entry, 34) != 0
+            || size > MAX_XML
+        {
+            return None;
+        }
+        total_size = total_size.checked_add(size)?;
+        if total_size > MAX_PACKAGE_BYTES {
+            return None;
+        }
+        let name = central.get(46..46 + name_len)?;
+        let index = PART_NAMES.iter().position(|part| part.as_bytes() == name)?;
+        if parts[index].is_some() {
+            return None;
+        }
+        central = central.get(46 + name_len..)?;
+
+        let local = bytes.get(offset..central_start)?;
+        let header = local.get(..30)?;
+        if dword(header, 0) != 0x0403_4b50
+            || word(header, 4) != word(entry, 6)
+            || word(header, 6) != flags
+            || word(header, 8) != method
+            || dword(header, 10) != dword(entry, 12)
+            || dword(header, 14) != checksum
+            || dword(header, 18) as usize != compressed
+            || dword(header, 22) as usize != size
+            || usize::from(word(header, 26)) != name_len
+            || word(header, 28) != 0
+            || local.get(30..30 + name_len)? != name
+        {
+            return None;
+        }
+        let data_start = 30 + name_len;
+        let data_end = data_start.checked_add(compressed)?;
+        let data = local.get(data_start..data_end)?;
+        let decoded = if method == 8 {
+            inflate_part(data, size)?
+        } else {
+            data.to_vec()
+        };
+        if crc32(&decoded) != checksum {
+            return None;
+        }
+        parts[index] = Some(decoded);
+        ranges.push((offset, offset.checked_add(data_end)?));
+    }
+    if !central.is_empty() {
+        return None;
+    }
+    ranges.sort_unstable();
+    let mut next = 0;
+    for (start, end) in ranges {
+        if start != next {
+            return None;
+        }
+        next = end;
+    }
+    if next != central_start {
+        return None;
+    }
+    parts.into_iter().collect()
+}
+
+fn official_sheet(bytes: &[u8]) -> Result<String, CellError> {
+    let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial seguro.");
+    let mut parts = unpack_official(bytes).ok_or_else(invalid)?;
+    if parts[0] != CONTENT_TYPES.as_bytes()
+        || parts[1] != ROOT_RELS.as_bytes()
+        || parts[2] != WORKBOOK.as_bytes()
+        || parts[3] != WORKBOOK_RELS.as_bytes()
     {
         return Err(invalid());
     }
-    std::str::from_utf8(parts[4].1).map_err(|_| invalid())
+    String::from_utf8(parts.pop().ok_or_else(invalid)?).map_err(|_| invalid())
 }
 
 const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>"#;
@@ -317,8 +432,8 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
     Ok(cells)
 }
 
-/// Reimports the exact versioned stored package emitted by export_from_csv.
-/// General Office ZIP/XML variants are not supported by this strict reader.
+/// Reimports the versioned package, stored or DEFLATE, with canonical XML.
+/// General Office XML variants are not supported by this strict reader.
 /// Reuses the authoritative CSV semantic validation without persisting anything.
 pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, CellError> {
     preview_import_with_locale(bytes).map(|(snapshot, _)| snapshot)
@@ -396,6 +511,48 @@ mod tests {
         let end = directory.len() - 22;
         directory[end + 10] = 6;
         assert!(official_sheet(&directory).is_err());
+    }
+
+    #[test]
+    fn deflate_package_accepts_reordered_parts_and_rejects_false_lengths() {
+        use flate2::{Compression, write::DeflateEncoder};
+        use std::io::Write as _;
+
+        let csv = format!(
+            "{FORMAT_VERSION}\r\n{}\r\n",
+            crate::budget_csv::HEADER.join(";")
+        );
+        let original = export_from_csv(&csv, NumberLocale::Canonical).unwrap();
+        let sheet = official_sheet(&original).unwrap();
+        let parts = [
+            (PART_NAMES[4], sheet.as_bytes()),
+            (PART_NAMES[0], CONTENT_TYPES.as_bytes()),
+            (PART_NAMES[1], ROOT_RELS.as_bytes()),
+            (PART_NAMES[2], WORKBOOK.as_bytes()),
+            (PART_NAMES[3], WORKBOOK_RELS.as_bytes()),
+        ];
+        let compressed: Vec<_> = parts
+            .iter()
+            .map(|&(_, data)| {
+                let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
+                encoder.write_all(data).unwrap();
+                encoder.finish().unwrap()
+            })
+            .collect();
+        let mut entries: Vec<_> = parts
+            .iter()
+            .zip(&compressed)
+            .map(|(&(name, data), encoded)| (name, data, encoded.as_slice(), 8))
+            .collect();
+        assert_eq!(official_sheet(&zip_package(&entries)).unwrap(), sheet);
+
+        let mut trailing = compressed[0].clone();
+        trailing.push(0);
+        entries[0].2 = &trailing;
+        assert!(official_sheet(&zip_package(&entries)).is_err());
+        entries[0].2 = &compressed[0];
+        entries[0].1 = b"short";
+        assert!(official_sheet(&zip_package(&entries)).is_err());
     }
 
     #[test]

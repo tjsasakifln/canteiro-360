@@ -546,6 +546,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "chrono-tz",
+ "flate2",
  "num-bigint",
  "num-traits",
  "rust_decimal",
