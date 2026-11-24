@@ -7,7 +7,8 @@ use axum::{
     Extension, Form, Json, Router,
     body::to_bytes,
     extract::{
-        DefaultBodyLimit, Path, Query, Request,
+        DefaultBodyLimit, Multipart, Path, Query, Request,
+        multipart::MultipartRejection,
         rejection::{JsonRejection, QueryRejection},
     },
     http::{HeaderMap, HeaderValue, StatusCode, header},
@@ -102,6 +103,12 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/orcamentos/publicar-csv", post(publish_budget_csv_form))
         .route("/orcamentos/publicar-lote", post(publish_budget_batch_form))
         .layer(DefaultBodyLimit::max(9_000_000))
+        .route(
+            "/orcamentos/conferir-xlsx",
+            post(preview_xlsx_form).layer(DefaultBodyLimit::max(
+                canteiro_domain::budget_xlsx::MAX_PACKAGE_BYTES + 16_384,
+            )),
+        )
         .route(
             "/api/estimating/budget/{scope}/import/xlsx/preview",
             post(import_xlsx_preview),
@@ -1631,6 +1638,99 @@ async fn import_xlsx_preview(
         .await
     {
         Ok(result) => private_json(result),
+        Err(error) => application_failure(error),
+    }
+}
+
+// Metadados pequenos, autorização e CSRF antes de carregar o arquivo em memória.
+async fn preview_xlsx_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Multipart, MultipartRejection>,
+) -> Response {
+    let (auth, _) = match authenticated(auth, &headers, false) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(mut multipart) = input else {
+        return bad_input();
+    };
+    let mut data = BTreeMap::new();
+    let file = loop {
+        let Ok(Some(mut part)) = multipart.next_field().await else {
+            return bad_input();
+        };
+        let Some(name) = part.name().map(str::to_owned) else {
+            return bad_input();
+        };
+        if name == "xlsx" {
+            if part.file_name().is_none_or(str::is_empty) || data.len() != 4 {
+                return bad_input();
+            }
+            break part;
+        }
+        if !matches!(
+            name.as_str(),
+            "organization_id" | "context_version" | "csrf" | "scope_id"
+        ) || data.contains_key(&name)
+            || part.file_name().is_some()
+        {
+            return bad_input();
+        }
+        let mut bytes = Vec::new();
+        loop {
+            match part.chunk().await {
+                Ok(Some(chunk)) if bytes.len() + chunk.len() <= 512 => {
+                    bytes.extend_from_slice(&chunk);
+                }
+                Ok(None) => break,
+                _ => return bad_input(),
+            }
+        }
+        let Ok(value) = String::from_utf8(bytes) else {
+            return bad_input();
+        };
+        data.insert(name, value);
+    };
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(Some(Extension(auth)), &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(context) = form_context(&data) else {
+        return bad_input();
+    };
+    let scope = field(&data, "scope_id").to_owned();
+    if uuid::Uuid::parse_str(&scope).is_err() {
+        return bad_input();
+    }
+    let bytes = match file.bytes().await {
+        Ok(value) if value.len() <= canteiro_domain::budget_xlsx::MAX_PACKAGE_BYTES => value,
+        _ => {
+            let mut response = StatusCode::PAYLOAD_TOO_LARGE.into_response();
+            private_headers(&mut response);
+            return response;
+        }
+    };
+    if !matches!(multipart.next_field().await, Ok(None)) {
+        return bad_input();
+    }
+    match auth
+        .service()
+        .estimating_budget_xlsx_import_preview(&token, &context, &scope, bytes.to_vec())
+        .await
+    {
+        Ok(value) => match auth.service().estimating_context(&token).await {
+            Ok(ctx) if ctx.context.as_ref() == Some(&context) => html_page(
+                canteiro_web::estimating::preview_for_scope(ctx, value, context, scope),
+                StatusCode::OK,
+            ),
+            Ok(_) => bad_input(),
+            Err(error) => application_failure(error),
+        },
         Err(error) => application_failure(error),
     }
 }
