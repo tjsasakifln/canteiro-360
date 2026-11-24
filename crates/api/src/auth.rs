@@ -431,6 +431,13 @@ impl MailTransport {
     // Contrato oficial POST /emails da Resend. O corpo é determinístico em
     // todas as tentativas da mesma mensagem para preservar a idempotência.
     fn payload(&self, message: &canteiro_application::auth::MailDelivery) -> serde_json::Value {
+        if message.kind == "organization_invitation" {
+            let body = format!(
+                "Você recebeu um convite para participar de uma organização no Canteiro 360.\n\nCódigo: {}\n\nAbra {}, entre com o e-mail que recebeu este convite e selecione a opção de aceitar convite em Organizações. Cole o código completo; não o coloque no endereço da página.\n\nExpiração: {}. Confira a organização e o papel antes de aceitar. O convite não concede acesso automaticamente. Se não reconhecer a solicitação, ignore a mensagem.\n\nCanteiro 360",
+                message.token, self.access_url, message.expires_at,
+            );
+            return serde_json::json!({ "from": self.sender, "to": [message.email], "subject": "Convite para o Canteiro 360", "text": body });
+        }
         let (subject, purpose) = if message.kind == "verify_email" {
             (
                 "Confirme seu e-mail no Canteiro 360",

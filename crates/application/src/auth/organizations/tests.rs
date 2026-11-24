@@ -920,3 +920,43 @@ async fn stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothin
 mod project_records_tests;
 #[path = "registry_tests.rs"]
 mod registry_tests;
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("mail-admin", true).await;
+    let recipient = f.person("mail-recipient", false).await;
+    let (org, _) = f.create(&admin, "Convites por email").await;
+    f.select(&admin, &org).await;
+    let old = f.invite(&admin, &recipient, OrganizationRole::Member).await;
+    let mut first = f.service.pending_mail(1).await.unwrap();
+    assert_eq!(first.len(), 1);
+    let first = first.remove(0);
+    assert_eq!(first.kind, "organization_invitation");
+    assert_eq!(first.email, recipient.email);
+    assert_eq!(first.token, old);
+    let next = f.invite(&admin, &recipient, OrganizationRole::Member).await;
+    let mut second = f.service.pending_mail(1).await.unwrap();
+    assert_eq!(second.len(), 1);
+    let second = second.remove(0);
+    assert_eq!(second.token, next);
+    let row: (i64, i64) = sqlx::query_as(
+        "SELECT count(*) FILTER (WHERE discarded_at IS NOT NULL AND octet_length(payload)=0), count(*) FILTER (WHERE delivered_at IS NOT NULL) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(row, (1, 0));
+    sqlx::query("UPDATE canteiro_auth.mail_outbox SET lease_until=clock_timestamp()-interval '1 second' WHERE discarded_at IS NULL AND invitation_id IS NOT NULL")
+        .execute(&f.admin).await.unwrap();
+    let retry = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(retry.token, next);
+    assert_ne!(retry.id, second.id);
+    f.service.mark_mail_delivered(&retry.id).await.unwrap();
+    let delivered: i64 = sqlx::query_scalar("SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL AND attempts=2 AND octet_length(payload)=0")
+        .fetch_one(&f.admin).await.unwrap();
+    assert_eq!(delivered, 1);
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    f.close().await;
+}
