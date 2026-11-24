@@ -325,3 +325,160 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
     )?;
     Ok(())
 }
+
+#[tokio::test]
+#[ignore = "requires built SSR/WASM server, PostgreSQL and WebDriver"]
+async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() -> TestResult {
+    use canteiro_contracts::obligations::{ObligationCommand, ObligationKind, ObligationSpec};
+
+    let h = Harness::start("notice-destination").await?;
+    let owner = account(&h, "notice-own", true).await?;
+    let editor = account(&h, "notice-ed", false).await?;
+    let company_id = company(&h, &owner, "Empresa de ensaio de avisos").await?;
+    join(&h, &owner, &editor, &company_id).await?;
+    let work = create_scope(&h, &owner, ScopeKind::Work, "Obra de avisos", None).await?;
+    fixture_grant(
+        &h,
+        &owner,
+        &editor,
+        &work,
+        AccessRole::TechnicalResponsible,
+        vec![AccessAction::View, AccessAction::ManageTechnicalObligations],
+    )
+    .await?;
+    let ctx = h.auth.obligations_context(&editor.session).await?;
+    let description = "Licenca reservada para conferencia de aviso";
+    let spec: ObligationSpec = serde_json::from_value(json!({
+        "kind":"license",
+        "activity":"execution",
+        "discipline":"Civil",
+        "description":description,
+        "professional_id":null,
+        "number":"",
+        "issuer":"",
+        "valid_from":"2026-01-01",
+        "valid_until":"2027-01-01",
+        "activity_on":"2026-11-01",
+        "registered_on":null,
+        "rrt_timing":null,
+        "document_id":null,
+        "document_version":null,
+        "exception":null,
+        "replaces_id":null
+    }))?;
+    assert_eq!(spec.kind, ObligationKind::License);
+    let command = ObligationCommand {
+        context: ctx.context.ok_or("Missing obligation context")?,
+        operation_key: uuid::Uuid::new_v4().to_string(),
+        scope_id: work.clone(),
+        obligation_id: None,
+        expected_version: None,
+        reason: "Conferencia documental de ensaio".into(),
+        spec,
+        confirm: false,
+    };
+    let saved = h
+        .auth
+        .obligations_execute(&editor.session, command.clone())
+        .await?;
+    let repeated = h.auth.obligations_execute(&editor.session, command).await?;
+    assert!(repeated.repeated);
+    assert_eq!(saved.obligation.id, repeated.obligation.id);
+    let destination = format!("/obrigacoes?obligation={}", saved.obligation.id);
+    let notices = h.auth.notices_context(&editor.session).await?;
+    assert_eq!(notices.notices.len(), 1);
+    assert_eq!(notices.notices[0].destination, destination);
+
+    let browser = Browser::start(&h).await?;
+    browser.navigate(&h.app_url).await?;
+    browser
+        .post(
+            "cookie",
+            json!({"cookie":{
+                "name":"__Host-canteiro-session",
+                "value":editor.session,
+                "path":"/",
+                "secure":true,
+                "httpOnly":true,
+                "sameSite":"Strict"
+            }}),
+        )
+        .await?;
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/pendencias", h.app_url))
+            .await?;
+        let report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth};",
+            )
+            .await?;
+        assert_eq!(report["width"], width);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("notice-destination-{width}.png")))
+            .await?;
+        browser
+            .tab_to(&format!("a[href='{destination}']"))
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname === '/obrigacoes' && location.search.includes('obligation=') && document.body.innerText.includes('Licenca reservada para conferencia de aviso');",
+                Duration::from_secs(5),
+            )
+            .await?;
+    }
+    let unchanged = h.auth.obligations_context(&editor.session).await?;
+    assert!(!unchanged.obligations[0].confirmed);
+    assert_eq!(unchanged.obligations[0].version, saved.obligation.version);
+
+    let state = h.auth.access_context(&owner.session).await?.state;
+    let grant = state
+        .grants
+        .iter()
+        .find(|g| g.scope_id == work && g.user_email == editor.email)
+        .ok_or("Missing technical grant")?;
+    h.auth
+        .access_execute(
+            &owner.session,
+            AccessCommand::RevokeGrant {
+                context: scope(&state),
+                grant_id: grant.id.clone(),
+                grant_version: grant.version,
+            },
+        )
+        .await?;
+    assert!(
+        h.auth
+            .notices_context(&editor.session)
+            .await?
+            .notices
+            .is_empty()
+    );
+    browser
+        .navigate(&format!("{}{}", h.app_url, destination))
+        .await?;
+    assert_eq!(
+        browser
+            .execute(
+                "return document.body.innerText.includes('Licenca reservada para conferencia de aviso');",
+            )
+            .await?,
+        false
+    );
+    write_json(
+        &h.evidence.join("notice-destination.json"),
+        &json!({
+            "status":"passed",
+            "checks":[
+                "idempotent_obligation_event",
+                "exact_destination_keyboard_360_1280",
+                "get_does_not_confirm",
+                "revoked_scope_hides_notice_and_target"
+            ]
+        }),
+    )?;
+    Ok(())
+}
