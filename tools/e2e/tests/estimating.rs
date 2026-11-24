@@ -388,7 +388,10 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         assert_eq!(report["first"], false);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
-            .full_screenshot(&h.evidence.join(format!("budget-import-details-{width}.png")))
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("budget-import-details-{width}.png")),
+            )
             .await?;
     }
 
