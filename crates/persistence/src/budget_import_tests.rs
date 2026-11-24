@@ -518,3 +518,134 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     database.close().await;
     fixture.cleanup().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL"]
+async fn historical_catalog_reference_is_not_limited_to_recent_headers() {
+    let fixture = Fixture::ready().await;
+    let database = fixture.database(TransactionLimits::default()).await;
+    let tenant = Uuid::new_v4();
+    let actor = Uuid::new_v4();
+    let scope = Uuid::new_v4();
+
+    sqlx::query(
+        "INSERT INTO canteiro_auth.users(id,email,password_hash,verified)
+         VALUES($1,$2,'fixture-only',true)",
+    )
+    .bind(actor)
+    .bind(format!("{actor}@example.invalid"))
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO canteiro.organizations(tenant_id,name,created_by,access_code_hash)
+         VALUES($1,'Empresa de teste',$2,$3)",
+    )
+    .bind(tenant)
+    .bind(actor)
+    .bind([17_u8; 32].as_slice())
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO canteiro.organization_members(tenant_id,user_id,role)
+         VALUES($1,$2,'administrator')",
+    )
+    .bind(tenant)
+    .bind(actor)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO canteiro.access_scopes(tenant_id,id,kind,name,parent_id,created_by)
+         VALUES($1,$2,'work','Escopo de teste',NULL,$3)",
+    )
+    .bind(tenant)
+    .bind(scope)
+    .bind(actor)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO canteiro.cost_catalogs(tenant_id,catalog_id,scope_id,title,created_by)
+         VALUES($1,'historico',$2,'Tabela histórica',$3)",
+    )
+    .bind(tenant)
+    .bind(scope)
+    .bind(actor)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO canteiro.cost_catalog_editions
+         (tenant_id,catalog_id,edition,source_title,source_organization,license,
+          locality,tax_regime,competence,published_on,expected_items,created_by)
+         SELECT $1,'historico',n,'Fonte','Instituto','Licença','SC','Regular',
+          DATE '2026-11-01',DATE '2026-11-01',1,$2
+         FROM generate_series(1,202) AS n",
+    )
+    .bind(tenant)
+    .bind(actor)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO canteiro.cost_catalog_items
+         (tenant_id,catalog_id,edition,code,description,category,unit,price)
+         SELECT $1,'historico',n,'A','Serviço','service','m',n
+         FROM generate_series(1,201) AS n",
+    )
+    .bind(tenant)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "UPDATE canteiro.cost_catalog_editions SET state='published'
+         WHERE tenant_id=$1 AND catalog_id='historico' AND edition<=201",
+    )
+    .bind(tenant)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+
+    let mut tx = AuthStore::new(database.clone()).begin().await.unwrap();
+    tx.org_set_actor(actor).await.unwrap();
+    tx.org_set_tenant(tenant).await.unwrap();
+    let recent = tx.catalog_headers(tenant, &[scope]).await.unwrap();
+    assert_eq!(recent.len(), 200);
+    assert!(!recent.iter().any(|header| header.edition == 1));
+    let old = tx
+        .catalog_header(tenant, scope, "historico", 1)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(old.edition, 1);
+    let previous = tx
+        .catalog_previous_header(tenant, scope, "historico", 2)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(previous.edition, 1);
+    assert!(
+        tx.catalog_header(tenant, scope, "historico", 202)
+            .await
+            .unwrap()
+            .is_none()
+    );
+    assert!(
+        tx.catalog_header(tenant, Uuid::new_v4(), "historico", 1)
+            .await
+            .unwrap()
+            .is_none()
+    );
+    assert!(
+        tx.catalog_previous_header(tenant, scope, "historico", 1)
+            .await
+            .unwrap()
+            .is_none()
+    );
+    tx.commit().await.unwrap();
+    database.close().await;
+    fixture.cleanup().await;
+}
