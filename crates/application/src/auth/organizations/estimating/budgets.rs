@@ -504,6 +504,49 @@ impl AuthService {
             format: FORMAT_VERSION,
         })
     }
+    /// Inspeção paginada de lote existente: não cria lote, revisão ou reserva.
+    pub async fn estimating_budget_import_details(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        batch_text: &str,
+        page: usize,
+    ) -> Result<canteiro_domain::budget_csv::ImportLineChanges, AuthError> {
+        self.limit("estimating-budget-import-details", token, 60, 60)
+            .await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_text)?;
+        let batch = id(batch_text)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let (base, payload) = tx
+            .budget_import_ready_snapshot(a.tenant, scope, a.actor.id, a.actor.session, batch)
+            .await?
+            .ok_or_else(record_denied)?;
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().map(|row| row.version) != base {
+            return Err(record_conflict());
+        }
+        let before = current.map(budget_view).transpose()?;
+        let snapshot: BudgetRevision =
+            serde_json::from_str(&payload).map_err(|_| AuthError::unavailable())?;
+        if snapshot.budget_id != scope.to_string()
+            || snapshot.status != BudgetState::Draft
+            || Some(i64::from(snapshot.revision)) != base.unwrap_or(0).checked_add(1)
+        {
+            return Err(AuthError::unavailable());
+        }
+        let details = canteiro_domain::budget_csv::compare_details_page(
+            before.as_ref().map(|record| &record.snapshot),
+            &snapshot,
+            page,
+        );
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        Ok(details)
+    }
     pub async fn estimating_budget_export_csv(
         &self,
         token: &str,
