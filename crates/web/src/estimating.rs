@@ -689,6 +689,11 @@ pub fn page(ctx: EstimatingContext) -> String {
             view! { <option value=scope.id disabled=disabled>{scope.name}</option> }
         })
         .collect_view();
+    let historical_scope_options = ctx
+        .scopes
+        .iter()
+        .map(|scope| view! {<option value=scope.id.clone()>{scope.name.clone()}</option>})
+        .collect_view();
     let scope_options = scopes
         .into_iter()
         .map(|scope| {
@@ -773,6 +778,25 @@ pub fn page(ctx: EstimatingContext) -> String {
                 <h2>"Fontes de custos"</h2>
                 {ctx.catalogs.is_empty().then(||view!{<p>"Nenhum catálogo publicado."</p>})}
                 {catalogs}
+                {comparison_context.map(|context| view! {
+                    <details>
+                        <summary>"Consultar outras edições históricas"</summary>
+                        <p>"A lista mostra até 200 edições recentes. Informe o identificador da tabela e os números das duas edições para comparar qualquer edição publicada no escopo autorizado."</p>
+                        <form action="/orcamentos/catalogos/comparar" method="get" class="record-form">
+                            <input type="hidden" name="organization_id" value=context.organization_id/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <label class="record-field"><span>"Orçamento da tabela histórica"</span>
+                                <select name="scope_id" required=true>{historical_scope_options}</select></label>
+                            <label class="record-field"><span>"Identificador da tabela histórica"</span>
+                                <input type="text" name="catalog_id" maxlength="128" required=true/></label>
+                            <label class="record-field"><span>"Edição de referência"</span>
+                                <input type="number" name="before" min="1" max="2147483647" required=true/></label>
+                            <label class="record-field"><span>"Edição para comparar"</span>
+                                <input type="number" name="after" min="1" max="2147483647" required=true/></label>
+                            <button type="submit" class="secondary-button">"Comparar edições informadas"</button>
+                        </form>
+                    </details>
+                })}
             </section>
             <section class="foundation-card">
                 <h2>"Composições"</h2>
