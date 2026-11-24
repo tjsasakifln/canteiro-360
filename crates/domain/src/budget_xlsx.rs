@@ -481,18 +481,47 @@ fn native_number(
     if (!decimal && !integer) || raw.len() > 128 {
         return None;
     }
-    let (whole, fraction) = raw.split_once('.').unwrap_or((raw, ""));
+    let (mantissa, exponent) = match raw.split_once(['e', 'E']) {
+        Some((mantissa, exponent)) if decimal => {
+            let shift = exponent.parse::<i32>().ok()?;
+            if !(-32..=32).contains(&shift) {
+                return None;
+            }
+            (mantissa, Some(shift))
+        }
+        Some(_) => return None,
+        None => (raw, None),
+    };
+    let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
     if whole.is_empty()
         || !whole.bytes().all(|b| b.is_ascii_digit())
         || !fraction.bytes().all(|b| b.is_ascii_digit())
-        || (raw.contains('.') && (!decimal || fraction.is_empty()))
+        || (mantissa.contains('.') && (!decimal || fraction.is_empty()))
     {
         return None;
     }
-    Some(if decimal && locale == NumberLocale::PtBr {
-        raw.replace('.', ",")
+
+    // Move the decimal point using digits, never an f64 or rounded value.
+    let canonical = if let Some(shift) = exponent {
+        let digits = format!("{whole}{fraction}");
+        let point = whole.len() as i32 + shift;
+        if point <= 0 {
+            format!("0.{}{digits}", "0".repeat((-point) as usize))
+        } else {
+            let point = point as usize;
+            if point >= digits.len() {
+                format!("{digits}{}", "0".repeat(point - digits.len()))
+            } else {
+                format!("{}.{}", &digits[..point], &digits[point..])
+            }
+        }
     } else {
-        raw.to_owned()
+        mantissa.to_owned()
+    };
+    Some(if decimal && locale == NumberLocale::PtBr {
+        canonical.replace('.', ",")
+    } else {
+        canonical
     })
 }
 
@@ -788,9 +817,29 @@ mod tests {
             assert_eq!(cells[16], price);
             assert!(row.is_empty());
         }
-        for raw in ["1e3", "-1", "+1", "1,2", "1.", ".5", "1.2.3", "<f>1</f>"] {
+        for raw in [
+            "-1", "+1", "1,2", "1.", ".5", "1.2.3", "<f>1</f>", "1e33", "1e-33",
+            "1e", "1e2e3", "1e2+1", "1e2147483647",
+        ] {
             assert!(native_number(raw, "ITEM", 15, NumberLocale::Canonical).is_none());
         }
+        for (raw, exact) in [
+            ("1e3", "1000"),
+            ("1.23456E+3", "1234.56"),
+            ("7.89E1", "78.9"),
+            ("1E-6", "0.000001"),
+            ("123.45e-2", "1.2345"),
+        ] {
+            assert_eq!(
+                native_number(raw, "ITEM", 15, NumberLocale::Canonical).as_deref(),
+                Some(exact)
+            );
+            assert_eq!(
+                native_number(raw, "ITEM", 15, NumberLocale::PtBr),
+                Some(exact.replace('.', ","))
+            );
+        }
+        assert!(native_number("1e3", "META", 2, NumberLocale::Canonical).is_none());
         assert!(native_number("00001", "ITEM", 12, NumberLocale::Canonical).is_none());
         assert!(native_number("1.5", "META", 2, NumberLocale::Canonical).is_none());
         assert_eq!(
@@ -842,11 +891,11 @@ mod tests {
         let sheet = sheet
             .replace(
                 r#" t="inlineStr"><is><t xml:space="preserve">1234,56</t></is></c>"#,
-                r#" t="n"><v>1234.56</v></c>"#,
+                r#" t="n"><v>1.23456E+3</v></c>"#,
             )
             .replace(
                 r#" t="inlineStr"><is><t xml:space="preserve">78,900000</t></is></c>"#,
-                r#"><v>78.9</v></c>"#,
+                r#"><v>7.89E1</v></c>"#,
             );
         assert_eq!(sheet.matches("<v>").count(), 20_000);
         let bytes = stored_zip(&[
