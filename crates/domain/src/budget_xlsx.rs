@@ -481,6 +481,16 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
                 .ok_or_else(|| invalid(index + 1))?;
             *cell = decode_text(raw, row, index + 1)?;
             *rest = next;
+        } else if let Some(next) = [
+            format!("{address}/>"),
+            format!("{address}></c>"),
+            format!("{address} t=\"inlineStr\"><is><t/></is></c>"),
+            format!("{address} t=\"inlineStr\"><is/></c>"),
+        ]
+        .iter()
+        .find_map(|prefix| rest.strip_prefix(prefix.as_str()))
+        {
+            *rest = next;
         } else if rest.starts_with(&address) {
             return Err(invalid(index + 1));
         }
@@ -701,6 +711,12 @@ mod tests {
         let cells = read_row(&mut row, 3).unwrap();
         assert_eq!(cells[0], "ITEM");
         assert_eq!(cells[1], "");
+        assert!(row.is_empty());
+
+        let mut row = r#"<row r="3"><c r="A3"/><c r="B3"></c><c r="C3" t="inlineStr"><is><t/></is></c><c r="D3" t="inlineStr"><is/></c><c r="E3" t="inlineStr"><is><t>ITEM</t></is></c></row>"#;
+        let cells = read_row(&mut row, 3).unwrap();
+        assert!(cells[..4].iter().all(String::is_empty));
+        assert_eq!(cells[4], "ITEM");
         assert!(row.is_empty());
 
         let mut formula = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>=1+1</t></is></c></row>"#;
