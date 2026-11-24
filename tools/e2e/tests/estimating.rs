@@ -504,6 +504,59 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
         .await;
     assert!(no_longer_ready.is_err());
 
+    // Download the real official workbook and submit it through the native file form.
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        let script = format!(
+            r#"const f=document.querySelector("form[action='/orcamentos/conferir-xlsx']");
+f.elements.scope_id.value={};
+const link=document.querySelector("a[href*='/export.xlsx']");
+return fetch(link.href).then(async response => {{
+ if (!response.ok) throw new Error("XLSX download failed");
+ const transfer=new DataTransfer();
+ transfer.items.add(new File([await response.blob()], "orcamento.xlsx", {{
+  type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+ }}));
+ f.elements.xlsx.files=transfer.files;
+ return f.elements.xlsx.files.length;
+}});"#,
+            serde_json::to_string(&budget)?
+        );
+        assert_eq!(browser.execute(&script).await?, 1);
+        browser
+            .tab_to("form[action='/orcamentos/conferir-xlsx'] input[type='file']")
+            .await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname==='/orcamentos/conferir-xlsx' && !!document.querySelector(\"form[action='/orcamentos/publicar-lote'] input[name='batch_id']\");",
+                Duration::from_secs(10),
+            )
+            .await?;
+        let report = browser
+            .execute(
+                r#"const f=document.querySelector("form[action='/orcamentos/publicar-lote']");
+return {batch:f.elements.batch_id.value,version:f.elements.expected_version.value,hasFile:!!f.elements.xlsx||!!f.elements.csv,scroll:document.documentElement.scrollWidth,format:document.body.innerText.includes('CANTEIRO-ORCAMENTO-XLSX-1')};"#,
+            )
+            .await?;
+        assert_eq!(report["version"], "1");
+        assert_eq!(report["hasFile"], false);
+        assert_eq!(report["format"], true);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        let id = report["batch"].as_str().ok_or("Missing XLSX batch")?;
+        assert!(!uuid::Uuid::parse_str(id)?.is_nil());
+        browser
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("budget-xlsx-preview-{width}.png")),
+            )
+            .await?;
+    }
+
     write_json(
         &h.evidence.join("estimating-interface.json"),
         &json!({
@@ -519,7 +572,8 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
                 "historical_catalog_page_two_keyboard",
                 "historical_catalog_explicit_edition_keyboard",
                 "budget_import_page_two_keyboard",
-                "persisted_batch_confirmation_and_replay"
+                "persisted_batch_confirmation_and_replay",
+                "xlsx_download_native_upload_keyboard_preview"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
