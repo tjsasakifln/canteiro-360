@@ -188,7 +188,7 @@ fn stored_zip(parts: &[(&str, &[u8])]) -> Vec<u8> {
 /// Compressed archives and alternate layouts are deliberately not accepted here.
 /// Checking the complete canonical package also verifies the central directory,
 /// local headers, CRCs, entry order, and absence of trailing or additional data.
-pub fn official_sheet(bytes: &[u8]) -> Result<&str, CellError> {
+fn official_sheet(bytes: &[u8]) -> Result<&str, CellError> {
     let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial armazenado.");
     if bytes.len() > MAX_XML + 8192 {
         return Err(invalid());
@@ -230,6 +230,123 @@ pub fn official_sheet(bytes: &[u8]) -> Result<&str, CellError> {
     std::str::from_utf8(parts[4].1).map_err(|_| invalid())
 }
 
+const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>"#;
+const SHEET_END: &str = "</sheetData></worksheet>";
+
+fn decode_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellError> {
+    let original = raw;
+    let invalid = || error(row, col, "Texto XML fora do formato oficial.");
+    if raw.len() > 70_000 {
+        return Err(invalid());
+    }
+    let mut value = String::new();
+    while !raw.is_empty() {
+        let mut decoded = false;
+        for (encoded, ch) in [
+            ("&amp;", '&'),
+            ("&lt;", '<'),
+            ("&gt;", '>'),
+            ("&#13;", '\r'),
+            ("_x005F_", '_'),
+        ] {
+            if let Some(next) = raw.strip_prefix(encoded) {
+                value.push(ch);
+                raw = next;
+                decoded = true;
+                break;
+            }
+        }
+        if !decoded {
+            let ch = raw.chars().next().ok_or_else(invalid)?;
+            value.push(ch);
+            raw = &raw[ch.len_utf8()..];
+        }
+    }
+    if value.len() > 10_000 || !safe(&value) {
+        return Err(invalid());
+    }
+    let mut canonical = String::new();
+    xml_text(&mut canonical, &value, row, col)?;
+    if canonical != original {
+        return Err(invalid());
+    }
+    Ok(value)
+}
+
+fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
+    let invalid = |col| error(row, col, "Linha ou célula fora do formato XLSX oficial.");
+    let prefix = format!("<row r=\"{row}\">");
+    *rest = rest.strip_prefix(&prefix).ok_or_else(|| invalid(1))?;
+    let mut cells = vec![String::new(); crate::budget_csv::HEADER.len()];
+    for (index, cell) in cells.iter_mut().enumerate() {
+        let letter = char::from(b'A' + index as u8);
+        let prefix = format!(
+            "<c r=\"{letter}{row}\" t=\"inlineStr\"><is><t xml:space=\"preserve\">"
+        );
+        if let Some(next) = rest.strip_prefix(&prefix) {
+            let (raw, next) = next
+                .split_once("</t></is></c>")
+                .ok_or_else(|| invalid(index + 1))?;
+            *cell = decode_text(raw, row, index + 1)?;
+            if cell.is_empty() {
+                return Err(invalid(index + 1));
+            }
+            *rest = next;
+        }
+    }
+    *rest = rest.strip_prefix("</row>").ok_or_else(|| invalid(1))?;
+    Ok(cells)
+}
+
+/// Reimports the exact versioned stored package emitted by export_from_csv.
+/// General Office ZIP/XML variants are not supported by this strict reader.
+/// Reuses the authoritative CSV semantic validation without persisting anything.
+pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, CellError> {
+    let sheet = official_sheet(bytes)?;
+    let mut rest = sheet
+        .strip_prefix(SHEET_START)
+        .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
+    let version = read_row(&mut rest, 1)?;
+    if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
+        return Err(error(1, 1, "Versão XLSX inválida."));
+    }
+    let locale = match version[1].as_str() {
+        "canonical" => NumberLocale::Canonical,
+        "pt_br" => NumberLocale::PtBr,
+        _ => return Err(error(1, 2, "Convenção decimal XLSX inválida.")),
+    };
+    let mut csv = format!("{FORMAT_VERSION}\r\n");
+    let mut starts = vec![1];
+    let mut physical = 2;
+    let mut row = 2;
+    while rest != SHEET_END {
+        if row > 101_001 {
+            return Err(error(row, 1, "Limite de registros XLSX excedido."));
+        }
+        let cells = read_row(&mut rest, row)?;
+        starts.push(physical);
+        for (index, value) in cells.iter().enumerate() {
+            if index > 0 {
+                csv.push(';');
+            }
+            csv.push('"');
+            csv.push_str(&value.replace('"', "\"\""));
+            csv.push('"');
+            physical += value.bytes().filter(|&b| b == b'\n').count();
+        }
+        csv.push_str("\r\n");
+        physical += 1;
+        if csv.len() > MAX_BYTES {
+            return Err(error(row, 1, "Dados XLSX acima do limite de importação."));
+        }
+        row += 1;
+    }
+    crate::budget_csv::preview_import(&csv, locale).map_err(|mut err| {
+        err.row = starts.partition_point(|&start| start <= err.row).max(1);
+        err
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -256,6 +373,19 @@ mod tests {
         let end = directory.len() - 22;
         directory[end + 10] = 6;
         assert!(official_sheet(&directory).is_err());
+    }
+
+    #[test]
+    fn strict_xml_rejects_formula_markup_and_external_entities() {
+        assert_eq!(
+            decode_text("A&amp;B _x005F_x000D_", 3, 2).unwrap(),
+            "A&B _x000D_"
+        );
+        for value in ["<f>1+1</f>", "&external;", "=1+1", "_x000D_", "&#x41;"] {
+            assert!(decode_text(value, 3, 2).is_err());
+        }
+        let mut wrong = r#"<row r="3"><c r="A3"><f>1+1</f></c></row>"#;
+        assert!(read_row(&mut wrong, 3).is_err());
     }
 
     #[test]
