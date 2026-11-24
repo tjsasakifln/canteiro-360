@@ -1270,14 +1270,13 @@ pub fn preview(
             <section class="foundation-card">
                 <h2>"Confirmar importação integral"</h2>
                 <p>"Todos os serviços serão revalidados. O servidor exige a mesma revisão examinada, uma reserva de edição da sessão e gravação atômica. Se houver erro ou concorrência, nenhum serviço será importado."</p>
-                <form action="/orcamentos/publicar-csv" method="post" class="record-form">
+                <form action="/orcamentos/publicar-lote" method="post" class="record-form">
                     <input type="hidden" name="organization_id" value=input.context.organization_id/>
                     <input type="hidden" name="context_version" value=input.context.context_version.to_string()/>
                     <input type="hidden" name="scope_id" value=input.scope_id/>
                     <input type="hidden" name="expected_version" value=expected_version/>
                     <input type="hidden" name="batch_id" value=result.batch_id.unwrap_or_default()/>
                     <input type="hidden" name="csrf" value=csrf/>
-                    <textarea hidden=true name="csv">{input.csv}</textarea>
                     <label class="record-field">
                         <span>"Justificativa da importação e nova revisão"</span>
                         <input type="text" name="reason" maxlength="240" required=true/>
