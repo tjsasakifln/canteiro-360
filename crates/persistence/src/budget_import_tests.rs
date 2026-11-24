@@ -117,6 +117,33 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     // A primeira importação também recebe prévia durável, sem revisão de origem.
     let first_batch_id = Uuid::new_v4();
     let first_hash = [98_u8; 32];
+    // Simula uma prévia legítima de duas horas atrás, já vencida.
+    let expired_batch = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO canteiro.budget_import_batches
+         (tenant_id,id,scope_id,actor_id,session_id,format,locale,sha256,preview,
+          included_count,changed_count,removed_count,created_at,expires_at)
+         VALUES($1,$2,$3,$4,$5,'CANTEIRO-ORCAMENTO-CSV-1','pt-BR',$6,$7::jsonb,
+                10000,0,0,clock_timestamp()-interval '3 hours',
+                clock_timestamp()-interval '1 hour')",
+    )
+    .bind(tenant)
+    .bind(expired_batch)
+    .bind(scope)
+    .bind(actor)
+    .bind(session)
+    .bind(first_hash.as_slice())
+    .bind(&first_json)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    assert!(
+        first
+            .budget_import_ready_snapshot(tenant, scope, actor, session, expired_batch)
+            .await
+            .unwrap()
+            .is_none()
+    );
     let first_preview = NewBudgetImport {
         tenant,
         id: first_batch_id,
@@ -239,6 +266,15 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             .unwrap()
     );
     first.commit().await.unwrap();
+    let expired_status: String = sqlx::query_scalar(
+        "SELECT status FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(expired_batch)
+    .fetch_one(&fixture.admin)
+    .await
+    .unwrap();
+    assert_eq!(expired_status, "cancelled");
     let first_status: String = sqlx::query_scalar(
         "SELECT status FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
     )
