@@ -475,7 +475,7 @@ mod tests {
                     async move {
                         let mut seen = seen.lock().await;
                         seen.push((headers, body));
-                        if seen.len() == 1 {
+                        if seen.len() == 1 || seen.len() == 3 {
                             (
                                 StatusCode::SERVICE_UNAVAILABLE,
                                 Json(serde_json::json!({"error":"temporary"})),
@@ -531,6 +531,28 @@ mod tests {
             assert!(text.contains("https://canteiro.example.test/acesso"));
             assert!(!text.contains("?token="));
             assert!(body.get("password").is_none());
+        }
+        drop(seen);
+
+        message.id = "invitation-uuid:first-lease".into();
+        message.kind = "organization_invitation".into();
+        assert!(!transport.send(&message).await);
+        message.id = "invitation-uuid:second-lease".into();
+        assert!(transport.send(&message).await);
+        let seen = observed.lock().await;
+        assert_eq!(seen.len(), 4);
+        assert_eq!(seen[2].1, seen[3].1);
+        for (headers, body) in &seen[2..] {
+            assert_eq!(headers["idempotency-key"], "invitation-uuid");
+            assert_eq!(body["subject"], "Convite para o Canteiro 360");
+            assert_eq!(body["to"], serde_json::json!(["owner@example.test"]));
+            let text = body["text"].as_str().unwrap();
+            assert!(text.contains(&message.token));
+            assert!(text.contains(&message.expires_at));
+            assert!(text.contains("Organizações"));
+            assert!(text.contains("não concede acesso automaticamente"));
+            assert!(!text.contains("?token="));
+            assert!(!text.contains("definir uma nova senha"));
         }
         server.abort();
     }
