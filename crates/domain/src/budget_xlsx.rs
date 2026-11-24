@@ -808,6 +808,65 @@ mod tests {
     }
 
     #[test]
+    fn native_numbers_roundtrip_ten_thousand_services_without_float_conversion() {
+        use crate::budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation};
+        use crate::units::MeasureUnit;
+
+        let original = BudgetRevision {
+            budget_id: "Teste XLSX".into(),
+            revision: 3,
+            status: BudgetState::Review,
+            responsible_id: format!("{:032x}", 1_u8).parse().unwrap(),
+            variations: vec![BudgetVariation {
+                id: "v1".into(),
+                work_id: format!("{:032x}", 2_u8).parse().unwrap(),
+                scope: "Obra fictícia".into(),
+            }],
+            lines: (0..10_000)
+                .map(|i| BudgetLine {
+                    id: format!("item-{i}"),
+                    variation_id: "v1".into(),
+                    group: "Pavimento".into(),
+                    stage: "Revestimento".into(),
+                    substage: "Preparação".into(),
+                    code: format!("{i:05}"),
+                    description: "Descrição técnica".into(),
+                    unit: MeasureUnit::SquareMetre,
+                    quantity: "1234.56".parse().unwrap(),
+                    price: "78.90".parse().unwrap(),
+                    catalog_id: Some("ref-2021".into()),
+                    catalog_edition: Some(3),
+                })
+                .collect(),
+            schedule: None,
+        };
+        let csv = crate::budget_csv::export_csv(&original, NumberLocale::PtBr).unwrap();
+        let package = export_from_csv(&csv, NumberLocale::PtBr).unwrap();
+        let sheet = official_sheet(&package).unwrap();
+        let sheet = sheet
+            .replace(
+                r#" t="inlineStr"><is><t xml:space="preserve">1234,56</t></is></c>"#,
+                r#" t="n"><v>1234.56</v></c>"#,
+            )
+            .replace(
+                r#" t="inlineStr"><is><t xml:space="preserve">78,900000</t></is></c>"#,
+                r#"><v>78.9</v></c>"#,
+            );
+        assert_eq!(sheet.matches("<v>").count(), 20_000);
+        let bytes = stored_zip(&[
+            (PART_NAMES[0], CONTENT_TYPES.as_bytes()),
+            (PART_NAMES[1], ROOT_RELS.as_bytes()),
+            (PART_NAMES[2], WORKBOOK.as_bytes()),
+            (PART_NAMES[3], WORKBOOK_RELS.as_bytes()),
+            (PART_NAMES[4], sheet.as_bytes()),
+        ]);
+        let (imported, locale) = preview_import_with_locale(&bytes).unwrap();
+        assert_eq!(locale, NumberLocale::PtBr);
+        assert_eq!(crate::budget_csv::export_csv(&imported, locale).unwrap(), csv);
+        assert_eq!(imported.lines[0].code, "00000");
+    }
+
+    #[test]
     fn malformed_xlsx_cell_reports_its_actual_column() {
         let mut formula = r#"<row r="3"><c r="Q3"><f>1+1</f></c></row>"#;
         let error = read_row(&mut formula, 3, NumberLocale::Canonical).unwrap_err();
