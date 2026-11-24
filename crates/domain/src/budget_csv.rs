@@ -1104,6 +1104,18 @@ mod tests {
         assert_eq!(compare(&original, &imported).changed, 0);
     }
     #[test]
+    fn xlsx_export_of_valid_budget_preserves_ten_thousand_service_rows() {
+        let original = sample(10_000);
+        let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
+        let bytes = crate::budget_xlsx::export_from_csv(&csv, NumberLocale::PtBr).unwrap();
+        let content = String::from_utf8_lossy(&bytes);
+        assert_eq!(content.matches(">ITEM</t>").count(), 10_000);
+        assert!(content.contains(">item-9999</t>"));
+        assert!(content.contains(">1234,56</t>"));
+        assert!(content.contains(">78,900000</t>"));
+        assert!(content.contains(">ref-2021</t>"));
+    }
+    #[test]
     fn a_single_invalid_cell_rejects_entire_batch() {
         let csv = export_csv(&sample(2), NumberLocale::PtBr).unwrap();
         let invalid = csv.replacen("1234,56", "1.23,456", 1);
