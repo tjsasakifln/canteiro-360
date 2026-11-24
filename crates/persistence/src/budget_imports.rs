@@ -113,6 +113,32 @@ impl AuthTransaction {
         }
     }
 
+    /// Recupera somente a prévia ainda disponível da sessão proprietária.
+    /// O chamador revalida a permissão e a revisão-base antes de apresentar dados.
+    pub async fn budget_import_ready_snapshot(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+        actor: Uuid,
+        session: Uuid,
+        batch: Uuid,
+    ) -> Result<Option<(Option<i64>, String)>, AuthStoreError> {
+        Ok(sqlx::query_as(
+            "SELECT base_version,preview::TEXT
+             FROM canteiro.budget_import_batches
+             WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3
+               AND session_id=$4 AND id=$5 AND status='ready'
+               AND expires_at>clock_timestamp()",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .bind(actor)
+        .bind(session)
+        .bind(batch)
+        .fetch_optional(&mut *self.tx)
+        .await?)
+    }
+
     /// Identifica uma operação de importação da sessão sem confundi-la com um
     /// comando de edição ordinário.
     pub async fn budget_import_exists(
