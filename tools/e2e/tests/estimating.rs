@@ -3,7 +3,8 @@ mod support;
 
 use canteiro_contracts::access::{AccessAction, AccessCommand, AccessRole, ScopeKind};
 use canteiro_contracts::estimating::{
-    BudgetChange, BudgetCommand, BudgetLeaseCommand, CatalogCsvImportCommand, CostSource, NumberLocale,
+    BudgetChange, BudgetCommand, BudgetLeaseCommand, CatalogCsvImportCommand, CostSource,
+    NumberLocale,
 };
 use serde_json::{Value, json};
 use std::time::Duration;
@@ -369,7 +370,9 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
             .await?;
         assert_eq!(report["hasFile"], false);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
-        let id = report["batch"].as_str().ok_or("Missing persisted preview")?;
+        let id = report["batch"]
+            .as_str()
+            .ok_or("Missing persisted preview")?;
         assert!(!uuid::Uuid::parse_str(id)?.is_nil());
         if batch.is_empty() {
             batch = id.to_owned();
@@ -389,7 +392,10 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
             true
         );
         browser
-            .full_screenshot(&h.evidence.join(format!("budget-import-preview-{width}.png")))
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("budget-import-preview-{width}.png")),
+            )
             .await?;
     }
     let report_url = format!(
