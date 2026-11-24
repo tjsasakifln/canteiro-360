@@ -408,14 +408,15 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
         let letter = char::from(b'A' + index as u8);
         let address = format!("<c r=\"{letter}{row}\"");
         let prefix = format!("{address} t=\"inlineStr\"><is><t xml:space=\"preserve\">");
-        if let Some(next) = rest.strip_prefix(&prefix) {
+        let plain_prefix = format!("{address} t=\"inlineStr\"><is><t>");
+        if let Some(next) = rest
+            .strip_prefix(&prefix)
+            .or_else(|| rest.strip_prefix(&plain_prefix))
+        {
             let (raw, next) = next
                 .split_once("</t></is></c>")
                 .ok_or_else(|| invalid(index + 1))?;
             *cell = decode_text(raw, row, index + 1)?;
-            if cell.is_empty() {
-                return Err(invalid(index + 1));
-            }
             *rest = next;
         } else if rest.starts_with(&address) {
             return Err(invalid(index + 1));
@@ -598,6 +599,20 @@ mod tests {
         }
         let mut wrong = r#"<row r="3"><c r="A3"><f>1+1</f></c></row>"#;
         assert!(read_row(&mut wrong, 3).is_err());
+    }
+
+    #[test]
+    fn inline_text_without_space_attribute_and_explicit_empty_cells_are_safe() {
+        let mut row = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c><c r="B3" t="inlineStr"><is><t></t></is></c></row>"#;
+        let cells = read_row(&mut row, 3).unwrap();
+        assert_eq!(cells[0], "ITEM");
+        assert_eq!(cells[1], "");
+        assert!(row.is_empty());
+
+        let mut formula = r#"<row r="3"><c r="A3" t="inlineStr"><is><t>=1+1</t></is></c></row>"#;
+        assert!(read_row(&mut formula, 3).is_err());
+        let mut markup = r#"<row r="3"><c r="A3" t="inlineStr"><is><t><f>1</f></t></is></c></row>"#;
+        assert!(read_row(&mut markup, 3).is_err());
     }
 
     #[test]
