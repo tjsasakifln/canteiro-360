@@ -281,8 +281,8 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
     let mut cells = vec![String::new(); crate::budget_csv::HEADER.len()];
     for (index, cell) in cells.iter_mut().enumerate() {
         let letter = char::from(b'A' + index as u8);
-        let prefix =
-            format!("<c r=\"{letter}{row}\" t=\"inlineStr\"><is><t xml:space=\"preserve\">");
+        let address = format!("<c r=\"{letter}{row}\"");
+        let prefix = format!("{address} t=\"inlineStr\"><is><t xml:space=\"preserve\">");
         if let Some(next) = rest.strip_prefix(&prefix) {
             let (raw, next) = next
                 .split_once("</t></is></c>")
@@ -292,9 +292,28 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
                 return Err(invalid(index + 1));
             }
             *rest = next;
+        } else if rest.starts_with(&address) {
+            return Err(invalid(index + 1));
         }
     }
-    *rest = rest.strip_prefix("</row>").ok_or_else(|| invalid(1))?;
+    if let Some(next) = rest.strip_prefix("</row>") {
+        *rest = next;
+    } else {
+        // Diagnostic only: never accept an extra, repeated or out-of-order cell.
+        let column = rest
+            .strip_prefix("<c r=\"")
+            .and_then(|value| value.split_once('"'))
+            .and_then(|(address, _)| {
+                let letters = address.bytes().take_while(u8::is_ascii_uppercase);
+                let column = letters.fold(0_usize, |acc, b| {
+                    acc.saturating_mul(26)
+                        .saturating_add(usize::from(b - b'A' + 1))
+                });
+                (column != 0).then_some(column)
+            })
+            .unwrap_or(1);
+        return Err(invalid(column));
+    }
     Ok(cells)
 }
 
@@ -390,6 +409,21 @@ mod tests {
         }
         let mut wrong = r#"<row r="3"><c r="A3"><f>1+1</f></c></row>"#;
         assert!(read_row(&mut wrong, 3).is_err());
+    }
+
+    #[test]
+    fn malformed_xlsx_cell_reports_its_actual_column() {
+        let mut formula = r#"<row r="3"><c r="Q3"><f>1+1</f></c></row>"#;
+        let error = read_row(&mut formula, 3).unwrap_err();
+        assert_eq!((error.row, error.column), (3, 17));
+
+        let mut extra = r#"<row r="4"><c r="AA4" t="n"><v>1</v></c></row>"#;
+        let error = read_row(&mut extra, 4).unwrap_err();
+        assert_eq!((error.row, error.column), (4, 27));
+
+        let mut wrong_row = r#"<row r="5"><c r="N6" t="n"><v>1</v></c></row>"#;
+        let error = read_row(&mut wrong_row, 5).unwrap_err();
+        assert_eq!((error.row, error.column), (5, 14));
     }
 
     #[test]
