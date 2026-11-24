@@ -90,7 +90,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         )
         .route("/orcamentos", get(page))
         .route("/orcamentos/conferir-csv", post(preview_form))
-        .route("/orcamentos/importacao/diferencas", get(import_details_page))
+        .route(
+            "/orcamentos/importacao/diferencas",
+            get(import_details_page),
+        )
         .route("/orcamentos/publicar-csv", post(publish_budget_csv_form))
         .layer(DefaultBodyLimit::max(9_000_000))
 }
