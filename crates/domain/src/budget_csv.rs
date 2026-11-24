@@ -760,6 +760,19 @@ pub fn compare_details(
     existing: Option<&BudgetRevision>,
     incoming: &BudgetRevision,
 ) -> ImportLineChanges {
+    compare_details_page(existing, incoming, 1)
+}
+
+/// A página usa a mesma ordenação estável e conta todas as diferenças.
+/// Apenas os registros da janela solicitada são clonados.
+pub fn compare_details_page(
+    existing: Option<&BudgetRevision>,
+    incoming: &BudgetRevision,
+    page: usize,
+) -> ImportLineChanges {
+    let offset = page
+        .saturating_sub(1)
+        .saturating_mul(MAX_IMPORT_CHANGE_DETAILS);
     let old: std::collections::BTreeMap<_, _> = existing
         .into_iter()
         .flat_map(|budget| budget.lines.iter())
@@ -777,7 +790,7 @@ pub fn compare_details(
             continue;
         }
         total += 1;
-        if records.len() >= MAX_IMPORT_CHANGE_DETAILS {
+        if total <= offset || records.len() >= MAX_IMPORT_CHANGE_DETAILS {
             continue;
         }
         let (kind, fields) = match (before, after) {
@@ -1027,6 +1040,28 @@ mod tests {
         assert_eq!(comparison.records.len(), MAX_IMPORT_CHANGE_DETAILS);
         assert_eq!(comparison.omitted, 10_000 - MAX_IMPORT_CHANGE_DETAILS);
         assert!(comparison.records.iter().all(|row| row.kind == "included"));
+    }
+    #[test]
+    fn comparison_pages_reach_every_change_without_overlap() {
+        let incoming = sample(10_000);
+        let mut seen = BTreeSet::new();
+        for page in 1..=10_000_usize.div_ceil(MAX_IMPORT_CHANGE_DETAILS) {
+            let details = compare_details_page(None, &incoming, page);
+            assert_eq!(details.omitted + details.records.len(), 10_000);
+            for item in details.records {
+                assert!(seen.insert(item.id));
+            }
+        }
+        assert_eq!(seen.len(), 10_000);
+        assert!(
+            compare_details_page(None, &incoming, usize::MAX)
+                .records
+                .is_empty()
+        );
+        assert_eq!(
+            compare_details_page(None, &incoming, 0),
+            compare_details(None, &incoming)
+        );
     }
     #[test]
     fn version_header_counts_toward_total_input_size() {
