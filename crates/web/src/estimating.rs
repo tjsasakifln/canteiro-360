@@ -584,6 +584,9 @@ pub fn page(ctx: EstimatingContext) -> String {
         let export=selected.as_ref().map(|s|format!(
             "/api/estimating/budget/{}/export.csv?organization_id={}&context_version={}&locale=pt_br",
             entry.scope_id,s.organization_id,s.context_version));
+        let export_xlsx=selected.as_ref().map(|s|format!(
+            "/api/estimating/budget/{}/export.xlsx?organization_id={}&context_version={}&locale=pt_br",
+            entry.scope_id,s.organization_id,s.context_version));
         let edit = selected
             .as_ref()
             .filter(|_| {
@@ -674,6 +677,8 @@ pub fn page(ctx: EstimatingContext) -> String {
                 <p>{format!("Última alteração: {}",entry.recorded_at)}</p>
                 {export.map(|url|view!{<a class="secondary-button" href=url>
                     "Exportar CSV editável"</a>})}
+                {export_xlsx.map(|url|view!{<a class="secondary-button" href=url>
+                    "Exportar XLSX editável"</a>})}
                 {edit}
                 {schedule_editor}
             </article>
