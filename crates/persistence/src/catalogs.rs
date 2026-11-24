@@ -64,6 +64,53 @@ impl AuthTransaction {
         .fetch_all(&mut *self.tx)
         .await?)
     }
+    /// Consulta pontual: não depende do limite da listagem de cabeçalhos.
+    pub async fn catalog_header(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+        catalog: &str,
+        edition: i32,
+    ) -> Result<Option<StoredCatalogHeader>, AuthStoreError> {
+        Ok(sqlx::query_as(
+            "SELECT c.scope_id,e.catalog_id,e.edition,e.source_title,e.source_organization,
+             e.license,e.locality,e.tax_regime,e.competence,e.published_on
+             FROM canteiro.cost_catalogs c JOIN canteiro.cost_catalog_editions e
+               ON e.tenant_id=c.tenant_id AND e.catalog_id=c.catalog_id
+             WHERE c.tenant_id=$1 AND c.scope_id=$2 AND e.catalog_id=$3
+               AND e.edition=$4 AND e.state='published'",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .bind(catalog)
+        .bind(edition)
+        .fetch_optional(&mut *self.tx)
+        .await?)
+    }
+    /// Seleciona a edição anterior por versão, mesmo fora da listagem recente.
+    pub async fn catalog_previous_header(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+        catalog: &str,
+        edition: i32,
+    ) -> Result<Option<StoredCatalogHeader>, AuthStoreError> {
+        Ok(sqlx::query_as(
+            "SELECT c.scope_id,e.catalog_id,e.edition,e.source_title,e.source_organization,
+             e.license,e.locality,e.tax_regime,e.competence,e.published_on
+             FROM canteiro.cost_catalogs c JOIN canteiro.cost_catalog_editions e
+               ON e.tenant_id=c.tenant_id AND e.catalog_id=c.catalog_id
+             WHERE c.tenant_id=$1 AND c.scope_id=$2 AND e.catalog_id=$3
+               AND e.edition<$4 AND e.state='published'
+             ORDER BY e.edition DESC LIMIT 1",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .bind(catalog)
+        .bind(edition)
+        .fetch_optional(&mut *self.tx)
+        .await?)
+    }
     pub async fn catalog_lines(
         &mut self,
         tenant: Uuid,
