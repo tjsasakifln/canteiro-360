@@ -288,6 +288,38 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         stage.budget_import_stage(&candidate).await.unwrap(),
         Some(batch_id)
     );
+    // O relatório consulta exatamente o snapshot preparado e não cria outro lote.
+    let (base, payload) = stage
+        .budget_import_ready_snapshot(tenant, scope, actor, session, batch_id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(base, Some(1));
+    assert_eq!(
+        serde_json::from_str::<BudgetRevision>(&payload).unwrap(),
+        updated
+    );
+    for (wrong_scope, wrong_actor, wrong_session, wrong_batch) in [
+        (Uuid::new_v4(), actor, session, batch_id),
+        (scope, Uuid::new_v4(), session, batch_id),
+        (scope, actor, Uuid::new_v4(), batch_id),
+        (scope, actor, session, Uuid::new_v4()),
+        (scope, actor, session, first_batch_id),
+    ] {
+        assert!(
+            stage
+                .budget_import_ready_snapshot(
+                    tenant,
+                    wrong_scope,
+                    wrong_actor,
+                    wrong_session,
+                    wrong_batch,
+                )
+                .await
+                .unwrap()
+                .is_none()
+        );
+    }
     // Retomar a mesma prévia não gera outra operação.
     assert_eq!(
         stage
