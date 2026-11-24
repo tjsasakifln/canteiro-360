@@ -6,6 +6,7 @@ use crate::{auth::AuthStore, budget_imports::NewBudgetImport, budgets::BudgetWri
 use canteiro_domain::{
     ActorId, EntityId,
     budget_csv::{NumberLocale, export_csv, preview_import},
+    budget_xlsx,
     budgets::{BudgetLine, BudgetRevision, BudgetState, BudgetVariation},
     units::MeasureUnit,
 };
@@ -299,10 +300,8 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let malformed = updated_csv.replacen("T-09999", "=1+1", 1);
     let diagnostic = preview_import(&malformed, NumberLocale::PtBr).unwrap_err();
     assert_eq!((diagnostic.row, diagnostic.column), (10_004, 13));
-    let xlsx = canteiro_domain::budget_xlsx::export_from_csv(&updated_csv, NumberLocale::PtBr)
-        .unwrap();
-    let (xlsx_snapshot, locale) =
-        canteiro_domain::budget_xlsx::preview_import_with_locale(&xlsx).unwrap();
+    let xlsx = budget_xlsx::export_from_csv(&updated_csv, NumberLocale::PtBr).unwrap();
+    let (xlsx_snapshot, locale) = budget_xlsx::preview_import_with_locale(&xlsx).unwrap();
     assert_eq!(locale, NumberLocale::PtBr);
     assert_eq!(xlsx_snapshot, updated);
     let updated_json = serde_json::to_string(&xlsx_snapshot).unwrap();
@@ -320,7 +319,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         actor,
         session,
         base_version: Some(1),
-        format: canteiro_domain::budget_xlsx::XLSX_VERSION,
+        format: budget_xlsx::XLSX_VERSION,
         locale: "pt-BR",
         sha256: &file_hash,
         preview: &updated_json,
@@ -397,7 +396,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
                 actor,
                 session,
                 base_version: Some(1),
-                format: canteiro_domain::budget_xlsx::XLSX_VERSION,
+                format: budget_xlsx::XLSX_VERSION,
                 locale: "pt-BR",
                 sha256: &file_hash,
                 preview: "{\"outro\":true}",
@@ -536,7 +535,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     .fetch_one(&fixture.admin)
     .await
     .unwrap();
-    assert_eq!(format, canteiro_domain::budget_xlsx::XLSX_VERSION);
+    assert_eq!(format, budget_xlsx::XLSX_VERSION);
     // Reescrever data de criação ou estado de lote aplicado deve ser recusado.
     assert!(
         sqlx::query(
