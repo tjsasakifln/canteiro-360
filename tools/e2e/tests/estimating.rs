@@ -410,18 +410,14 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
             .navigate(&format!("{}/pendencias", h.app_url))
             .await?;
         let report = browser
-            .execute(
-                "return {width:innerWidth,scroll:document.documentElement.scrollWidth};",
-            )
+            .execute("return {width:innerWidth,scroll:document.documentElement.scrollWidth};")
             .await?;
         assert_eq!(report["width"], width);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
             .full_screenshot(&h.evidence.join(format!("notice-destination-{width}.png")))
             .await?;
-        browser
-            .tab_to(&format!("a[href='{destination}']"))
-            .await?;
+        browser.tab_to(&format!("a[href='{destination}']")).await?;
         browser.key(ENTER).await?;
         browser
             .wait(
