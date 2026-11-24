@@ -170,9 +170,11 @@ impl AuthTransaction {
         .bind(header.actor)
         .execute(&mut *self.tx)
         .await?;
+        // O cabeçalho é imutável para a identidade de execução (SELECT/INSERT).
+        // A chave única arbitra inserções concorrentes; não requer privilégio UPDATE.
         let exists: Option<Uuid> = sqlx::query_scalar(
             "SELECT scope_id FROM canteiro.cost_catalogs
-             WHERE tenant_id=$1 AND catalog_id=$2 FOR UPDATE",
+             WHERE tenant_id=$1 AND catalog_id=$2",
         )
         .bind(header.tenant)
         .bind(header.catalog_id)
