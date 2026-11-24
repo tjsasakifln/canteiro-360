@@ -608,7 +608,10 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
                 <= u64::from(width)
         );
         browser
-            .full_screenshot(&h.evidence.join(format!("budget-xlsx-published-{width}.png")))
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("budget-xlsx-published-{width}.png")),
+            )
             .await?;
     }
 
