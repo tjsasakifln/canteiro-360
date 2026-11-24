@@ -90,6 +90,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         )
         .route("/orcamentos", get(page))
         .route("/orcamentos/conferir-csv", post(preview_form))
+        .route("/orcamentos/importacao/diferencas", get(import_details_page))
         .route("/orcamentos/publicar-csv", post(publish_budget_csv_form))
         .layer(DefaultBodyLimit::max(9_000_000))
 }
@@ -1746,6 +1747,52 @@ async fn catalog_csv_publish_form(
     }
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BudgetImportDetailsQuery {
+    organization_id: String,
+    context_version: i64,
+    scope_id: String,
+    batch_id: String,
+    page: Option<usize>,
+}
+
+async fn import_details_page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<BudgetImportDetailsQuery>, QueryRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, false) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(Query(query)) = query else {
+        return bad_input();
+    };
+    let context = ReliabilityScope {
+        organization_id: query.organization_id,
+        context_version: query.context_version,
+    };
+    let page = query.page.unwrap_or(1).max(1);
+    match auth
+        .service()
+        .estimating_budget_import_details(&token, &context, &query.scope_id, &query.batch_id, page)
+        .await
+    {
+        Ok(details) => html_page(
+            canteiro_web::estimating::import_details_page(
+                context,
+                query.scope_id,
+                query.batch_id,
+                page,
+                details,
+            ),
+            StatusCode::OK,
+        ),
+        Err(error) => application_failure(error),
+    }
+}
+
 async fn preview_form(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
@@ -1778,10 +1825,11 @@ async fn preview_form(
         .await
     {
         Ok(value) => match auth.service().estimating_context(&token).await {
-            Ok(ctx) => html_page(
+            Ok(ctx) if ctx.context.as_ref() == Some(&command.context) => html_page(
                 canteiro_web::estimating::preview(ctx, value, command),
                 StatusCode::OK,
             ),
+            Ok(_) => bad_input(),
             Err(error) => application_failure(error),
         },
         Err(error) => application_failure(error),
