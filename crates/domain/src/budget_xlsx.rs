@@ -359,41 +359,104 @@ fn official_sheet(bytes: &[u8]) -> Result<String, CellError> {
 const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>"#;
 const SHEET_END: &str = "</sheetData></worksheet>";
 
+fn xml_character(ch: char) -> bool {
+    matches!(ch, '\t' | '\n' | '\r' | '\u{20}'..='\u{d7ff}' | '\u{e000}'..='\u{fffd}' | '\u{10000}'..='\u{10ffff}')
+}
+
+fn xml_reference(reference: &str) -> Option<char> {
+    let ch = match reference {
+        "amp" => '&',
+        "lt" => '<',
+        "gt" => '>',
+        "quot" => '"',
+        "apos" => '\'',
+        _ => {
+            let digits = reference.strip_prefix('#')?;
+            let (digits, radix) = match digits.strip_prefix('x') {
+                Some(hex) => (hex, 16),
+                None => (digits, 10),
+            };
+            if digits.is_empty()
+                || digits.len() > 10
+                || !digits.chars().all(|ch| ch.is_digit(radix))
+            {
+                return None;
+            }
+            char::from_u32(u32::from_str_radix(digits, radix).ok()?)?
+        }
+    };
+    xml_character(ch).then_some(ch)
+}
+
+// ST_Xstring escaping is decoded once, AFTER XML references. In particular
+// _x005F_x0041_ means the literal string "_x0041_", not "A".
+fn xstring_escape(raw: &str) -> Option<(u16, &str)> {
+    let bytes = raw.as_bytes().get(..7)?;
+    if bytes[0] != b'_'
+        || bytes[1] != b'x'
+        || bytes[6] != b'_'
+        || !bytes[2..6].iter().all(u8::is_ascii_hexdigit)
+    {
+        return None;
+    }
+    let unit = u16::from_str_radix(&raw[2..6], 16).ok()?;
+    Some((unit, &raw[7..]))
+}
+
 fn decode_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellError> {
-    let original = raw;
     let invalid = || error(row, col, "Texto XML fora do formato oficial.");
-    if raw.len() > 70_000 {
+    if raw.len() > 70_000 || raw.contains("]]>") {
         return Err(invalid());
     }
-    let mut value = String::new();
+    let mut xml = String::new();
     while !raw.is_empty() {
-        let mut decoded = false;
-        for (encoded, ch) in [
-            ("&amp;", '&'),
-            ("&lt;", '<'),
-            ("&gt;", '>'),
-            ("&#13;", '\r'),
-            ("_x005F_", '_'),
-        ] {
-            if let Some(next) = raw.strip_prefix(encoded) {
-                value.push(ch);
-                raw = next;
-                decoded = true;
-                break;
+        if let Some(reference) = raw.strip_prefix('&') {
+            let (name, next) = reference.split_once(';').ok_or_else(invalid)?;
+            xml.push(xml_reference(name).ok_or_else(invalid)?);
+            raw = next;
+        } else {
+            let ch = raw.chars().next().ok_or_else(invalid)?;
+            if ch == '<' || !xml_character(ch) {
+                return Err(invalid());
+            }
+            raw = &raw[ch.len_utf8()..];
+            // XML 1.0 normalizes literal CR/CRLF, but not numeric references.
+            if ch == '\r' {
+                xml.push('\n');
+                raw = raw.strip_prefix('\n').unwrap_or(raw);
+            } else {
+                xml.push(ch);
             }
         }
-        if !decoded {
+    }
+
+    let mut raw = xml.as_str();
+    let mut value = String::new();
+    while !raw.is_empty() {
+        if let Some((unit, next)) = xstring_escape(raw) {
+            let (ch, next) = if (0xd800..=0xdbff).contains(&unit) {
+                let (low, tail) = xstring_escape(next).ok_or_else(invalid)?;
+                if !(0xdc00..=0xdfff).contains(&low) {
+                    return Err(invalid());
+                }
+                let scalar =
+                    0x10000 + ((u32::from(unit) - 0xd800) << 10) + (u32::from(low) - 0xdc00);
+                (char::from_u32(scalar).ok_or_else(invalid)?, tail)
+            } else {
+                (char::from_u32(u32::from(unit)).ok_or_else(invalid)?, next)
+            };
+            if !xml_character(ch) {
+                return Err(invalid());
+            }
+            value.push(ch);
+            raw = next;
+        } else {
             let ch = raw.chars().next().ok_or_else(invalid)?;
             value.push(ch);
             raw = &raw[ch.len_utf8()..];
         }
     }
     if value.len() > 10_000 || !safe(&value) {
-        return Err(invalid());
-    }
-    let mut canonical = String::new();
-    xml_text(&mut canonical, &value, row, col)?;
-    if canonical != original {
         return Err(invalid());
     }
     Ok(value)
@@ -594,11 +657,42 @@ mod tests {
             decode_text("A&amp;B _x005F_x000D_", 3, 2).unwrap(),
             "A&B _x000D_"
         );
-        for value in ["<f>1+1</f>", "&external;", "=1+1", "_x000D_", "&#x41;"] {
-            assert!(decode_text(value, 3, 2).is_err());
+        for value in [
+            "<f>1+1</f>",
+            "&external;",
+            "=1+1",
+            "&#61;1+1",
+            "&#x3D;1+1",
+            "_x003D_1+1",
+            "&#x5F;x003D_1+1",
+            "_x0000_",
+            "_x202E_abc",
+            "&#xD800;",
+            "_xD800_",
+            "&#xFFFF;",
+            "]]>",
+        ] {
+            assert!(decode_text(value, 3, 2).is_err(), "{value}");
         }
         let mut wrong = r#"<row r="3"><c r="A3"><f>1+1</f></c></row>"#;
         assert!(read_row(&mut wrong, 3).is_err());
+    }
+
+    #[test]
+    fn standard_xml_and_office_text_escapes_preserve_data() {
+        for (encoded, expected) in [
+            ("&#x41;&#66;&quot;&apos;", "AB\"'"),
+            ("A_x000D_B", "A\rB"),
+            ("A\r\nB", "A\nB"),
+            ("_xD83D__xDE00_", "\u{1f600}"),
+            ("_x005F_x0041_", "_x0041_"),
+            ("&amp;lt;", "&lt;"),
+            ("&lt;f&gt;texto&lt;/f&gt;", "<f>texto</f>"),
+        ] {
+            assert_eq!(decode_text(encoded, 3, 2).unwrap(), expected);
+        }
+        assert!(decode_text("_xD83D__x0041_", 3, 2).is_err());
+        assert!(decode_text("&#9999999999;", 3, 2).is_err());
     }
 
     #[test]
