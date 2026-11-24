@@ -5,6 +5,7 @@ use std::fmt::Write;
 
 pub const XLSX_VERSION: &str = "CANTEIRO-ORCAMENTO-XLSX-1";
 const MAX_XML: usize = 64 * 1024 * 1024;
+pub const MAX_PACKAGE_BYTES: usize = MAX_XML + 8192;
 const CONTENT_TYPES: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>"#;
 const ROOT_RELS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>"#;
 const WORKBOOK: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Orcamento" sheetId="1" r:id="rId1"/></sheets></workbook>"#;
@@ -190,7 +191,7 @@ fn stored_zip(parts: &[(&str, &[u8])]) -> Vec<u8> {
 /// local headers, CRCs, entry order, and absence of trailing or additional data.
 fn official_sheet(bytes: &[u8]) -> Result<&str, CellError> {
     let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial armazenado.");
-    if bytes.len() > MAX_XML + 8192 {
+    if bytes.len() > MAX_PACKAGE_BYTES {
         return Err(invalid());
     }
     let mut rest = bytes;
@@ -301,6 +302,13 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
 /// General Office ZIP/XML variants are not supported by this strict reader.
 /// Reuses the authoritative CSV semantic validation without persisting anything.
 pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, CellError> {
+    preview_import_with_locale(bytes).map(|(snapshot, _)| snapshot)
+}
+
+/// Also returns the decimal convention declared in the original workbook.
+pub fn preview_import_with_locale(
+    bytes: &[u8],
+) -> Result<(crate::budgets::BudgetRevision, NumberLocale), CellError> {
     let sheet = official_sheet(bytes)?;
     let mut rest = sheet
         .strip_prefix(SHEET_START)
@@ -335,10 +343,12 @@ pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, Ce
         }
         row += 1;
     }
-    crate::budget_csv::preview_import(&csv, locale).map_err(|mut err| {
-        err.row = starts.partition_point(|&start| start <= err.row).max(1);
-        err
-    })
+    crate::budget_csv::preview_import(&csv, locale)
+        .map(|snapshot| (snapshot, locale))
+        .map_err(|mut err| {
+            err.row = starts.partition_point(|&start| start <= err.row).max(1);
+            err
+        })
 }
 
 #[cfg(test)]
