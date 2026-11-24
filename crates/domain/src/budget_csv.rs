@@ -15,7 +15,7 @@ use std::{
 };
 
 pub const FORMAT_VERSION: &str = "CANTEIRO-ORCAMENTO-CSV-1";
-const HEADER: &[&str] = &[
+pub(crate) const HEADER: &[&str] = &[
     "tipo",
     "orcamento",
     "revisao",
