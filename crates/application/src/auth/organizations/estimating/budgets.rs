@@ -204,8 +204,8 @@ impl AuthService {
                         if base != input.expected_version {
                             return Err(record_conflict());
                         }
-                        let staged: BudgetRevision = serde_json::from_str(&payload)
-                            .map_err(|_| AuthError::unavailable())?;
+                        let staged: BudgetRevision =
+                            serde_json::from_str(&payload).map_err(|_| AuthError::unavailable())?;
                         if staged.status != BudgetState::Draft {
                             return Err(AuthError::unavailable());
                         }
