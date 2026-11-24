@@ -504,8 +504,8 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
         .await;
     assert!(no_longer_ready.is_err());
 
-    // Download the real official workbook and submit it through the native file form.
-    for width in [360, 1280] {
+    // Download, preview and confirm the official workbook through the native forms.
+    for (width, base_version) in [(360, 1), (1280, 2)] {
         browser.viewport(width, 900, width == 360).await?;
         browser
             .navigate(&format!("{}/orcamentos", h.app_url))
@@ -543,7 +543,7 @@ return fetch(link.href).then(async response => {{
 return {batch:f.elements.batch_id.value,version:f.elements.expected_version.value,hasFile:!!f.elements.xlsx||!!f.elements.csv,scroll:document.documentElement.scrollWidth,format:document.body.innerText.includes('CANTEIRO-ORCAMENTO-XLSX-1')};"#,
             )
             .await?;
-        assert_eq!(report["version"], "1");
+        assert_eq!(report["version"], base_version.to_string());
         assert_eq!(report["hasFile"], false);
         assert_eq!(report["format"], true);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
@@ -551,6 +551,64 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
         assert!(!uuid::Uuid::parse_str(id)?.is_nil());
         browser
             .full_screenshot(&h.evidence.join(format!("budget-xlsx-preview-{width}.png")))
+            .await?;
+
+        // Before confirming, the preview must not have changed the current revision.
+        let before = h.auth.estimating_context(&editor.session).await?;
+        let previous = before
+            .budgets
+            .iter()
+            .find(|record| record.scope_id == budget)
+            .ok_or("Missing current budget before XLSX confirmation")?;
+        assert_eq!(previous.version, base_version);
+        browser
+            .tab_to("form[action='/orcamentos/publicar-lote'] input[name='reason']")
+            .await?;
+        for character in "Reimportacao XLSX".chars() {
+            browser.key(&character.to_string()).await?;
+        }
+        browser.key(TAB).await?;
+        assert_eq!(
+            browser
+                .execute("return document.activeElement?.matches(\"form[action='/orcamentos/publicar-lote'] button[type='submit']\");")
+                .await?,
+            true
+        );
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname==='/orcamentos/publicar-lote' && document.querySelector('h1')?.textContent.trim()==='Importação registrada';",
+                Duration::from_secs(10),
+            )
+            .await?;
+        let after = h.auth.estimating_context(&editor.session).await?;
+        let persisted = after
+            .budgets
+            .iter()
+            .find(|record| record.scope_id == budget)
+            .ok_or("Missing committed XLSX revision")?;
+        assert_eq!(persisted.version, base_version + 1);
+        assert_eq!(persisted.operation_key, id);
+        assert_eq!(persisted.reason, "Reimportacao XLSX");
+        let mut expected = previous.snapshot.clone();
+        expected.revision = u32::try_from(base_version + 1)?;
+        assert_eq!(persisted.snapshot, expected);
+        assert!(
+            h.auth
+                .estimating_budget_import_details(&editor.session, &context, &budget, id, 1)
+                .await
+                .is_err()
+        );
+        assert!(
+            browser
+                .execute("return document.documentElement.scrollWidth;")
+                .await?
+                .as_u64()
+                .unwrap_or(u64::MAX)
+                <= u64::from(width)
+        );
+        browser
+            .full_screenshot(&h.evidence.join(format!("budget-xlsx-published-{width}.png")))
             .await?;
     }
 
@@ -570,7 +628,8 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
                 "historical_catalog_explicit_edition_keyboard",
                 "budget_import_page_two_keyboard",
                 "persisted_batch_confirmation_and_replay",
-                "xlsx_download_native_upload_keyboard_preview"
+                "xlsx_download_native_upload_keyboard_preview",
+                "xlsx_keyboard_confirmation_persisted_revision_and_consumed_batch"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
