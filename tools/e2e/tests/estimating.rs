@@ -398,16 +398,27 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
 
     // Confirm only the persisted snapshot, never a client-provided revision.
     let lease_key = uuid::Uuid::new_v4().to_string();
+    let request = BudgetLeaseCommand {
+        context: context.clone(),
+        scope_id: budget.clone(),
+        lease_key: lease_key.clone(),
+    };
+    let unknown_batch = uuid::Uuid::new_v4().to_string();
+    assert!(
+        h.auth
+            .estimating_budget_import_lease(&editor.session, request.clone(), &unknown_batch, None)
+            .await
+            .is_err()
+    );
+    assert!(
+        h.auth
+            .estimating_budget_import_lease(&editor.session, request.clone(), &batch, Some(1))
+            .await
+            .is_err()
+    );
     let lease = h
         .auth
-        .estimating_budget_lease(
-            &editor.session,
-            BudgetLeaseCommand {
-                context: context.clone(),
-                scope_id: budget.clone(),
-                lease_key: lease_key.clone(),
-            },
-        )
+        .estimating_budget_import_lease(&editor.session, request, &batch, None)
         .await?;
     assert_eq!(lease.revision, 1);
     let command = BudgetCommand {
