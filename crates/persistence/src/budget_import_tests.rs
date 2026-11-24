@@ -481,42 +481,72 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     .unwrap();
     assert_eq!(pending_batch_status, "ready");
 
-    let mut second = AuthStore::new(database.clone()).begin().await.unwrap();
-    second.org_set_actor(actor).await.unwrap();
-    second.org_set_tenant(tenant).await.unwrap();
-    let import_operation = Uuid::new_v4();
-    assert_eq!(
-        second
-            .budget_write(&BudgetWrite {
-                tenant,
-                scope,
-                expected: Some(1),
-                actor,
-                operation_key: import_operation,
-                fingerprint: &fingerprint,
-                reason: "Reimportação dos dez mil serviços",
-                payload: &updated_json,
-                state: "draft",
-            })
-            .await
-            .unwrap()
-            .unwrap()
-            .version,
-        2
-    );
-    assert!(
-        second
-            .budget_import_mark_applied(tenant, scope, actor, session, batch_id, import_operation)
-            .await
-            .unwrap()
-    );
-    assert!(
-        !second
-            .budget_import_mark_applied(tenant, scope, actor, session, batch_id, import_operation)
-            .await
-            .unwrap()
-    );
-    second.commit().await.unwrap();
+    // Duas confirmações reais leem a mesma prévia antes de disputar o CAS.
+    // Só a transação que gravar a revisão pode consumir o lote.
+    let barrier = tokio::sync::Barrier::new(2);
+    let confirm = |operation| {
+        let database = database.clone();
+        let payload = &updated_json;
+        let barrier = &barrier;
+        async move {
+            let mut tx = AuthStore::new(database).begin().await.unwrap();
+            tx.org_set_actor(actor).await.unwrap();
+            tx.org_set_tenant(tenant).await.unwrap();
+            let (base, _) = tx
+                .budget_import_ready_snapshot(tenant, scope, actor, session, batch_id)
+                .await
+                .unwrap()
+                .unwrap();
+            assert_eq!(base, Some(1));
+            barrier.wait().await;
+            let written = tx
+                .budget_write(&BudgetWrite {
+                    tenant,
+                    scope,
+                    expected: base,
+                    actor,
+                    operation_key: operation,
+                    fingerprint: &fingerprint,
+                    reason: "Reimportação concorrente dos dez mil serviços",
+                    payload,
+                    state: "draft",
+                })
+                .await
+                .unwrap();
+            if let Some(version) = written {
+                assert_eq!(version.version, 2);
+                assert!(
+                    tx.budget_import_mark_applied(
+                        tenant, scope, actor, session, batch_id, operation
+                    )
+                    .await
+                    .unwrap()
+                );
+                assert!(
+                    !tx.budget_import_mark_applied(
+                        tenant, scope, actor, session, batch_id, operation
+                    )
+                    .await
+                    .unwrap()
+                );
+                tx.commit().await.unwrap();
+                true
+            } else {
+                assert!(
+                    !tx.budget_import_mark_applied(
+                        tenant, scope, actor, session, batch_id, operation
+                    )
+                    .await
+                    .unwrap()
+                );
+                tx.commit().await.unwrap();
+                false
+            }
+        }
+    };
+    let (first_result, second_result) =
+        tokio::join!(confirm(Uuid::new_v4()), confirm(Uuid::new_v4()));
+    assert_ne!(first_result, second_result);
     let (status, applied_at): (String, Option<chrono::DateTime<chrono::Utc>>) = sqlx::query_as(
         "SELECT status,applied_at FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
     )
