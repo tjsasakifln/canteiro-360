@@ -5,9 +5,10 @@ use crate::{
 };
 use axum::{
     Extension, Form, Json, Router,
+    body::Bytes,
     extract::{
         DefaultBodyLimit, Path, Query,
-        rejection::{JsonRejection, QueryRejection},
+        rejection::{BytesRejection, JsonRejection, QueryRejection},
     },
     http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
@@ -100,6 +101,12 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         )
         .route("/orcamentos/publicar-csv", post(publish_budget_csv_form))
         .layer(DefaultBodyLimit::max(9_000_000))
+        .route(
+            "/api/estimating/budget/{scope}/import/xlsx/preview",
+            post(import_xlsx_preview).layer(DefaultBodyLimit::max(
+                canteiro_domain::budget_xlsx::MAX_PACKAGE_BYTES,
+            )),
+        )
 }
 async fn context(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response {
     let (auth, token) = match authenticated(auth, &headers, false) {
@@ -1583,6 +1590,47 @@ async fn import_preview(
         Err(e) => application_failure(e),
     }
 }
+async fn import_xlsx_preview(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    Path(scope): Path<String>,
+    query: Result<Query<ReliabilityScope>, QueryRejection>,
+    input: Result<Bytes, BytesRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let Ok(Query(context)) = query else {
+        return bad_input();
+    };
+    if headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        != Some("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    {
+        let mut response = StatusCode::UNSUPPORTED_MEDIA_TYPE.into_response();
+        private_headers(&mut response);
+        return response;
+    }
+    let bytes = match input {
+        Ok(value) => value,
+        Err(error) => {
+            let mut response = error.into_response();
+            private_headers(&mut response);
+            return response;
+        }
+    };
+    match auth
+        .service()
+        .estimating_budget_xlsx_import_preview(&token, &context, &scope, &bytes)
+        .await
+    {
+        Ok(result) => private_json(result),
+        Err(error) => application_failure(error),
+    }
+}
+
 async fn budget_history(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
