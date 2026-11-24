@@ -280,9 +280,8 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
     let mut cells = vec![String::new(); crate::budget_csv::HEADER.len()];
     for (index, cell) in cells.iter_mut().enumerate() {
         let letter = char::from(b'A' + index as u8);
-        let prefix = format!(
-            "<c r=\"{letter}{row}\" t=\"inlineStr\"><is><t xml:space=\"preserve\">"
-        );
+        let prefix =
+            format!("<c r=\"{letter}{row}\" t=\"inlineStr\"><is><t xml:space=\"preserve\">");
         if let Some(next) = rest.strip_prefix(&prefix) {
             let (raw, next) = next
                 .split_once("</t></is></c>")
