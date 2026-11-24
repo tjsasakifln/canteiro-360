@@ -75,6 +75,15 @@ async fn estimating_imports_reflow_and_work_by_keyboard_at_360_and_1280() -> Tes
     )
     .await?;
     // A permission-tree scope alone is not a persisted work in the portfolio.
+    fixture_grant(
+        &h,
+        &owner,
+        &owner,
+        &work,
+        AccessRole::Manager,
+        vec![AccessAction::View, AccessAction::ManagePortfolio],
+    )
+    .await?;
     let state = h.auth.access_context(&owner.session).await?.state;
     h.auth
         .portfolio_execute(
