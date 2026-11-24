@@ -1042,14 +1042,14 @@ mod tests {
         );
         let values = read_shared_strings(&xml).unwrap();
         assert_eq!(values, ["ITEM", "00001", ""]);
-        let mut row = r#"<row r="3"><c r="A3" t="s"><v>0</v></c><c r="M3" t="s"><v>1</v></c></row>"#;
+        let mut row =
+            r#"<row r="3"><c r="A3" t="s"><v>0</v></c><c r="M3" t="s"><v>1</v></c></row>"#;
         let cells = read_row(&mut row, 3, NumberLocale::Canonical, &values).unwrap();
         assert_eq!(cells[0], "ITEM");
         assert_eq!(cells[12], "00001");
         for raw in ["3", "-1", "1.0", "", "<f>0</f>"] {
             let row = format!(r#"<row r="3"><c r="M3" t="s"><v>{raw}</v></c></row>"#);
-            let err = read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &values)
-                .unwrap_err();
+            let err = read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &values).unwrap_err();
             assert_eq!((err.row, err.column), (3, 13));
         }
         for body in [
@@ -1120,7 +1120,10 @@ mod tests {
         for bytes in [bytes.clone(), recompress_for_test(&bytes)] {
             let (imported, locale) = preview_import_with_locale(&bytes).unwrap();
             assert_eq!(locale, NumberLocale::PtBr);
-            assert_eq!(crate::budget_csv::export_csv(&imported, locale).unwrap(), csv);
+            assert_eq!(
+                crate::budget_csv::export_csv(&imported, locale).unwrap(),
+                csv
+            );
         }
         let external = rels.replace(
             r#"Target="sharedStrings.xml""#,
