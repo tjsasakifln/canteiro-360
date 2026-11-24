@@ -59,6 +59,22 @@ impl AuthTransaction {
         if !valid_snapshot {
             return Ok(None);
         }
+        // Expiração não autoriza reaplicar o lote antigo. Cancela somente
+        // a prévia vencida da mesma sessão e mantém seu histórico imutável.
+        sqlx::query(
+            "UPDATE canteiro.budget_import_batches SET status='cancelled'
+             WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3 AND session_id=$4
+               AND base_version IS NOT DISTINCT FROM $5 AND sha256=$6
+               AND status='ready' AND expires_at<=clock_timestamp()",
+        )
+        .bind(batch.tenant)
+        .bind(batch.scope)
+        .bind(batch.actor)
+        .bind(batch.session)
+        .bind(batch.base_version)
+        .bind(batch.sha256.as_slice())
+        .execute(&mut *self.tx)
+        .await?;
         let inserted: Option<Uuid> = sqlx::query_scalar(
             "INSERT INTO canteiro.budget_import_batches
                (tenant_id,id,scope_id,actor_id,session_id,base_version,format,locale,
@@ -89,7 +105,7 @@ impl AuthTransaction {
              FROM canteiro.budget_import_batches
              WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3 AND session_id=$4
                AND base_version IS NOT DISTINCT FROM $5 AND sha256=$6 AND format='CANTEIRO-ORCAMENTO-CSV-1'
-               AND locale=$7 AND expires_at>clock_timestamp()",
+               AND locale=$7 AND status='ready' AND expires_at>clock_timestamp()",
         )
         .bind(batch.tenant)
         .bind(batch.scope)
