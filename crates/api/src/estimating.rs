@@ -100,6 +100,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             get(import_details_page),
         )
         .route("/orcamentos/publicar-csv", post(publish_budget_csv_form))
+        .route("/orcamentos/publicar-lote", post(publish_budget_batch_form))
         .layer(DefaultBodyLimit::max(9_000_000))
         .route(
             "/api/estimating/budget/{scope}/import/xlsx/preview",
@@ -2056,6 +2057,95 @@ async fn publish_budget_csv_form(
                 canteiro_web::estimating::budget_csv_published(ctx, saved),
                 StatusCode::OK,
             ),
+            Err(error) => application_failure(error),
+        },
+        Err(error) => application_failure(error),
+    }
+}
+
+// CSV and XLSX share the same persisted, session-bound confirmation.
+async fn publish_budget_batch_form(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Form<BTreeMap<String, String>>, axum::extract::rejection::FormRejection>,
+) -> Response {
+    let Ok(Form(data)) = input else {
+        return bad_input();
+    };
+    if data.keys().any(|key| {
+        !matches!(
+            key.as_str(),
+            "organization_id" | "context_version" | "scope_id" | "expected_version" | "batch_id" | "csrf" | "reason"
+        )
+    }) {
+        return bad_input();
+    }
+    let headers = match form_headers(headers, &data) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let (auth, token) = match authenticated(auth, &headers, true) {
+        Ok(value) => value,
+        Err(error) => return *error,
+    };
+    let context = match form_context(&data) {
+        Ok(value) => value,
+        Err(_) => return bad_input(),
+    };
+    let expected_version = if field(&data, "expected_version").is_empty() {
+        None
+    } else {
+        match field(&data, "expected_version").parse::<i64>() {
+            Ok(value) if value > 0 => Some(value),
+            _ => return bad_input(),
+        }
+    };
+    let supplied = field(&data, "batch_id");
+    let Some(batch) = confirmed_import_batch_id(Some(supplied), supplied) else {
+        return bad_input();
+    };
+    let scope_id = field(&data, "scope_id").to_owned();
+    let reason = field(&data, "reason").to_owned();
+    if reason.trim().is_empty() || reason.chars().count() > 240 {
+        return bad_input();
+    }
+    let lease_key = uuid::Uuid::new_v4().to_string();
+    if let Err(error) = auth
+        .service()
+        .estimating_budget_import_lease(
+            &token,
+            BudgetLeaseCommand {
+                context: context.clone(),
+                scope_id: scope_id.clone(),
+                lease_key: lease_key.clone(),
+            },
+            batch,
+            expected_version,
+        )
+        .await
+    {
+        return application_failure(error);
+    }
+    let command = BudgetCommand {
+        context: context.clone(),
+        scope_id,
+        operation_key: batch.to_owned(),
+        expected_version,
+        lease_key: Some(lease_key),
+        reason,
+        change: BudgetChange::ApplyImport {},
+    };
+    match auth
+        .service()
+        .estimating_budget_execute(&token, command)
+        .await
+    {
+        Ok(saved) => match auth.service().estimating_context(&token).await {
+            Ok(ctx) if ctx.context.as_ref() == Some(&context) => html_page(
+                canteiro_web::estimating::budget_csv_published(ctx, saved),
+                StatusCode::OK,
+            ),
+            Ok(_) => bad_input(),
             Err(error) => application_failure(error),
         },
         Err(error) => application_failure(error),
