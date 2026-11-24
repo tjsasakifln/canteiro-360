@@ -3,7 +3,34 @@ use canteiro_domain::budget_csv::{ImportDifference, NumberLocale, compare_detail
 
 use canteiro_persistence::budget_imports::NewBudgetImport;
 use sha2::{Digest, Sha256};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, time::Duration};
+use tokio::sync::{Semaphore, SemaphorePermit};
+
+// Limite por processo, compartilhado entre sessões e empresas. Dois arquivos
+// podem ser processados e outros dois aguardam sem ocupar conexão PostgreSQL.
+static IMPORT_ADMISSION: Semaphore = Semaphore::const_new(4);
+static IMPORT_PROCESSING: Semaphore = Semaphore::const_new(2);
+
+fn import_busy() -> AuthError {
+    AuthError::new(
+        AuthErrorKind::RateLimited,
+        "rate_limited",
+        "A fila de importação está ocupada. Tente novamente em instantes.",
+    )
+}
+
+async fn reserve_import_slot<'a>(
+    admission: &'a Semaphore,
+    processing: &'a Semaphore,
+    wait: Duration,
+) -> Result<(SemaphorePermit<'a>, SemaphorePermit<'a>), AuthError> {
+    let admitted = admission.try_acquire().map_err(|_| import_busy())?;
+    let active = tokio::time::timeout(wait, processing.acquire())
+        .await
+        .map_err(|_| import_busy())?
+        .map_err(|_| AuthError::unavailable())?;
+    Ok((admitted, active))
+}
 
 fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision, AuthError> {
     preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
@@ -539,15 +566,26 @@ impl AuthService {
                 "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
             ));
         }
+        let original_base_version = current.as_ref().map(|r| r.version);
         // O arquivo pode exigir descompressão e validação de milhares de linhas.
         // Não manter uma conexão ou bloqueios de sessão durante esse trabalho.
         self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
             .await?;
         tx.commit().await?;
-        let (mut snapshot, locale, format, sha256) =
-            tokio::task::spawn_blocking(move || source.parse())
-                .await
-                .map_err(|_| AuthError::unavailable())??;
+        let permits = reserve_import_slot(
+            &IMPORT_ADMISSION,
+            &IMPORT_PROCESSING,
+            Duration::from_secs(15),
+        )
+        .await?;
+        let (mut snapshot, locale, format, sha256) = tokio::task::spawn_blocking(move || {
+            // Se o navegador cancelar, a tarefa bloqueante ainda pode executar.
+            // As vagas só voltam à fila quando o processamento realmente termina.
+            let _permits = permits;
+            source.parse()
+        })
+        .await
+        .map_err(|_| AuthError::unavailable())??;
         // A autorização e a revisão-base precisam ser atuais quando a prévia
         // durável for criada, não apenas quando o arquivo chegou.
         let (mut tx, access) = self.record_access(token, Some(context)).await?;
@@ -563,6 +601,9 @@ impl AuthService {
             return Err(invalid("O arquivo não pertence ao orçamento selecionado."));
         }
         let base_version = current.as_ref().map(|r| r.version);
+        if base_version != original_base_version {
+            return Err(record_conflict());
+        }
         snapshot.revision = u32::try_from(base_version.unwrap_or(0).saturating_add(1))
             .map_err(|_| invalid("Limite de revisões alcançado."))?;
         snapshot.status = BudgetState::Draft;
@@ -722,6 +763,34 @@ impl AuthService {
 #[cfg(test)]
 mod budget_import_diagnostics_tests {
     use super::*;
+
+    #[tokio::test]
+    async fn import_queue_bounds_processing_and_releases_admission_after_timeout() {
+        let admission = Semaphore::new(4);
+        let processing = Semaphore::new(2);
+        let first = reserve_import_slot(&admission, &processing, Duration::from_secs(1))
+            .await
+            .unwrap();
+        let second = reserve_import_slot(&admission, &processing, Duration::from_secs(1))
+            .await
+            .unwrap();
+        assert_eq!(processing.available_permits(), 0);
+        let timed_out = reserve_import_slot(&admission, &processing, Duration::ZERO).await;
+        assert!(matches!(timed_out, Err(error) if error.kind() == AuthErrorKind::RateLimited));
+        assert_eq!(admission.available_permits(), 2);
+        let waiting = admission.try_acquire_many(2).unwrap();
+        let rejected = reserve_import_slot(&admission, &processing, Duration::from_secs(1)).await;
+        assert!(matches!(rejected, Err(error) if error.kind() == AuthErrorKind::RateLimited));
+        drop(waiting);
+        drop(first);
+        let next = reserve_import_slot(&admission, &processing, Duration::from_secs(1))
+            .await
+            .unwrap();
+        drop(next);
+        drop(second);
+        assert_eq!(admission.available_permits(), 4);
+        assert_eq!(processing.available_permits(), 2);
+    }
 
     #[test]
     fn malformed_budget_csv_retains_physical_error_coordinates() {
