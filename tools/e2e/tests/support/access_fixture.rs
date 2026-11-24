@@ -28,7 +28,7 @@ pub(crate) async fn account(h: &Harness, label: &str, mfa: bool) -> TestResult<A
     let nonce = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(random);
     let email = format!(
         "permissions-{label}-{}@example.invalid",
-        nonce.to_lowercase()
+        nonce[..32].to_ascii_lowercase()
     );
     let password = format!("Acesso isolado {nonce}");
     let mut result = h.auth.context(None).await?;
