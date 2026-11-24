@@ -74,6 +74,52 @@ async fn estimating_imports_reflow_and_work_by_keyboard_at_360_and_1280() -> Tes
         vec![AccessAction::View, AccessAction::EditBudget],
     )
     .await?;
+    // A permission-tree scope alone is not a persisted work in the portfolio.
+    let state = h.auth.access_context(&owner.session).await?.state;
+    h.auth
+        .portfolio_execute(
+            &owner.session,
+            canteiro_contracts::portfolio::PortfolioCommand {
+                context: scope(&state),
+                key: uuid::Uuid::new_v4().to_string(),
+                work_id: work.clone(),
+                expected_version: None,
+                input: serde_json::from_value(json!({
+                    "title": "Obra orcamentaria",
+                    "development": "",
+                    "asset_name": "",
+                    "ownership": "owned",
+                    "cost_center": "",
+                    "external_reference": "",
+                    "status": "planned",
+                    "address": "",
+                    "latitude": null,
+                    "longitude": null,
+                    "section": "",
+                    "dimension": "100",
+                    "unit": "m2",
+                    "localities": [{
+                        "municipality": "Florianopolis",
+                        "uf": "SC",
+                        "percentage": "100",
+                        "dimension": "100"
+                    }],
+                    "contract_ids": []
+                }))?,
+                reason: "Cadastro da obra para ensaio de orcamento".into(),
+            },
+        )
+        .await
+        .map_err(|error| format!("Portfolio fixture: {error:?}"))?;
+    fixture_grant(
+        &h,
+        &owner,
+        &editor,
+        &work,
+        AccessRole::Budgeter,
+        vec![AccessAction::View],
+    )
+    .await?;
     let authorized = h.auth.estimating_context(&editor.session).await?;
     assert!(
         authorized.context.is_some()
