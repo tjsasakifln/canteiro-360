@@ -2,7 +2,9 @@
 mod support;
 
 use canteiro_contracts::access::{AccessAction, AccessCommand, AccessRole, ScopeKind};
-use canteiro_contracts::estimating::{CatalogCsvImportCommand, CostSource, NumberLocale};
+use canteiro_contracts::estimating::{
+    BudgetImportPreviewCommand, CatalogCsvImportCommand, CostSource, NumberLocale,
+};
 use serde_json::{Value, json};
 use std::time::Duration;
 use support::{Browser, ENTER, Harness, TAB, TestResult, access_fixture::*, write_json};
@@ -51,7 +53,7 @@ async fn estimating_imports_reflow_and_work_by_keyboard_at_360_and_1280() -> Tes
         &owner,
         ScopeKind::Contract,
         "Contrato para orcamento",
-        Some(work),
+        Some(work.clone()),
     )
     .await?;
     let budget = create_scope(
@@ -304,6 +306,92 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
             .await?;
     }
 
+    // Stage a budget of 31 services and inspect the persisted batch, not a new upload.
+    let actor = h
+        .auth
+        .access_context(&editor.session)
+        .await?
+        .state
+        .current_user_id;
+    let mut csv = String::from("CANTEIRO-ORCAMENTO-CSV-1\n");
+    csv.push_str("tipo;orcamento;revisao;estado;responsavel;variacao;obra;escopo;grupo;etapa;subetapa;id;codigo;descricao;unidade;quantidade;preco;catalogo;edicao\n");
+    let mut meta = vec![String::new(); 19];
+    meta[0] = "META".into();
+    meta[1] = budget.clone();
+    meta[2] = "1".into();
+    meta[3] = "draft".into();
+    meta[4] = actor;
+    csv.push_str(&format!("{}\n", meta.join(";")));
+    let mut variation = vec![String::new(); 19];
+    variation[0] = "VAR".into();
+    variation[5] = "v1".into();
+    variation[6] = work;
+    variation[7] = "Obra de ensaio".into();
+    csv.push_str(&format!("{}\n", variation.join(";")));
+    for index in 1..=31 {
+        let mut line = vec![String::new(); 19];
+        line[0] = "ITEM".into();
+        line[5] = "v1".into();
+        line[8] = "Obra".into();
+        line[9] = "Execucao".into();
+        line[10] = "Servicos".into();
+        line[11] = format!("import-{index:02}");
+        line[12] = format!("IMP-{index:02}");
+        line[13] = "Servico de ensaio".into();
+        line[14] = "m".into();
+        line[15] = "1".into();
+        line[16] = "2".into();
+        csv.push_str(&format!("{}\n", line.join(";")));
+    }
+    let staged = h
+        .auth
+        .estimating_budget_import_preview(
+            &editor.session,
+            BudgetImportPreviewCommand {
+                context: context.clone(),
+                scope_id: budget.clone(),
+                locale: NumberLocale::Canonical,
+                csv,
+            },
+        )
+        .await?;
+    let batch = staged.batch_id.ok_or("Missing persisted preview")?;
+    let report_url = format!(
+        "{}/orcamentos/importacao/diferencas?organization_id={}&context_version={}&scope_id={budget}&batch_id={batch}&page=1",
+        h.app_url, context.organization_id, context.context_version
+    );
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser.navigate(&report_url).await?;
+        browser
+            .wait(
+                "return document.body.innerText.includes('IMP-30') && !document.body.innerText.includes('IMP-31');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        browser.tab_to("input[name='page']").await?;
+        browser.key("\u{e013}").await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search.includes('page=2') && document.body.innerText.includes('IMP-31');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        let report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,first:document.body.innerText.includes('IMP-01')};",
+            )
+            .await?;
+        assert_eq!(report["width"], width);
+        assert_eq!(report["first"], false);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("budget-import-details-{width}.png")))
+            .await?;
+    }
+
     write_json(
         &h.evidence.join("estimating-interface.json"),
         &json!({
@@ -317,7 +405,8 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
                 "tab_order_budget_csv_preview",
                 "tab_order_catalog_csv_preview",
                 "historical_catalog_page_two_keyboard",
-                "historical_catalog_explicit_edition_keyboard"
+                "historical_catalog_explicit_edition_keyboard",
+                "budget_import_page_two_keyboard"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
