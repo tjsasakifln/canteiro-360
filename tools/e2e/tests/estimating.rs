@@ -3,7 +3,8 @@ mod support;
 
 use canteiro_contracts::access::{AccessAction, AccessCommand, AccessRole, ScopeKind};
 use canteiro_contracts::estimating::{
-    BudgetImportPreviewCommand, CatalogCsvImportCommand, CostSource, NumberLocale,
+    BudgetChange, BudgetCommand, BudgetImportPreviewCommand, BudgetLeaseCommand,
+    CatalogCsvImportCommand, CostSource, NumberLocale,
 };
 use serde_json::{Value, json};
 use std::time::Duration;
@@ -395,6 +396,62 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
             .await?;
     }
 
+    // Confirm only the persisted snapshot, never a client-provided revision.
+    let lease_key = uuid::Uuid::new_v4().to_string();
+    let lease = h
+        .auth
+        .estimating_budget_lease(
+            &editor.session,
+            BudgetLeaseCommand {
+                context: context.clone(),
+                scope_id: budget.clone(),
+                lease_key: lease_key.clone(),
+            },
+        )
+        .await?;
+    assert_eq!(lease.revision, 1);
+    let command = BudgetCommand {
+        context: context.clone(),
+        scope_id: budget.clone(),
+        operation_key: batch,
+        expected_version: None,
+        lease_key: Some(lease_key),
+        reason: "Confirmacao do lote conferido".into(),
+        change: BudgetChange::ApplyImport {},
+    };
+    let mut forged = command.clone();
+    forged.operation_key = uuid::Uuid::new_v4().to_string();
+    assert!(
+        h.auth
+            .estimating_budget_execute(&editor.session, forged)
+            .await
+            .is_err()
+    );
+    let saved = h
+        .auth
+        .estimating_budget_execute(&editor.session, command.clone())
+        .await?;
+    assert_eq!(saved.budget.version, 1);
+    assert_eq!(saved.budget.snapshot.lines.len(), 31);
+    assert!(!saved.repeated);
+    let replay = h
+        .auth
+        .estimating_budget_execute(&editor.session, command)
+        .await?;
+    assert!(replay.repeated);
+    assert_eq!(replay.budget.operation_key, saved.budget.operation_key);
+    let no_longer_ready = h
+        .auth
+        .estimating_budget_import_details(
+            &editor.session,
+            &context,
+            &budget,
+            &saved.budget.operation_key,
+            1,
+        )
+        .await;
+    assert!(no_longer_ready.is_err());
+
     write_json(
         &h.evidence.join("estimating-interface.json"),
         &json!({
@@ -409,7 +466,8 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
                 "tab_order_catalog_csv_preview",
                 "historical_catalog_page_two_keyboard",
                 "historical_catalog_explicit_edition_keyboard",
-                "budget_import_page_two_keyboard"
+                "budget_import_page_two_keyboard",
+                "persisted_batch_confirmation_and_replay"
             ],
             "viewports":viewports,
             "limitations":"Viewport emulation and keyboard checks, not physical device or full accessibility certification."
