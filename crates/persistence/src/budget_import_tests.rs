@@ -646,6 +646,67 @@ async fn historical_catalog_reference_is_not_limited_to_recent_headers() {
             .is_none()
     );
     tx.commit().await.unwrap();
+
+    // A publicação volumosa usa a mesma transação e os mesmos gatilhos.
+    // Uma duplicidade no último bloco precisa desfazer também os anteriores.
+    let codes: Vec<_> = (0..10_000).map(|n| format!("I{n:05}")).collect();
+    let mut items: Vec<_> = codes
+        .iter()
+        .map(|code| crate::catalogs::NewCatalogLine {
+            code,
+            description: "Serviço de ensaio",
+            category: "service",
+            unit: "m",
+            price: "1234.56",
+        })
+        .collect();
+    let date = chrono::NaiveDate::from_ymd_opt(2026, 11, 1).unwrap();
+    let header = crate::catalogs::NewCatalogEdition {
+        tenant,
+        scope,
+        catalog_id: "catalogo-volumoso",
+        edition: 1,
+        source_title: "Tabela volumosa",
+        source_organization: "Instituto",
+        license: "Uso interno",
+        locality: "SC",
+        tax_regime: "Regular",
+        competence: date,
+        published_on: date,
+        actor,
+    };
+    items[9_999].code = &codes[0];
+    let mut rejected = AuthStore::new(database.clone()).begin().await.unwrap();
+    rejected.org_set_actor(actor).await.unwrap();
+    rejected.org_set_tenant(tenant).await.unwrap();
+    assert!(rejected.catalog_publish(&header, &items).await.is_err());
+    drop(rejected);
+
+    items[9_999].code = &codes[9_999];
+    let mut publish = AuthStore::new(database.clone()).begin().await.unwrap();
+    publish.org_set_actor(actor).await.unwrap();
+    publish.org_set_tenant(tenant).await.unwrap();
+    assert!(
+        !publish
+            .catalog_edition_exists(tenant, header.catalog_id, 1)
+            .await
+            .unwrap()
+    );
+    assert!(publish.catalog_publish(&header, &items).await.unwrap());
+    publish.commit().await.unwrap();
+
+    let mut inspect = AuthStore::new(database.clone()).begin().await.unwrap();
+    inspect.org_set_actor(actor).await.unwrap();
+    inspect.org_set_tenant(tenant).await.unwrap();
+    let lines = inspect
+        .catalog_lines(tenant, scope, header.catalog_id, 1)
+        .await
+        .unwrap();
+    assert_eq!(lines.len(), 10_000);
+    assert_eq!(lines[0].code, "I00000");
+    assert_eq!(lines[9_999].code, "I09999");
+    assert_eq!(lines[9_999].price, "1234.560000");
+    inspect.commit().await.unwrap();
     database.close().await;
     fixture.cleanup().await;
 }
