@@ -1322,7 +1322,8 @@ pub fn import_details_page(
                     line.unit,
                     line.price,
                     line.catalog_id.unwrap_or_default(),
-                    line.catalog_edition.map_or_else(String::new, |v| v.to_string())
+                    line.catalog_edition
+                        .map_or_else(String::new, |v| v.to_string())
                 )
             };
             let before = change.before.map(display);
