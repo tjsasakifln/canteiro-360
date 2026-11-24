@@ -194,9 +194,8 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
     // Publish two immutable editions through the authenticated application service.
     let context = authorized.context.ok_or("Missing estimating context")?;
     for edition in [1, 2] {
-        let mut csv = String::from(
-            "CANTEIRO-CUSTOS-CSV-1\ncodigo;descricao;categoria;unidade;preco\n",
-        );
+        let mut csv =
+            String::from("CANTEIRO-CUSTOS-CSV-1\ncodigo;descricao;categoria;unidade;preco\n");
         for index in 1..=31 {
             csv.push_str(&format!(
                 "HIST-{index:02};Servico de ensaio;service;m;{edition}.00\n"
