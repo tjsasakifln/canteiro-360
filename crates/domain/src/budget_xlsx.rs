@@ -325,17 +325,12 @@ pub fn preview_import(bytes: &[u8]) -> Result<crate::budgets::BudgetRevision, Ce
         }
         let cells = read_row(&mut rest, row)?;
         starts.push(physical);
-        for (index, value) in cells.iter().enumerate() {
-            if index > 0 {
-                csv.push(';');
-            }
-            csv.push('"');
-            csv.push_str(&value.replace('"', "\"\""));
-            csv.push('"');
-            physical += value.bytes().filter(|&b| b == b'\n').count();
-        }
-        csv.push_str("\r\n");
-        physical += 1;
+        physical += cells
+            .iter()
+            .map(|value| value.bytes().filter(|&b| b == b'\n').count())
+            .sum::<usize>()
+            + 1;
+        crate::budget_csv::csv_row(&cells, &mut csv);
         if csv.len() > MAX_BYTES {
             return Err(error(row, 1, "Dados XLSX acima do limite de importação."));
         }
