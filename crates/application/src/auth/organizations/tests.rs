@@ -930,6 +930,15 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     let (org, _) = f.create(&admin, "Convites por email").await;
     f.select(&admin, &org).await;
     let old = f.invite(&admin, &recipient, OrganizationRole::Member).await;
+    let protected: bool = sqlx::query_scalar(
+        "SELECT octet_length(payload)>0 AND position(convert_to($1,'UTF8') in payload)=0 AND position(convert_to($2,'UTF8') in payload)=0 FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL",
+    )
+    .bind(&old)
+    .bind(&recipient.email)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(protected);
     let mut first = f.service.pending_mail(1).await.unwrap();
     assert_eq!(first.len(), 1);
     let first = first.remove(0);
