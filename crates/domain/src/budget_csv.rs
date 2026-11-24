@@ -1114,8 +1114,7 @@ mod tests {
         assert!(content.contains(">1234,56</t>"));
         assert!(content.contains(">78,900000</t>"));
         assert!(content.contains(">ref-2021</t>"));
-        let (imported, locale) =
-            crate::budget_xlsx::preview_import_with_locale(&bytes).unwrap();
+        let (imported, locale) = crate::budget_xlsx::preview_import_with_locale(&bytes).unwrap();
         assert_eq!(locale, NumberLocale::PtBr);
         assert_eq!(compare(&original, &imported).changed, 0);
         assert_eq!(export_csv(&imported, NumberLocale::PtBr).unwrap(), csv);
