@@ -205,20 +205,29 @@ impl AuthTransaction {
         if added != 1 {
             return Ok(false);
         }
-        for item in items {
+        // Cada bloco usa uma única ida ao banco, sem confirmação intermediária.
+        // Gatilhos, restrições e RLS continuam sendo aplicados a cada linha.
+        for chunk in items.chunks(1_000) {
+            let codes: Vec<_> = chunk.iter().map(|item| item.code).collect();
+            let descriptions: Vec<_> = chunk.iter().map(|item| item.description).collect();
+            let categories: Vec<_> = chunk.iter().map(|item| item.category).collect();
+            let units: Vec<_> = chunk.iter().map(|item| item.unit).collect();
+            let prices: Vec<_> = chunk.iter().map(|item| item.price).collect();
             sqlx::query(
                 "INSERT INTO canteiro.cost_catalog_items
                 (tenant_id,catalog_id,edition,code,description,category,unit,price)
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8::NUMERIC)",
+                SELECT $1,$2,$3,i.code,i.description,i.category,i.unit,i.price::NUMERIC
+                FROM unnest($4::TEXT[],$5::TEXT[],$6::TEXT[],$7::TEXT[],$8::TEXT[])
+                    AS i(code,description,category,unit,price)",
             )
             .bind(header.tenant)
             .bind(header.catalog_id)
             .bind(header.edition)
-            .bind(item.code)
-            .bind(item.description)
-            .bind(item.category)
-            .bind(item.unit)
-            .bind(item.price)
+            .bind(&codes)
+            .bind(&descriptions)
+            .bind(&categories)
+            .bind(&units)
+            .bind(&prices)
             .execute(&mut *self.tx)
             .await?;
         }
