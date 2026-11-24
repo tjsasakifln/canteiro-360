@@ -539,10 +539,26 @@ impl AuthService {
                 "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
             ));
         }
+        // O arquivo pode exigir descompressão e validação de milhares de linhas.
+        // Não manter uma conexão ou bloqueios de sessão durante esse trabalho.
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
         let (mut snapshot, locale, format, sha256) =
             tokio::task::spawn_blocking(move || source.parse())
                 .await
                 .map_err(|_| AuthError::unavailable())??;
+        // A autorização e a revisão-base precisam ser atuais quando a prévia
+        // durável for criada, não apenas quando o arquivo chegou.
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().is_some_and(|r| r.state == "approved") {
+            return Err(invalid(
+                "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
+            ));
+        }
         if snapshot.budget_id != scope.to_string() {
             return Err(invalid("O arquivo não pertence ao orçamento selecionado."));
         }
