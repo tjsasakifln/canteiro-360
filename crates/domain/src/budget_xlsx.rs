@@ -360,7 +360,10 @@ const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="ye
 const SHEET_END: &str = "</sheetData></worksheet>";
 
 fn xml_character(ch: char) -> bool {
-    matches!(ch, '\t' | '\n' | '\r' | '\u{20}'..='\u{d7ff}' | '\u{e000}'..='\u{fffd}' | '\u{10000}'..='\u{10ffff}')
+    matches!(
+        ch,
+        '\t' | '\n' | '\r' | '\u{20}'..='\u{d7ff}' | '\u{e000}'..='\u{fffd}' | '\u{10000}'..='\u{10ffff}'
+    )
 }
 
 fn xml_reference(reference: &str) -> Option<char> {
@@ -470,11 +473,12 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
     for (index, cell) in cells.iter_mut().enumerate() {
         let letter = char::from(b'A' + index as u8);
         let address = format!("<c r=\"{letter}{row}\"");
-        let prefix = format!("{address} t=\"inlineStr\"><is><t xml:space=\"preserve\">");
-        let plain_prefix = format!("{address} t=\"inlineStr\"><is><t>");
-        if let Some(next) = rest
-            .strip_prefix(&prefix)
-            .or_else(|| rest.strip_prefix(&plain_prefix))
+        let Some(suffix) = rest.strip_prefix(&address) else {
+            continue;
+        };
+        if let Some(next) = suffix
+            .strip_prefix(" t=\"inlineStr\"><is><t xml:space=\"preserve\">")
+            .or_else(|| suffix.strip_prefix(" t=\"inlineStr\"><is><t>"))
         {
             let (raw, next) = next
                 .split_once("</t></is></c>")
@@ -482,16 +486,16 @@ fn read_row(rest: &mut &str, row: usize) -> Result<Vec<String>, CellError> {
             *cell = decode_text(raw, row, index + 1)?;
             *rest = next;
         } else if let Some(next) = [
-            format!("{address}/>"),
-            format!("{address}></c>"),
-            format!("{address} t=\"inlineStr\"><is><t/></is></c>"),
-            format!("{address} t=\"inlineStr\"><is/></c>"),
+            "/>",
+            "></c>",
+            " t=\"inlineStr\"><is><t/></is></c>",
+            " t=\"inlineStr\"><is/></c>",
         ]
         .iter()
-        .find_map(|prefix| rest.strip_prefix(prefix.as_str()))
+        .find_map(|prefix| suffix.strip_prefix(*prefix))
         {
             *rest = next;
-        } else if rest.starts_with(&address) {
+        } else {
             return Err(invalid(index + 1));
         }
     }
