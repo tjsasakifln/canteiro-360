@@ -362,6 +362,46 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
             .await?;
     }
 
+    // A memória deve mostrar a regra explícita e o preço histórico antes da conversão.
+    h.auth
+        .estimating_composition_write(
+            &editor.session,
+            serde_json::from_value(json!({
+                "context": context.clone(),
+                "scope_id": budget.clone(),
+                "operation_key": uuid::Uuid::new_v4().to_string(),
+                "expected_version": null,
+                "reason": "Cadastro com conversao de unidade",
+                "composition": {
+                    "code": "CONV-E2E",
+                    "description": "Servico com conversao explicita",
+                    "unit": "un",
+                    "cost_mode": {"mode":"formula"},
+                    "lines": [{
+                        "id": "insumo",
+                        "source": {
+                            "kind": "catalog",
+                            "catalog_id": "historico-e2e",
+                            "edition": 1,
+                            "code": "HIST-01"
+                        },
+                        "coefficient": "3",
+                        "unit": "un",
+                        "conversion": {
+                            "from": "m",
+                            "to": "un",
+                            "factor": "2",
+                            "reference": "Peca de dois metros"
+                        }
+                    }],
+                    "incidences": [],
+                    "bdi": "0",
+                    "discount": "0"
+                }
+            }))?,
+        )
+        .await?;
+
     // A consulta direta deve executar o servidor e manter a revisão da memória.
     h.auth
         .estimating_composition_write(
@@ -431,6 +471,44 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
             .full_screenshot(&h.evidence.join(format!("composition-memory-{width}.png")))
+            .await?;
+
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        browser
+            .tab_to("details:has(#composition-lookup) > summary")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .tab_to("#composition-lookup select[name='scope_id']")
+            .await?;
+        browser.key(TAB).await?;
+        for character in "CONV-E2E".chars() {
+            browser.key(&character.to_string()).await?;
+        }
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('h1')?.textContent.includes('CONV-E2E');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        let report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,source:document.body.innerText.includes('HIST-01'),rule:document.body.innerText.includes('Peca de dois metros'),original:document.body.innerText.includes('1.000000 / m'),converted:document.body.innerText.includes('2.000000'),total:document.body.innerText.includes('6.000000')};",
+            )
+            .await?;
+        assert_eq!(report["width"], width);
+        assert_eq!(report["source"], true);
+        assert_eq!(report["rule"], true);
+        assert_eq!(report["original"], true);
+        assert_eq!(report["converted"], true);
+        assert_eq!(report["total"], true);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("composition-conversion-{width}.png")))
             .await?;
     }
 
