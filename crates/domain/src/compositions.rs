@@ -79,6 +79,10 @@ pub struct CostLineMemory {
     pub category: CostCategory,
     pub coefficient: Quantity,
     pub unit: MeasureUnit,
+    /// Preço e unidade da edição histórica, antes da conversão explícita.
+    pub source_unit: MeasureUnit,
+    pub source_price: UnitPrice,
+    pub conversion: Option<UnitConversion>,
     pub unit_cost: UnitPrice,
     pub amount: UnitPrice,
 }
@@ -392,6 +396,9 @@ impl CompositionBook {
                         category,
                         coefficient: line.coefficient,
                         unit: line.unit,
+                        source_unit: unit,
+                        source_price: price,
+                        conversion: line.conversion.clone(),
                         unit_cost,
                         amount: unit_price(amount)?,
                     });
@@ -771,13 +778,35 @@ mod tests {
             base_lines: vec!["material".into()],
         }];
         let mut book = CompositionBook::default();
+        let mut converted = a.clone();
+        converted.code = "B".into();
+        converted.lines[0].unit = MeasureUnit::Kilogram;
+        let conversion = UnitConversion {
+            from: MeasureUnit::Unit,
+            to: MeasureUnit::Kilogram,
+            factor: "0.5".parse().unwrap(),
+            reference: "Embalagem de 2 kg".into(),
+        };
+        converted.lines[0].conversion = Some(conversion.clone());
         book.insert(a).unwrap();
+        book.insert(converted).unwrap();
+        let converted = book.calculate("B", &lib).unwrap();
+        let detail = &converted.line_details[0];
+        assert_eq!(detail.source_unit, MeasureUnit::Unit);
+        assert_eq!(detail.source_price.to_string(), "100.000000");
+        assert_eq!(detail.unit, MeasureUnit::Kilogram);
+        assert_eq!(detail.conversion.as_ref(), Some(&conversion));
+        assert_eq!(detail.unit_cost.to_string(), "50.000000");
+        assert_eq!(converted.selling_price.to_string(), "55.000000");
         let result = book.calculate("A", &lib).unwrap();
         assert_eq!(result.base_cost.to_string(), "100.000000");
         assert_eq!(result.incidence_cost.to_string(), "10.000000");
         assert_eq!(result.selling_price.to_string(), "110.000000");
         assert_eq!(result.line_details.len(), 1);
         assert_eq!(result.line_details[0].category, CostCategory::Material);
+        assert_eq!(result.line_details[0].source_unit, MeasureUnit::Unit);
+        assert_eq!(result.line_details[0].source_price.to_string(), "100.000000");
+        assert!(result.line_details[0].conversion.is_none());
         assert_eq!(result.line_details[0].amount.to_string(), "100.000000");
         assert_eq!(result.incidence_details.len(), 1);
         assert_eq!(result.incidence_details[0].basis.to_string(), "100.000000");
