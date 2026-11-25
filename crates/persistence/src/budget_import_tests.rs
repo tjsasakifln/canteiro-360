@@ -208,6 +208,17 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             .unwrap()
             .is_none()
     );
+    // Uma contagem falsa não pode gerar uma prévia durável nem ocupar a chave.
+    assert!(
+        first
+            .budget_import_stage(&NewBudgetImport {
+                included: 9_999,
+                ..first_preview
+            })
+            .await
+            .unwrap()
+            .is_none()
+    );
     assert_eq!(
         first.budget_import_stage(&first_preview).await.unwrap(),
         Some(first_batch_id)
@@ -327,6 +338,21 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         changed: 1,
         removed: 0,
     };
+    // A diferença é recalculada sobre a revisão real, não sobre o relatório enviado.
+    for (included, changed, removed) in [(1, 0, 0), (0, 0, 0), (0, 1, 1)] {
+        assert!(
+            stage
+                .budget_import_stage(&NewBudgetImport {
+                    included,
+                    changed,
+                    removed,
+                    ..candidate
+                })
+                .await
+                .unwrap()
+                .is_none()
+        );
+    }
     assert_eq!(
         stage.budget_import_stage(&candidate).await.unwrap(),
         Some(batch_id)
