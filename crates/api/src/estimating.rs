@@ -872,7 +872,10 @@ mod composition_form_tests {
         assert!(composition_conversion_from_form(&fields).is_none());
         fields.insert("conversion_factor".into(), "0.001".into());
         assert!(composition_conversion_from_form(&fields).is_none());
-        fields.insert("conversion_reference".into(), "Conversão de t para kg".into());
+        fields.insert(
+            "conversion_reference".into(),
+            "Conversão de t para kg".into(),
+        );
         let conversion = composition_conversion_from_form(&fields).unwrap().unwrap();
         assert_eq!(conversion.from, MeasureUnit::Tonne);
         assert_eq!(conversion.to, MeasureUnit::Kilogram);
