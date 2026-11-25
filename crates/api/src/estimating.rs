@@ -824,6 +824,23 @@ mod composition_form_tests {
         assert_eq!(added.incidences, original.incidences);
         assert_eq!(added.cost_mode, original.cost_mode);
 
+        fields.insert("unit".into(), "kg".into());
+        fields.insert("conversion_from".into(), "t".into());
+        fields.insert("conversion_factor".into(), "0.001".into());
+        fields.insert("conversion_reference".into(), "Conversão de massa".into());
+        let converted = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(converted.lines[0], original.lines[0]);
+        assert_eq!(converted.lines[1].unit, MeasureUnit::Kilogram);
+        let conversion = converted.lines[1].conversion.as_ref().unwrap();
+        assert_eq!(conversion.from, MeasureUnit::Tonne);
+        assert_eq!(conversion.to, MeasureUnit::Kilogram);
+        assert_eq!(conversion.factor.to_string(), "0.001");
+        assert_eq!(converted.lines[1].source, added.lines[1].source);
+        fields.remove("conversion_from");
+        fields.remove("conversion_factor");
+        fields.remove("conversion_reference");
+        fields.insert("unit".into(), "h".into());
+
         for invalid_id in ["novo-equipamento", "insumo-01", "=SOMA(1)"] {
             if invalid_id == "novo-equipamento" {
                 continue;
@@ -856,9 +873,7 @@ mod composition_form_tests {
         fields.insert("conversion_factor".into(), "0.001".into());
         assert!(composition_conversion_from_form(&fields).is_none());
         fields.insert("conversion_reference".into(), "Conversão de t para kg".into());
-        let conversion = composition_conversion_from_form(&fields)
-            .unwrap()
-            .unwrap();
+        let conversion = composition_conversion_from_form(&fields).unwrap().unwrap();
         assert_eq!(conversion.from, MeasureUnit::Tonne);
         assert_eq!(conversion.to, MeasureUnit::Kilogram);
         assert_eq!(conversion.factor.to_string(), "0.001");
