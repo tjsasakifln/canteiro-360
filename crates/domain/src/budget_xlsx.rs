@@ -321,15 +321,14 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
                     [dword(raw, 0), dword(raw, 4), dword(raw, 8)] == central_values
                 })
             };
-            let length = if tail.starts_with(&0x0807_4b50_u32.to_le_bytes())
-                && matches_values(&tail[4..])
-            {
-                16
-            } else if matches_values(tail) {
-                12
-            } else {
-                return None;
-            };
+            let length =
+                if tail.starts_with(&0x0807_4b50_u32.to_le_bytes()) && matches_values(&tail[4..]) {
+                    16
+                } else if matches_values(tail) {
+                    12
+                } else {
+                    return None;
+                };
             data_end.checked_add(length)?
         } else {
             data_end
