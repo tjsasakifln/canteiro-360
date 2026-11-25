@@ -930,10 +930,16 @@ pub fn composition_memory(
                 ComponentSource::Composition { code } =>
                     format!("Composição vinculada {code}"),
             };
-            let conversion = entry.conversion.as_ref().filter(|_| entry.source_unit != entry.unit).map(|rule| {
-                format!("Conversão de {} para {} · fator {} · referência: {}",
-                    rule.from, rule.to, rule.factor, rule.reference)
-            });
+            let conversion = entry
+                .conversion
+                .as_ref()
+                .filter(|_| entry.source_unit != entry.unit)
+                .map(|rule| {
+                    format!(
+                        "Conversão de {} para {} · fator {} · referência: {}",
+                        rule.from, rule.to, rule.factor, rule.reference
+                    )
+                });
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · {}",entry.id,category(entry.category))}</h3>
