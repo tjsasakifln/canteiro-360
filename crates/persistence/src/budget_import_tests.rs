@@ -338,6 +338,31 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         changed: 1,
         removed: 0,
     };
+    // Mesmo com relatório correto e snapshot estruturalmente válido, uma
+    // importação direta não pode excluir serviços ou alterar o escopo histórico.
+    let mut removed = updated.clone();
+    removed.lines.remove(0);
+    let mut moved = updated.clone();
+    moved.variations[0].scope = "Escopo alterado sem comando explícito".into();
+    for prohibited in [removed, moved] {
+        prohibited.summarize().unwrap();
+        let difference = canteiro_domain::budget_csv::compare(&parsed, &prohibited);
+        let payload = serde_json::to_string(&prohibited).unwrap();
+        assert!(
+            stage
+                .budget_import_stage(&NewBudgetImport {
+                    id: Uuid::new_v4(),
+                    preview: &payload,
+                    included: i32::try_from(difference.included).unwrap(),
+                    changed: i32::try_from(difference.changed).unwrap(),
+                    removed: i32::try_from(difference.removed).unwrap(),
+                    ..candidate
+                })
+                .await
+                .unwrap()
+                .is_none()
+        );
+    }
     // A diferença é recalculada sobre a revisão real, não sobre o relatório enviado.
     for (included, changed, removed) in [(1, 0, 0), (0, 0, 0), (0, 1, 1)] {
         assert!(
