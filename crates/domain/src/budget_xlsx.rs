@@ -287,17 +287,7 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
         }
         let name = central.get(46..46 + name_len)?;
         let index = names.iter().position(|part| part.as_bytes() == name)?;
-        let fixed_size = match index {
-            0 if count == 5 => Some(CONTENT_TYPES.len()),
-            1 => Some(ROOT_RELS.len()),
-            2 => Some(WORKBOOK.len()),
-            3 if count == 5 => Some(WORKBOOK_RELS.len()),
-            _ => None,
-        };
-        if parts[index].is_some()
-            || fixed_size.is_some_and(|expected| size != expected)
-            || (index < 4 && size > 8192)
-        {
+        if parts[index].is_some() || (index < 4 && size > 8192) {
             return None;
         }
         central = central.get(46 + name_len..)?;
@@ -363,6 +353,27 @@ fn shared_workbook_rels() -> String {
     )
 }
 
+// Aceita apenas declarações XML 1.0 em UTF-8 conhecidas, além de BOM e
+// espaços de apresentação nas extremidades. O conteúdo estrutural continua
+// sujeito à lista fechada de partes e à comparação integral.
+fn xml_body(xml: &str) -> &str {
+    let xml = xml.strip_prefix('\u{feff}').unwrap_or(xml);
+    let xml = [
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#,
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="no"?>"#,
+        r#"<?xml version="1.0" encoding="UTF-8"?>"#,
+        r#"<?xml version="1.0"?>"#,
+    ]
+    .into_iter()
+    .find_map(|prefix| xml.strip_prefix(prefix))
+    .unwrap_or(xml);
+    xml.trim_matches([' ', '\t', '\r', '\n'])
+}
+
+fn same_xml(actual: &[u8], expected: &str) -> bool {
+    std::str::from_utf8(actual).is_ok_and(|xml| xml_body(xml) == xml_body(expected))
+}
+
 fn official_workbook(bytes: &[u8]) -> Result<(String, Vec<String>), CellError> {
     let invalid = || error(1, 1, "Pacote XLSX fora do formato oficial seguro.");
     let mut parts = unpack_official(bytes).ok_or_else(invalid)?;
@@ -377,10 +388,10 @@ fn official_workbook(bytes: &[u8]) -> Result<(String, Vec<String>), CellError> {
     } else {
         WORKBOOK_RELS.to_owned()
     };
-    if parts[0] != content_types.as_bytes()
-        || parts[1] != ROOT_RELS.as_bytes()
-        || parts[2] != WORKBOOK.as_bytes()
-        || parts[3] != relationships.as_bytes()
+    if !same_xml(&parts[0], &content_types)
+        || !same_xml(&parts[1], ROOT_RELS)
+        || !same_xml(&parts[2], WORKBOOK)
+        || !same_xml(&parts[3], &relationships)
     {
         return Err(invalid());
     }
@@ -515,7 +526,9 @@ const MAX_SHARED_STRINGS: usize = 250_000;
 
 fn read_shared_strings(xml: &str) -> Result<Vec<String>, CellError> {
     let invalid = || error(1, 1, "Tabela de textos XLSX fora do formato seguro.");
-    let mut rest = xml.strip_prefix(SHARED_START).ok_or_else(invalid)?;
+    let mut rest = xml_body(xml)
+        .strip_prefix(xml_body(SHARED_START))
+        .ok_or_else(invalid)?;
     let mut unique = None;
     if let Some(tail) = rest.strip_prefix(" count=\"") {
         let (count, tail) = tail.split_once('"').ok_or_else(invalid)?;
@@ -716,8 +729,8 @@ pub fn preview_import_with_locale(
     bytes: &[u8],
 ) -> Result<(crate::budgets::BudgetRevision, NumberLocale), CellError> {
     let (sheet, shared) = official_workbook(bytes)?;
-    let mut rest = sheet
-        .strip_prefix(SHEET_START)
+    let mut rest = xml_body(&sheet)
+        .strip_prefix(xml_body(SHEET_START))
         .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
     let version = read_row(&mut rest, 1, NumberLocale::Canonical, &shared)?;
     if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
@@ -805,6 +818,25 @@ mod tests {
         let end = directory.len() - 22;
         directory[end + 10] = 6;
         assert!(official_sheet(&directory).is_err());
+    }
+
+    #[test]
+    fn xml_declaration_variants_do_not_relax_relationship_validation() {
+        let body = xml_body(ROOT_RELS);
+        for declaration in [
+            "",
+            r#"<?xml version="1.0"?>"#,
+            r#"<?xml version="1.0" encoding="UTF-8"?>"#,
+            r#"<?xml version="1.0" encoding="UTF-8" standalone="no"?>"#,
+        ] {
+            let variant = format!("\u{feff}{declaration}\r\n{body}\n");
+            assert!(same_xml(variant.as_bytes(), ROOT_RELS));
+        }
+        let external = body.replace("xl/workbook.xml", "https://invalid.example/");
+        assert!(!same_xml(external.as_bytes(), ROOT_RELS));
+        let dtd = format!("<!DOCTYPE Relationships>{body}");
+        assert!(!same_xml(dtd.as_bytes(), ROOT_RELS));
+        assert!(!same_xml(&[0xff], ROOT_RELS));
     }
 
     #[test]
@@ -1125,6 +1157,27 @@ mod tests {
                 csv
             );
         }
+        let variants: Vec<_> = parts
+            .iter()
+            .map(|&(name, data)| {
+                let body = xml_body(std::str::from_utf8(data).unwrap());
+                (
+                    name,
+                    format!("\u{feff}<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n{body}\n"),
+                )
+            })
+            .collect();
+        let entries: Vec<_> = variants
+            .iter()
+            .map(|(name, xml)| (*name, xml.as_bytes()))
+            .collect();
+        let (imported, locale) = preview_import_with_locale(&stored_zip(&entries)).unwrap();
+        assert_eq!(locale, NumberLocale::PtBr);
+        assert_eq!(
+            crate::budget_csv::export_csv(&imported, locale).unwrap(),
+            csv
+        );
+
         let external = rels.replace(
             r#"Target="sharedStrings.xml""#,
             r#"Target="https://invalid.example/" TargetMode="External""#,
