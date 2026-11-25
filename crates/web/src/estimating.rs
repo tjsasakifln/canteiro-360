@@ -930,11 +930,17 @@ pub fn composition_memory(
                 ComponentSource::Composition { code } =>
                     format!("Composição vinculada {code}"),
             };
+            let conversion = entry.conversion.as_ref().filter(|_| entry.source_unit != entry.unit).map(|rule| {
+                format!("Conversão de {} para {} · fator {} · referência: {}",
+                    rule.from, rule.to, rule.factor, rule.reference)
+            });
             view! {
                 <article class="record-summary">
                     <h3>{format!("{} · {}",entry.id,category(entry.category))}</h3>
                     <p>{source}</p>
-                    <p>{format!("Coeficiente {} {} · preço unitário convertido R$ {} · parcela R$ {}",
+                    <p>{format!("Preço unitário na origem: R$ {} / {}",entry.source_price,entry.source_unit)}</p>
+                    {conversion.map(|description|view!{<p>{description}</p>})}
+                    <p>{format!("Coeficiente {} {} · preço unitário utilizado R$ {} · parcela R$ {}",
                         entry.coefficient,entry.unit,entry.unit_cost,entry.amount)}</p>
                 </article>
             }
