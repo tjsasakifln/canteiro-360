@@ -1055,3 +1055,82 @@ async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
     assert!(f.service.pending_mail(1).await.unwrap().is_empty());
     f.close().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("queue-owner", true).await;
+    let first = f.person("queue-first", false).await;
+    let waiting = f.person("queue-waiting", false).await;
+    let (org, _) = f.create(&admin, "Fila de convites").await;
+    f.select(&admin, &org).await;
+    let first_token = f.invite(&admin, &first, OrganizationRole::Member).await;
+    let first_delivery = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(first_delivery.token, first_token);
+    let waiting_token = f.invite(&admin, &waiting, OrganizationRole::Member).await;
+
+    // Torna a retentativa elegível depois do envio que ainda aguarda a primeira tentativa.
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET lease_until=clock_timestamp()-interval '1 second'
+         WHERE invitation_id IS NOT NULL AND attempts=1",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET created_at=clock_timestamp()-interval '10 seconds'
+         WHERE invitation_id IS NOT NULL AND attempts=0",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    let next = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(next.token, waiting_token);
+    f.service.mark_mail_delivered(&next.id).await.unwrap();
+
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET invitation_expires_at=clock_timestamp()+interval '30 seconds'
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    let retry = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(retry.token, first_token);
+    let (bounded, attempts): (bool, i32) = sqlx::query_as(
+        "SELECT lease_until<=invitation_expires_at, attempts
+         FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(bounded);
+    assert_eq!(attempts, 2);
+
+    // Mesmo com reserva válida, a confirmação não reabre um convite expirado.
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET invitation_expires_at=clock_timestamp()-interval '1 second'
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    f.service.mark_mail_delivered(&retry.id).await.unwrap();
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    let discarded: bool = sqlx::query_scalar(
+        "SELECT discarded_at IS NOT NULL AND octet_length(payload)=0
+         FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(discarded);
+    f.close().await;
+}
