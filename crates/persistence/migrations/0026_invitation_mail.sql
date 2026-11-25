@@ -20,7 +20,7 @@ RETURNS TRIGGER LANGUAGE plpgsql
 SET search_path = pg_catalog, pg_temp AS $$
 BEGIN
     UPDATE canteiro_auth.mail_outbox
-       SET discarded_at=clock_timestamp(), payload='\\x'::bytea
+       SET discarded_at=clock_timestamp(), payload=pg_catalog.decode('', 'hex')
      WHERE invitation_tenant_id=NEW.tenant_id AND invitation_id=NEW.id
        AND delivered_at IS NULL AND discarded_at IS NULL;
     RETURN NEW;
