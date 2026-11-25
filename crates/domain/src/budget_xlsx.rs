@@ -233,7 +233,7 @@ fn inflate_part(data: &[u8], size: usize) -> Option<Vec<u8>> {
 
 /// Read only a single-disk ZIP32 with the named parts, stored or DEFLATE.
 /// Every local entry must agree with the central directory and CRC. No
-/// descriptors, comments, extra fields, encryption, overlaps or hidden data.
+/// unchecked descriptors, comments, extra fields, encryption, overlaps or hidden data.
 fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
     if bytes.len() > MAX_PACKAGE_BYTES {
         return None;
@@ -271,7 +271,7 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
         let offset = dword(entry, 42) as usize;
         if dword(entry, 0) != 0x0201_4b50
             || word(entry, 6) > 20
-            || flags & !0x0806 != 0
+            || flags & !0x080e != 0
             || !matches!(method, 0 | 8)
             || (method == 0 && (compressed != size || flags & 6 != 0))
             || word(entry, 30) != 0
@@ -294,14 +294,15 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
 
         let local = bytes.get(offset..central_start)?;
         let header = local.get(..30)?;
+        let descriptor = flags & 8 != 0;
+        let local_values = [dword(header, 14), dword(header, 18), dword(header, 22)];
+        let central_values = [checksum, compressed as u32, size as u32];
         if dword(header, 0) != 0x0403_4b50
             || word(header, 4) != word(entry, 6)
             || word(header, 6) != flags
             || word(header, 8) != method
             || dword(header, 10) != dword(entry, 12)
-            || dword(header, 14) != checksum
-            || dword(header, 18) as usize != compressed
-            || dword(header, 22) as usize != size
+            || !(local_values == central_values || (descriptor && local_values == [0; 3]))
             || usize::from(word(header, 26)) != name_len
             || word(header, 28) != 0
             || local.get(30..30 + name_len)? != name
@@ -311,6 +312,28 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
         let data_start = 30 + name_len;
         let data_end = data_start.checked_add(compressed)?;
         let data = local.get(data_start..data_end)?;
+        let entry_end = if descriptor {
+            // ZIP32 streaming writers may use a signed or unsigned descriptor.
+            // Never scan for its signature: the central directory fixes its offset.
+            let tail = local.get(data_end..)?;
+            let matches_values = |raw: &[u8]| {
+                raw.get(..12).is_some_and(|raw| {
+                    [dword(raw, 0), dword(raw, 4), dword(raw, 8)] == central_values
+                })
+            };
+            let length = if tail.starts_with(&0x0807_4b50_u32.to_le_bytes())
+                && matches_values(&tail[4..])
+            {
+                16
+            } else if matches_values(tail) {
+                12
+            } else {
+                return None;
+            };
+            data_end.checked_add(length)?
+        } else {
+            data_end
+        };
         let decoded = if method == 8 {
             inflate_part(data, size)?
         } else {
@@ -320,7 +343,7 @@ fn unpack_official(bytes: &[u8]) -> Option<Vec<Vec<u8>>> {
             return None;
         }
         parts[index] = Some(decoded);
-        ranges.push((offset, offset.checked_add(data_end)?));
+        ranges.push((offset, offset.checked_add(entry_end)?));
     }
     if !central.is_empty() {
         return None;
@@ -908,6 +931,63 @@ mod tests {
         assert!(official_sheet(&directory).is_err());
     }
 
+    // Rewrite only the last entry of an independently constructed ZIP fixture.
+    // The central directory remains authoritative and its offset is updated.
+    fn stream_last_entry(mut bytes: Vec<u8>, signed: bool) -> Vec<u8> {
+        let end = bytes.len() - 22;
+        let start = dword(&bytes, end + 16) as usize;
+        let mut entry = start;
+        let mut last = entry;
+        while entry < end {
+            last = entry;
+            entry += 46 + usize::from(word(&bytes, entry + 28));
+        }
+        assert_eq!(entry, end);
+        let local = dword(&bytes, last + 42) as usize;
+        let flags = word(&bytes, last + 8) | 8;
+        let values = bytes[last + 16..last + 28].to_vec();
+        bytes[last + 8..last + 10].copy_from_slice(&flags.to_le_bytes());
+        bytes[local + 6..local + 8].copy_from_slice(&flags.to_le_bytes());
+        bytes[local + 14..local + 26].fill(0);
+        let mut descriptor = Vec::new();
+        if signed {
+            u32le(&mut descriptor, 0x0807_4b50);
+        }
+        descriptor.extend_from_slice(&values);
+        let new_start = (start + descriptor.len()) as u32;
+        bytes[end + 16..end + 20].copy_from_slice(&new_start.to_le_bytes());
+        bytes.splice(start..start, descriptor);
+        bytes
+    }
+
+    #[test]
+    fn streaming_zip_requires_exact_descriptor_and_no_hidden_bytes() {
+        let csv = format!(
+            "{FORMAT_VERSION}\r\n{}\r\n",
+            crate::budget_csv::HEADER.join(";")
+        );
+        let original = export_from_csv(&csv, NumberLocale::Canonical).unwrap();
+        let expected = official_sheet(&original).unwrap();
+        for base in [original.clone(), recompress_for_test(&original)] {
+            for signed in [false, true] {
+                let streamed = stream_last_entry(base.clone(), signed);
+                assert_eq!(official_sheet(&streamed).unwrap(), expected);
+                let end = streamed.len() - 22;
+                let start = dword(&streamed, end + 16) as usize;
+                for offset in [12, 8, 4] {
+                    let mut bad = streamed.clone();
+                    bad[start - offset] ^= 1;
+                    assert!(official_sheet(&bad).is_err());
+                }
+                let mut hidden = streamed.clone();
+                let shifted = (start + 1) as u32;
+                hidden[end + 16..end + 20].copy_from_slice(&shifted.to_le_bytes());
+                hidden.insert(start, 0);
+                assert!(official_sheet(&hidden).is_err());
+            }
+        }
+    }
+
     #[test]
     fn xml_declaration_variants_do_not_relax_relationship_validation() {
         let body = xml_body(ROOT_RELS);
@@ -1155,6 +1235,14 @@ mod tests {
             csv
         );
         assert_eq!(imported.lines[0].code, "00000");
+
+        let streamed = stream_last_entry(recompress_for_test(&bytes), true);
+        let (imported, locale) = preview_import_with_locale(&streamed).unwrap();
+        assert_eq!(locale, NumberLocale::PtBr);
+        assert_eq!(
+            crate::budget_csv::export_csv(&imported, locale).unwrap(),
+            csv
+        );
     }
 
     #[test]
