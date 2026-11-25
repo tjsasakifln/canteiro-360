@@ -119,7 +119,11 @@ pub enum CompositionError {
     Decimal(#[from] DecimalError),
 }
 fn text(s: &str, max: usize) -> bool {
-    !s.trim().is_empty() && s.trim() == s && s.len() <= max && !s.chars().any(char::is_control)
+    !s.trim().is_empty()
+        && s.trim() == s
+        && s.len() <= max
+        && !s.chars().any(char::is_control)
+        && crate::budget_csv::safe(s)
 }
 fn unit_price(value: ExactDecimal) -> Result<UnitPrice, CompositionError> {
     Ok(UnitPrice::new(value.round_away(6)?)?)
@@ -602,6 +606,49 @@ mod tests {
         book.insert(excessive).unwrap();
         assert!(book.calculate("C", &CatalogLibrary::default()).is_err());
         assert!("-1".parse::<Quantity>().is_err());
+    }
+    #[test]
+    fn direct_composition_payload_rejects_unsafe_text() {
+        for value in ["=1+1", "Código\u{202e} oculto"] {
+            let mut item = c(value);
+            assert_eq!(item.validate(), Err(CompositionError::Invalid));
+            item = c("A");
+            item.description = value.into();
+            assert_eq!(item.validate(), Err(CompositionError::Invalid));
+            item = c("A");
+            if let CostMode::Informed { reason, .. } = &mut item.cost_mode {
+                *reason = value.into();
+            }
+            assert_eq!(item.validate(), Err(CompositionError::Invalid));
+
+            let mut item = c("A");
+            item.lines.push(ComponentLine {
+                id: "insumo".into(),
+                source: ComponentSource::Composition { code: value.into() },
+                coefficient: "1".parse().unwrap(),
+                unit: MeasureUnit::Unit,
+                conversion: None,
+            });
+            assert_eq!(item.validate(), Err(CompositionError::Invalid));
+            item.lines[0].source = ComponentSource::Catalog {
+                catalog_id: "fonte".into(),
+                edition: 1,
+                code: value.into(),
+            };
+            assert_eq!(item.validate(), Err(CompositionError::Invalid));
+            item.lines[0].source = ComponentSource::Catalog {
+                catalog_id: "fonte".into(),
+                edition: 1,
+                code: "COD-1".into(),
+            };
+            assert!(item.validate().is_ok());
+            item.incidences.push(CostIncidence {
+                id: value.into(),
+                percent: "10".parse().unwrap(),
+                base_lines: vec!["insumo".into()],
+            });
+            assert_eq!(item.validate(), Err(CompositionError::Incidence));
+        }
     }
     #[test]
     fn informed_cost_still_requires_well_formed_catalog_references() {
