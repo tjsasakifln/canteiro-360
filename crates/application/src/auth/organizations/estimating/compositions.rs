@@ -78,6 +78,61 @@ async fn calculating_book(
     Ok((book, catalogs, sources.into_iter().collect()))
 }
 impl AuthService {
+    /// Recupera a revisão pelo código, sem depender da lista limitada da página.
+    pub async fn estimating_composition_for_edit(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        code: &str,
+    ) -> Result<CompositionRecord, AuthError> {
+        self.limit("estimating-composition-lookup", token, 60, 60)
+            .await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_text)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let row = tx
+            .composition_lookup(a.tenant, scope, code)
+            .await?
+            .ok_or_else(|| invalid("Composição não encontrada no orçamento."))?;
+        let record = composition_view(row)?;
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        Ok(record)
+    }
+
+    /// A revisão exibida e o grafo de cálculo são lidos sob o mesmo bloqueio.
+    pub async fn estimating_composition_memory(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        code: &str,
+    ) -> Result<(CompositionRecord, CostMemory), AuthError> {
+        self.limit("estimating-calculate", token, 30, 60).await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_text)?;
+        require_budget(&a, scope, AccessAction::View, tx.now().await?)?;
+        tx.composition_lock_scope(a.tenant, scope).await?;
+        let row = tx
+            .composition_lookup(a.tenant, scope, code)
+            .await?
+            .ok_or_else(|| invalid("Composição não encontrada no orçamento."))?;
+        let record = composition_view(row)?;
+        let (book, catalogs, _) =
+            calculating_book(&mut tx, a.tenant, scope, &record.composition).await?;
+        let memory = book.calculate(&record.code, &catalogs).map_err(|_| {
+            invalid("Composição circular, fonte ausente, unidade incompatível ou cálculo inválido.")
+        })?;
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+            .await?;
+        tx.commit().await?;
+        Ok((record, memory))
+    }
+
     pub async fn estimating_composition_calculate(
         &self,
         token: &str,
