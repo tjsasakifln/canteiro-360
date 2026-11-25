@@ -90,8 +90,10 @@ pub fn page(ctx: EstimatingContext) -> String {
     let composition_scope_options = ctx
         .scopes
         .iter()
-        .map(|scope| view! {
-            <option value=scope.id.clone()>{scope.name.clone()}</option>
+        .map(|scope| {
+            view! {
+                <option value=scope.id.clone()>{scope.name.clone()}</option>
+            }
         })
         .collect_view();
     let editable_scopes = ctx.scopes.clone();
