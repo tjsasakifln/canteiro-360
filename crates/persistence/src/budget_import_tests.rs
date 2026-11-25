@@ -344,7 +344,16 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     removed.lines.remove(0);
     let mut moved = updated.clone();
     moved.variations[0].scope = "Escopo alterado sem comando explícito".into();
-    for prohibited in [removed, moved] {
+    let mut rescheduled = updated.clone();
+    rescheduled
+        .reschedule_linear(
+            "2026-12-01".parse().unwrap(),
+            120,
+            canteiro_domain::budgets::PeriodBasis::CivilMonths,
+            4,
+        )
+        .unwrap();
+    for prohibited in [removed, moved, rescheduled] {
         prohibited.summarize().unwrap();
         let difference = canteiro_domain::budget_csv::compare(&parsed, &prohibited);
         let payload = serde_json::to_string(&prohibited).unwrap();
