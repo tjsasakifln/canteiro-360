@@ -271,7 +271,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                                 <input type="number" name="catalog_edition" min="1" required=true/></label>
                             <label class="record-field"><span>"Código do insumo na tabela"</span>
                                 <input type="text" name="catalog_code" maxlength="128" required=true/></label>
-                            <label class="record-field"><span>"Unidade do insumo"</span>
+                            <label class="record-field"><span>"Unidade de cálculo do insumo"</span>
                                 <select name="unit" required=true>
                                     <option value="un">"un"</option>
                                     <option value="m">"m"</option>
@@ -282,6 +282,26 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <option value="L">"L"</option>
                                     <option value="h">"h"</option>
                                 </select></label>
+                            <details>
+                                <summary>"Conversão explícita de unidades (opcional)"</summary>
+                                <p>"Preencha os três campos somente se a unidade original for diferente da unidade de cálculo. O fator multiplica o preço unitário da fonte."</p>
+                                <label class="record-field"><span>"Unidade original da fonte"</span>
+                                    <select name="conversion_from">
+                                        <option value="">"Sem conversão"</option>
+                                        <option value="un">"un"</option>
+                                        <option value="m">"m"</option>
+                                        <option value="m²">"m²"</option>
+                                        <option value="m³">"m³"</option>
+                                        <option value="kg">"kg"</option>
+                                        <option value="t">"t"</option>
+                                        <option value="L">"L"</option>
+                                        <option value="h">"h"</option>
+                                    </select></label>
+                                <label class="record-field"><span>"Fator sobre o preço original (use ponto)"</span>
+                                    <input type="text" name="conversion_factor" inputmode="decimal" maxlength="40"/></label>
+                                <label class="record-field"><span>"Fundamento técnico da conversão"</span>
+                                    <input type="text" name="conversion_reference" maxlength="240"/></label>
+                            </details>
                             <label class="record-field"><span>"Coeficiente da nova linha (use ponto)"</span>
                                 <input type="text" name="coefficient" inputmode="decimal" maxlength="40" required=true/></label>
                             <label class="record-field"><span>"Justificativa da inclusão do insumo"</span>
@@ -306,7 +326,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                                 <input type="text" name="source_code" maxlength="80" required=true/>
                             </label>
                             <label class="record-field">
-                                <span>"Unidade da composição referenciada"</span>
+                                <span>"Unidade de cálculo da composição referenciada"</span>
                                 <select name="unit" required=true>
                                     <option value="un">"un"</option>
                                     <option value="m">"m"</option>
@@ -318,6 +338,26 @@ pub fn page(ctx: EstimatingContext) -> String {
                                     <option value="h">"h"</option>
                                 </select>
                             </label>
+                            <details>
+                                <summary>"Conversão explícita de unidades (opcional)"</summary>
+                                <p>"Preencha os três campos somente se a unidade original for diferente da unidade de cálculo. O fator multiplica o preço unitário da fonte."</p>
+                                <label class="record-field"><span>"Unidade original da fonte"</span>
+                                    <select name="conversion_from">
+                                        <option value="">"Sem conversão"</option>
+                                        <option value="un">"un"</option>
+                                        <option value="m">"m"</option>
+                                        <option value="m²">"m²"</option>
+                                        <option value="m³">"m³"</option>
+                                        <option value="kg">"kg"</option>
+                                        <option value="t">"t"</option>
+                                        <option value="L">"L"</option>
+                                        <option value="h">"h"</option>
+                                    </select></label>
+                                <label class="record-field"><span>"Fator sobre o preço original (use ponto)"</span>
+                                    <input type="text" name="conversion_factor" inputmode="decimal" maxlength="40"/></label>
+                                <label class="record-field"><span>"Fundamento técnico da conversão"</span>
+                                    <input type="text" name="conversion_reference" maxlength="240"/></label>
+                            </details>
                             <label class="record-field">
                                 <span>"Coeficiente da composição (use ponto)"</span>
                                 <input type="text" name="coefficient" inputmode="decimal" maxlength="40" required=true/>
