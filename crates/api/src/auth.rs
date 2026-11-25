@@ -486,6 +486,12 @@ mod tests {
                                 StatusCode::SERVICE_UNAVAILABLE,
                                 Json(serde_json::json!({"error":"temporary"})),
                             )
+                        } else if seen.len() == 5 {
+                            (StatusCode::OK, Json(serde_json::json!({})))
+                        } else if seen.len() == 6 {
+                            (StatusCode::OK, Json(serde_json::json!({"id":""})))
+                        } else if seen.len() == 7 {
+                            (StatusCode::OK, Json(serde_json::json!({"id":123})))
                         } else {
                             (
                                 StatusCode::OK,
@@ -559,6 +565,21 @@ mod tests {
             assert!(text.contains("não concede acesso automaticamente"));
             assert!(!text.contains("?token="));
             assert!(!text.contains("definir uma nova senha"));
+        }
+        drop(seen);
+
+        // Um HTTP 2xx sem identificador válido não confirma uma entrega.
+        for lease in ["third", "fourth", "fifth"] {
+            message.id = format!("invitation-uuid:{lease}-lease");
+            assert!(!transport.send(&message).await);
+        }
+        message.id = "invitation-uuid:sixth-lease".into();
+        assert!(transport.send(&message).await);
+        let seen = observed.lock().await;
+        assert_eq!(seen.len(), 8);
+        for (headers, body) in &seen[4..] {
+            assert_eq!(headers["idempotency-key"], "invitation-uuid");
+            assert_eq!(body, &seen[2].1);
         }
         server.abort();
     }
