@@ -962,10 +962,59 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     let retry = f.service.pending_mail(1).await.unwrap().remove(0);
     assert_eq!(retry.token, next);
     assert_ne!(retry.id, second.id);
+    // Recibos atrasados não podem confirmar um convite substituído ou uma reserva vencida.
+    f.service.mark_mail_delivered(&first.id).await.unwrap();
+    f.service.mark_mail_delivered(&second.id).await.unwrap();
+    let premature: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(premature, 0);
     f.service.mark_mail_delivered(&retry.id).await.unwrap();
     let delivered: i64 = sqlx::query_scalar("SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL AND attempts=2 AND octet_length(payload)=0")
         .fetch_one(&f.admin).await.unwrap();
     assert_eq!(delivered, 1);
     assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    f.close().await;
+}
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("mail-owner", true).await;
+    let accepted = f.person("mail-accepted", false).await;
+    let expired = f.person("mail-expired", false).await;
+    let (org, _) = f.create(&admin, "Convites com cancelamento").await;
+    f.select(&admin, &org).await;
+
+    let token = f.invite(&admin, &accepted, OrganizationRole::Member).await;
+    f.execute(&accepted, OrganizationCommand::AcceptInvitation { token })
+        .await
+        .unwrap();
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+
+    f.invite(&admin, &expired, OrganizationRole::Member).await;
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET invitation_expires_at=clock_timestamp()-interval '1 second'
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+
+    let discarded: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NOT NULL
+           AND delivered_at IS NULL AND attempts=0 AND octet_length(payload)=0",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(discarded, 2);
     f.close().await;
 }
