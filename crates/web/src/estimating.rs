@@ -86,6 +86,14 @@ pub fn page(ctx: EstimatingContext) -> String {
             }
         })
         .collect_view();
+    let composition_lookup_context = ctx.context.clone();
+    let composition_scope_options = ctx
+        .scopes
+        .iter()
+        .map(|scope| view! {
+            <option value=scope.id.clone()>{scope.name.clone()}</option>
+        })
+        .collect_view();
     let editable_scopes = ctx.scopes.clone();
     let composition_csrf = ctx.csrf.clone();
     let compositions = ctx
@@ -833,6 +841,21 @@ pub fn page(ctx: EstimatingContext) -> String {
                 <h2>"Composições"</h2>
                 {ctx.compositions.is_empty().then(||view!{<p>"Nenhuma composição cadastrada."</p>})}
                 {compositions}
+                {composition_lookup_context.map(|context| view! {
+                    <details>
+                        <summary>"Consultar composição pelo código"</summary>
+                        <p>"A lista mostra até 500 composições. Informe o orçamento e o código para consultar qualquer composição autorizada."</p>
+                        <form action="/orcamentos/composicoes/memoria" method="get" class="record-form" id="composition-lookup">
+                            <input type="hidden" name="organization_id" value=context.organization_id/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <label class="record-field"><span>"Orçamento da composição"</span>
+                                <select name="scope_id" required=true>{composition_scope_options}</select></label>
+                            <label class="record-field"><span>"Código da composição"</span>
+                                <input type="text" name="code" maxlength="80" required=true/></label>
+                            <button type="submit" class="secondary-button">"Consultar memória informada"</button>
+                        </form>
+                    </details>
+                })}
             </section>
         },
     )
