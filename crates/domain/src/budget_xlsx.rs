@@ -370,8 +370,19 @@ fn xml_body(xml: &str) -> &str {
     xml.trim_matches([' ', '\t', '\r', '\n'])
 }
 
+// Only inter-element XML whitespace is optional in the fixed, text-free parts.
+// Attribute values, element names, relationships and ordering remain exact.
+fn xml_space(raw: &str) -> &str {
+    raw.trim_start_matches([' ', '\t', '\r', '\n'])
+}
+
 fn same_xml(actual: &[u8], expected: &str) -> bool {
-    std::str::from_utf8(actual).is_ok_and(|xml| xml_body(xml) == xml_body(expected))
+    std::str::from_utf8(actual).is_ok_and(|xml| {
+        xml_body(xml)
+            .split_inclusive('>')
+            .map(xml_space)
+            .eq(xml_body(expected).split_inclusive('>').map(xml_space))
+    })
 }
 
 fn official_workbook(bytes: &[u8]) -> Result<(String, Vec<String>), CellError> {
@@ -432,7 +443,6 @@ fn read_dimension(rest: &mut &str) -> Option<Option<usize>> {
     *rest = tail;
     Some(Some(last_row))
 }
-const SHEET_END: &str = "</sheetData></worksheet>";
 
 fn xml_character(ch: char) -> bool {
     matches!(
@@ -678,6 +688,7 @@ fn read_row(
     let mut cells = vec![String::new(); crate::budget_csv::HEADER.len()];
     let mut record_type = String::new();
     for (index, cell) in cells.iter_mut().enumerate() {
+        *rest = xml_space(rest);
         let letter = char::from(b'A' + index as u8);
         let address = format!("<c r=\"{letter}{row}\"");
         let Some(suffix) = rest.strip_prefix(&address) else {
@@ -729,6 +740,7 @@ fn read_row(
             record_type.clone_from(cell);
         }
     }
+    *rest = xml_space(rest);
     if let Some(next) = rest.strip_prefix("</row>") {
         *rest = next;
     } else {
@@ -765,11 +777,13 @@ pub fn preview_import_with_locale(
     let mut rest = xml_body(&sheet)
         .strip_prefix(xml_body(SHEET_START))
         .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
+    rest = xml_space(rest);
     let declared_last_row =
         read_dimension(&mut rest).ok_or_else(|| error(1, 1, "Dimensão XLSX inválida."))?;
-    rest = rest
+    rest = xml_space(rest)
         .strip_prefix("<sheetData>")
         .ok_or_else(|| error(1, 1, "Dados XML não reconhecidos."))?;
+    rest = xml_space(rest);
     let version = read_row(&mut rest, 1, NumberLocale::Canonical, &shared)?;
     if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
         return Err(error(1, 1, "Versão XLSX inválida."));
@@ -783,7 +797,14 @@ pub fn preview_import_with_locale(
     let mut starts = vec![1];
     let mut physical = 2;
     let mut row = 2;
-    while rest != SHEET_END {
+    loop {
+        rest = xml_space(rest);
+        if rest
+            .strip_prefix("</sheetData>")
+            .is_some_and(|tail| xml_space(tail) == "</worksheet>")
+        {
+            break;
+        }
         if row > MAX_SHEET_ROWS {
             return Err(error(row, 1, "Limite de registros XLSX excedido."));
         }
@@ -1233,6 +1254,21 @@ mod tests {
             crate::budget_csv::export_csv(&imported, locale).unwrap(),
             csv
         );
+        let pretty_sheet = with_metadata
+            .replace("><sheetData>", ">\n<sheetData>\n")
+            .replace("</row><row", "</row>\n  <row")
+            .replace("</c><c", "</c>\n    <c")
+            .replace("</sheetData></worksheet>", "</sheetData>\n</worksheet>");
+        let pretty_types = types.replace("><", ">\n  <");
+        parts[0].1 = pretty_types.as_bytes();
+        parts[4].1 = pretty_sheet.as_bytes();
+        let (imported, locale) = preview_import_with_locale(&stored_zip(&parts)).unwrap();
+        assert_eq!(
+            crate::budget_csv::export_csv(&imported, locale).unwrap(),
+            csv
+        );
+        parts[0].1 = types.as_bytes();
+
         let false_dimension = with_metadata.replace(&format!("A1:S{last_row}"), "A1:S2");
         parts[4].1 = false_dimension.as_bytes();
         assert!(preview_import(&stored_zip(&parts)).is_err());
@@ -1270,6 +1306,23 @@ mod tests {
             assert!(read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &[]).is_err());
         }
         let mut formula = r#"<row r="3" spans="1:19"><c r="Q3"><f>1+1</f></c></row>"#;
+        let err = read_row(&mut formula, 3, NumberLocale::Canonical, &[]).unwrap_err();
+        assert_eq!((err.row, err.column), (3, 17));
+    }
+
+    #[test]
+    fn structural_whitespace_never_changes_text_or_allows_extra_xml() {
+        let mut row = r#"<row r="3"> <c r="A3" t="inlineStr"><is><t> ITEM </t></is></c> </row>"#;
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical, &[]).unwrap();
+        assert_eq!(cells[0], " ITEM ");
+        assert!(row.is_empty());
+
+        let external = ROOT_RELS.replace("Target=", "TargetMode=\"External\" Target=");
+        assert!(!same_xml(external.as_bytes(), ROOT_RELS));
+        let extra = ROOT_RELS.replace("</Relationships>", "<extra/></Relationships>");
+        assert!(!same_xml(extra.as_bytes(), ROOT_RELS));
+
+        let mut formula = r#"<row r="3"> <c r="Q3"><f>1+1</f></c> </row>"#;
         let err = read_row(&mut formula, 3, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((err.row, err.column), (3, 17));
     }
