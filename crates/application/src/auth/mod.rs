@@ -420,15 +420,14 @@ impl AuthService {
         }
         Ok(result)
     }
-    pub async fn mark_mail_delivered(&self, id: &str) -> Result<(), AuthError> {
+    pub async fn mark_mail_delivered(&self, id: &str) -> Result<bool, AuthError> {
         let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
-        self.store
+        Ok(self.store
             .delivered(
                 Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
                 Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
             )
-            .await?;
-        Ok(())
+            .await?)
     }
     pub async fn execute(
         &self,
