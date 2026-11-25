@@ -35,6 +35,9 @@ mod notice_delivery;
 #[path = "budget_import_tests.rs"]
 mod budget_import;
 
+#[path = "composition_database_tests.rs"]
+mod composition;
+
 fn tenant() -> TenantId {
     TenantId::from_uuid(Uuid::new_v4()).unwrap()
 }

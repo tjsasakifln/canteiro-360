@@ -27,6 +27,46 @@ pub struct CompositionWrite<'a> {
     pub bindings: &'a [(String, u32)],
 }
 impl AuthTransaction {
+    /// Serializa alterações do grafo inteiro, não apenas da composição editada.
+    /// O bloqueio dura até o fim da transação e precede a leitura das versões.
+    pub async fn composition_lock_scope(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+    ) -> Result<(), AuthStoreError> {
+        sqlx::query(
+            "SELECT pg_advisory_xact_lock(
+                hashtextextended('composition:' || $1::UUID::TEXT || ':' || $2::UUID::TEXT, 0)
+             )",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .execute(&mut *self.tx)
+        .await?;
+        Ok(())
+    }
+
+    /// A consulta de tela é limitada; a validação do grafo precisa de todas
+    /// as composições do escopo, inclusive referências além da primeira página.
+    pub async fn composition_graph(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+    ) -> Result<Vec<StoredCompositionVersion>, AuthStoreError> {
+        Ok(sqlx::query_as(
+            "SELECT v.scope_id,v.code,v.version,v.payload::TEXT AS payload,
+             v.actor_id,v.operation_key,v.fingerprint,v.reason,v.recorded_at
+             FROM canteiro.cost_compositions c JOIN canteiro.cost_composition_versions v
+              ON v.tenant_id=c.tenant_id AND v.scope_id=c.scope_id
+              AND v.code=c.code AND v.version=c.current_version
+             WHERE c.tenant_id=$1 AND c.scope_id=$2 ORDER BY v.code",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .fetch_all(&mut *self.tx)
+        .await?)
+    }
+
     pub async fn composition_current(
         &mut self,
         tenant: Uuid,

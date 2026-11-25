@@ -21,7 +21,7 @@ async fn calculating_book(
 ) -> Result<(CompositionBook, CatalogLibrary, Vec<(String, u32)>), AuthError> {
     let mut book = CompositionBook::default();
     let mut sources = BTreeSet::new();
-    let rows = tx.composition_list(tenant, &[scope]).await?;
+    let rows = tx.composition_graph(tenant, scope).await?;
     for old in rows {
         if old.code != candidate.code {
             let composition: Composition =
@@ -123,6 +123,9 @@ impl AuthService {
         let a = access.ok_or_else(record_denied)?;
         let scope = id(&input.scope_id)?;
         require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        // Adquirir antes da leitura da versão e do grafo evita que duas
+        // revisões de códigos distintos criem um ciclo por write skew.
+        tx.composition_lock_scope(a.tenant, scope).await?;
         if let Some(saved) = tx.composition_operation(a.tenant, key).await? {
             if saved.actor_id != a.actor.id
                 || saved.scope_id != scope
