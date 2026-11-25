@@ -67,6 +67,28 @@ impl AuthTransaction {
         .await?)
     }
 
+    /// Busca por identidade, sem o limite da listagem e sem bloquear a linha.
+    pub async fn composition_lookup(
+        &mut self,
+        tenant: Uuid,
+        scope: Uuid,
+        code: &str,
+    ) -> Result<Option<StoredCompositionVersion>, AuthStoreError> {
+        Ok(sqlx::query_as(
+            "SELECT v.scope_id,v.code,v.version,v.payload::TEXT AS payload,
+             v.actor_id,v.operation_key,v.fingerprint,v.reason,v.recorded_at
+             FROM canteiro.cost_compositions c JOIN canteiro.cost_composition_versions v
+              ON v.tenant_id=c.tenant_id AND v.scope_id=c.scope_id
+              AND v.code=c.code AND v.version=c.current_version
+             WHERE c.tenant_id=$1 AND c.scope_id=$2 AND c.code=$3",
+        )
+        .bind(tenant)
+        .bind(scope)
+        .bind(code)
+        .fetch_optional(&mut *self.tx)
+        .await?)
+    }
+
     pub async fn composition_current(
         &mut self,
         tenant: Uuid,
