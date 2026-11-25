@@ -407,6 +407,12 @@ impl MailTransport {
     }
 
     async fn send(&self, message: &canteiro_application::auth::MailDelivery) -> bool {
+        if !matches!(
+            message.kind.as_str(),
+            "verify_email" | "reset_password" | "organization_invitation"
+        ) {
+            return false;
+        }
         let delivery_id = message
             .id
             .split_once(':')
@@ -419,17 +425,39 @@ impl MailTransport {
             .json(&self.payload(message))
             .send()
             .await;
-        let Ok(response) = result else {
+        let Ok(mut response) = result else {
             return false;
         };
-        if !response.status().is_success() {
+        const MAX_RECEIPT_BYTES: usize = 8192;
+        if !response.status().is_success()
+            || response
+                .content_length()
+                .is_some_and(|length| length > MAX_RECEIPT_BYTES as u64)
+        {
             return false;
         }
-        match response.json::<serde_json::Value>().await {
+        let mut receipt = Vec::new();
+        loop {
+            match response.chunk().await {
+                Ok(Some(chunk)) => {
+                    if chunk.len() > MAX_RECEIPT_BYTES - receipt.len() {
+                        return false;
+                    }
+                    receipt.extend_from_slice(&chunk);
+                }
+                Ok(None) => break,
+                Err(_) => return false,
+            }
+        }
+        match serde_json::from_slice::<serde_json::Value>(&receipt) {
             Ok(body) => body
                 .get("id")
                 .and_then(serde_json::Value::as_str)
-                .is_some_and(|id| !id.is_empty() && id.len() <= 256),
+                .is_some_and(|id| {
+                    !id.is_empty()
+                        && id.len() <= 256
+                        && !id.chars().any(|ch| ch.is_whitespace() || ch.is_control())
+                }),
             Err(_) => false,
         }
     }
@@ -481,7 +509,14 @@ mod tests {
                     async move {
                         let mut seen = seen.lock().await;
                         seen.push((headers, body));
-                        if seen.len() == 1 || seen.len() == 3 {
+                        if seen.len() == 11 {
+                            return (
+                                StatusCode::TEMPORARY_REDIRECT,
+                                [(header::LOCATION, "/emails")],
+                            )
+                                .into_response();
+                        }
+                        (if seen.len() == 1 || seen.len() == 3 {
                             (
                                 StatusCode::SERVICE_UNAVAILABLE,
                                 Json(serde_json::json!({"error":"temporary"})),
@@ -492,12 +527,22 @@ mod tests {
                             (StatusCode::OK, Json(serde_json::json!({"id":""})))
                         } else if seen.len() == 7 {
                             (StatusCode::OK, Json(serde_json::json!({"id":123})))
+                        } else if seen.len() == 9 {
+                            (StatusCode::OK, Json(serde_json::json!({"id":"  "})))
+                        } else if seen.len() == 10 {
+                            (
+                                StatusCode::OK,
+                                Json(serde_json::json!({
+                                    "id":"delivery-fixture", "padding":"x".repeat(8192)
+                                })),
+                            )
                         } else {
                             (
                                 StatusCode::OK,
                                 Json(serde_json::json!({"id":"delivery-fixture"})),
                             )
-                        }
+                        })
+                            .into_response()
                     }
                 },
             ),
@@ -578,6 +623,24 @@ mod tests {
         let seen = observed.lock().await;
         assert_eq!(seen.len(), 8);
         for (headers, body) in &seen[4..] {
+            assert_eq!(headers["idempotency-key"], "invitation-uuid");
+            assert_eq!(body, &seen[2].1);
+        }
+        drop(seen);
+
+        // Recibos excessivos, identificadores em branco e redirecionamentos
+        // não podem confirmar a entrega, mesmo que a próxima tentativa seja válida.
+        for lease in ["seventh", "eighth", "ninth"] {
+            message.id = format!("invitation-uuid:{lease}-lease");
+            assert!(!transport.send(&message).await);
+        }
+        message.id = "invitation-uuid:tenth-lease".into();
+        assert!(transport.send(&message).await);
+        message.kind = "unknown".into();
+        assert!(!transport.send(&message).await);
+        let seen = observed.lock().await;
+        assert_eq!(seen.len(), 12);
+        for (headers, body) in &seen[8..] {
             assert_eq!(headers["idempotency-key"], "invitation-uuid");
             assert_eq!(body, &seen[2].1);
         }
