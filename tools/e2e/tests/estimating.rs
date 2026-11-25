@@ -508,7 +508,10 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         assert_eq!(report["total"], true);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
-            .full_screenshot(&h.evidence.join(format!("composition-conversion-{width}.png")))
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("composition-conversion-{width}.png")),
+            )
             .await?;
     }
 
