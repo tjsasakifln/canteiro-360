@@ -121,6 +121,9 @@ async fn validate_runtime(
          AND NOT has_table_privilege(current_user,'canteiro_meta.user_notice_queue','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') \
          AND NOT has_any_column_privilege(current_user,'canteiro_meta.user_notice_queue','SELECT,INSERT,UPDATE,REFERENCES') \
          AND NOT has_function_privilege(current_user,'canteiro_meta.enqueue_user_notice()','EXECUTE') \
+         AND NOT has_table_privilege(current_user,'canteiro_meta.invitation_mail_history','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') \
+         AND NOT has_any_column_privilege(current_user,'canteiro_meta.invitation_mail_history','SELECT,INSERT,UPDATE,REFERENCES') \
+         AND NOT has_function_privilege(current_user,'canteiro_meta.record_invitation_mail_history()','EXECUTE') \
          AND NOT EXISTS (SELECT 1 FROM pg_class WHERE oid IN ('canteiro.document_versions'::regclass, 'canteiro.document_signatures'::regclass, 'canteiro.document_history'::regclass, \
                        'canteiro.party_history'::regclass, 'canteiro.party_bank_versions'::regclass, 'canteiro.registry_operations'::regclass, 'canteiro.portfolio_history'::regclass, \
                        'canteiro.project_versions'::regclass, 'canteiro.project_party_links'::regclass, 'canteiro.project_work_links'::regclass, 'canteiro.obligation_versions'::regclass, 'canteiro.obligation_replacements'::regclass, 'canteiro.user_notice_delivery_history'::regclass) \

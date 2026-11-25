@@ -977,6 +977,49 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
         .fetch_one(&f.admin).await.unwrap();
     assert_eq!(delivered, 1);
     assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+
+    // Cada reserva e desfecho permanece disponível para auditoria sem o código ou e-mail.
+    let history: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT h.attempt,h.event FROM canteiro_meta.invitation_mail_history h
+         JOIN canteiro_auth.mail_outbox m ON m.id=h.mail_id
+         WHERE m.delivered_at IS NOT NULL
+         ORDER BY h.attempt,h.event",
+    )
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        history,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "unconfirmed".to_owned()),
+            (2, "accepted_by_provider".to_owned()),
+            (2, "claimed".to_owned()),
+        ]
+    );
+    let cancelled: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT h.attempt,h.event FROM canteiro_meta.invitation_mail_history h
+         JOIN canteiro_auth.mail_outbox m ON m.id=h.mail_id
+         WHERE m.discarded_at IS NOT NULL
+         ORDER BY h.attempt,h.event",
+    )
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        cancelled,
+        vec![(1, "claimed".to_owned()), (1, "discarded".to_owned())]
+    );
+    let accessible: bool = sqlx::query_scalar(
+        "SELECT has_table_privilege($1::text,
+         'canteiro_meta.invitation_mail_history',
+         'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')",
+    )
+    .bind(&f.runtime)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(!accessible);
     f.close().await;
 }
 
