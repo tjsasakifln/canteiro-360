@@ -11,6 +11,8 @@ use tokio::sync::{Semaphore, SemaphorePermit};
 static IMPORT_ADMISSION: Semaphore = Semaphore::const_new(4);
 static IMPORT_PROCESSING: Semaphore = Semaphore::const_new(2);
 
+type ImportPermits<'a> = (SemaphorePermit<'a>, SemaphorePermit<'a>);
+
 fn import_busy() -> AuthError {
     AuthError::new(
         AuthErrorKind::RateLimited,
@@ -23,13 +25,25 @@ async fn reserve_import_slot<'a>(
     admission: &'a Semaphore,
     processing: &'a Semaphore,
     wait: Duration,
-) -> Result<(SemaphorePermit<'a>, SemaphorePermit<'a>), AuthError> {
+) -> Result<ImportPermits<'a>, AuthError> {
     let admitted = admission.try_acquire().map_err(|_| import_busy())?;
     let active = tokio::time::timeout(wait, processing.acquire())
         .await
         .map_err(|_| import_busy())?
         .map_err(|_| AuthError::unavailable())?;
     Ok((admitted, active))
+}
+
+async fn process_import<T: Send + 'static>(
+    permits: ImportPermits<'static>,
+    parse: impl FnOnce() -> Result<T, AuthError> + Send + 'static,
+) -> Result<(T, ImportPermits<'static>), AuthError> {
+    // A tarefa bloqueante mantém as vagas mesmo se a requisição for cancelada.
+    // Em caso de sucesso, devolve as vagas junto com o resultado para que a
+    // criação durável da prévia também respeite o limite de processamento.
+    tokio::task::spawn_blocking(move || parse().map(|parsed| (parsed, permits)))
+        .await
+        .map_err(|_| AuthError::unavailable())?
 }
 
 fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision, AuthError> {
@@ -578,14 +592,8 @@ impl AuthService {
             Duration::from_secs(15),
         )
         .await?;
-        let (mut snapshot, locale, format, sha256) = tokio::task::spawn_blocking(move || {
-            // Se o navegador cancelar, a tarefa bloqueante ainda pode executar.
-            // As vagas só voltam à fila quando o processamento realmente termina.
-            let _permits = permits;
-            source.parse()
-        })
-        .await
-        .map_err(|_| AuthError::unavailable())??;
+        let ((mut snapshot, locale, format, sha256), _permits) =
+            process_import(permits, move || source.parse()).await?;
         // A autorização e a revisão-base precisam ser atuais quando a prévia
         // durável for criada, não apenas quando o arquivo chegou.
         let (mut tx, access) = self.record_access(token, Some(context)).await?;
@@ -819,6 +827,29 @@ mod budget_import_diagnostics_tests {
         assert_eq!(PROCESSING.available_permits(), 0);
         release.send(()).unwrap();
         done.await.unwrap();
+        assert_eq!(ADMISSION.available_permits(), 1);
+        assert_eq!(PROCESSING.available_permits(), 1);
+    }
+
+    #[tokio::test]
+    async fn parsed_import_keeps_slot_until_durable_preview_finishes() {
+        static ADMISSION: Semaphore = Semaphore::const_new(1);
+        static PROCESSING: Semaphore = Semaphore::const_new(1);
+        let permits = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::from_secs(1))
+            .await
+            .unwrap();
+        let (parsed, permits) = process_import(permits, || Ok(10_000)).await.unwrap();
+        assert_eq!(parsed, 10_000);
+        assert_eq!(ADMISSION.available_permits(), 0);
+        assert_eq!(PROCESSING.available_permits(), 0);
+        let rejected = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::ZERO).await;
+        assert!(matches!(rejected, Err(error) if error.kind() == AuthErrorKind::RateLimited));
+        drop(permits);
+        let permits = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::from_secs(1))
+            .await
+            .unwrap();
+        let failed = process_import::<()>(permits, || Err(import_busy())).await;
+        assert!(failed.is_err());
         assert_eq!(ADMISSION.available_permits(), 1);
         assert_eq!(PROCESSING.available_permits(), 1);
     }
