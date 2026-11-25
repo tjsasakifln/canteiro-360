@@ -457,7 +457,7 @@ mod tests {
     #[test]
     fn conversion_must_be_effective_and_have_a_safe_reference() {
         let price = "10".parse().unwrap();
-        let mut conversion = UnitConversion {
+        let mut cv = UnitConversion {
             from: MeasureUnit::Tonne,
             to: MeasureUnit::Tonne,
             factor: "2".parse().unwrap(),
@@ -468,18 +468,18 @@ mod tests {
             Ok(price)
         );
         assert_eq!(
-            require_matching_units(MeasureUnit::Tonne, MeasureUnit::Tonne, Some(&conversion), price),
+            require_matching_units(MeasureUnit::Tonne, MeasureUnit::Tonne, Some(&cv), price),
             Err(CatalogError::Conversion)
         );
         assert_eq!(
-            conversion.apply(price, MeasureUnit::Tonne, MeasureUnit::Tonne),
+            cv.apply(price, MeasureUnit::Tonne, MeasureUnit::Tonne),
             Err(CatalogError::Conversion)
         );
-        conversion.to = MeasureUnit::Kilogram;
+        cv.to = MeasureUnit::Kilogram;
         for reference in ["=1+1", "Fator\u{202e} declarado"] {
-            conversion.reference = reference.into();
+            cv.reference = reference.into();
             assert_eq!(
-                conversion.apply(price, MeasureUnit::Tonne, MeasureUnit::Kilogram),
+                cv.apply(price, MeasureUnit::Tonne, MeasureUnit::Kilogram),
                 Err(CatalogError::Conversion)
             );
         }
