@@ -261,12 +261,16 @@ impl UnitConversion {
         to: MeasureUnit,
     ) -> Result<UnitPrice, CatalogError> {
         if from == to {
-            return Ok(value);
+            return Err(CatalogError::Conversion);
         }
         if self.from != from || self.to != to {
             return Err(CatalogError::UnitMismatch);
         }
-        if self.factor.is_zero() || self.factor.is_negative() || !label(&self.reference, 240) {
+        if self.factor.is_zero()
+            || self.factor.is_negative()
+            || !label(&self.reference, 240)
+            || !crate::budget_csv::safe(&self.reference)
+        {
             return Err(CatalogError::Conversion);
         }
         Ok(UnitPrice::new(
@@ -281,7 +285,11 @@ pub fn require_matching_units(
     price: UnitPrice,
 ) -> Result<UnitPrice, CatalogError> {
     if given == expected {
-        return Ok(price);
+        return if conversion.is_none() {
+            Ok(price)
+        } else {
+            Err(CatalogError::Conversion)
+        };
     }
     conversion
         .ok_or(CatalogError::UnitMismatch)?
@@ -446,6 +454,37 @@ mod tests {
         assert_eq!(difference.before_source.competence, "2026-01");
         assert_eq!(difference.after_source.competence, "2026-11");
     }
+    #[test]
+    fn conversion_must_be_effective_and_have_a_safe_reference() {
+        let price = "10".parse().unwrap();
+        let mut conversion = UnitConversion {
+            from: MeasureUnit::Tonne,
+            to: MeasureUnit::Tonne,
+            factor: "2".parse().unwrap(),
+            reference: "Fator declarado".into(),
+        };
+        assert_eq!(
+            require_matching_units(MeasureUnit::Tonne, MeasureUnit::Tonne, None, price),
+            Ok(price)
+        );
+        assert_eq!(
+            require_matching_units(MeasureUnit::Tonne, MeasureUnit::Tonne, Some(&conversion), price),
+            Err(CatalogError::Conversion)
+        );
+        assert_eq!(
+            conversion.apply(price, MeasureUnit::Tonne, MeasureUnit::Tonne),
+            Err(CatalogError::Conversion)
+        );
+        conversion.to = MeasureUnit::Kilogram;
+        for reference in ["=1+1", "Fator\u{202e} declarado"] {
+            conversion.reference = reference.into();
+            assert_eq!(
+                conversion.apply(price, MeasureUnit::Tonne, MeasureUnit::Kilogram),
+                Err(CatalogError::Conversion)
+            );
+        }
+    }
+
     #[test]
     fn wrong_units_and_failed_import_do_not_publish_partial_edition() {
         let price = "10".parse().unwrap();
