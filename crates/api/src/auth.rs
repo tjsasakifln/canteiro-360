@@ -93,9 +93,9 @@ impl AuthHttp {
                             Ok(false) => tracing::warn!(
                                 "Recibo de acesso não aplicado: reserva encerrada ou mensagem finalizada."
                             ),
-                            Err(_) => tracing::warn!(
-                                "Entrega de acesso aguarda confirmação na fila."
-                            ),
+                            Err(_) => {
+                                tracing::warn!("Entrega de acesso aguarda confirmação na fila.")
+                            }
                         }
                     } else {
                         tracing::warn!(
