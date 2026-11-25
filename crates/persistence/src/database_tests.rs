@@ -274,7 +274,7 @@ async fn blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges(
             .fetch_all(&fixture.admin)
             .await
             .unwrap();
-    assert_eq!(versions, (1..=25).collect::<Vec<_>>());
+    assert_eq!(versions, (1..=26).collect::<Vec<_>>());
     let database = fixture.database(limits()).await;
     let mut connection = database.pool.acquire().await.unwrap();
     let (privileged, owns_schema): (bool, bool) = sqlx::query_as(
