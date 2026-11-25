@@ -262,33 +262,54 @@ impl CompositionBook {
         code: &str,
         catalogs: &CatalogLibrary,
     ) -> Result<CostMemory, CompositionError> {
-        self.walk(code, catalogs, &mut Vec::new())
-    }
-    fn walk(
-        &self,
-        code: &str,
-        catalogs: &CatalogLibrary,
-        path: &mut Vec<String>,
-    ) -> Result<CostMemory, CompositionError> {
-        if let Some(at) = path.iter().position(|entry| entry == code) {
-            let mut cycle = path[at..].to_vec();
-            cycle.push(code.into());
-            return Err(CompositionError::Cycle(cycle.join(" -> ")));
+        // Evaluate each reachable formula once, in dependency order. An
+        // explicit stack avoids call-stack overflow and repeated expansion of
+        // shared subcompositions. Only the root needs its full cost memory.
+        let mut costs = BTreeMap::<String, UnitPrice>::new();
+        let mut active = BTreeSet::new();
+        let mut path = Vec::<String>::new();
+        let mut pending = vec![(code.to_owned(), false)];
+        while let Some((current, closing)) = pending.pop() {
+            let item = self
+                .compositions
+                .get(&current)
+                .ok_or_else(|| CompositionError::Missing(current.clone()))?;
+            if closing {
+                let memory = self.calculate_one(item, catalogs, &costs)?;
+                if current == code {
+                    return Ok(memory);
+                }
+                costs.insert(current.clone(), memory.direct_cost);
+                active.remove(&current);
+                path.pop();
+                continue;
+            }
+            if costs.contains_key(&current) {
+                continue;
+            }
+            if !active.insert(current.clone()) {
+                let start = path.iter().position(|entry| entry == &current).unwrap_or(0);
+                let mut cycle = path[start..].to_vec();
+                cycle.push(current);
+                return Err(CompositionError::Cycle(cycle.join(" -> ")));
+            }
+            path.push(current.clone());
+            pending.push((current, true));
+            if matches!(&item.cost_mode, CostMode::Formula) {
+                for line in item.lines.iter().rev() {
+                    if let ComponentSource::Composition { code } = &line.source {
+                        pending.push((code.clone(), false));
+                    }
+                }
+            }
         }
-        let composition = self
-            .compositions
-            .get(code)
-            .ok_or_else(|| CompositionError::Missing(code.into()))?;
-        path.push(code.into());
-        let result = self.calculate_one(composition, catalogs, path);
-        path.pop();
-        result
+        Err(CompositionError::Missing(code.into()))
     }
     fn calculate_one(
         &self,
         item: &Composition,
         catalogs: &CatalogLibrary,
-        path: &mut Vec<String>,
+        costs: &BTreeMap<String, UnitPrice>,
     ) -> Result<CostMemory, CompositionError> {
         let mut amounts = BTreeMap::new();
         let mut line_details = Vec::new();
@@ -317,7 +338,9 @@ impl CompositionBook {
                                 .get(code)
                                 .ok_or_else(|| CompositionError::Missing(code.clone()))?;
                             (
-                                self.walk(code, catalogs, path)?.direct_cost,
+                                *costs
+                                    .get(code)
+                                    .ok_or_else(|| CompositionError::Missing(code.clone()))?,
                                 source.unit,
                                 CostCategory::Service,
                             )
@@ -595,6 +618,65 @@ mod tests {
             Err(CompositionError::Cycle("A -> B -> A".into()))
         );
     }
+    #[test]
+    fn deep_compositions_do_not_use_the_call_stack() {
+        let mut book = CompositionBook::default();
+        book.insert(c("BASE")).unwrap();
+        let mut dependency = "BASE".to_owned();
+        for index in 0..10_000 {
+            let code = format!("C{index}");
+            let mut item = c(&code);
+            item.cost_mode = CostMode::Formula;
+            item.lines.push(ComponentLine {
+                id: "base".into(),
+                source: ComponentSource::Composition { code: dependency },
+                coefficient: "1".parse().unwrap(),
+                unit: MeasureUnit::SquareMetre,
+                conversion: None,
+            });
+            book.insert(item).unwrap();
+            dependency = code;
+        }
+        let result = book
+            .calculate(&dependency, &CatalogLibrary::default())
+            .unwrap();
+        assert_eq!(result.direct_cost.to_string(), "100.000000");
+        assert_eq!(result.selling_price.to_string(), "108.000000");
+    }
+
+    #[test]
+    fn shared_compositions_are_evaluated_without_exponential_expansion() {
+        let mut book = CompositionBook::default();
+        book.insert(c("BASE")).unwrap();
+        let mut dependency = "BASE".to_owned();
+        for index in 0..40 {
+            let code = format!("C{index}");
+            let mut item = c(&code);
+            item.cost_mode = CostMode::Formula;
+            for id in ["A", "B"] {
+                item.lines.push(ComponentLine {
+                    id: id.into(),
+                    source: ComponentSource::Composition {
+                        code: dependency.clone(),
+                    },
+                    coefficient: "0.5".parse().unwrap(),
+                    unit: MeasureUnit::SquareMetre,
+                    conversion: None,
+                });
+            }
+            book.insert(item).unwrap();
+            dependency = code;
+        }
+        let result = book
+            .calculate(&dependency, &CatalogLibrary::default())
+            .unwrap();
+        assert_eq!(result.direct_cost.to_string(), "100.000000");
+        assert_eq!(result.selling_price.to_string(), "108.000000");
+        assert_eq!(result.line_details.len(), 2);
+        assert_eq!(result.line_details[0].amount.to_string(), "50.000000");
+        assert_eq!(result.line_details[1].amount.to_string(), "50.000000");
+    }
+
     #[test]
     fn incidence_uses_only_its_declared_basis() {
         use crate::catalogs::{CatalogEdition, CatalogItem, CostCategory, CostSource};
