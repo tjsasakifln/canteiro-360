@@ -176,6 +176,14 @@ impl CompositionBook {
     /// Valida a árvore de referências mesmo quando o custo é informado.
     /// A travessia iterativa impede estouro de pilha em cadeias profundas.
     pub fn validate_composition_links(&self, code: &str) -> Result<(), CompositionError> {
+        self.validate_links(code, None)
+    }
+
+    fn validate_links(
+        &self,
+        code: &str,
+        catalogs: Option<&CatalogLibrary>,
+    ) -> Result<(), CompositionError> {
         let mut status = BTreeMap::<String, u8>::new();
         let mut path = Vec::<String>::new();
         let mut pending = vec![(code.to_owned(), false)];
@@ -213,6 +221,23 @@ impl CompositionBook {
                         UnitPrice::new(ExactDecimal::ZERO)?,
                     )?;
                     children.push(dependency.clone());
+                } else if let ComponentSource::Catalog {
+                    catalog_id,
+                    edition,
+                    code,
+                } = &line.source
+                    && let Some(catalogs) = catalogs
+                {
+                    let source = catalogs
+                        .edition(catalog_id, *edition)?
+                        .get(code)
+                        .ok_or_else(|| CompositionError::Missing(code.clone()))?;
+                    require_matching_units(
+                        source.unit,
+                        line.unit,
+                        line.conversion.as_ref(),
+                        UnitPrice::new(ExactDecimal::ZERO)?,
+                    )?;
                 }
             }
             path.push(current.clone());
@@ -262,6 +287,9 @@ impl CompositionBook {
         code: &str,
         catalogs: &CatalogLibrary,
     ) -> Result<CostMemory, CompositionError> {
+        // Validate all declared links, including those of informed costs,
+        // before evaluating only the formulas that contribute to the price.
+        self.validate_links(code, Some(catalogs))?;
         // Evaluate each reachable formula once, in dependency order. An
         // explicit stack avoids call-stack overflow and repeated expansion of
         // shared subcompositions. Only the root needs its full cost memory.
@@ -476,6 +504,10 @@ mod tests {
             missing.validate_composition_links("A"),
             Err(CompositionError::Missing("B".into()))
         );
+        assert_eq!(
+            missing.calculate("A", &CatalogLibrary::default()),
+            Err(CompositionError::Missing("B".into()))
+        );
 
         let mut circular = CompositionBook::default();
         let mut recursive = b.clone();
@@ -484,6 +516,10 @@ mod tests {
         circular.insert(recursive).unwrap();
         assert_eq!(
             circular.validate_composition_links("A"),
+            Err(CompositionError::Cycle("A -> B -> A".into()))
+        );
+        assert_eq!(
+            circular.calculate("A", &CatalogLibrary::default()),
             Err(CompositionError::Cycle("A -> B -> A".into()))
         );
 
@@ -495,6 +531,10 @@ mod tests {
         assert!(matches!(
             incompatible.validate_composition_links("A"),
             Err(CompositionError::Catalog(_))
+        ));
+        assert!(matches!(
+            incompatible.calculate("A", &CatalogLibrary::default()),
+            Err(CompositionError::Catalog(CatalogError::UnitMismatch))
         ));
     }
 
@@ -571,6 +611,12 @@ mod tests {
             conversion: None,
         });
         assert!(item.validate().is_ok());
+        let mut book = CompositionBook::default();
+        book.insert(item.clone()).unwrap();
+        assert_eq!(
+            book.calculate("A", &CatalogLibrary::default()),
+            Err(CompositionError::Catalog(CatalogError::MissingEdition))
+        );
         item.lines[0].source = ComponentSource::Catalog {
             catalog_id: "".into(),
             edition: 1,
