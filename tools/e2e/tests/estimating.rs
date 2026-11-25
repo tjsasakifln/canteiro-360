@@ -362,6 +362,78 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
             .await?;
     }
 
+    // A consulta direta deve executar o servidor e manter a revisão da memória.
+    h.auth
+        .estimating_composition_write(
+            &editor.session,
+            serde_json::from_value(json!({
+                "context": context.clone(),
+                "scope_id": budget.clone(),
+                "operation_key": uuid::Uuid::new_v4().to_string(),
+                "expected_version": null,
+                "reason": "Cadastro para ensaio da memoria",
+                "composition": {
+                    "code": "MEM-E2E",
+                    "description": "Composicao de ensaio",
+                    "unit": "un",
+                    "cost_mode": {"mode":"informed","cost":"12.50","reason":"Pesquisa de ensaio"},
+                    "lines": [],
+                    "incidences": [],
+                    "bdi": "0",
+                    "discount": "0"
+                }
+            }))?,
+        )
+        .await?;
+    assert!(
+        h.auth
+            .estimating_composition_memory(
+                &editor.session,
+                &context,
+                &uuid::Uuid::new_v4().to_string(),
+                "MEM-E2E",
+            )
+            .await
+            .is_err()
+    );
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        browser
+            .tab_to("details:has(#composition-lookup) > summary")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .tab_to("#composition-lookup select[name='scope_id']")
+            .await?;
+        browser.key(TAB).await?;
+        for character in "MEM-E2E".chars() {
+            browser.key(&character.to_string()).await?;
+        }
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('h1')?.textContent.includes('MEM-E2E');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        let report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,revision:document.body.innerText.includes('revisão 1'),reason:document.body.innerText.includes('Pesquisa de ensaio')};",
+            )
+            .await?;
+        assert_eq!(report["width"], width);
+        assert_eq!(report["revision"], true);
+        assert_eq!(report["reason"], true);
+        assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("composition-memory-{width}.png")))
+            .await?;
+    }
+
     // Stage a budget of 31 services and inspect the persisted batch, not a new upload.
     let actor = h
         .auth
