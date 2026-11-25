@@ -417,6 +417,50 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     );
     stage.commit().await.unwrap();
 
+    // A identidade de execução não pode emitir um recibo fictício.
+    let mut direct = AuthStore::new(database.clone()).begin().await.unwrap();
+    direct.org_set_actor(actor).await.unwrap();
+    direct.org_set_tenant(tenant).await.unwrap();
+    let rejected = sqlx::query(
+        "UPDATE canteiro.budget_import_batches
+         SET status='applied',applied_at=clock_timestamp()
+         WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(batch_id)
+    .execute(&mut *direct.tx)
+    .await
+    .unwrap_err();
+    assert_eq!(
+        rejected.as_database_error().unwrap().code().as_deref(),
+        Some("23514")
+    );
+    drop(direct);
+
+    let mut direct = AuthStore::new(database.clone()).begin().await.unwrap();
+    direct.org_set_actor(actor).await.unwrap();
+    direct.org_set_tenant(tenant).await.unwrap();
+    let rejected = sqlx::query(
+        "INSERT INTO canteiro.budget_import_batches
+         (tenant_id,id,scope_id,actor_id,session_id,base_version,format,locale,
+          sha256,preview,included_count,changed_count,removed_count,status,applied_at)
+         SELECT tenant_id,$3,scope_id,actor_id,session_id,base_version,format,locale,
+                $4,preview,included_count,changed_count,removed_count,'applied',clock_timestamp()
+         FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(batch_id)
+    .bind(Uuid::new_v4())
+    .bind([77_u8; 32].as_slice())
+    .execute(&mut *direct.tx)
+    .await
+    .unwrap_err();
+    assert_eq!(
+        rejected.as_database_error().unwrap().code().as_deref(),
+        Some("23514")
+    );
+    drop(direct);
+
     // Um recibo de lote não pode acompanhar outra versão dos mesmos 10 mil serviços.
     // A falha da conferência deve reverter também o incremento da revisão.
     let mut tampered = updated.clone();
@@ -425,7 +469,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
     let mut mismatched = AuthStore::new(database.clone()).begin().await.unwrap();
     mismatched.org_set_actor(actor).await.unwrap();
     mismatched.org_set_tenant(tenant).await.unwrap();
-    let forged_operation = Uuid::new_v4();
+    let forged_operation = batch_id;
     assert_eq!(
         mismatched
             .budget_write(&BudgetWrite {
@@ -450,6 +494,20 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             .budget_import_mark_applied(tenant, scope, actor, session, batch_id, forged_operation)
             .await
             .unwrap()
+    );
+    let rejected = sqlx::query(
+        "UPDATE canteiro.budget_import_batches
+         SET status='applied',applied_at=clock_timestamp()
+         WHERE tenant_id=$1 AND id=$2",
+    )
+    .bind(tenant)
+    .bind(batch_id)
+    .execute(&mut *mismatched.tx)
+    .await
+    .unwrap_err();
+    assert_eq!(
+        rejected.as_database_error().unwrap().code().as_deref(),
+        Some("23514")
     );
     drop(mismatched);
     // A consulta fora da transação demonstra que o lote e a revisão não foram aplicados.
@@ -544,8 +602,7 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
             }
         }
     };
-    let (first_result, second_result) =
-        tokio::join!(confirm(Uuid::new_v4()), confirm(Uuid::new_v4()));
+    let (first_result, second_result) = tokio::join!(confirm(batch_id), confirm(batch_id));
     assert_ne!(first_result, second_result);
     let (status, applied_at): (String, Option<chrono::DateTime<chrono::Utc>>) = sqlx::query_as(
         "SELECT status,applied_at FROM canteiro.budget_import_batches WHERE tenant_id=$1 AND id=$2",

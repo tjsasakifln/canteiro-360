@@ -207,9 +207,12 @@ impl AuthTransaction {
              SET status='applied',applied_at=clock_timestamp()
              WHERE b.tenant_id=$1 AND b.scope_id=$2 AND b.actor_id=$3
                AND b.session_id=$4 AND b.id=$5
-               AND b.status='ready' AND b.expires_at>clock_timestamp()
+               AND b.status='ready' AND b.expires_at>clock_timestamp() AND b.id=$6
                AND EXISTS (
                    SELECT 1 FROM canteiro.budget_versions v
+                    JOIN canteiro.budget_records r
+                      ON r.tenant_id=v.tenant_id AND r.scope_id=v.scope_id
+                     AND r.current_version=v.version
                     WHERE v.tenant_id=b.tenant_id AND v.scope_id=b.scope_id
                       AND v.version=COALESCE(b.base_version,0)+1 AND v.actor_id=b.actor_id
                       AND v.operation_key=$6 AND v.payload=b.preview AND v.state='draft'
