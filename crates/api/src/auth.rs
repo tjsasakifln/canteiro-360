@@ -88,8 +88,14 @@ impl AuthHttp {
                 };
                 for message in messages {
                     if delivery.send(&message).await {
-                        if service.mark_mail_delivered(&message.id).await.is_err() {
-                            tracing::warn!("Entrega de acesso aguarda confirmação na fila.");
+                        match service.mark_mail_delivered(&message.id).await {
+                            Ok(true) => {}
+                            Ok(false) => tracing::warn!(
+                                "Recibo de acesso não aplicado: reserva encerrada ou mensagem finalizada."
+                            ),
+                            Err(_) => tracing::warn!(
+                                "Entrega de acesso aguarda confirmação na fila."
+                            ),
                         }
                     } else {
                         tracing::warn!(
