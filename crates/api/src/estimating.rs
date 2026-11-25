@@ -367,25 +367,12 @@ async fn composition_memory_page(
     if page.context.as_ref() != Some(&context) {
         return bad_input();
     }
-    let Some(record) = page
-        .compositions
-        .iter()
-        .find(|entry| entry.scope_id == query.scope_id && entry.code == query.code)
-        .cloned()
-    else {
-        return bad_input();
-    };
     match auth
         .service()
-        .estimating_composition_calculate(
-            &token,
-            &context,
-            &query.scope_id,
-            record.composition.clone(),
-        )
+        .estimating_composition_memory(&token, &context, &query.scope_id, &query.code)
         .await
     {
-        Ok(memory) => html_page(
+        Ok((record, memory)) => html_page(
             canteiro_web::estimating::composition_memory(page, record, memory),
             StatusCode::OK,
         ),
@@ -620,19 +607,13 @@ async fn composition_edit_description_form(
         Ok(value) if value > 0 => value,
         _ => return bad_input(),
     };
-    let page = match auth.service().estimating_context(&token).await {
+    let record = match auth
+        .service()
+        .estimating_composition_for_edit(&token, &context, scope_id, code)
+        .await
+    {
         Ok(value) => value,
         Err(error) => return application_failure(error),
-    };
-    if page.context.as_ref() != Some(&context) {
-        return bad_input();
-    }
-    let Some(record) = page
-        .compositions
-        .iter()
-        .find(|entry| entry.scope_id == scope_id && entry.code == code)
-    else {
-        return bad_input();
     };
     if record.version != version {
         let mut response = (
@@ -643,7 +624,7 @@ async fn composition_edit_description_form(
         private_headers(&mut response);
         return response;
     }
-    let Some(composition) = changed_composition_from_form(record.composition.clone(), &data) else {
+    let Some(composition) = changed_composition_from_form(record.composition, &data) else {
         return bad_input();
     };
     let command = CompositionWriteCommand {
