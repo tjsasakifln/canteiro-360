@@ -580,23 +580,27 @@ fn read_shared_strings(xml: &str) -> Result<Vec<String>, CellError> {
     }
     rest = rest.strip_prefix('>').ok_or_else(invalid)?;
     let mut values = Vec::new();
-    while rest != "</sst>" {
+    loop {
+        rest = xml_space(rest);
+        if rest == "</sst>" {
+            break;
+        }
         if values.len() >= MAX_SHARED_STRINGS {
             return Err(invalid());
         }
-        let next = rest.strip_prefix("<si>").ok_or_else(invalid)?;
-        if let Some(tail) = next.strip_prefix("<t/></si>") {
+        let next = xml_space(rest.strip_prefix("<si>").ok_or_else(invalid)?);
+        if let Some(tail) = next.strip_prefix("<t/>") {
+            rest = xml_space(tail).strip_prefix("</si>").ok_or_else(invalid)?;
             values.push(String::new());
-            rest = tail;
             continue;
         }
         let next = next
             .strip_prefix("<t xml:space=\"preserve\">")
             .or_else(|| next.strip_prefix("<t>"))
             .ok_or_else(invalid)?;
-        let (raw, tail) = next.split_once("</t></si>").ok_or_else(invalid)?;
+        let (raw, tail) = next.split_once("</t>").ok_or_else(invalid)?;
+        rest = xml_space(tail).strip_prefix("</si>").ok_or_else(invalid)?;
         values.push(decode_text(raw, 1, 1)?);
-        rest = tail;
     }
     if unique.is_some_and(|expected| expected != values.len()) {
         return Err(invalid());
@@ -1136,6 +1140,12 @@ mod tests {
         );
         let values = read_shared_strings(&xml).unwrap();
         assert_eq!(values, ["ITEM", "00001", ""]);
+        let pretty = format!(
+            "{SHARED_START} uniqueCount=\"2\">\n  <si>\n    <t xml:space=\"preserve\">  A  </t>\n  </si>\n  <si>\n    <t/>\n  </si>\n</sst>"
+        );
+        assert_eq!(read_shared_strings(&pretty).unwrap(), ["  A  ", ""]);
+        let injected = pretty.replace("</t>", "</t><f>1+1</f>");
+        assert!(read_shared_strings(&injected).is_err());
         let mut row =
             r#"<row r="3"><c r="A3" t="s"><v>0</v></c><c r="M3" t="s"><v>1</v></c></row>"#;
         let cells = read_row(&mut row, 3, NumberLocale::Canonical, &values).unwrap();
@@ -1260,8 +1270,10 @@ mod tests {
             .replace("</c><c", "</c>\n    <c")
             .replace("</sheetData></worksheet>", "</sheetData>\n</worksheet>");
         let pretty_types = types.replace("><", ">\n  <");
+        let pretty_shared = shared.replace("><", ">\n  <");
         parts[0].1 = pretty_types.as_bytes();
         parts[4].1 = pretty_sheet.as_bytes();
+        parts[5].1 = pretty_shared.as_bytes();
         let (imported, locale) = preview_import_with_locale(&stored_zip(&parts)).unwrap();
         assert_eq!(
             crate::budget_csv::export_csv(&imported, locale).unwrap(),
