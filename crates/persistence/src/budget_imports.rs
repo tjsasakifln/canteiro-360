@@ -76,6 +76,15 @@ impl AuthTransaction {
             }
             let previous: BudgetRevision =
                 serde_json::from_str(&stored.payload).map_err(|_| AuthStoreError)?;
+            // A prévia persistida também deve respeitar as operações explícitas
+            // exigidas pelo domínio; uma chamada direta não pode contorná-las.
+            if revision.validate_catalog_lineage(&previous).is_err()
+                || revision.validate_no_implicit_removals(&previous).is_err()
+                || revision.validate_no_implicit_moves(&previous).is_err()
+                || revision.validate_no_implicit_reschedule(&previous).is_err()
+            {
+                return Ok(None);
+            }
             canteiro_domain::budget_csv::compare(&previous, &revision)
         } else {
             canteiro_domain::budget_csv::ImportDifference {
