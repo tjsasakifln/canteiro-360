@@ -1016,5 +1016,42 @@ async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
     .await
     .unwrap();
     assert_eq!(discarded, 2);
+
+    let revoked = f.person("mail-revoked", false).await;
+    let token = f.invite(&admin, &revoked, OrganizationRole::Member).await;
+    let reserved = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(reserved.token, token);
+    let ctx = f.context(&admin).await;
+    let invite = ctx
+        .state
+        .active
+        .as_ref()
+        .unwrap()
+        .invitations
+        .iter()
+        .find(|i| i.email == revoked.email && i.status == "pending")
+        .unwrap();
+    f.execute(
+        &admin,
+        OrganizationCommand::RevokeInvite {
+            scope: scope(&ctx),
+            invitation_id: invite.id.clone(),
+            invitation_version: invite.version,
+        },
+    )
+    .await
+    .unwrap();
+    f.service.mark_mail_delivered(&reserved.id).await.unwrap();
+    let discarded: bool = sqlx::query_scalar(
+        "SELECT discarded_at IS NOT NULL AND delivered_at IS NULL
+            AND attempts=1 AND octet_length(payload)=0
+         FROM canteiro_auth.mail_outbox WHERE invitation_id=$1",
+    )
+    .bind(id(&invite.id).unwrap())
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(discarded);
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
     f.close().await;
 }
