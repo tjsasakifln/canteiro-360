@@ -805,7 +805,10 @@ mod tests {
         assert_eq!(result.line_details.len(), 1);
         assert_eq!(result.line_details[0].category, CostCategory::Material);
         assert_eq!(result.line_details[0].source_unit, MeasureUnit::Unit);
-        assert_eq!(result.line_details[0].source_price.to_string(), "100.000000");
+        assert_eq!(
+            result.line_details[0].source_price.to_string(),
+            "100.000000"
+        );
         assert!(result.line_details[0].conversion.is_none());
         assert_eq!(result.line_details[0].amount.to_string(), "100.000000");
         assert_eq!(result.incidence_details.len(), 1);
