@@ -148,6 +148,8 @@ impl AuthService {
         let a = access.ok_or_else(record_denied)?;
         let scope = id(scope_text)?;
         require_budget(&a, scope, AccessAction::View, tx.now().await?)?;
+        // A prévia usa o mesmo grafo estável das revisões e da memória salva.
+        tx.composition_lock_scope(a.tenant, scope).await?;
         let (book, catalogs, _) = calculating_book(&mut tx, a.tenant, scope, &candidate).await?;
         let memory = book.calculate(&candidate.code, &catalogs).map_err(|_| {
             invalid("Composição circular, fonte ausente, unidade incompatível ou cálculo inválido.")
