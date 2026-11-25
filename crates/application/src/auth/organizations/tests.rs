@@ -1073,7 +1073,8 @@ async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration(
     // Torna a retentativa elegível depois do envio que ainda aguarda a primeira tentativa.
     sqlx::query(
         "UPDATE canteiro_auth.mail_outbox
-         SET lease_until=clock_timestamp()-interval '1 second'
+         SET lease_until=clock_timestamp()-interval '1 second',
+             created_at=clock_timestamp()-interval '20 seconds'
          WHERE invitation_id IS NOT NULL AND attempts=1",
     )
     .execute(&f.admin)
