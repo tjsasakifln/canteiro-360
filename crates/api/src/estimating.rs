@@ -401,6 +401,28 @@ async fn composition_write(
         Err(e) => application_failure(e),
     }
 }
+fn composition_conversion_from_form(
+    data: &BTreeMap<String, String>,
+) -> Option<Option<canteiro_domain::catalogs::UnitConversion>> {
+    let from = field(data, "conversion_from");
+    let factor = field(data, "conversion_factor");
+    let reference = field(data, "conversion_reference");
+    if from.is_empty() && factor.is_empty() && reference.is_empty() {
+        return Some(None);
+    }
+    let conversion = canteiro_domain::catalogs::UnitConversion {
+        from: from.parse().ok()?,
+        to: field(data, "unit").parse().ok()?,
+        factor: factor.parse().ok()?,
+        reference: reference.to_owned(),
+    };
+    // A fonte real e sua unidade são conferidas pelo serviço antes de gravar.
+    conversion
+        .apply("1".parse().ok()?, conversion.from, conversion.to)
+        .ok()?;
+    Some(Some(conversion))
+}
+
 fn changed_composition_from_form(
     mut composition: Composition,
     data: &BTreeMap<String, String>,
@@ -454,7 +476,7 @@ fn changed_composition_from_form(
                     },
                     coefficient: field(data, "coefficient").parse().ok()?,
                     unit: field(data, "unit").parse().ok()?,
-                    conversion: None,
+                    conversion: composition_conversion_from_form(data)?,
                 });
         }
         "add_composition_line" => {
@@ -475,7 +497,7 @@ fn changed_composition_from_form(
                     },
                     coefficient: field(data, "coefficient").parse().ok()?,
                     unit: field(data, "unit").parse().ok()?,
-                    conversion: None,
+                    conversion: composition_conversion_from_form(data)?,
                 });
         }
         "remove_line" => {
@@ -822,6 +844,29 @@ mod composition_form_tests {
             assert!(changed_composition_from_form(original.clone(), &fields).is_none());
             fields.insert(key.into(), original_value);
         }
+    }
+
+    #[test]
+    fn optional_conversion_requires_a_complete_effective_declaration() {
+        let mut fields = BTreeMap::new();
+        fields.insert("unit".into(), "kg".into());
+        assert_eq!(composition_conversion_from_form(&fields), Some(None));
+        fields.insert("conversion_from".into(), "t".into());
+        assert!(composition_conversion_from_form(&fields).is_none());
+        fields.insert("conversion_factor".into(), "0.001".into());
+        assert!(composition_conversion_from_form(&fields).is_none());
+        fields.insert("conversion_reference".into(), "Conversão de t para kg".into());
+        let conversion = composition_conversion_from_form(&fields)
+            .unwrap()
+            .unwrap();
+        assert_eq!(conversion.from, MeasureUnit::Tonne);
+        assert_eq!(conversion.to, MeasureUnit::Kilogram);
+        assert_eq!(conversion.factor.to_string(), "0.001");
+        fields.insert("conversion_from".into(), "kg".into());
+        assert!(composition_conversion_from_form(&fields).is_none());
+        fields.insert("conversion_from".into(), "t".into());
+        fields.insert("conversion_reference".into(), "=1+1".into());
+        assert!(composition_conversion_from_form(&fields).is_none());
     }
 
     #[test]
