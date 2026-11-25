@@ -668,6 +668,38 @@ fn native_number(
     })
 }
 
+// Permit formatting whitespace between known XML elements, never inside
+// literal text. The closing tags must still follow immediately in order.
+fn inline_cell(mut rest: &str, row: usize, col: usize) -> Result<(String, &str), CellError> {
+    let invalid = || error(row, col, "Linha ou célula fora do formato XLSX oficial.");
+    rest = xml_space(rest);
+    if let Some(tail) = rest.strip_prefix("<is/>") {
+        let tail = xml_space(tail).strip_prefix("</c>").ok_or_else(invalid)?;
+        return Ok((String::new(), tail));
+    }
+    rest = xml_space(rest.strip_prefix("<is>").ok_or_else(invalid)?);
+    let (value, tail) = if let Some(tail) = rest.strip_prefix("<t/>") {
+        (String::new(), tail)
+    } else {
+        let text = rest
+            .strip_prefix("<t xml:space=\"preserve\">")
+            .or_else(|| rest.strip_prefix("<t>"))
+            .ok_or_else(invalid)?;
+        let (raw, tail) = text.split_once("</t>").ok_or_else(invalid)?;
+        (decode_text(raw, row, col)?, tail)
+    };
+    let tail = xml_space(tail).strip_prefix("</is>").ok_or_else(invalid)?;
+    let tail = xml_space(tail).strip_prefix("</c>").ok_or_else(invalid)?;
+    Ok((value, tail))
+}
+
+fn cell_value(rest: &str) -> Option<(&str, &str)> {
+    let rest = xml_space(rest).strip_prefix("<v>")?;
+    let (raw, tail) = rest.split_once("</v>")?;
+    let tail = xml_space(tail).strip_prefix("</c>")?;
+    Some((raw, tail))
+}
+
 fn read_row(
     rest: &mut &str,
     row: usize,
@@ -698,19 +730,12 @@ fn read_row(
         let Some(suffix) = rest.strip_prefix(&address) else {
             continue;
         };
-        if let Some(next) = suffix
-            .strip_prefix(" t=\"inlineStr\"><is><t xml:space=\"preserve\">")
-            .or_else(|| suffix.strip_prefix(" t=\"inlineStr\"><is><t>"))
-        {
-            let (raw, next) = next
-                .split_once("</t></is></c>")
-                .ok_or_else(|| invalid(index + 1))?;
-            *cell = decode_text(raw, row, index + 1)?;
+        if let Some(next) = suffix.strip_prefix(" t=\"inlineStr\">") {
+            let (value, next) = inline_cell(next, row, index + 1)?;
+            *cell = value;
             *rest = next;
-        } else if let Some(next) = suffix.strip_prefix(" t=\"s\"><v>") {
-            let (raw, next) = next
-                .split_once("</v></c>")
-                .ok_or_else(|| invalid(index + 1))?;
+        } else if let Some(next) = suffix.strip_prefix(" t=\"s\">") {
+            let (raw, next) = cell_value(next).ok_or_else(|| invalid(index + 1))?;
             if raw.is_empty() || raw.len() > 8 || !raw.bytes().all(|b| b.is_ascii_digit()) {
                 return Err(invalid(index + 1));
             }
@@ -718,24 +743,21 @@ fn read_row(
             *cell = shared.get(key).ok_or_else(|| invalid(index + 1))?.clone();
             *rest = next;
         } else if let Some(next) = suffix
-            .strip_prefix(" t=\"n\"><v>")
-            .or_else(|| suffix.strip_prefix("><v>"))
+            .strip_prefix(" t=\"n\">")
+            .or_else(|| suffix.strip_prefix('>'))
         {
-            let (raw, next) = next
-                .split_once("</v></c>")
-                .ok_or_else(|| invalid(index + 1))?;
-            *cell = native_number(raw, &record_type, index, locale)
-                .ok_or_else(|| invalid(index + 1))?;
-            *rest = next;
-        } else if let Some(next) = [
-            "/>",
-            "></c>",
-            " t=\"inlineStr\"><is><t/></is></c>",
-            " t=\"inlineStr\"><is/></c>",
-        ]
-        .iter()
-        .find_map(|prefix| suffix.strip_prefix(*prefix))
-        {
+            if let Some(tail) = xml_space(next).strip_prefix("</c>") {
+                if !suffix.starts_with('>') {
+                    return Err(invalid(index + 1));
+                }
+                *rest = tail;
+            } else {
+                let (raw, next) = cell_value(next).ok_or_else(|| invalid(index + 1))?;
+                *cell = native_number(raw, &record_type, index, locale)
+                    .ok_or_else(|| invalid(index + 1))?;
+                *rest = next;
+            }
+        } else if let Some(next) = suffix.strip_prefix("/>") {
             *rest = next;
         } else {
             return Err(invalid(index + 1));
@@ -1110,12 +1132,14 @@ mod tests {
         let sheet = sheet
             .replace(
                 r#" t="inlineStr"><is><t xml:space="preserve">1234,56</t></is></c>"#,
-                r#" t="n"><v>1.23456E+3</v></c>"#,
+                r#" t="n"> <v>1.23456E+3</v> </c>"#,
             )
             .replace(
                 r#" t="inlineStr"><is><t xml:space="preserve">78,900000</t></is></c>"#,
-                r#"><v>7.89E1</v></c>"#,
-            );
+                r#"> <v>7.89E1</v> </c>"#,
+            )
+            .replace("<is><t", "<is> <t")
+            .replace("</t></is></c>", "</t> </is> </c>");
         assert_eq!(sheet.matches("<v>").count(), 20_000);
         let bytes = stored_zip(&[
             (PART_NAMES[0], CONTENT_TYPES.as_bytes()),
@@ -1324,10 +1348,31 @@ mod tests {
 
     #[test]
     fn structural_whitespace_never_changes_text_or_allows_extra_xml() {
-        let mut row = r#"<row r="3"> <c r="A3" t="inlineStr"><is><t> ITEM </t></is></c> </row>"#;
+        let mut row = r#"<row r="3"> <c r="A3" t="inlineStr">
+            <is> <t> ITEM </t> </is> </c> </row>"#;
         let cells = read_row(&mut row, 3, NumberLocale::Canonical, &[]).unwrap();
         assert_eq!(cells[0], " ITEM ");
         assert!(row.is_empty());
+
+        let mut row = r#"<row r="3"><c r="A3" t="s"> <v>0</v> </c>
+            <c r="P3" t="n"> <v>1.25</v> </c>
+            <c r="Q3"> <v>1234.56</v> </c></row>"#;
+        let cells = read_row(&mut row, 3, NumberLocale::PtBr, &["ITEM".into()]).unwrap();
+        assert_eq!(cells[15], "1,25");
+        assert_eq!(cells[16], "1234,56");
+        assert!(row.is_empty());
+
+        for invalid in [
+            r#"<c r="A3" t="inlineStr"> <is><t>abc</t><f>1</f></is></c>"#,
+            r#"<c r="A3" t="inlineStr"> <is><t>abc</t></is><f>1</f></c>"#,
+            r#"<c r="A3" t="s"> <v>0</v><f>1</f></c>"#,
+            r#"<c r="A3" t="inlineStr"> <is><t>_x003D_1+1</t></is></c>"#,
+        ] {
+            let row = format!(r#"<row r="3">{invalid}</row>"#);
+            let err = read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &["ITEM".into()])
+                .unwrap_err();
+            assert_eq!((err.row, err.column), (3, 1));
+        }
 
         let external = ROOT_RELS.replace("Target=", "TargetMode=\"External\" Target=");
         assert!(!same_xml(external.as_bytes(), ROOT_RELS));
