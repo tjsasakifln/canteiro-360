@@ -86,6 +86,25 @@ async fn composition_graph_includes_entries_beyond_the_list_limit() {
     let graph = tx.composition_graph(tenant, scope).await.unwrap();
     assert_eq!(graph.len(), 501);
     assert_eq!(graph.last().unwrap().code, "0501");
+    let last = tx
+        .composition_lookup(tenant, scope, "0501")
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(last.code, "0501");
+    assert_eq!(last.version, 1);
+    assert!(
+        tx.composition_lookup(tenant, scope, "0502")
+            .await
+            .unwrap()
+            .is_none()
+    );
+    assert!(
+        tx.composition_lookup(tenant, Uuid::new_v4(), "0501")
+            .await
+            .unwrap()
+            .is_none()
+    );
     assert!(
         tx.composition_graph(tenant, Uuid::new_v4())
             .await
