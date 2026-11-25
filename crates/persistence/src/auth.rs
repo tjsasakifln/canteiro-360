@@ -97,10 +97,10 @@ impl AuthStore {
         Ok(sqlx::query_as("WITH selected AS (SELECT m.id,COALESCE(t.expires_at,m.invitation_expires_at) AS expires_at FROM canteiro_auth.mail_outbox m LEFT JOIN canteiro_auth.tokens t ON t.id=m.token_id WHERE m.delivered_at IS NULL AND m.discarded_at IS NULL AND ((t.id IS NOT NULL AND t.used_at IS NULL AND t.expires_at>clock_timestamp()) OR (m.invitation_id IS NOT NULL AND m.invitation_expires_at>clock_timestamp())) AND (m.lease_until IS NULL OR m.lease_until<=clock_timestamp()) ORDER BY COALESCE(m.lease_until,m.created_at),m.created_at,m.id LIMIT $1 FOR UPDATE OF m SKIP LOCKED) UPDATE canteiro_auth.mail_outbox m SET lease_until=LEAST(clock_timestamp()+interval '60 seconds',selected.expires_at),lease_id=$2,attempts=attempts+1 FROM selected WHERE m.id=selected.id RETURNING m.id,m.payload,m.lease_id,selected.expires_at")
             .bind(limit.clamp(1,25)).bind(lease).fetch_all(&self.database.pool).await?)
     }
-    pub async fn delivered(&self, id: Uuid, lease: Uuid) -> Result<(), AuthStoreError> {
-        sqlx::query("UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp(),payload='\\x'::bytea WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp() AND (invitation_expires_at IS NULL OR invitation_expires_at>clock_timestamp()) AND delivered_at IS NULL AND discarded_at IS NULL")
+    pub async fn delivered(&self, id: Uuid, lease: Uuid) -> Result<bool, AuthStoreError> {
+        let updated = sqlx::query("UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp(),payload='\\x'::bytea WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp() AND (invitation_expires_at IS NULL OR invitation_expires_at>clock_timestamp()) AND delivered_at IS NULL AND discarded_at IS NULL")
             .bind(id).bind(lease).execute(&self.database.pool).await?;
-        Ok(())
+        Ok(updated.rows_affected() == 1)
     }
 }
 
