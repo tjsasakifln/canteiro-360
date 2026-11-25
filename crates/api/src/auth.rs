@@ -542,7 +542,7 @@ mod tests {
                                 Json(serde_json::json!({"id":"delivery-fixture"})),
                             )
                         })
-                            .into_response()
+                        .into_response()
                     }
                 },
             ),
