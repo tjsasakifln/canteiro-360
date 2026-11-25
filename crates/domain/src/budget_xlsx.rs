@@ -1369,8 +1369,13 @@ mod tests {
             r#"<c r="A3" t="inlineStr"> <is><t>_x003D_1+1</t></is></c>"#,
         ] {
             let row = format!(r#"<row r="3">{invalid}</row>"#);
-            let err = read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &["ITEM".into()])
-                .unwrap_err();
+            let err = read_row(
+                &mut row.as_str(),
+                3,
+                NumberLocale::Canonical,
+                &["ITEM".into()],
+            )
+            .unwrap_err();
             assert_eq!((err.row, err.column), (3, 1));
         }
 
