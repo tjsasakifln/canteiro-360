@@ -765,8 +765,8 @@ pub fn preview_import_with_locale(
     let mut rest = xml_body(&sheet)
         .strip_prefix(xml_body(SHEET_START))
         .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
-    let declared_last_row = read_dimension(&mut rest)
-        .ok_or_else(|| error(1, 1, "Dimensão XLSX inválida."))?;
+    let declared_last_row =
+        read_dimension(&mut rest).ok_or_else(|| error(1, 1, "Dimensão XLSX inválida."))?;
     rest = rest
         .strip_prefix("<sheetData>")
         .ok_or_else(|| error(1, 1, "Dados XML não reconhecidos."))?;
@@ -1260,7 +1260,8 @@ mod tests {
             let mut malformed = malformed;
             assert_eq!(read_dimension(&mut malformed), None);
         }
-        let mut row = r#"<row r="3" spans="1:19"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c></row>"#;
+        let mut row =
+            r#"<row r="3" spans="1:19"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c></row>"#;
         let cells = read_row(&mut row, 3, NumberLocale::Canonical, &[]).unwrap();
         assert_eq!(cells[0], "ITEM");
         assert!(row.is_empty());
