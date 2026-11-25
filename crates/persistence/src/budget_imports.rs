@@ -54,15 +54,43 @@ impl AuthTransaction {
             .unwrap_or(0)
             .checked_add(1)
             .and_then(|value| u32::try_from(value).ok());
-        let valid_snapshot = serde_json::from_str::<BudgetRevision>(batch.preview)
-            .ok()
-            .is_some_and(|revision| {
-                Some(revision.revision) == expected_revision
-                    && revision.budget_id == batch.scope.to_string()
-                    && revision.status == BudgetState::Draft
-                    && revision.summarize().is_ok()
-            });
-        if !valid_snapshot {
+        let Ok(revision) = serde_json::from_str::<BudgetRevision>(batch.preview) else {
+            return Ok(None);
+        };
+        if Some(revision.revision) != expected_revision
+            || revision.budget_id != batch.scope.to_string()
+            || revision.status != BudgetState::Draft
+            || revision.summarize().is_err()
+        {
+            return Ok(None);
+        }
+        // O relatório persistido precisa corresponder à revisão-base real,
+        // inclusive para chamadas que não passam pela prévia HTTP.
+        let current = self.budget_current(batch.tenant, batch.scope).await?;
+        if current.as_ref().map(|stored| stored.version) != batch.base_version {
+            return Ok(None);
+        }
+        let difference = if let Some(stored) = current {
+            if stored.state == "approved" {
+                return Ok(None);
+            }
+            let previous: BudgetRevision =
+                serde_json::from_str(&stored.payload).map_err(|_| AuthStoreError)?;
+            canteiro_domain::budget_csv::compare(&previous, &revision)
+        } else {
+            canteiro_domain::budget_csv::ImportDifference {
+                included: revision.lines.len(),
+                changed: 0,
+                removed: 0,
+            }
+        };
+        if (difference.included, difference.changed, difference.removed)
+            != (
+                batch.included as usize,
+                batch.changed as usize,
+                batch.removed as usize,
+            )
+        {
             return Ok(None);
         }
         // Expiração não autoriza reaplicar o lote antigo. Cancela somente
