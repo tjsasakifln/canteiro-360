@@ -410,7 +410,28 @@ fn official_sheet(bytes: &[u8]) -> Result<String, CellError> {
     official_workbook(bytes).map(|(sheet, _)| sheet)
 }
 
-const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>"#;
+const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">"#;
+const MAX_SHEET_ROWS: usize = 101_001;
+const SHEET_COLUMNS: usize = 19;
+
+// Metadata is advisory only: never use it to allocate or to skip cells.
+fn bounded_index(raw: &str, maximum: usize) -> Option<usize> {
+    if raw.is_empty() || raw.len() > 6 || !raw.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+    let value = raw.parse::<usize>().ok()?;
+    (1..=maximum).contains(&value).then_some(value)
+}
+
+fn read_dimension(rest: &mut &str) -> Option<Option<usize>> {
+    let Some(tail) = rest.strip_prefix(r#"<dimension ref="A1:S"#) else {
+        return Some(None);
+    };
+    let (last_row, tail) = tail.split_once(r#""/>"#)?;
+    let last_row = bounded_index(last_row, MAX_SHEET_ROWS)?;
+    *rest = tail;
+    Some(Some(last_row))
+}
 const SHEET_END: &str = "</sheetData></worksheet>";
 
 fn xml_character(ch: char) -> bool {
@@ -640,8 +661,20 @@ fn read_row(
     shared: &[String],
 ) -> Result<Vec<String>, CellError> {
     let invalid = |col| error(row, col, "Linha ou célula fora do formato XLSX oficial.");
-    let prefix = format!("<row r=\"{row}\">");
-    *rest = rest.strip_prefix(&prefix).ok_or_else(|| invalid(1))?;
+    let prefix = format!("<row r=\"{row}\"");
+    let tail = rest.strip_prefix(&prefix).ok_or_else(|| invalid(1))?;
+    *rest = if let Some(tail) = tail.strip_prefix(" spans=\"") {
+        let (span, tail) = tail.split_once("\">").ok_or_else(|| invalid(1))?;
+        let (first, last) = span.split_once(':').ok_or_else(|| invalid(1))?;
+        let first = bounded_index(first, SHEET_COLUMNS).ok_or_else(|| invalid(1))?;
+        let last = bounded_index(last, SHEET_COLUMNS).ok_or_else(|| invalid(1))?;
+        if first > last {
+            return Err(invalid(1));
+        }
+        tail
+    } else {
+        tail.strip_prefix('>').ok_or_else(|| invalid(1))?
+    };
     let mut cells = vec![String::new(); crate::budget_csv::HEADER.len()];
     let mut record_type = String::new();
     for (index, cell) in cells.iter_mut().enumerate() {
@@ -732,6 +765,11 @@ pub fn preview_import_with_locale(
     let mut rest = xml_body(&sheet)
         .strip_prefix(xml_body(SHEET_START))
         .ok_or_else(|| error(1, 1, "Cabeçalho XML não reconhecido."))?;
+    let declared_last_row = read_dimension(&mut rest)
+        .ok_or_else(|| error(1, 1, "Dimensão XLSX inválida."))?;
+    rest = rest
+        .strip_prefix("<sheetData>")
+        .ok_or_else(|| error(1, 1, "Dados XML não reconhecidos."))?;
     let version = read_row(&mut rest, 1, NumberLocale::Canonical, &shared)?;
     if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
         return Err(error(1, 1, "Versão XLSX inválida."));
@@ -746,7 +784,7 @@ pub fn preview_import_with_locale(
     let mut physical = 2;
     let mut row = 2;
     while rest != SHEET_END {
-        if row > 101_001 {
+        if row > MAX_SHEET_ROWS {
             return Err(error(row, 1, "Limite de registros XLSX excedido."));
         }
         let cells = read_row(&mut rest, row, locale, &shared)?;
@@ -761,6 +799,9 @@ pub fn preview_import_with_locale(
             return Err(error(row, 1, "Dados XLSX acima do limite de importação."));
         }
         row += 1;
+    }
+    if declared_last_row.is_some_and(|last| last < row - 1) {
+        return Err(error(row - 1, 1, "Dimensão XLSX menor que os dados."));
     }
     crate::budget_csv::preview_import(&csv, locale)
         .map(|snapshot| (snapshot, locale))
@@ -1178,12 +1219,58 @@ mod tests {
             csv
         );
 
+        let last_row = sheet.matches("<row ").count();
+        let with_metadata = sheet
+            .replace(
+                "<sheetData>",
+                &format!(r#"<dimension ref="A1:S{last_row}"/><sheetData>"#),
+            )
+            .replace(r#""><c r="#, r#"" spans="1:19"><c r="#);
+        assert_eq!(with_metadata.matches(" spans=").count(), last_row);
+        parts[4].1 = with_metadata.as_bytes();
+        let (imported, locale) = preview_import_with_locale(&stored_zip(&parts)).unwrap();
+        assert_eq!(
+            crate::budget_csv::export_csv(&imported, locale).unwrap(),
+            csv
+        );
+        let false_dimension = with_metadata.replace(&format!("A1:S{last_row}"), "A1:S2");
+        parts[4].1 = false_dimension.as_bytes();
+        assert!(preview_import(&stored_zip(&parts)).is_err());
+        parts[4].1 = with_metadata.as_bytes();
+
         let external = rels.replace(
             r#"Target="sharedStrings.xml""#,
             r#"Target="https://invalid.example/" TargetMode="External""#,
         );
         parts[3].1 = external.as_bytes();
         assert!(preview_import(&stored_zip(&parts)).is_err());
+    }
+
+    #[test]
+    fn worksheet_metadata_is_bounded_and_never_hides_cells() {
+        let mut rest = r#"<dimension ref="A1:S10004"/><sheetData>"#;
+        assert_eq!(read_dimension(&mut rest), Some(Some(10_004)));
+        assert_eq!(rest, "<sheetData>");
+        for malformed in [
+            r#"<dimension ref="A1:S0"/>"#,
+            r#"<dimension ref="A1:S101002"/>"#,
+            r#"<dimension ref="A1:S9999999999999999"/>"#,
+            r#"<dimension ref="A1:S3" evil="1"/>"#,
+        ] {
+            let mut malformed = malformed;
+            assert_eq!(read_dimension(&mut malformed), None);
+        }
+        let mut row = r#"<row r="3" spans="1:19"><c r="A3" t="inlineStr"><is><t>ITEM</t></is></c></row>"#;
+        let cells = read_row(&mut row, 3, NumberLocale::Canonical, &[]).unwrap();
+        assert_eq!(cells[0], "ITEM");
+        assert!(row.is_empty());
+        for span in ["0:19", "19:1", "1:20", "1:19 20:30", "1:999999999"] {
+            let row = format!(r#"<row r="3" spans="{span}"></row>"#);
+            assert!(read_row(&mut row.as_str(), 3, NumberLocale::Canonical, &[]).is_err());
+        }
+        let mut formula = r#"<row r="3" spans="1:19"><c r="Q3"><f>1+1</f></c></row>"#;
+        let err = read_row(&mut formula, 3, NumberLocale::Canonical, &[]).unwrap_err();
+        assert_eq!((err.row, err.column), (3, 17));
     }
 
     #[test]
