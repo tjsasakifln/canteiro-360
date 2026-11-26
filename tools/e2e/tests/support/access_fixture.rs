@@ -51,7 +51,7 @@ pub(crate) async fn account(h: &Harness, label: &str, mfa: bool) -> TestResult<A
     for message in h.auth.pending_mail(25).await? {
         if message.email == email && message.kind == "verify_email" {
             code = Some(message.token.clone());
-            h.auth.mark_mail_delivered(&message.id).await?;
+            h.auth.mark_mail_delivered(&message.id, "fixture").await?;
         }
     }
     drop(mail_guard);

@@ -430,13 +430,26 @@ impl AuthService {
             )
             .await?)
     }
-    pub async fn mark_mail_delivered(&self, id: &str) -> Result<bool, AuthError> {
+    pub async fn mark_mail_delivered(
+        &self,
+        id: &str,
+        provider_receipt_id: &str,
+    ) -> Result<bool, AuthError> {
+        if provider_receipt_id.is_empty()
+            || provider_receipt_id.len() > 256
+            || !provider_receipt_id
+                .bytes()
+                .all(|byte| byte.is_ascii_graphic())
+        {
+            return Err(AuthError::unavailable());
+        }
         let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
         Ok(self
             .store
             .delivered(
                 Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
                 Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
+                provider_receipt_id,
             )
             .await?)
     }

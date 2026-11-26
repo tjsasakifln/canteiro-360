@@ -961,7 +961,7 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     assert!(!f.service.mark_mail_unconfirmed(&first.id).await.unwrap());
     assert!(f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
     assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
-    assert!(!f.service.mark_mail_delivered(&second.id).await.unwrap());
+    assert!(!f.service.mark_mail_delivered(&second.id, "fixture").await.unwrap());
     assert!(f.service.pending_mail(1).await.unwrap().is_empty());
     let unconfirmed: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM canteiro_meta.invitation_mail_history h
@@ -980,8 +980,8 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     assert_ne!(retry.id, second.id);
     assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
     // Recibos atrasados não podem confirmar um convite substituído ou uma reserva vencida.
-    assert!(!f.service.mark_mail_delivered(&first.id).await.unwrap());
-    assert!(!f.service.mark_mail_delivered(&second.id).await.unwrap());
+    assert!(!f.service.mark_mail_delivered(&first.id, "fixture").await.unwrap());
+    assert!(!f.service.mark_mail_delivered(&second.id, "fixture").await.unwrap());
     let premature: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
     )
@@ -989,8 +989,49 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     .await
     .unwrap();
     assert_eq!(premature, 0);
-    assert!(f.service.mark_mail_delivered(&retry.id).await.unwrap());
-    assert!(!f.service.mark_mail_delivered(&retry.id).await.unwrap());
+    // A migração também protege a transição sem recibo em uma gravação direta.
+    let missing = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp()
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(missing.is_err());
+    for invalid in ["", "bad receipt", "bad\nreceipt"] {
+        assert!(
+            f.service
+                .mark_mail_delivered(&retry.id, invalid)
+                .await
+                .is_err()
+        );
+    }
+    assert!(
+        f.service
+            .mark_mail_delivered(&retry.id, "fixture")
+            .await
+            .unwrap()
+    );
+    assert!(
+        !f.service
+            .mark_mail_delivered(&retry.id, "different-receipt")
+            .await
+            .unwrap()
+    );
+    let provider_receipt: String = sqlx::query_scalar(
+        "SELECT provider_receipt_id FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(provider_receipt, "fixture");
+    let rewritten = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox SET provider_receipt_id='rewritten'
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(rewritten.is_err());
     let delivered: i64 = sqlx::query_scalar("SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL AND attempts=2 AND octet_length(payload)=0")
         .fetch_one(&f.admin).await.unwrap();
     assert_eq!(delivered, 1);
@@ -1106,7 +1147,7 @@ async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
     )
     .await
     .unwrap();
-    assert!(!f.service.mark_mail_delivered(&reserved.id).await.unwrap());
+    assert!(!f.service.mark_mail_delivered(&reserved.id, "fixture").await.unwrap());
     let discarded: bool = sqlx::query_scalar(
         "SELECT discarded_at IS NOT NULL AND delivered_at IS NULL
             AND attempts=1 AND octet_length(payload)=0
@@ -1155,7 +1196,7 @@ async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration(
     .unwrap();
     let next = f.service.pending_mail(1).await.unwrap().remove(0);
     assert_eq!(next.token, waiting_token);
-    assert!(f.service.mark_mail_delivered(&next.id).await.unwrap());
+    assert!(f.service.mark_mail_delivered(&next.id, "fixture").await.unwrap());
 
     sqlx::query(
         "UPDATE canteiro_auth.mail_outbox
@@ -1187,7 +1228,7 @@ async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration(
     .execute(&f.admin)
     .await
     .unwrap();
-    assert!(!f.service.mark_mail_delivered(&retry.id).await.unwrap());
+    assert!(!f.service.mark_mail_delivered(&retry.id, "fixture").await.unwrap());
     assert!(f.service.pending_mail(1).await.unwrap().is_empty());
     let discarded: bool = sqlx::query_scalar(
         "SELECT discarded_at IS NOT NULL AND octet_length(payload)=0

@@ -87,8 +87,8 @@ impl AuthHttp {
                     continue;
                 };
                 for message in messages {
-                    if delivery.send(&message).await {
-                        match service.mark_mail_delivered(&message.id).await {
+                    if let Some(receipt) = delivery.send(&message).await {
+                        match service.mark_mail_delivered(&message.id, &receipt).await {
                             Ok(true) => {}
                             Ok(false) => tracing::warn!(
                                 "Recibo de acesso não aplicado: reserva encerrada ou mensagem finalizada."
@@ -411,12 +411,12 @@ impl MailTransport {
         }))
     }
 
-    async fn send(&self, message: &canteiro_application::auth::MailDelivery) -> bool {
+    async fn send(&self, message: &canteiro_application::auth::MailDelivery) -> Option<String> {
         if !matches!(
             message.kind.as_str(),
             "verify_email" | "reset_password" | "organization_invitation"
         ) {
-            return false;
+            return None;
         }
         let delivery_id = message
             .id
@@ -430,41 +430,32 @@ impl MailTransport {
             .json(&self.payload(message))
             .send()
             .await;
-        let Ok(mut response) = result else {
-            return false;
-        };
+        let mut response = result.ok()?;
         const MAX_RECEIPT_BYTES: usize = 8192;
         if !response.status().is_success()
             || response
                 .content_length()
                 .is_some_and(|length| length > MAX_RECEIPT_BYTES as u64)
         {
-            return false;
+            return None;
         }
         let mut receipt = Vec::new();
         loop {
             match response.chunk().await {
                 Ok(Some(chunk)) => {
                     if chunk.len() > MAX_RECEIPT_BYTES - receipt.len() {
-                        return false;
+                        return None;
                     }
                     receipt.extend_from_slice(&chunk);
                 }
                 Ok(None) => break,
-                Err(_) => return false,
+                Err(_) => return None,
             }
         }
-        match serde_json::from_slice::<serde_json::Value>(&receipt) {
-            Ok(body) => body
-                .get("id")
-                .and_then(serde_json::Value::as_str)
-                .is_some_and(|id| {
-                    !id.is_empty()
-                        && id.len() <= 256
-                        && !id.chars().any(|ch| ch.is_whitespace() || ch.is_control())
-                }),
-            Err(_) => false,
-        }
+        let body: serde_json::Value = serde_json::from_slice(&receipt).ok()?;
+        let id = body.get("id")?.as_str()?;
+        (!id.is_empty() && id.len() <= 256 && id.bytes().all(|byte| byte.is_ascii_graphic()))
+            .then(|| id.to_owned())
     }
 
     // Contrato oficial POST /emails da Resend. O corpo é determinístico em
@@ -573,9 +564,12 @@ mod tests {
             token: "fixture-only-code".into(),
             expires_at: "2026-11-13T16:15:00Z".into(),
         };
-        assert!(!transport.send(&message).await);
+        assert!(transport.send(&message).await.is_none());
         message.id = "mail-uuid:second-lease".into();
-        assert!(transport.send(&message).await);
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
         let seen = observed.lock().await;
         assert_eq!(seen.len(), 2);
         assert_eq!(seen[0].1, seen[1].1);
@@ -598,9 +592,12 @@ mod tests {
 
         message.id = "invitation-uuid:first-lease".into();
         message.kind = "organization_invitation".into();
-        assert!(!transport.send(&message).await);
+        assert!(transport.send(&message).await.is_none());
         message.id = "invitation-uuid:second-lease".into();
-        assert!(transport.send(&message).await);
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
         let seen = observed.lock().await;
         assert_eq!(seen.len(), 4);
         assert_eq!(seen[2].1, seen[3].1);
@@ -621,10 +618,13 @@ mod tests {
         // Um HTTP 2xx sem identificador válido não confirma uma entrega.
         for lease in ["third", "fourth", "fifth"] {
             message.id = format!("invitation-uuid:{lease}-lease");
-            assert!(!transport.send(&message).await);
+            assert!(transport.send(&message).await.is_none());
         }
         message.id = "invitation-uuid:sixth-lease".into();
-        assert!(transport.send(&message).await);
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
         let seen = observed.lock().await;
         assert_eq!(seen.len(), 8);
         for (headers, body) in &seen[4..] {
@@ -637,12 +637,15 @@ mod tests {
         // não podem confirmar a entrega, mesmo que a próxima tentativa seja válida.
         for lease in ["seventh", "eighth", "ninth"] {
             message.id = format!("invitation-uuid:{lease}-lease");
-            assert!(!transport.send(&message).await);
+            assert!(transport.send(&message).await.is_none());
         }
         message.id = "invitation-uuid:tenth-lease".into();
-        assert!(transport.send(&message).await);
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
         message.kind = "unknown".into();
-        assert!(!transport.send(&message).await);
+        assert!(transport.send(&message).await.is_none());
         let seen = observed.lock().await;
         assert_eq!(seen.len(), 12);
         for (headers, body) in &seen[8..] {

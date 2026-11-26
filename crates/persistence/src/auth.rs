@@ -111,9 +111,14 @@ impl AuthStore {
         .await?;
         Ok(updated.rows_affected() == 1)
     }
-    pub async fn delivered(&self, id: Uuid, lease: Uuid) -> Result<bool, AuthStoreError> {
-        let updated = sqlx::query("UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp(),payload='\\x'::bytea WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp() AND (invitation_expires_at IS NULL OR invitation_expires_at>clock_timestamp()) AND delivered_at IS NULL AND discarded_at IS NULL AND unconfirmed_attempt<attempts")
-            .bind(id).bind(lease).execute(&self.database.pool).await?;
+    pub async fn delivered(
+        &self,
+        id: Uuid,
+        lease: Uuid,
+        provider_receipt_id: &str,
+    ) -> Result<bool, AuthStoreError> {
+        let updated = sqlx::query("UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp(),provider_receipt_id=$3,payload='\\x'::bytea WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp() AND (invitation_expires_at IS NULL OR invitation_expires_at>clock_timestamp()) AND delivered_at IS NULL AND discarded_at IS NULL AND unconfirmed_attempt<attempts")
+            .bind(id).bind(lease).bind(provider_receipt_id).execute(&self.database.pool).await?;
         Ok(updated.rows_affected() == 1)
     }
 }
