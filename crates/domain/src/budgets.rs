@@ -537,8 +537,7 @@ impl BudgetSchedule {
             PeriodBasis::Fixed30Days => count == deadline_days.div_ceil(30),
             PeriodBasis::CivilMonths => {
                 // Boundaries use the original anchor, including February clamps.
-                let Ok(previous) = crate::calendar::civil_months_after(starts_on, count - 1)
-                else {
+                let Ok(previous) = crate::calendar::civil_months_after(starts_on, count - 1) else {
                     return false;
                 };
                 let reaches_end = match crate::calendar::civil_months_after(starts_on, count) {
