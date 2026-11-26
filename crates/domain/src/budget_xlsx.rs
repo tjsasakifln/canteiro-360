@@ -1,6 +1,8 @@
 //! Exportação XLSX oficial, sem fórmulas, macros, relações externas ou perda decimal.
 //! Exporta ZIP armazenado e admite também DEFLATE limitado, com partes fixas.
-use crate::budget_csv::{CellError, FORMAT_VERSION, MAX_BYTES, NumberLocale, parse_csv, safe};
+use crate::budget_csv::{
+    CellError, FORMAT_VERSION, MAX_BYTES, MAX_RECORDS, NumberLocale, parse_csv, safe,
+};
 use std::fmt::Write;
 
 pub const XLSX_VERSION: &str = "CANTEIRO-ORCAMENTO-XLSX-1";
@@ -80,7 +82,7 @@ pub fn export_from_csv(csv: &str, locale: NumberLocale) -> Result<Vec<u8>, CellE
         .strip_prefix(FORMAT_VERSION)
         .and_then(|s| s.strip_prefix("\r\n"))
         .ok_or_else(|| error(1, 1, "Versão CSV inválida para exportação XLSX."))?;
-    let (rows, _) = parse_csv(rest, 19, 111_000)?;
+    let (rows, _) = parse_csv(rest, SHEET_COLUMNS, MAX_RECORDS)?;
     if rows.first().is_none_or(|row| {
         row.iter()
             .map(String::as_str)
@@ -105,7 +107,7 @@ pub fn export_from_csv(csv: &str, locale: NumberLocale) -> Result<Vec<u8>, CellE
             worksheet_cell(&mut sheet, row, index + 1, value)?;
         }
         sheet.push_str("</row>");
-        if sheet.len() > MAX_XML {
+        if sheet.len() > MAX_XML - "</sheetData></worksheet>".len() {
             return Err(error(row, 1, "Planilha XLSX acima do limite de 64 MiB."));
         }
     }
@@ -444,7 +446,8 @@ fn official_sheet(bytes: &[u8]) -> Result<String, CellError> {
 }
 
 const SHEET_START: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">"#;
-const MAX_SHEET_ROWS: usize = 101_001;
+// O marcador de versão ocupa uma linha adicional em relação aos registros CSV.
+const MAX_SHEET_ROWS: usize = MAX_RECORDS + 1;
 const SHEET_COLUMNS: usize = 19;
 
 // Metadata is advisory only: never use it to allocate or to skip cells.
@@ -586,7 +589,7 @@ fn read_shared_strings(xml: &str) -> Result<Vec<String>, CellError> {
     if let Some(tail) = rest.strip_prefix(" count=\"") {
         let (count, tail) = tail.split_once('"').ok_or_else(invalid)?;
         let count = count.parse::<usize>().map_err(|_| invalid())?;
-        if count > 101_001 * 19 {
+        if count > MAX_SHEET_ROWS * SHEET_COLUMNS {
             return Err(invalid());
         }
         rest = tail;
@@ -1410,9 +1413,12 @@ mod tests {
         let mut rest = r#"<dimension ref="A1:S10004"/><sheetData>"#;
         assert_eq!(read_dimension(&mut rest), Some(Some(10_004)));
         assert_eq!(rest, "<sheetData>");
+        assert_eq!(MAX_SHEET_ROWS, 110_504);
+        let mut maximum = r#"<dimension ref="A1:S110504"/><sheetData>"#;
+        assert_eq!(read_dimension(&mut maximum), Some(Some(MAX_SHEET_ROWS)));
         for malformed in [
             r#"<dimension ref="A1:S0"/>"#,
-            r#"<dimension ref="A1:S101002"/>"#,
+            r#"<dimension ref="A1:S110505"/>"#,
             r#"<dimension ref="A1:S9999999999999999"/>"#,
             r#"<dimension ref="A1:S3" evil="1"/>"#,
         ] {
