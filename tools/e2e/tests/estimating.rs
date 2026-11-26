@@ -336,11 +336,15 @@ return form.checkValidity();"#,
             true
         );
         browser.choose("select[name='page']", 3, "4").await?;
-        browser.key(TAB).await?;
+        browser
+            .tab_to("button[formaction='/orcamentos/catalogos/conferir']")
+            .await?;
         browser.key(ENTER).await?;
+        // The select already has value 4 before submission. Wait for the
+        // heading rendered by the server, not the locally selected option.
         browser
             .wait(
-                "return document.querySelector('select[name=page]')?.value === '4';",
+                "return Array.from(document.querySelectorAll('h3')).some(h => h.textContent.trim() === 'Diferenças: página 4 de 4');",
                 Duration::from_secs(5),
             )
             .await?;
