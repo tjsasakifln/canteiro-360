@@ -1947,16 +1947,24 @@ async fn catalog_csv_preview_form(
     let Ok(input) = catalog_csv_from_form(&data) else {
         return bad_input();
     };
+    let page = match data.get("page") {
+        Some(value) => match value.parse::<usize>() {
+            Ok(page) => page,
+            Err(_) => return bad_input(),
+        },
+        None => 1,
+    };
     match auth
         .service()
-        .estimating_catalog_csv_preview(&token, input.clone())
+        .estimating_catalog_csv_preview_page(&token, input.clone(), page)
         .await
     {
         Ok(result) => match auth.service().estimating_context(&token).await {
-            Ok(ctx) => html_page(
+            Ok(ctx) if ctx.context.as_ref() == Some(&input.context) => html_page(
                 canteiro_web::estimating::catalog_csv_preview(ctx, result, input),
                 StatusCode::OK,
             ),
+            Ok(_) => bad_input(),
             Err(error) => application_failure(error),
         },
         Err(error) => application_failure(error),

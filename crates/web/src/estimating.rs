@@ -1640,15 +1640,9 @@ pub fn catalog_csv_preview(
     preview: CatalogCsvPreviewReply,
     input: CatalogCsvImportCommand,
 ) -> String {
-    let previous_competence = ctx
-        .catalogs
-        .iter()
-        .find(|catalog| {
-            catalog.scope_id == input.scope_id
-                && catalog.catalog_id == input.catalog_id
-                && Some(catalog.edition) == preview.previous_edition
-        })
-        .map(|catalog| catalog.source.competence.as_str());
+    let previous_competence = preview.previous_competence.as_deref();
+    let page = preview.page;
+    let pages = preview.pages;
     let (historical, competence_regressed) = competence_flags(
         &preview.header.source.competence,
         previous_competence,
@@ -1730,13 +1724,14 @@ pub fn catalog_csv_preview(
                     preview.included,preview.changed,preview.removed)}</p>
                 <h3>"Amostra dos primeiros 20 itens"</h3>
                 {sample}
-                <h3>"Itens incluídos, até 10 exemplos"</h3>
+                <h3>{format!("Diferenças: página {page} de {pages}")}</h3>
+                <h4>"Itens incluídos"</h4>
                 {added}
-                <h3>"Itens alterados, até 10 exemplos"</h3>
+                <h4>"Itens alterados"</h4>
                 {changed}
-                <h3>"Itens removidos, até 10 exemplos"</h3>
+                <h4>"Itens removidos"</h4>
                 {removed}
-                <p>"A contagem acima considera todos os códigos, mesmo quando há mais de 10 diferenças. A amostra é apenas para conferência e não reduz a validação integral."</p>
+                <p>"Até dez diferenças por categoria em cada página. A contagem considera todos os códigos; navegar não publica a tabela."</p>
             </section>
             <section class="foundation-card">
                 <h2>"Confirmar publicação imutável"</h2>
@@ -1757,6 +1752,20 @@ pub fn catalog_csv_preview(
                     <input type="hidden" name="reason" value=input.reason/>
                     <input type="hidden" name="csrf" value=ctx.csrf.clone()/>
                     <textarea hidden=true name="csv">{input.csv}</textarea>
+                    {(pages > 1).then(|| view! {
+                        <label>"Página de diferenças"
+                            <select name="page">
+                                {(1..=pages).map(|number| view! {
+                                    <option value=number.to_string() selected=number == page>
+                                        {number.to_string()}
+                                    </option>
+                                }).collect_view()}
+                            </select>
+                        </label>
+                        <button type="submit" formaction="/orcamentos/catalogos/conferir">
+                            "Consultar página de diferenças"
+                        </button>
+                    })}
                     <button class="primary-button" type="submit">"Publicar edição de preços"</button>
                 </form>
             </section>

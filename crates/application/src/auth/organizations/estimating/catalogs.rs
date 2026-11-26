@@ -89,6 +89,14 @@ fn edition_from_csv(input: &CatalogCsvImportCommand) -> Result<CatalogEdition, A
     .map_err(|_| invalid("Confira a identificação, fonte, licença, edição e linhas de preços."))
 }
 
+const PREVIEW_PAGE_SIZE: usize = 10;
+
+fn preview_window(count: usize, requested: usize) -> (usize, usize, usize) {
+    let pages = count.div_ceil(PREVIEW_PAGE_SIZE).max(1);
+    let page = requested.clamp(1, pages);
+    (page, pages, (page - 1) * PREVIEW_PAGE_SIZE)
+}
+
 impl AuthService {
     pub async fn estimating_catalog(
         &self,
@@ -246,6 +254,16 @@ impl AuthService {
         token: &str,
         input: CatalogCsvImportCommand,
     ) -> Result<CatalogCsvPreviewReply, AuthError> {
+        self.estimating_catalog_csv_preview_page(token, input, 1)
+            .await
+    }
+
+    pub async fn estimating_catalog_csv_preview_page(
+        &self,
+        token: &str,
+        input: CatalogCsvImportCommand,
+        requested_page: usize,
+    ) -> Result<CatalogCsvPreviewReply, AuthError> {
         self.limit("estimating-catalog-import-preview", token, 10, 60)
             .await?;
         reason(&input.reason)?;
@@ -267,6 +285,9 @@ impl AuthService {
             .await?;
         let (
             previous_edition,
+            previous_competence,
+            page,
+            pages,
             included,
             changed,
             removed,
@@ -285,22 +306,55 @@ impl AuthService {
             let differences = old
                 .compare_to(&edition)
                 .map_err(|_| AuthError::unavailable())?;
+            let included = differences.added.len();
+            let changed = differences.changed.len();
+            let removed = differences.removed.len();
+            let (page, pages, offset) =
+                preview_window(included.max(changed).max(removed), requested_page);
             (
                 Some(previous.edition as u32),
-                differences.added.len(),
-                differences.changed.len(),
-                differences.removed.len(),
-                differences.added.into_iter().take(10).collect(),
-                differences.changed.into_iter().take(10).collect(),
-                differences.removed.into_iter().take(10).collect(),
+                Some(old.source.competence),
+                page,
+                pages,
+                included,
+                changed,
+                removed,
+                differences
+                    .added
+                    .into_iter()
+                    .skip(offset)
+                    .take(PREVIEW_PAGE_SIZE)
+                    .collect(),
+                differences
+                    .changed
+                    .into_iter()
+                    .skip(offset)
+                    .take(PREVIEW_PAGE_SIZE)
+                    .collect(),
+                differences
+                    .removed
+                    .into_iter()
+                    .skip(offset)
+                    .take(PREVIEW_PAGE_SIZE)
+                    .collect(),
             )
         } else {
+            let (page, pages, offset) = preview_window(edition.items.len(), requested_page);
             (
                 None,
+                None,
+                page,
+                pages,
                 edition.items.len(),
                 0,
                 0,
-                edition.items.values().take(10).cloned().collect(),
+                edition
+                    .items
+                    .values()
+                    .skip(offset)
+                    .take(PREVIEW_PAGE_SIZE)
+                    .cloned()
+                    .collect(),
                 Vec::new(),
                 Vec::new(),
             )
@@ -319,6 +373,9 @@ impl AuthService {
             items_total: edition.items.len(),
             sample: edition.items.values().take(20).cloned().collect(),
             previous_edition,
+            previous_competence,
+            page,
+            pages,
             included,
             changed,
             removed,
@@ -353,6 +410,14 @@ impl AuthService {
 #[cfg(test)]
 mod import_diagnostics_tests {
     use super::*;
+
+    #[test]
+    fn preview_pages_cover_ten_thousand_differences() {
+        assert_eq!(preview_window(0, 1), (1, 1, 0));
+        assert_eq!(preview_window(31, 2), (2, 4, 10));
+        assert_eq!(preview_window(10_000, usize::MAX), (1000, 1000, 9990));
+        assert_eq!(preview_window(10_000, 0), (1, 1000, 0));
+    }
 
     #[test]
     fn catalog_import_reports_physical_row_and_column_without_publication() {

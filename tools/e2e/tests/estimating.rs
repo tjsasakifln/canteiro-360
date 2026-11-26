@@ -285,6 +285,15 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         if edition == 2 {
             assert_eq!(preview.changed, 31);
             assert_eq!(preview.previous_edition, Some(1));
+            assert_eq!(preview.previous_competence.as_deref(), Some("2026-11"));
+            assert_eq!(preview.pages, 4);
+            let last = h
+                .auth
+                .estimating_catalog_csv_preview_page(&editor.session, input.clone(), 4)
+                .await?;
+            assert_eq!(last.page, 4);
+            assert_eq!(last.changed_sample.len(), 1);
+            assert_eq!(last.changed_sample[0].after.code, "HIST-31");
         }
         h.auth
             .estimating_catalog_csv_publish(&editor.session, input)
@@ -293,6 +302,62 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
 
     for width in [360, 1280] {
         browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        let fill = format!(
+            r#"const form=document.querySelector("form[action='/orcamentos/catalogos/conferir']");
+const values={{scope_id:{scope},catalog_id:'historico-e2e',edition:'3',
+published_on:'2026-11-01',source_title:'Tabela de ensaio',source_organization:'Fonte de ensaio',
+source_license:'Uso interno',source_locality:'SC',source_tax_regime:'regular',
+source_competence:'2026-11',reason:'Teste de previa integral',
+csv:'CANTEIRO-CUSTOS-CSV-1\ncodigo;descricao;categoria;unidade;preco\n'+
+Array.from({{length:31}},(_,i)=>'HIST-'+String(i+1).padStart(2,'0')+
+';Servico de ensaio;service;m;3,00').join('\n')}};
+for(const [name,value] of Object.entries(values)) form.elements.namedItem(name).value=value;
+return form.checkValidity();"#,
+            scope = serde_json::to_string(&budget)?
+        );
+        assert_eq!(browser.execute(&fill).await?, true);
+        browser
+            .tab_to("form[action='/orcamentos/catalogos/conferir'] button[type='submit']")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('select[name=page]')?.value === '1';",
+                Duration::from_secs(5),
+            )
+            .await?;
+        assert_eq!(
+            browser
+                .execute("return document.body.innerText.includes('Alterado: HIST-10') && !document.body.innerText.includes('Alterado: HIST-31');")
+                .await?,
+            true
+        );
+        browser.choose("select[name='page']", 3, "4").await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('select[name=page]')?.value === '4';",
+                Duration::from_secs(5),
+            )
+            .await?;
+        let preview_report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,last:document.body.innerText.includes('Alterado: HIST-31'),first:document.body.innerText.includes('Alterado: HIST-01'),pending:document.body.innerText.includes('Nenhuma linha foi publicada')};",
+            )
+            .await?;
+        assert_eq!(preview_report["width"], width);
+        assert_eq!(preview_report["last"], true);
+        assert_eq!(preview_report["first"], false);
+        assert_eq!(preview_report["pending"], true);
+        assert!(preview_report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("catalog-preview-{width}.png")))
+            .await?;
+
         browser
             .navigate(&format!("{}/orcamentos", h.app_url))
             .await?;

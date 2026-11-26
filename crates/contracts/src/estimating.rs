@@ -77,10 +77,13 @@ pub struct CatalogCsvPreviewReply {
     pub items_total: usize,
     pub sample: Vec<CatalogItem>,
     pub previous_edition: Option<u32>,
+    pub previous_competence: Option<String>,
+    pub page: usize,
+    pub pages: usize,
     pub included: usize,
     pub changed: usize,
     pub removed: usize,
-    /// Amostras limitadas; as contagens consideram todas as linhas importadas.
+    /// Páginas de até dez diferenças por categoria; as contagens são integrais.
     pub added_sample: Vec<CatalogItem>,
     pub changed_sample: Vec<CatalogItemChange>,
     pub removed_sample: Vec<CatalogItem>,
