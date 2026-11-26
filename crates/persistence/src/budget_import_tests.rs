@@ -109,6 +109,31 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         )
         .await
         .unwrap();
+    let revoked_session = Uuid::new_v4();
+    identity
+        .insert_session(
+            revoked_session,
+            &[43_u8; 32],
+            Some((actor, 1)),
+            "authenticated",
+            true,
+            3600,
+        )
+        .await
+        .unwrap();
+    identity.revoke(revoked_session).await.unwrap();
+    let anonymous_session = Uuid::new_v4();
+    identity
+        .insert_session(
+            anonymous_session,
+            &[44_u8; 32],
+            None,
+            "anonymous",
+            false,
+            3600,
+        )
+        .await
+        .unwrap();
     identity.commit().await.unwrap();
 
     let mut first = AuthStore::new(database.clone()).begin().await.unwrap();
@@ -160,6 +185,21 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         changed: 0,
         removed: 0,
     };
+    // A existência da sessão não basta: a sessão deve pertencer ao ator
+    // e continuar autenticada no momento em que a prévia é persistida.
+    for invalid_session in [revoked_session, anonymous_session, Uuid::new_v4()] {
+        assert!(
+            first
+                .budget_import_stage(&NewBudgetImport {
+                    id: Uuid::new_v4(),
+                    session: invalid_session,
+                    ..first_preview
+                })
+                .await
+                .unwrap()
+                .is_none()
+        );
+    }
     // Prévia incorreta não deve ocupar um lote nem mesmo se o JSON for bem formado.
     // A camada de persistência confere escopo, revisão e estado independentemente da API.
     let bad_hash = [77_u8; 32];
