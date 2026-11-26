@@ -160,15 +160,15 @@ impl AuthService {
         require_budget(&a, scope, AccessAction::View, tx.now().await?)?;
         // A prévia usa o mesmo grafo estável das revisões e da memória salva.
         tx.composition_lock_scope(a.tenant, scope).await?;
-        let (book, catalogs, _) =
-            match calculating_book(&mut tx, a.tenant, scope, &candidate).await {
-                Ok(result) => result,
-                Err(error) => {
-                    self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
-                        .await?;
-                    return Err(error);
-                }
-            };
+        let (book, catalogs, _) = match calculating_book(&mut tx, a.tenant, scope, &candidate).await
+        {
+            Ok(result) => result,
+            Err(error) => {
+                self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+                    .await?;
+                return Err(error);
+            }
+        };
         let memory = book.calculate(&candidate.code, &catalogs).map_err(|_| {
             invalid("Composição circular, fonte ausente, unidade incompatível ou cálculo inválido.")
         })?;
