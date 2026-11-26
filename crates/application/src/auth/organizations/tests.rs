@@ -1026,7 +1026,11 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     .unwrap();
     assert_eq!(
         cancelled,
-        vec![(1, "claimed".to_owned()), (1, "discarded".to_owned())]
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "discarded".to_owned()),
+            (1, "unconfirmed".to_owned()),
+        ]
     );
     let accessible: bool = sqlx::query_scalar(
         "SELECT has_table_privilege($1::text,
@@ -1194,5 +1198,26 @@ async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration(
     .await
     .unwrap();
     assert!(discarded);
+    let history: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT attempt,event FROM canteiro_meta.invitation_mail_history
+         WHERE mail_id IN (
+             SELECT id FROM canteiro_auth.mail_outbox
+             WHERE invitation_id IS NOT NULL AND delivered_at IS NULL
+         )
+         ORDER BY attempt,event",
+    )
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        history,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "unconfirmed".to_owned()),
+            (2, "claimed".to_owned()),
+            (2, "discarded".to_owned()),
+            (2, "unconfirmed".to_owned()),
+        ]
+    );
     f.close().await;
 }
