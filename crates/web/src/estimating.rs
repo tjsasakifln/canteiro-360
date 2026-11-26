@@ -666,7 +666,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                 let start = previous.map_or_else(String::new, |v| v.starts_on.to_string());
                 let deadline = previous.map_or_else(String::new, |v| v.deadline_days.to_string());
                 let count = previous.map_or_else(|| "3".to_owned(), |v| v.periods.len().to_string());
-                let fixed = previous.is_some_and(|v| {
+                let fixed = previous.is_none_or(|v| {
                     v.basis == canteiro_domain::budgets::PeriodBasis::Fixed30Days
                 });
                 view! {

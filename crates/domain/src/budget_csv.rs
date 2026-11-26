@@ -699,6 +699,13 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
         if schedule.periods.is_empty() {
             return Err(err(schedule_row, 1, "O cronograma precisa de períodos."));
         }
+        if !schedule.matches_fixed_period_count() {
+            return Err(err(
+                schedule_row,
+                3,
+                "O prazo deve corresponder à quantidade de períodos de 30 dias.",
+            ));
+        }
         // Datas, prazo, identificação e sequência já foram verificadas.
         // A inconsistência residual do rateio pertence ao percentual
         // do último período, não aos metadados da linha 3.
@@ -1383,6 +1390,12 @@ mod tests {
         let zero_deadline = csv.replacen("SCHEDULE;2026-11-01;90;", "SCHEDULE;2026-11-01;0;", 1);
         let error = preview_import(&zero_deadline, NumberLocale::PtBr).unwrap_err();
         assert_eq!((error.row, error.column), (7, 3));
+
+        let mismatched_deadline =
+            csv.replacen("SCHEDULE;2026-11-01;90;", "SCHEDULE;2026-11-01;91;", 1);
+        let error = preview_import(&mismatched_deadline, NumberLocale::PtBr).unwrap_err();
+        assert_eq!((error.row, error.column), (7, 3));
+        assert!(error.cause.contains("quantidade de períodos"));
 
         let duplicated = csv.replacen("periodo-3;2;", "periodo-2;2;", 1);
         let error = preview_import(&duplicated, NumberLocale::PtBr).unwrap_err();

@@ -486,7 +486,11 @@ impl BudgetSchedule {
         basis: PeriodBasis,
         count: u32,
     ) -> Result<Self, BudgetError> {
-        if count == 0 || count > 10000 || deadline_days == 0 {
+        if count == 0
+            || count > 10000
+            || deadline_days == 0
+            || (basis == PeriodBasis::Fixed30Days && count != deadline_days.div_ceil(30))
+        {
             return Err(BudgetError::Schedule);
         }
         let weights = (0..count)
@@ -517,8 +521,16 @@ impl BudgetSchedule {
         result.validate()?;
         Ok(result)
     }
+    pub(crate) fn matches_fixed_period_count(&self) -> bool {
+        self.basis != PeriodBasis::Fixed30Days
+            || self.periods.len() == self.deadline_days.div_ceil(30) as usize
+    }
     pub fn validate(&self) -> Result<(), BudgetError> {
-        if self.deadline_days == 0 || self.periods.is_empty() || self.periods.len() > 10000 {
+        if self.deadline_days == 0
+            || self.periods.is_empty()
+            || self.periods.len() > 10000
+            || !self.matches_fixed_period_count()
+        {
             return Err(BudgetError::Schedule);
         }
         let mut ids = BTreeSet::new();
@@ -926,6 +938,24 @@ mod tests {
             Err(BudgetError::Definitive)
         );
     }
+    #[test]
+    fn fixed_calendar_periods_cover_the_deadline_including_partial_last_period() {
+        let starts_on: CivilDate = "2026-11-01".parse().unwrap();
+        let basis = PeriodBasis::Fixed30Days;
+        for (days, count) in [(1, 1), (30, 1), (31, 2), (90, 3), (91, 4)] {
+            let schedule = BudgetSchedule::linear(starts_on, days, basis, count).unwrap();
+            schedule.validate().unwrap();
+            assert_eq!(schedule.periods.len(), count as usize);
+            assert_eq!(
+                BudgetSchedule::linear(starts_on, days, basis, count + 1),
+                Err(BudgetError::Schedule)
+            );
+        }
+        let mut original = budget();
+        original.schedule.as_mut().unwrap().deadline_days = 91;
+        assert_eq!(original.validate(), Err(BudgetError::Schedule));
+    }
+
     #[test]
     fn schedule_rejects_position_gaps_without_changing_a_valid_rateio() {
         let original = budget();
