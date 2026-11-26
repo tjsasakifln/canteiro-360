@@ -206,11 +206,21 @@ impl AuthTransaction {
         batch: Uuid,
     ) -> Result<Option<(Option<i64>, String)>, AuthStoreError> {
         Ok(sqlx::query_as(
-            "SELECT base_version,preview::TEXT
-             FROM canteiro.budget_import_batches
-             WHERE tenant_id=$1 AND scope_id=$2 AND actor_id=$3
-               AND session_id=$4 AND id=$5 AND status='ready'
-               AND expires_at>clock_timestamp()",
+            "SELECT b.base_version,b.preview::TEXT
+             FROM canteiro.budget_import_batches b
+             WHERE b.tenant_id=$1 AND b.scope_id=$2 AND b.actor_id=$3
+               AND b.session_id=$4 AND b.id=$5 AND b.status='ready'
+               AND b.expires_at>clock_timestamp()
+               AND EXISTS (
+                   SELECT 1 FROM canteiro_auth.sessions s
+                   JOIN canteiro_auth.users u ON u.id=s.user_id
+                   WHERE s.id=b.session_id AND s.user_id=b.actor_id
+                     AND s.stage='authenticated' AND s.revoked_at IS NULL
+                     AND s.expires_at>clock_timestamp()
+                     AND s.last_seen_at>clock_timestamp()-interval '30 minutes'
+                     AND u.verified AND s.password_version=u.password_version
+                     AND (NOT (u.privileged OR u.mfa_secret IS NOT NULL) OR s.mfa_verified)
+               )",
         )
         .bind(tenant)
         .bind(scope)
@@ -265,6 +275,16 @@ impl AuthTransaction {
              WHERE b.tenant_id=$1 AND b.scope_id=$2 AND b.actor_id=$3
                AND b.session_id=$4 AND b.id=$5
                AND b.status='ready' AND b.expires_at>clock_timestamp() AND b.id=$6
+               AND EXISTS (
+                   SELECT 1 FROM canteiro_auth.sessions s
+                   JOIN canteiro_auth.users u ON u.id=s.user_id
+                   WHERE s.id=b.session_id AND s.user_id=b.actor_id
+                     AND s.stage='authenticated' AND s.revoked_at IS NULL
+                     AND s.expires_at>clock_timestamp()
+                     AND s.last_seen_at>clock_timestamp()-interval '30 minutes'
+                     AND u.verified AND s.password_version=u.password_version
+                     AND (NOT (u.privileged OR u.mfa_secret IS NOT NULL) OR s.mfa_verified)
+               )
                AND EXISTS (
                    SELECT 1 FROM canteiro.budget_versions v
                     JOIN canteiro.budget_records r
