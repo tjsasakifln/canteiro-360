@@ -82,7 +82,11 @@ pub fn export_from_csv(csv: &str, locale: NumberLocale) -> Result<Vec<u8>, CellE
         .strip_prefix(FORMAT_VERSION)
         .and_then(|s| s.strip_prefix("\r\n"))
         .ok_or_else(|| error(1, 1, "Versão CSV inválida para exportação XLSX."))?;
-    let (rows, _) = parse_csv(rest, SHEET_COLUMNS, MAX_RECORDS)?;
+    let (rows, _) = parse_csv(rest, SHEET_COLUMNS, MAX_RECORDS).map_err(|mut error| {
+        // A linha da versão também ocupa a primeira linha do transporte.
+        error.row += 1;
+        error
+    })?;
     if rows.first().is_none_or(|row| {
         row.iter()
             .map(String::as_str)
@@ -1511,6 +1515,19 @@ mod tests {
             r#"<c r="N5" t="inlineStr"><is><t xml:space="preserve">A&amp;B &lt;f&gt; _x005F_x000D_&#13;</t></is></c>"#
         );
         assert!(worksheet_cell(&mut out, 5, 14, "\u{ffff}").is_err());
+    }
+
+    #[test]
+    fn xlsx_export_preserves_physical_csv_cell_diagnostics() {
+        let mut csv = format!("{FORMAT_VERSION}\r\n");
+        csv.push_str(&crate::budget_csv::HEADER.join(";"));
+        csv.push_str("\r\n");
+        for _ in 0..9_999 {
+            csv.push_str("ITEM;;;;;;;;;;;;00001;Descrição;m;1;2;;\r\n");
+        }
+        csv.push_str("ITEM;;;;;;;;;;;;00001;=1+1;m;1;2;;\r\n");
+        let error = export_from_csv(&csv, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (10_002, 14));
     }
 
     #[test]
