@@ -582,7 +582,11 @@ fn decode_xml_text(mut raw: &str, row: usize, col: usize) -> Result<String, Cell
 fn decode_text(raw: &str, row: usize, col: usize) -> Result<String, CellError> {
     let value = decode_xml_text(raw, row, col)?;
     if !safe(&value) {
-        return Err(error(row, col, "Texto XML fora do formato oficial."));
+        return Err(error(
+            row,
+            col,
+            "Conteúdo executável ou fórmula não permitido.",
+        ));
     }
     Ok(value)
 }
@@ -769,19 +773,36 @@ fn read_row(
         let Some(suffix) = rest.strip_prefix(&address) else {
             continue;
         };
+        // Diagnóstico específico também para fórmulas com valor calculado em cache.
+        // Nenhum atributo ou valor em cache torna a fórmula admissível.
+        if suffix.split_once('>').is_some_and(|(_, body)| {
+            xml_space(body).strip_prefix("<f").is_some_and(|tail| {
+                tail.starts_with('>')
+                    || tail.starts_with('/')
+                    || tail.starts_with(char::is_whitespace)
+            })
+        }) {
+            return Err(error(row, index + 1, "Fórmula XLSX não permitida."));
+        }
         if let Some(next) = suffix.strip_prefix(" t=\"inlineStr\">") {
             let (value, next) = inline_cell(next, row, index + 1)?;
             *cell = value;
             *rest = next;
         } else if let Some(next) = suffix.strip_prefix(" t=\"s\">") {
             let (raw, next) = cell_value(next).ok_or_else(|| invalid(index + 1))?;
+            let invalid_index =
+                || error(row, index + 1, "Índice de texto compartilhado inválido.");
             if raw.is_empty() || raw.len() > 8 || !raw.bytes().all(|b| b.is_ascii_digit()) {
-                return Err(invalid(index + 1));
+                return Err(invalid_index());
             }
-            let key = raw.parse::<usize>().map_err(|_| invalid(index + 1))?;
-            let value = shared.get(key).ok_or_else(|| invalid(index + 1))?;
+            let key = raw.parse::<usize>().map_err(|_| invalid_index())?;
+            let value = shared.get(key).ok_or_else(invalid_index)?;
             if !safe(value) {
-                return Err(invalid(index + 1));
+                return Err(error(
+                    row,
+                    index + 1,
+                    "Conteúdo executável ou fórmula não permitido.",
+                ));
             }
             cell.clone_from(value);
             *rest = next;
@@ -1438,6 +1459,7 @@ mod tests {
         parts[5].1 = malicious_shared.as_bytes();
         let err = preview_import(&stored_zip(&parts)).unwrap_err();
         assert_eq!((err.row, err.column), (10_004, 14));
+        assert!(err.cause.contains("fórmula"));
         // Mesmo uma entrada perigosa sem referência impede o aceite do lote.
         parts[4].1 = sheet.as_bytes();
         let err = preview_import(&stored_zip(&parts)).unwrap_err();
@@ -1539,6 +1561,23 @@ mod tests {
         let mut wrong_row = r#"<row r="5"><c r="N6" t="n"><v>1</v></c></row>"#;
         let error = read_row(&mut wrong_row, 5, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((error.row, error.column), (5, 14));
+    }
+
+    #[test]
+    fn xlsx_rejections_distinguish_formula_from_invalid_shared_index() {
+        let mut formula = r#"<row r="10004"><c r="Q10004" t="n"><f t="shared" si="0"/><v>42</v></c></row>"#;
+        let err = read_row(&mut formula, 10_004, NumberLocale::Canonical, &[]).unwrap_err();
+        assert_eq!((err.row, err.column), (10_004, 17));
+        assert_eq!(err.cause, "Fórmula XLSX não permitida.");
+
+        let mut missing = r#"<row r="10004"><c r="N10004" t="s"><v>1</v></c></row>"#;
+        let err = read_row(&mut missing, 10_004, NumberLocale::Canonical, &[]).unwrap_err();
+        assert_eq!((err.row, err.column), (10_004, 14));
+        assert_eq!(err.cause, "Índice de texto compartilhado inválido.");
+
+        let err = decode_text("_x003D_1+1", 10_004, 14).unwrap_err();
+        assert_eq!((err.row, err.column), (10_004, 14));
+        assert!(err.cause.contains("fórmula"));
     }
 
     #[test]
