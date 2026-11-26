@@ -585,7 +585,7 @@ return form.checkValidity();"#,
     }
 
     // O ciclo precisa chegar ao usuário e não pode alterar a revisão persistida.
-    let mut child = serde_json::from_value::<canteiro_domain::compositions::Composition>(json!({
+    let mut child = json!({
         "code": "CYCLE-E2E",
         "description": "Dependencia de ensaio",
         "unit": "un",
@@ -600,7 +600,7 @@ return form.checkValidity();"#,
         "incidences": [],
         "bdi": "0",
         "discount": "0"
-    }))?;
+    });
     h.auth
         .estimating_composition_write(
             &editor.session,
@@ -610,17 +610,20 @@ return form.checkValidity();"#,
                 operation_key: uuid::Uuid::new_v4().to_string(),
                 expected_version: None,
                 reason: "Dependencia valida para ensaio de ciclo".into(),
-                composition: child.clone(),
+                composition: serde_json::from_value(child.clone())?,
             },
         )
         .await?;
-    child.code = "MEM-E2E".into();
-    child.lines[0].source = canteiro_domain::compositions::ComponentSource::Composition {
-        code: "CYCLE-E2E".into(),
-    };
+    child["code"] = json!("MEM-E2E");
+    child["lines"][0]["source"] = json!({"kind":"composition","code":"CYCLE-E2E"});
     let error = h
         .auth
-        .estimating_composition_calculate(&editor.session, &context, &budget, child.clone())
+        .estimating_composition_calculate(
+            &editor.session,
+            &context,
+            &budget,
+            serde_json::from_value(child.clone())?,
+        )
         .await
         .err()
         .ok_or("Previa aceitou composicao circular")?;
@@ -635,7 +638,7 @@ return form.checkValidity();"#,
                 operation_key: uuid::Uuid::new_v4().to_string(),
                 expected_version: Some(1),
                 reason: "Tentativa de criar ciclo".into(),
-                composition: child,
+                composition: serde_json::from_value(child)?,
             },
         )
         .await
