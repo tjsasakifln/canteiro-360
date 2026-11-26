@@ -134,12 +134,106 @@ async fn ten_thousand_csv_services_reimport_atomically_with_version_conflict() {
         )
         .await
         .unwrap();
+    let revoked_after_preview = Uuid::new_v4();
+    identity
+        .insert_session(
+            revoked_after_preview,
+            &[45_u8; 32],
+            Some((actor, 1)),
+            "authenticated",
+            true,
+            3600,
+        )
+        .await
+        .unwrap();
     identity.commit().await.unwrap();
+
+    let first_json = serde_json::to_string(&parsed).unwrap();
+    let revoked_batch = Uuid::new_v4();
+    let mut staged = AuthStore::new(database.clone()).begin().await.unwrap();
+    staged.org_set_actor(actor).await.unwrap();
+    staged.org_set_tenant(tenant).await.unwrap();
+    assert_eq!(
+        staged
+            .budget_import_stage(&NewBudgetImport {
+                tenant,
+                id: revoked_batch,
+                scope,
+                actor,
+                session: revoked_after_preview,
+                base_version: None,
+                format: canteiro_domain::budget_csv::FORMAT_VERSION,
+                locale: "pt-BR",
+                sha256: &[46_u8; 32],
+                preview: &first_json,
+                included: 10_000,
+                changed: 0,
+                removed: 0,
+            })
+            .await
+            .unwrap(),
+        Some(revoked_batch)
+    );
+    staged.commit().await.unwrap();
+    let mut identity = AuthStore::new(database.clone()).begin().await.unwrap();
+    identity.revoke(revoked_after_preview).await.unwrap();
+    identity.commit().await.unwrap();
+
+    let mut rejected = AuthStore::new(database.clone()).begin().await.unwrap();
+    rejected.org_set_actor(actor).await.unwrap();
+    rejected.org_set_tenant(tenant).await.unwrap();
+    assert!(
+        rejected
+            .budget_import_ready_snapshot(
+                tenant,
+                scope,
+                actor,
+                revoked_after_preview,
+                revoked_batch,
+            )
+            .await
+            .unwrap()
+            .is_none()
+    );
+    // Mesmo uma revisão correspondente não permite confirmar a sessão revogada.
+    assert_eq!(
+        rejected
+            .budget_write(&BudgetWrite {
+                tenant,
+                scope,
+                expected: None,
+                actor,
+                operation_key: revoked_batch,
+                fingerprint: &fingerprint,
+                reason: "Tentativa após revogação",
+                payload: &first_json,
+                state: "draft",
+            })
+            .await
+            .unwrap()
+            .unwrap()
+            .version,
+        1
+    );
+    assert!(
+        !rejected
+            .budget_import_mark_applied(
+                tenant,
+                scope,
+                actor,
+                revoked_after_preview,
+                revoked_batch,
+                revoked_batch,
+            )
+            .await
+            .unwrap()
+    );
+    drop(rejected);
 
     let mut first = AuthStore::new(database.clone()).begin().await.unwrap();
     first.org_set_actor(actor).await.unwrap();
     first.org_set_tenant(tenant).await.unwrap();
-    let first_json = serde_json::to_string(&parsed).unwrap();
+    assert!(first.budget_current(tenant, scope).await.unwrap().is_none());
     // A primeira importação também recebe prévia durável, sem revisão de origem.
     let first_batch_id = Uuid::new_v4();
     let first_hash = [98_u8; 32];
