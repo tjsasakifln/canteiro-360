@@ -894,7 +894,11 @@ pub fn preview_import_with_locale(
         return Err(error(row - 1, 1, "Dimensão XLSX menor que os dados."));
     }
     if shared.iter().any(|value| !safe(value)) {
-        return Err(error(1, 1, "Tabela de textos XLSX contém conteúdo executável."));
+        return Err(error(
+            1,
+            1,
+            "Tabela de textos XLSX contém conteúdo executável.",
+        ));
     }
     crate::budget_csv::preview_import(&csv, locale)
         .map(|snapshot| (snapshot, locale))
