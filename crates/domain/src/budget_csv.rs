@@ -38,6 +38,10 @@ pub(crate) const HEADER: &[&str] = &[
 ];
 pub(crate) const MAX_BYTES: usize = 8 * 1024 * 1024;
 const MAX_SERVICES: usize = 100_000;
+const MAX_VARIATIONS: usize = 500;
+const MAX_PERIODS: usize = 10_000;
+// Cabeçalho, metadados e cronograma, além dos registros de cada categoria.
+pub(crate) const MAX_RECORDS: usize = 3 + MAX_VARIATIONS + MAX_SERVICES + MAX_PERIODS;
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum NumberLocale {
@@ -317,7 +321,7 @@ fn row() -> Vec<String> {
     vec![String::new(); HEADER.len()]
 }
 pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String, CellError> {
-    if value.variations.len() > 500 || value.lines.len() > 100_000 {
+    if value.variations.len() > MAX_VARIATIONS || value.lines.len() > MAX_SERVICES {
         return Err(err(1, 1, "Limite de variações ou serviços excedido."));
     }
     let mut out = String::from(FORMAT_VERSION);
@@ -413,7 +417,7 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
     // A linha da versão foi removida antes de chamar o leitor de dados.
     // Ajuste o diagnóstico para corresponder à linha física do arquivo.
     let (data, starts) =
-        parse_csv(rest, HEADER.len(), MAX_SERVICES + 1000).map_err(|mut error| {
+        parse_csv(rest, HEADER.len(), MAX_RECORDS).map_err(|mut error| {
             error.row += 1;
             error
         })?;
@@ -471,6 +475,9 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 let b = budget
                     .as_mut()
                     .ok_or_else(|| err(num, 1, "Metadados precisam vir primeiro."))?;
+                if b.variations.len() >= MAX_VARIATIONS {
+                    return Err(err(num, 1, "Limite de variações excedido."));
+                }
                 if !seen.insert(r[5].clone()) {
                     return Err(err(num, 6, "Variação duplicada."));
                 }
@@ -548,6 +555,9 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                     .schedule
                     .as_mut()
                     .ok_or_else(|| err(num, 1, "Declare o cronograma antes de seus períodos."))?;
+                if schedule.periods.len() >= MAX_PERIODS {
+                    return Err(err(num, 1, "Limite de períodos excedido."));
+                }
                 let percentage: Percent = locale_number(&r[15], locale, num, 16)?
                     .parse()
                     .map_err(|_| err(num, 16, "Percentual de período inválido."))?;
@@ -931,6 +941,36 @@ mod tests {
         }
         v
     }
+    #[test]
+    fn import_bounds_include_schedule_and_reject_excess_at_the_actual_record() {
+        assert_eq!(MAX_RECORDS, 110_503);
+        let mut original = sample(1);
+        original.schedule = Some(
+            BudgetSchedule::linear(
+                "2026-11-01".parse().unwrap(),
+                300_000,
+                PeriodBasis::Fixed30Days,
+                10_000,
+            )
+            .unwrap(),
+        );
+        let mut csv = export_csv(&original, NumberLocale::Canonical).unwrap();
+        assert_eq!(
+            preview_import(&csv, NumberLocale::Canonical).unwrap(),
+            original
+        );
+        let mut extra = row();
+        extra[0] = "PERIOD".into();
+        extra[5] = "extra".into();
+        extra[6] = "10000".into();
+        extra[15] = "0".into();
+        let extra_row = csv.lines().count() + 1;
+        csv_row(&extra, &mut csv);
+        let error = preview_import(&csv, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (extra_row, 1));
+        assert!(error.cause.contains("períodos"));
+    }
+
     #[test]
     fn detailed_comparison_preserves_original_and_identifies_changed_fields() {
         let original = sample(3);
