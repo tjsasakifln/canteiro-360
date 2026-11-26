@@ -420,6 +420,16 @@ impl AuthService {
         }
         Ok(result)
     }
+    pub async fn mark_mail_unconfirmed(&self, id: &str) -> Result<bool, AuthError> {
+        let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
+        Ok(self
+            .store
+            .mail_unconfirmed(
+                Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
+                Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
+            )
+            .await?)
+    }
     pub async fn mark_mail_delivered(&self, id: &str) -> Result<bool, AuthError> {
         let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
         Ok(self

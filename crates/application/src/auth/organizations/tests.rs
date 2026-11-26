@@ -957,11 +957,28 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     .await
     .unwrap();
     assert_eq!(row, (1, 0));
+    // O resultado inconclusivo é durável antes mesmo da próxima reserva.
+    assert!(!f.service.mark_mail_unconfirmed(&first.id).await.unwrap());
+    assert!(f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    assert!(!f.service.mark_mail_delivered(&second.id).await.unwrap());
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    let unconfirmed: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro_meta.invitation_mail_history h
+         JOIN canteiro_auth.mail_outbox m ON m.id=h.mail_id
+         WHERE h.attempt=1 AND h.event='unconfirmed'
+           AND m.delivered_at IS NULL AND m.discarded_at IS NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(unconfirmed, 1);
     sqlx::query("UPDATE canteiro_auth.mail_outbox SET lease_until=clock_timestamp()-interval '1 second' WHERE discarded_at IS NULL AND invitation_id IS NOT NULL")
         .execute(&f.admin).await.unwrap();
     let retry = f.service.pending_mail(1).await.unwrap().remove(0);
     assert_eq!(retry.token, next);
     assert_ne!(retry.id, second.id);
+    assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
     // Recibos atrasados não podem confirmar um convite substituído ou uma reserva vencida.
     assert!(!f.service.mark_mail_delivered(&first.id).await.unwrap());
     assert!(!f.service.mark_mail_delivered(&second.id).await.unwrap());

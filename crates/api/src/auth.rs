@@ -98,6 +98,11 @@ impl AuthHttp {
                             }
                         }
                     } else {
+                        if service.mark_mail_unconfirmed(&message.id).await.is_err() {
+                            tracing::warn!(
+                                "Não foi possível registrar a tentativa de e-mail sem confirmação."
+                            );
+                        }
                         tracing::warn!(
                             "Provedor de e-mail indisponível; a entrega será tentada novamente."
                         );
