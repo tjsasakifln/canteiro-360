@@ -520,7 +520,7 @@ fn xstring_escape(raw: &str) -> Option<(u16, &str)> {
     Some((unit, &raw[7..]))
 }
 
-fn decode_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellError> {
+fn decode_xml_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellError> {
     let invalid = || error(row, col, "Texto XML fora do formato oficial.");
     if raw.len() > 70_000 || raw.contains("]]>") {
         return Err(invalid());
@@ -573,8 +573,16 @@ fn decode_text(mut raw: &str, row: usize, col: usize) -> Result<String, CellErro
             raw = &raw[ch.len_utf8()..];
         }
     }
-    if value.len() > 10_000 || !safe(&value) {
+    if value.len() > 10_000 {
         return Err(invalid());
+    }
+    Ok(value)
+}
+
+fn decode_text(raw: &str, row: usize, col: usize) -> Result<String, CellError> {
+    let value = decode_xml_text(raw, row, col)?;
+    if !safe(&value) {
+        return Err(error(row, col, "Texto XML fora do formato oficial."));
     }
     Ok(value)
 }
@@ -629,7 +637,9 @@ fn read_shared_strings(xml: &str) -> Result<Vec<String>, CellError> {
             .ok_or_else(invalid)?;
         let (raw, tail) = next.split_once("</t>").ok_or_else(invalid)?;
         rest = xml_space(tail).strip_prefix("</si>").ok_or_else(invalid)?;
-        values.push(decode_text(raw, 1, 1)?);
+        // Conteúdo executável é recusado no endereço da célula que o referencia.
+        // Entradas não utilizadas também serão verificadas antes de aceitar o lote.
+        values.push(decode_xml_text(raw, 1, 1)?);
     }
     if unique.is_some_and(|expected| expected != values.len()) {
         return Err(invalid());
@@ -769,7 +779,11 @@ fn read_row(
                 return Err(invalid(index + 1));
             }
             let key = raw.parse::<usize>().map_err(|_| invalid(index + 1))?;
-            *cell = shared.get(key).ok_or_else(|| invalid(index + 1))?.clone();
+            let value = shared.get(key).ok_or_else(|| invalid(index + 1))?;
+            if !safe(value) {
+                return Err(invalid(index + 1));
+            }
+            cell.clone_from(value);
             *rest = next;
         } else if let Some(next) = suffix
             .strip_prefix(" t=\"n\">")
@@ -878,6 +892,9 @@ pub fn preview_import_with_locale(
     }
     if declared_last_row.is_some_and(|last| last < row - 1) {
         return Err(error(row - 1, 1, "Dimensão XLSX menor que os dados."));
+    }
+    if shared.iter().any(|value| !safe(value)) {
+        return Err(error(1, 1, "Tabela de textos XLSX contém conteúdo executável."));
     }
     crate::budget_csv::preview_import(&csv, locale)
         .map(|snapshot| (snapshot, locale))
@@ -1277,7 +1294,6 @@ mod tests {
         for body in [
             r#" uniqueCount="2"><si><t>abc</t></si></sst>"#,
             r#" uniqueCount="250001"></sst>"#,
-            r#"><si><t>_x003D_1+1</t></si></sst>"#,
             r#"><si><t>&external;</t></si></sst>"#,
             r#"><si><r><t>abc</t></r></si></sst>"#,
         ] {
@@ -1403,6 +1419,26 @@ mod tests {
         parts[4].1 = false_dimension.as_bytes();
         assert!(preview_import(&stored_zip(&parts)).is_err());
         parts[4].1 = with_metadata.as_bytes();
+
+        // A fórmula disfarçada em texto compartilhado deve apontar a célula
+        // real do último serviço, e não A1 (posição da tabela de textos).
+        let malicious_shared = shared
+            .replace("uniqueCount=\"1\"", "uniqueCount=\"2\"")
+            .replace("</sst>", "<si><t>_x003D_1+1</t></si></sst>");
+        let malicious_sheet = sheet.replace(
+            r#"<c r="N10004" t="s"><v>0</v></c>"#,
+            r#"<c r="N10004" t="s"><v>1</v></c>"#,
+        );
+        assert_ne!(malicious_sheet, sheet);
+        parts[4].1 = malicious_sheet.as_bytes();
+        parts[5].1 = malicious_shared.as_bytes();
+        let err = preview_import(&stored_zip(&parts)).unwrap_err();
+        assert_eq!((err.row, err.column), (10_004, 14));
+        // Mesmo uma entrada perigosa sem referência impede o aceite do lote.
+        parts[4].1 = sheet.as_bytes();
+        let err = preview_import(&stored_zip(&parts)).unwrap_err();
+        assert_eq!((err.row, err.column), (1, 1));
+        parts[5].1 = shared.as_bytes();
 
         let external = rels.replace(
             r#"Target="sharedStrings.xml""#,
