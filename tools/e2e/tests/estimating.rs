@@ -627,7 +627,11 @@ return form.checkValidity();"#,
         .await
         .err()
         .ok_or("Previa aceitou composicao circular")?;
-    assert!(error.to_string().contains("MEM-E2E -> CYCLE-E2E -> MEM-E2E"));
+    assert!(
+        error
+            .to_string()
+            .contains("MEM-E2E -> CYCLE-E2E -> MEM-E2E")
+    );
     let error = h
         .auth
         .estimating_composition_write(
@@ -644,7 +648,11 @@ return form.checkValidity();"#,
         .await
         .err()
         .ok_or("Gravacao aceitou composicao circular")?;
-    assert!(error.to_string().contains("MEM-E2E -> CYCLE-E2E -> MEM-E2E"));
+    assert!(
+        error
+            .to_string()
+            .contains("MEM-E2E -> CYCLE-E2E -> MEM-E2E")
+    );
     let (record, memory) = h
         .auth
         .estimating_composition_memory(&editor.session, &context, &budget, "MEM-E2E")
