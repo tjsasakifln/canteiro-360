@@ -706,6 +706,13 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 "O prazo deve corresponder à quantidade de períodos de 30 dias.",
             ));
         }
+        if !schedule.matches_period_count() {
+            return Err(err(
+                schedule_row,
+                3,
+                "O prazo e a quantidade de meses civis devem ser compatíveis.",
+            ));
+        }
         // Datas, prazo, identificação e sequência já foram verificadas.
         // A inconsistência residual do rateio pertence ao percentual
         // do último período, não aos metadados da linha 3.
@@ -1132,6 +1139,10 @@ mod tests {
         let csv = export_csv(&original, NumberLocale::PtBr).unwrap();
         assert!(csv.contains("SCHEDULE;2026-11-01;90;civil_months"));
         assert_eq!(preview_import(&csv, NumberLocale::PtBr).unwrap(), original);
+        let inconsistent = csv.replacen("SCHEDULE;2026-11-01;90;", "SCHEDULE;2026-11-01;93;", 1);
+        let error = preview_import(&inconsistent, NumberLocale::PtBr).unwrap_err();
+        assert_eq!(error.column, 3);
+        assert!(error.cause.contains("meses civis"));
     }
     #[test]
     fn formula_in_export_is_rejected_before_worksheet_open() {
