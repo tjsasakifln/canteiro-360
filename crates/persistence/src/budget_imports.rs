@@ -46,6 +46,26 @@ impl AuthTransaction {
         {
             return Err(AuthStoreError);
         }
+        // A chave estrangeira da sessão confirma apenas sua existência. Exija
+        // também a identidade, a etapa e a validade da sessão que cria o lote.
+        let valid_session: bool = sqlx::query_scalar(
+            "SELECT EXISTS (
+                SELECT 1 FROM canteiro_auth.sessions s
+                JOIN canteiro_auth.users u ON u.id=s.user_id
+                WHERE s.id=$1 AND s.user_id=$2 AND s.stage='authenticated'
+                  AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp()
+                  AND s.last_seen_at>clock_timestamp()-interval '30 minutes'
+                  AND u.verified AND s.password_version=u.password_version
+                  AND (NOT (u.privileged OR u.mfa_secret IS NOT NULL) OR s.mfa_verified)
+            )",
+        )
+        .bind(batch.session)
+        .bind(batch.actor)
+        .fetch_one(&mut *self.tx)
+        .await?;
+        if !valid_session {
+            return Ok(None);
+        }
         // A gravação de uma prévia não deve aceitar um JSON arbitrário,
         // mesmo quando o chamador afirma que já verificou o arquivo.
         // A revisão vinculada ao lote é sempre um rascunho do escopo esperado.
