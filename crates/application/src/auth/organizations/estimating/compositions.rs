@@ -1,5 +1,5 @@
 use super::*;
-use canteiro_domain::compositions::CostMemory;
+use canteiro_domain::compositions::{CompositionError, CostMemory};
 
 fn dependencies(composition: &Composition, keys: &mut BTreeSet<(String, u32)>) {
     for line in &composition.lines {
@@ -69,7 +69,10 @@ async fn calculating_book(
     // Custo informado não pode mascarar fonte inexistente, unidade incompatível
     // ou ciclo. O cálculo monetário isolado não percorre tais dependências.
     book.validate_composition_links(&candidate.code)
-        .map_err(|_| invalid("Composição vinculada inexistente, incompatível ou circular."))?;
+        .map_err(|error| match error {
+            CompositionError::Cycle(path) => invalid(format!("Composição circular: {path}.")),
+            _ => invalid("Composição vinculada inexistente ou incompatível."),
+        })?;
     // Uma mudança de unidade na composição revisada não pode romper
     // referências que outros serviços já possuem para esta composição.
     book.validate_dependents_of(&candidate.code).map_err(|_| {
@@ -123,7 +126,14 @@ impl AuthService {
             .ok_or_else(|| invalid("Composição não encontrada no orçamento."))?;
         let record = composition_view(row)?;
         let (book, catalogs, _) =
-            calculating_book(&mut tx, a.tenant, scope, &record.composition).await?;
+            match calculating_book(&mut tx, a.tenant, scope, &record.composition).await {
+                Ok(result) => result,
+                Err(error) => {
+                    self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+                        .await?;
+                    return Err(error);
+                }
+            };
         let memory = book.calculate(&record.code, &catalogs).map_err(|_| {
             invalid("Composição circular, fonte ausente, unidade incompatível ou cálculo inválido.")
         })?;
@@ -150,7 +160,15 @@ impl AuthService {
         require_budget(&a, scope, AccessAction::View, tx.now().await?)?;
         // A prévia usa o mesmo grafo estável das revisões e da memória salva.
         tx.composition_lock_scope(a.tenant, scope).await?;
-        let (book, catalogs, _) = calculating_book(&mut tx, a.tenant, scope, &candidate).await?;
+        let (book, catalogs, _) =
+            match calculating_book(&mut tx, a.tenant, scope, &candidate).await {
+                Ok(result) => result,
+                Err(error) => {
+                    self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+                        .await?;
+                    return Err(error);
+                }
+            };
         let memory = book.calculate(&candidate.code, &catalogs).map_err(|_| {
             invalid("Composição circular, fonte ausente, unidade incompatível ou cálculo inválido.")
         })?;
@@ -204,7 +222,14 @@ impl AuthService {
             return Err(record_conflict());
         }
         let (book, catalogs, bindings) =
-            calculating_book(&mut tx, a.tenant, scope, &input.composition).await?;
+            match calculating_book(&mut tx, a.tenant, scope, &input.composition).await {
+                Ok(result) => result,
+                Err(error) => {
+                    self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+                        .await?;
+                    return Err(error);
+                }
+            };
         book.calculate(&input.composition.code, &catalogs)
             .map_err(|_| {
                 invalid("Revise o ciclo da composição, as unidades e a base de cada incidência.")
