@@ -584,6 +584,71 @@ return form.checkValidity();"#,
             .await?;
     }
 
+    // O ciclo precisa chegar ao usuário e não pode alterar a revisão persistida.
+    let mut child = serde_json::from_value::<canteiro_domain::compositions::Composition>(json!({
+        "code": "CYCLE-E2E",
+        "description": "Dependencia de ensaio",
+        "unit": "un",
+        "cost_mode": {"mode":"formula"},
+        "lines": [{
+            "id": "parent",
+            "source": {"kind":"composition","code":"MEM-E2E"},
+            "coefficient": "1",
+            "unit": "un",
+            "conversion": null
+        }],
+        "incidences": [],
+        "bdi": "0",
+        "discount": "0"
+    }))?;
+    h.auth
+        .estimating_composition_write(
+            &editor.session,
+            canteiro_contracts::estimating::CompositionWriteCommand {
+                context: context.clone(),
+                scope_id: budget.clone(),
+                operation_key: uuid::Uuid::new_v4().to_string(),
+                expected_version: None,
+                reason: "Dependencia valida para ensaio de ciclo".into(),
+                composition: child.clone(),
+            },
+        )
+        .await?;
+    child.code = "MEM-E2E".into();
+    child.lines[0].source = canteiro_domain::compositions::ComponentSource::Composition {
+        code: "CYCLE-E2E".into(),
+    };
+    let error = h
+        .auth
+        .estimating_composition_calculate(&editor.session, &context, &budget, child.clone())
+        .await
+        .err()
+        .ok_or("Previa aceitou composicao circular")?;
+    assert!(error.to_string().contains("MEM-E2E -> CYCLE-E2E -> MEM-E2E"));
+    let error = h
+        .auth
+        .estimating_composition_write(
+            &editor.session,
+            canteiro_contracts::estimating::CompositionWriteCommand {
+                context: context.clone(),
+                scope_id: budget.clone(),
+                operation_key: uuid::Uuid::new_v4().to_string(),
+                expected_version: Some(1),
+                reason: "Tentativa de criar ciclo".into(),
+                composition: child,
+            },
+        )
+        .await
+        .err()
+        .ok_or("Gravacao aceitou composicao circular")?;
+    assert!(error.to_string().contains("MEM-E2E -> CYCLE-E2E -> MEM-E2E"));
+    let (record, memory) = h
+        .auth
+        .estimating_composition_memory(&editor.session, &context, &budget, "MEM-E2E")
+        .await?;
+    assert_eq!(record.version, 1);
+    assert!(memory.informed);
+
     // Stage a budget of 31 services and inspect the persisted batch, not a new upload.
     let actor = h
         .auth
