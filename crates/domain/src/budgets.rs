@@ -489,7 +489,7 @@ impl BudgetSchedule {
         if count == 0
             || count > 10000
             || deadline_days == 0
-            || (basis == PeriodBasis::Fixed30Days && count != deadline_days.div_ceil(30))
+            || !Self::period_count_matches(starts_on, deadline_days, basis, count)
         {
             return Err(BudgetError::Schedule);
         }
@@ -521,15 +521,50 @@ impl BudgetSchedule {
         result.validate()?;
         Ok(result)
     }
+    fn period_count_matches(
+        starts_on: CivilDate,
+        deadline_days: u32,
+        basis: PeriodBasis,
+        count: u32,
+    ) -> bool {
+        if count == 0 || deadline_days == 0 {
+            return false;
+        }
+        let Ok(end) = crate::calendar::execution_end(starts_on, deadline_days) else {
+            return false;
+        };
+        match basis {
+            PeriodBasis::Fixed30Days => count == deadline_days.div_ceil(30),
+            PeriodBasis::CivilMonths => {
+                // Boundaries use the original anchor, including February clamps.
+                let Ok(previous) = crate::calendar::civil_months_after(starts_on, count - 1)
+                else {
+                    return false;
+                };
+                let reaches_end = match crate::calendar::civil_months_after(starts_on, count) {
+                    Ok(boundary) => end <= boundary,
+                    Err(_) => true, // Last residual may end within the supported date range.
+                };
+                previous < end && reaches_end
+            }
+        }
+    }
     pub(crate) fn matches_fixed_period_count(&self) -> bool {
-        self.basis != PeriodBasis::Fixed30Days
-            || self.periods.len() == self.deadline_days.div_ceil(30) as usize
+        self.basis != PeriodBasis::Fixed30Days || self.matches_period_count()
+    }
+    pub(crate) fn matches_period_count(&self) -> bool {
+        Self::period_count_matches(
+            self.starts_on,
+            self.deadline_days,
+            self.basis,
+            self.periods.len() as u32,
+        )
     }
     pub fn validate(&self) -> Result<(), BudgetError> {
         if self.deadline_days == 0
             || self.periods.is_empty()
             || self.periods.len() > 10000
-            || !self.matches_fixed_period_count()
+            || !self.matches_period_count()
         {
             return Err(BudgetError::Schedule);
         }
@@ -954,6 +989,33 @@ mod tests {
         let mut original = budget();
         original.schedule.as_mut().unwrap().deadline_days = 91;
         assert_eq!(original.validate(), Err(BudgetError::Schedule));
+    }
+
+    #[test]
+    fn civil_periods_use_original_anchor_and_reject_unrepresentable_end_dates() {
+        let start = "2024-01-31".parse().unwrap();
+        let basis = PeriodBasis::CivilMonths;
+        for (days, count) in [(29, 1), (30, 2), (60, 2), (61, 3)] {
+            let schedule = BudgetSchedule::linear(start, days, basis, count).unwrap();
+            schedule.validate().unwrap();
+            assert_eq!(
+                BudgetSchedule::linear(start, days, basis, count + 1),
+                Err(BudgetError::Schedule)
+            );
+        }
+        let mut schedule = BudgetSchedule::linear(start, 60, basis, 2).unwrap();
+        schedule.deadline_days = 61;
+        assert_eq!(schedule.validate(), Err(BudgetError::Schedule));
+
+        let last_day = "9999-12-31".parse().unwrap();
+        for basis in [PeriodBasis::Fixed30Days, PeriodBasis::CivilMonths] {
+            assert_eq!(
+                BudgetSchedule::linear(last_day, 1, basis, 1),
+                Err(BudgetError::Schedule)
+            );
+        }
+        let start = "9999-12-30".parse().unwrap();
+        BudgetSchedule::linear(start, 1, basis, 1).unwrap();
     }
 
     #[test]
