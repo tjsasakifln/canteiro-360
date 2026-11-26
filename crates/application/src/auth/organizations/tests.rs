@@ -939,6 +939,15 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     .await
     .unwrap();
     assert!(protected);
+    // Nem um recibo sintaticamente válido permite confirmar sem reserva.
+    let unclaimed = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET delivered_at=clock_timestamp(),provider_receipt_id='fixture',payload=decode('', 'hex')
+         WHERE invitation_id IS NOT NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(unclaimed.is_err());
     let mut first = f.service.pending_mail(1).await.unwrap();
     assert_eq!(first.len(), 1);
     let first = first.remove(0);
@@ -961,6 +970,14 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     assert!(!f.service.mark_mail_unconfirmed(&first.id).await.unwrap());
     assert!(f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
     assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    let closed_attempt = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET delivered_at=clock_timestamp(),provider_receipt_id='fixture',payload=decode('', 'hex')
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(closed_attempt.is_err());
     assert!(
         !f.service
             .mark_mail_delivered(&second.id, "fixture")
