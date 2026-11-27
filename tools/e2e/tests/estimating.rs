@@ -1200,11 +1200,48 @@ return true;"#,
     assert_eq!(revised_schedule.deadline_days, 389);
     assert_eq!(revised_schedule.periods.len(), 13);
     assert_eq!(revised_schedule.calendar_periods()?.len(), 13);
+    let scoped = h
+        .auth
+        .estimating_budget_schedule(&editor.session, &context, &budget, 4)
+        .await?
+        .ok_or("Missing current schedule in scoped query")?;
+    assert_eq!(scoped.snapshot, revised_budget.snapshot);
+    assert!(
+        h.auth
+            .estimating_budget_schedule(&editor.session, &context, &budget, 3)
+            .await?
+            .is_none()
+    );
+    let mut stale_context = context.clone();
+    stale_context.context_version += 1;
+    assert!(
+        h.auth
+            .estimating_budget_schedule(&editor.session, &stale_context, &budget, 4)
+            .await?
+            .is_none()
+    );
     for width in [360, 1280] {
         browser.viewport(width, 900, width == 360).await?;
         browser
             .navigate(&format!("{}/orcamentos", h.app_url))
             .await?;
+        let state = browser
+            .execute(
+                r#"return {status:performance.getEntriesByType("navigation")[0]?.responseStatus,
+type:document.contentType,path:location.pathname,
+schedule:!!document.querySelector("details.budget-schedule-preview > summary"),
+text:document.body.innerText.slice(0,500)};"#,
+            )
+            .await?;
+        if state["schedule"] != true {
+            browser
+                .full_screenshot(
+                    &h.evidence
+                        .join(format!("budget-long-schedule-missing-{width}.png")),
+                )
+                .await?;
+            return Err(format!("Missing schedule at width {width}: {state}").into());
+        }
         browser
             .tab_to("details.budget-schedule-preview > summary")
             .await?;
