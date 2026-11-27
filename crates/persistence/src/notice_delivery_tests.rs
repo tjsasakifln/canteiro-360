@@ -587,3 +587,59 @@ async fn ten_failed_internal_attempts_stop_without_forging_a_receipt() {
     database.close().await;
     fixture.cleanup().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL"]
+async fn inbox_orders_open_due_notices_before_undated_and_resolved() {
+    let fixture = Fixture::ready().await;
+    let database = fixture.database(TransactionLimits::default()).await;
+    let s = subject(&fixture).await;
+    let mut tx = scoped(&database, &s).await;
+    let day = chrono::NaiveDate::from_ymd_opt(2027, 1, 1).unwrap();
+    let earlier = day.pred_opt().unwrap();
+    let mut events = Vec::new();
+    for (due, essential) in [
+        (None, true),
+        (Some(day), true),
+        (Some(day), false),
+        (Some(earlier), false),
+        (Some(earlier), true),
+    ] {
+        let event = Uuid::new_v4();
+        assert!(
+            tx.user_notice_record(&NewNotice {
+                tenant: s.tenant,
+                recipient: s.actor,
+                event,
+                kind: "technical_obligation",
+                scope: s.scope,
+                target: event,
+                due,
+                essential,
+            })
+            .await
+            .unwrap()
+        );
+        events.push(event);
+    }
+    assert_eq!(
+        tx.user_notice_resolve_for_target(s.tenant, s.actor, events[4])
+            .await
+            .unwrap(),
+        1
+    );
+    tx.commit().await.unwrap();
+    let mut read = scoped(&database, &s).await;
+    let rows = read
+        .user_notice_list(s.tenant, s.actor, &[s.scope])
+        .await
+        .unwrap();
+    let actual: Vec<_> = rows.iter().map(|row| row.event_id).collect();
+    assert_eq!(
+        actual,
+        vec![events[3], events[1], events[2], events[0], events[4]]
+    );
+    read.commit().await.unwrap();
+    database.close().await;
+    fixture.cleanup().await;
+}
