@@ -28,6 +28,7 @@ fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView +
         PeriodBasis::CivilMonths => "Meses civis",
     };
     let allocation = schedule.financial_allocation(amount).ok();
+    let calendar = schedule.calendar_periods().ok();
     let mut periods = schedule.periods.iter().collect::<Vec<_>>();
     periods.sort_by_key(|period| period.position);
     let rows = allocation
@@ -35,13 +36,16 @@ fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView +
         .into_iter()
         .flat_map(|value| value.parts.iter())
         .zip(periods)
+        .zip(calendar.as_ref().into_iter().flatten())
         .take(12)
-        .map(|(part, period)| {
+        .map(|((part, period), dates)| {
             let money = Money::new(part.value)
                 .map(|value| value.to_string())
                 .unwrap_or_else(|_| "Inconsistente".into());
             view! {
-                <li>{format!("Período {}: {}% · R$ {}", part.position + 1, period.percentage, money)}</li>
+                <li>{format!("Período {}: {}% · R$ {} · até {} ({} dias{})",
+                    part.position + 1, period.percentage, money, dates.end, dates.days,
+                    if dates.residual { ", período residual" } else { "" })}</li>
             }
         })
         .collect_view();
@@ -52,8 +56,8 @@ fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView +
             <p>{format!("Início: {} · Prazo: {} dias · {} · {} períodos",
                 schedule.starts_on, schedule.deadline_days, basis, count)}</p>
             <p>"Rateio financeiro do valor global, sem alterar a revisão."</p>
-            {allocation.is_none().then(|| view! {
-                <p class="record-status">"Não foi possível reconciliar o rateio financeiro."</p>
+            {(allocation.is_none() || calendar.is_none()).then(|| view! {
+                <p class="record-status">"Não foi possível reconciliar o calendário e o rateio financeiro."</p>
             })}
             <ul>{rows}</ul>
             {(count > 12).then(|| view! {
