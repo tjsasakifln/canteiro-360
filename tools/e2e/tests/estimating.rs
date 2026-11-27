@@ -1129,6 +1129,87 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
             .await?;
     }
 
+    // A longer schedule must expose its final period without truncation.
+    browser
+        .navigate(&format!("{}/orcamentos", h.app_url))
+        .await?;
+    browser
+        .execute(
+            r#"const f=document.querySelector("form[action='/orcamentos/cronograma/salvar']");
+f.closest("details").open=true;
+f.elements.deadline_days.value="389";
+f.elements.periods.value="13";
+f.elements.reason.value="Cronograma com treze periodos";
+f.elements.confirm_schedule.checked=true;
+f.requestSubmit();
+return true;"#,
+        )
+        .await?;
+    browser
+        .wait(
+            "return location.pathname==='/orcamentos/cronograma/salvar' && document.body.innerText.includes('Revisão 4');",
+            Duration::from_secs(10),
+        )
+        .await?;
+    for width in [360, 1280] {
+        browser.viewport(width, 900, width == 360).await?;
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        browser
+            .tab_to("a[href*='/orcamentos/cronograma/consultar']")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname==='/orcamentos/cronograma/consultar' && document.body.innerText.includes('Página 1 de 2');",
+                Duration::from_secs(10),
+            )
+            .await?;
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const d=document.querySelector("details.budget-schedule-preview");
+return d.innerText.includes("Período 12:") && !d.innerText.includes("Período 13:");"#,
+                )
+                .await?,
+            true
+        );
+        browser.tab_to("input[name='page']").await?;
+        browser.key("\u{e013}").await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search.includes('page=2') && document.body.innerText.includes('Página 2 de 2');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const d=document.querySelector("details.budget-schedule-preview");
+return d.innerText.includes("Período 13:") && d.innerText.includes("29 dias, período residual") && !d.innerText.includes("Período 12:") && d.querySelectorAll("li").length===1;"#,
+                )
+                .await?,
+            true
+        );
+        assert!(
+            browser
+                .execute("return document.documentElement.scrollWidth;")
+                .await?
+                .as_u64()
+                .unwrap_or(u64::MAX)
+                <= u64::from(width)
+        );
+        browser
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("budget-schedule-page-two-{width}.png")),
+            )
+            .await?;
+    }
+
     write_json(
         &h.evidence.join("estimating-interface.json"),
         &json!({
@@ -1147,6 +1228,7 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
                 "budget_import_page_two_keyboard",
                 "persisted_batch_confirmation_and_replay",
                 "financial_schedule_keyboard_and_exact_amounts_360_1280",
+                "financial_schedule_page_two_keyboard_and_scope_revision_rejection",
                 "xlsx_download_native_upload_keyboard_preview",
                 "xlsx_keyboard_confirmation_persisted_revision_and_consumed_batch"
             ],
