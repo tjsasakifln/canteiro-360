@@ -1702,10 +1702,12 @@ pub fn catalog_comparison(
         .collect_view();
     let before = result.before_source;
     let after = result.after_source;
-    let (_, competence_regressed) = competence_flags(
+    let current_competence = brazilian_competence();
+    let (before_historical, _) = competence_flags(&before.competence, None, &current_competence);
+    let (after_historical, competence_regressed) = competence_flags(
         &after.competence,
         Some(&before.competence),
-        &brazilian_competence(),
+        &current_competence,
     );
     shell(
         "Comparar edições de custos",
@@ -1721,6 +1723,9 @@ pub fn catalog_comparison(
                     before.organization,before.title,before.competence)}</p>
                 <p>{format!("Localidade: {} · Regime: {} · Licença: {}",
                     before.locality,before.tax_regime,before.license)}</p>
+                {before_historical.then(||view! {<p class="record-status">
+                    "Base histórica anterior. Os valores não representam preços da competência atual."
+                </p>})}
             </section>
             <section class="foundation-card">
                 <h2>{format!("Edição {} · fonte posterior",result.after_edition)}</h2>
@@ -1728,6 +1733,9 @@ pub fn catalog_comparison(
                     after.organization,after.title,after.competence)}</p>
                 <p>{format!("Localidade: {} · Regime: {} · Licença: {}",
                     after.locality,after.tax_regime,after.license)}</p>
+                {after_historical.then(||view! {<p class="record-status">
+                    "Base histórica posterior. Os valores não representam preços da competência atual."
+                </p>})}
                 {competence_regressed.then(||view! {<p class="record-status">
                     "A edição posterior usa competência anterior à da edição comparada. A numeração da edição não indica atualização de preços."
                 </p>})}
