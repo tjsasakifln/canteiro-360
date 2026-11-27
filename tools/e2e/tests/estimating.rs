@@ -916,6 +916,14 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
         .await?;
     assert_eq!(saved.budget.version, 1);
     assert_eq!(saved.budget.snapshot.lines.len(), 31);
+    let schedule = saved
+        .budget
+        .snapshot
+        .schedule
+        .as_ref()
+        .ok_or("CSV confirmation lost the schedule")?;
+    assert_eq!(schedule.deadline_days, 89);
+    assert_eq!(schedule.periods.len(), 3);
     assert!(!saved.repeated);
     let replay = h
         .auth
@@ -941,6 +949,29 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
         browser
             .navigate(&format!("{}/orcamentos", h.app_url))
             .await?;
+        let current = h.auth.estimating_context(&editor.session).await?;
+        let record = current
+            .budgets
+            .iter()
+            .find(|record| record.scope_id == budget)
+            .ok_or("Committed budget missing from the authorized context")?;
+        assert_eq!(record.version, base_version);
+        assert_eq!(record.snapshot.schedule, saved.budget.snapshot.schedule);
+        record.snapshot.summarize()?;
+        let page_state = browser
+            .execute(
+                r#"return {path:location.pathname,type:document.contentType,
+heading:document.querySelector("h1")?.textContent,
+schedule:!!document.querySelector("details.budget-schedule-preview > summary"),
+text:document.body.innerText.slice(0,400)};"#,
+            )
+            .await?;
+        if page_state["schedule"] != true {
+            browser
+                .full_screenshot(&h.evidence.join(format!("budget-schedule-missing-{width}.png")))
+                .await?;
+            return Err(format!("Schedule not rendered at width {width}: {page_state}").into());
+        }
         browser
             .tab_to("details.budget-schedule-preview > summary")
             .await?;
