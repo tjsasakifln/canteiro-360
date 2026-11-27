@@ -137,6 +137,10 @@ impl Composition {
         {
             return Err(CompositionError::Invalid);
         }
+        // Validate negotiated percentages even when this composition is only
+        // a reference of an informed cost and its formula will not be evaluated.
+        // A zero cost exercises the same percentage policy without overflow.
+        negotiated_unit_price(UnitPrice::new(ExactDecimal::ZERO)?, self.bdi, self.discount)?;
         if let CostMode::Informed { reason, .. } = &self.cost_mode
             && !text(reason, 500)
         {
@@ -603,9 +607,52 @@ mod tests {
         );
         let mut excessive = c("C");
         excessive.discount = "150".parse().unwrap();
-        book.insert(excessive).unwrap();
-        assert!(book.calculate("C", &CatalogLibrary::default()).is_err());
+        assert!(matches!(
+            excessive.validate(),
+            Err(CompositionError::Decimal(DecimalError::Range))
+        ));
+        assert!(book.insert(excessive).is_err());
         assert!("-1".parse::<Quantity>().is_err());
+        assert!("-1".parse::<UnitPrice>().is_err());
+    }
+
+    #[test]
+    fn invalid_percentages_cannot_enter_the_book_as_inactive_references() {
+        let mut parent = c("A");
+        parent.lines.push(ComponentLine {
+            id: "base".into(),
+            source: ComponentSource::Composition { code: "B".into() },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::SquareMetre,
+            conversion: None,
+        });
+        let mut book = CompositionBook::default();
+        book.insert(parent).unwrap();
+        for (bdi, discount) in [("1000.000001", "0"), ("0", "100.000001")] {
+            let mut child = c("B");
+            child.cost_mode = CostMode::Formula;
+            child.bdi = bdi.parse().unwrap();
+            child.discount = discount.parse().unwrap();
+            assert!(matches!(
+                book.insert(child),
+                Err(CompositionError::Decimal(DecimalError::Range))
+            ));
+            assert_eq!(
+                book.calculate("A", &CatalogLibrary::default()),
+                Err(CompositionError::Missing("B".into()))
+            );
+        }
+        let mut child = c("B");
+        child.bdi = "1000".parse().unwrap();
+        child.discount = "100".parse().unwrap();
+        book.insert(child).unwrap();
+        assert_eq!(
+            book.calculate("A", &CatalogLibrary::default())
+                .unwrap()
+                .selling_price
+                .to_string(),
+            "108.000000"
+        );
     }
     #[test]
     fn direct_composition_payload_rejects_unsafe_text() {
