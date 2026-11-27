@@ -164,6 +164,8 @@ impl BudgetRevision {
         }
         if let Some(schedule) = &self.schedule {
             schedule.validate()?;
+        } else if self.status == BudgetState::Approved {
+            return Err(BudgetError::Schedule);
         }
         Ok(())
     }
@@ -671,6 +673,23 @@ mod tests {
             changed.variations[0].scope = dangerous.into();
             assert_eq!(changed.validate(), Err(BudgetError::Structure));
         }
+    }
+    #[test]
+    fn approved_budget_requires_a_valid_schedule() {
+        let mut candidate = budget();
+        let schedule = candidate.schedule.take().unwrap();
+        candidate.validate().unwrap();
+        candidate.status = BudgetState::Draft;
+        candidate.validate().unwrap();
+        candidate.status = BudgetState::Approved;
+        assert_eq!(candidate.validate(), Err(BudgetError::Schedule));
+        assert_eq!(candidate.summarize(), Err(BudgetError::Schedule));
+
+        candidate.schedule = Some(schedule);
+        candidate.validate().unwrap();
+        candidate.summarize().unwrap();
+        candidate.schedule.as_mut().unwrap().periods.clear();
+        assert_eq!(candidate.validate(), Err(BudgetError::Schedule));
     }
     #[test]
     fn totals_reconcile_and_three_periods_allocate_stably() {
