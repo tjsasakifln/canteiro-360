@@ -30,11 +30,19 @@ fn schedule_page_window(count: usize, requested: usize) -> (usize, usize, usize)
     (page, pages, (page - 1) * SCHEDULE_PAGE_SIZE)
 }
 
+struct ScheduleQuery {
+    organization_id: String,
+    context_version: String,
+    scope_id: String,
+    version: String,
+}
+
 fn schedule_preview(
     schedule: &BudgetSchedule,
     amount: Money,
     requested_page: usize,
     expanded: bool,
+    query: Option<ScheduleQuery>,
 ) -> impl IntoView + use<> {
     let count = schedule.periods.len();
     let (page, pages, offset) = schedule_page_window(count, requested_page);
@@ -68,6 +76,16 @@ fn schedule_preview(
     view! {
         <details class="budget-schedule-preview" open=expanded>
             <summary>"Consultar cronograma orçamentário"</summary>
+            {query.map(|query| view! {
+                <form action="/orcamentos/cronograma/consultar" method="get" class="record-form">
+                    <input type="hidden" name="organization_id" value=query.organization_id/>
+                    <input type="hidden" name="context_version" value=query.context_version/>
+                    <input type="hidden" name="scope_id" value=query.scope_id/>
+                    <input type="hidden" name="version" value=query.version/>
+                    <input type="hidden" name="page" value="1"/>
+                    <button type="submit" class="secondary-button">"Consultar todos os períodos do cronograma"</button>
+                </form>
+            })}
             <p>{format!("Início: {} · Prazo: {} dias · {} · {} períodos",
                 schedule.starts_on, schedule.deadline_days, basis, count)}</p>
             <p>"Rateio financeiro do valor global, sem alterar a revisão."</p>
@@ -93,7 +111,7 @@ pub fn budget_schedule_page(
     let preview = schedule.and_then(|value| {
         total
             .as_ref()
-            .map(|summary| schedule_preview(value, summary.total, page, true))
+            .map(|summary| schedule_preview(value, summary.total, page, true, None))
     });
     shell(
         "Cronograma físico-financeiro",
@@ -746,17 +764,15 @@ pub fn page(ctx: EstimatingContext) -> String {
     let budgets=ctx.budgets.clone().into_iter().map(|entry|{
         let total=entry.snapshot.summarize().ok();
         let schedule_view = entry.snapshot.schedule.as_ref().and_then(|schedule| {
-            total.as_ref().map(|summary| schedule_preview(schedule, summary.total, 1, false))
-        });
-        let schedule_query = selected.as_ref().filter(|_| entry.snapshot.schedule.is_some()).map(|context| view! {
-            <form action="/orcamentos/cronograma/consultar" method="get" class="record-form">
-                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
-                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
-                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
-                <input type="hidden" name="version" value=entry.version.to_string()/>
-                <input type="hidden" name="page" value="1"/>
-                <button type="submit" class="secondary-button">"Consultar todos os períodos do cronograma"</button>
-            </form>
+            total.as_ref().map(|summary| {
+                let query = selected.as_ref().map(|context| ScheduleQuery {
+                    organization_id: context.organization_id.clone(),
+                    context_version: context.context_version.to_string(),
+                    scope_id: entry.scope_id.clone(),
+                    version: entry.version.to_string(),
+                });
+                schedule_preview(schedule, summary.total, 1, false, query)
+            })
         });
         let schedule_missing = entry.snapshot.schedule.is_none();
         let scope=scopes.iter().find(|s|s.id==entry.scope_id);
@@ -861,7 +877,6 @@ pub fn page(ctx: EstimatingContext) -> String {
                     "Exportar XLSX editável"</a>})}
                 {edit}
                 {schedule_view}
-                {schedule_query}
                 {schedule_missing.then(|| view! {
                     <p class="record-status">"Cronograma ainda não definido."</p>
                 })}
