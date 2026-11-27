@@ -446,6 +446,11 @@ impl AuthService {
                     ));
                 }
                 let mut prior = budget_view(previous.clone())?.snapshot;
+                if prior.schedule.is_none() {
+                    return Err(invalid(
+                        "Defina o cronograma orçamentário antes de aprovar a revisão.",
+                    ));
+                }
                 prior.revision = u32::try_from(next_version)
                     .map_err(|_| invalid("Limite de revisões alcançado."))?;
                 prior.status = BudgetState::Approved;
