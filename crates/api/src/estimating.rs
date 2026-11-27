@@ -155,25 +155,20 @@ async fn budget_schedule_page(
         organization_id: query.organization_id,
         context_version: query.context_version,
     };
-    match auth.service().estimating_context(&token).await {
-        Ok(ctx) if ctx.context.as_ref() == Some(&context) => {
-            let Some(budget) = ctx.budgets.into_iter().find(|budget| {
-                budget.scope_id == query.scope_id
-                    && budget.version == query.version
-                    && budget.snapshot.schedule.is_some()
-            }) else {
-                return bad_input();
-            };
-            html_page(
-                canteiro_web::estimating::budget_schedule_page(
-                    context,
-                    budget,
-                    query.page.unwrap_or(1),
-                ),
-                StatusCode::OK,
-            )
-        }
-        Ok(_) => bad_input(),
+    match auth
+        .service()
+        .estimating_budget_schedule(&token, &context, &query.scope_id, query.version)
+        .await
+    {
+        Ok(Some(budget)) => html_page(
+            canteiro_web::estimating::budget_schedule_page(
+                context,
+                budget,
+                query.page.unwrap_or(1),
+            ),
+            StatusCode::OK,
+        ),
+        Ok(None) => bad_input(),
         Err(error) => application_failure(error),
     }
 }
