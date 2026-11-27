@@ -529,7 +529,23 @@ return form.checkValidity();"#,
                     "description": "Composicao de ensaio",
                     "unit": "un",
                     "cost_mode": {"mode":"informed","cost":"12.50","reason":"Pesquisa de ensaio"},
-                    "lines": [],
+                    "lines": [{
+                        "id": "referencia",
+                        "source": {
+                            "kind": "catalog",
+                            "catalog_id": "historico-e2e",
+                            "edition": 1,
+                            "code": "HIST-01"
+                        },
+                        "coefficient": "3",
+                        "unit": "un",
+                        "conversion": {
+                            "from": "m",
+                            "to": "un",
+                            "factor": "2",
+                            "reference": "Referencia inativa de dois metros"
+                        }
+                    }],
                     "incidences": [],
                     "bdi": "0",
                     "discount": "0"
@@ -574,12 +590,17 @@ return form.checkValidity();"#,
             .await?;
         let report = browser
             .execute(
-                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,revision:document.body.innerText.includes('revisão 1'),reason:document.body.innerText.includes('Pesquisa de ensaio')};",
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,revision:document.body.innerText.includes('revisão 1'),reason:document.body.innerText.includes('Pesquisa de ensaio'),conversion:document.body.innerText.includes('Referencia inativa de dois metros'),source:document.body.innerText.includes('HIST-01'),informed:document.body.innerText.includes('Custo unitário informado: R$ 12.500000'),inactive:document.body.innerText.includes('utilizadas para calcular o preço informado'),noCalculatedCost:!document.body.innerText.includes('parcela R$')};",
             )
             .await?;
         assert_eq!(report["width"], width);
         assert_eq!(report["revision"], true);
         assert_eq!(report["reason"], true);
+        assert_eq!(report["conversion"], true);
+        assert_eq!(report["source"], true);
+        assert_eq!(report["informed"], true);
+        assert_eq!(report["inactive"], true);
+        assert_eq!(report["noCalculatedCost"], true);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
             .full_screenshot(&h.evidence.join(format!("composition-memory-{width}.png")))
