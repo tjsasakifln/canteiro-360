@@ -271,7 +271,7 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
                 license: "Uso interno".into(),
                 locality: "SC".into(),
                 tax_regime: "regular".into(),
-                competence: "2026-11".into(),
+                competence: if edition == 1 { "2021-11" } else { "2026-11" }.into(),
             },
             reason: "Teste de comparacao historica".into(),
             csv,
@@ -285,7 +285,7 @@ return {width:innerWidth,scroll:document.documentElement.scrollWidth,
         if edition == 2 {
             assert_eq!(preview.changed, 31);
             assert_eq!(preview.previous_edition, Some(1));
-            assert_eq!(preview.previous_competence.as_deref(), Some("2026-11"));
+            assert_eq!(preview.previous_competence.as_deref(), Some("2021-11"));
             assert_eq!(preview.pages, 4);
             let last = h
                 .auth
@@ -402,6 +402,48 @@ return form.checkValidity();"#,
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
             .full_screenshot(&h.evidence.join(format!("catalog-history-{width}.png")))
+            .await?;
+
+        browser
+            .navigate(&format!("{}/orcamentos", h.app_url))
+            .await?;
+        browser
+            .tab_to("form[action='/orcamentos/catalogos/consultar']:has(input[name='edition'][value='1']) button")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return document.querySelector('select[name=page]')?.value === '1' && document.body.innerText.includes('Competência: 2021-11');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        assert_eq!(
+            browser
+                .execute("return document.body.innerText.includes('Base histórica') && document.body.innerText.includes('Localidade: SC') && document.body.innerText.includes('HIST-30') && !document.body.innerText.includes('HIST-31');")
+                .await?,
+            true
+        );
+        browser.choose("select[name='page']", 1, "2").await?;
+        browser.key(TAB).await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search.includes('page=2') && document.body.innerText.includes('HIST-31');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        let edition_report = browser
+            .execute(
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,historical:document.body.innerText.includes('Base histórica'),last:document.body.innerText.includes('HIST-31'),first:document.body.innerText.includes('HIST-01')};",
+            )
+            .await?;
+        assert_eq!(edition_report["width"], width);
+        assert_eq!(edition_report["historical"], true);
+        assert_eq!(edition_report["last"], true);
+        assert_eq!(edition_report["first"], false);
+        assert!(edition_report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
+        browser
+            .full_screenshot(&h.evidence.join(format!("catalog-edition-{width}.png")))
             .await?;
 
         browser
@@ -981,6 +1023,7 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
                 "tab_order_budget_csv_preview",
                 "tab_order_catalog_csv_preview",
                 "historical_catalog_page_two_keyboard",
+                "historical_catalog_edition_page_two_keyboard",
                 "historical_catalog_explicit_edition_keyboard",
                 "budget_import_page_two_keyboard",
                 "persisted_batch_confirmation_and_replay",
