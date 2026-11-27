@@ -1211,7 +1211,7 @@ return true;"#,
         if browser
             .execute("return document.querySelector('details.budget-schedule-preview').open;")
             .await?
-            == false
+            != true
         {
             browser.key(ENTER).await?;
         }
@@ -1259,6 +1259,15 @@ return d.innerText.includes("Período 12:") && !d.innerText.includes("Período 1
                 .await?,
             true
         );
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const nav=document.querySelector('nav[aria-label="Navegação do cronograma"]');
+return !!nav && !nav.querySelector('a[rel="prev"]') && new URL(nav.querySelector('a[rel="next"]').href).searchParams.get('page')==='2';"#,
+                )
+                .await?,
+            true
+        );
         browser.tab_to("input[name='page']").await?;
         browser.key("\u{e013}").await?;
         browser.key(TAB).await?;
@@ -1292,7 +1301,40 @@ return d.innerText.includes("Período 13:") && d.innerText.includes("29 dias, pe
                     .join(format!("budget-schedule-page-two-{width}.png")),
             )
             .await?;
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const nav=document.querySelector('nav[aria-label="Navegação do cronograma"]');
+return !!nav && !nav.querySelector('a[rel="next"]') && new URL(nav.querySelector('a[rel="prev"]').href).searchParams.get('page')==='1';"#,
+                )
+                .await?,
+            true
+        );
+        browser.tab_to("a[rel='prev']").await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search.includes('page=1') && document.body.innerText.includes('Página 1 de 2');",
+                Duration::from_secs(10),
+            )
+            .await?;
+        browser.tab_to("a[rel='next']").await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search.includes('page=2') && document.body.innerText.includes('Página 2 de 2');",
+                Duration::from_secs(10),
+            )
+            .await?;
     }
+    let after_navigation = h.auth.estimating_context(&editor.session).await?;
+    let unchanged_budget = after_navigation
+        .budgets
+        .iter()
+        .find(|record| record.scope_id == budget)
+        .ok_or("Missing budget after schedule navigation")?;
+    assert_eq!(unchanged_budget.version, revised_budget.version);
+    assert_eq!(unchanged_budget.snapshot, revised_budget.snapshot);
 
     write_json(
         &h.evidence.join("estimating-interface.json"),
