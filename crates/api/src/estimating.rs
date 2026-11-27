@@ -23,6 +23,7 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
     Router::new()
         .route("/api/estimating/context", get(context))
         .route("/api/estimating/catalog", get(catalog))
+        .route("/orcamentos/catalogos/consultar", get(catalog_page))
         .route("/api/estimating/catalog/compare", get(catalog_compare))
         .route("/orcamentos/catalogos/comparar", get(catalog_compare_page))
         .route(
@@ -132,11 +133,27 @@ struct CatalogQuery {
     scope_id: String,
     catalog_id: String,
     edition: u32,
+    page: Option<usize>,
 }
 async fn catalog(
     auth: Option<Extension<AuthHttp>>,
     headers: HeaderMap,
     query: Result<Query<CatalogQuery>, QueryRejection>,
+) -> Response {
+    read_catalog(auth, headers, query, false).await
+}
+async fn catalog_page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<CatalogQuery>, QueryRejection>,
+) -> Response {
+    read_catalog(auth, headers, query, true).await
+}
+async fn read_catalog(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<CatalogQuery>, QueryRejection>,
+    as_page: bool,
 ) -> Response {
     let (auth, token) = match authenticated(auth, &headers, false) {
         Ok(v) => v,
@@ -160,6 +177,19 @@ async fn catalog(
         )
         .await
     {
+        Ok(result) if as_page => match auth.service().estimating_context(&token).await {
+            Ok(ctx) if ctx.context.as_ref() == Some(&context) => html_page(
+                canteiro_web::estimating::catalog_edition_page(
+                    ctx,
+                    result,
+                    query.scope_id,
+                    query.page.unwrap_or(1),
+                ),
+                StatusCode::OK,
+            ),
+            Ok(_) => bad_input(),
+            Err(error) => application_failure(error),
+        },
         Ok(result) => private_json(result),
         Err(e) => application_failure(e),
     }
