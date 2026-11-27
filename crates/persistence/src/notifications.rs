@@ -50,7 +50,8 @@ impl AuthTransaction {
             "SELECT event_id,kind,scope_id,target_id,due_on,essential,state,attempts,created_at
            FROM canteiro.user_notices
            WHERE tenant_id=$1 AND recipient_id=$2 AND scope_id=ANY($3)
-           ORDER BY (state='resolved') ASC,due_on ASC NULLS LAST,created_at DESC
+           ORDER BY (state='resolved') ASC,due_on ASC NULLS LAST,
+                    essential DESC,created_at DESC,event_id ASC,kind ASC
            LIMIT 200",
         )
         .bind(tenant)
