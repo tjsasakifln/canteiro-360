@@ -965,6 +965,65 @@ return d.open && d.innerText.includes("89 dias") && d.innerText.includes("Perío
         browser
             .full_screenshot(&h.evidence.join(format!("budget-schedule-{width}.png")))
             .await?;
+        browser
+            .tab_to("a[href*='/orcamentos/cronograma/consultar']")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname==='/orcamentos/cronograma/consultar';",
+                Duration::from_secs(10),
+            )
+            .await?;
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const f=document.querySelector("form[action='/orcamentos/cronograma/consultar']");
+const d=document.querySelector("details.budget-schedule-preview");
+return !!f && d.open && d.innerText.includes("Página 1 de 1") && d.innerText.includes("Período 3: 33.33% · R$ 20.66");"#,
+                )
+                .await?,
+            true
+        );
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const url=new URL(location.href);
+url.searchParams.set("version","0");
+return fetch(url).then(r=>r.status);"#,
+                )
+                .await?,
+            400
+        );
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const url=new URL(location.href);
+url.searchParams.set("scope_id","00000000-0000-0000-0000-000000000000");
+return fetch(url).then(r=>r.status);"#,
+                )
+                .await?,
+            400
+        );
+        assert!(
+            browser
+                .execute("return document.documentElement.scrollWidth;")
+                .await?
+                .as_u64()
+                .unwrap_or(u64::MAX)
+                <= u64::from(width)
+        );
+        browser
+            .full_screenshot(&h.evidence.join(format!("budget-schedule-page-{width}.png")))
+            .await?;
+        browser.tab_to("a[href='/orcamentos']").await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname==='/orcamentos';",
+                Duration::from_secs(10),
+            )
+            .await?;
         let script = format!(
             r#"const f=document.querySelector("form[action='/orcamentos/conferir-xlsx']");
 f.elements.scope_id.value={};
