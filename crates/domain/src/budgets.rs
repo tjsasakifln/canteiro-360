@@ -2,8 +2,8 @@
 use crate::{
     ActorId, CivilDate, EntityId, UtcInstant,
     decimal::{
-        AllocationWeight, DecimalError, ExactDecimal, Money, Percent, Quantity, UnitPrice,
-        allocate_percentages,
+        Allocation, AllocationWeight, DecimalError, ExactDecimal, Money, Percent, Quantity,
+        UnitPrice, allocate_money, allocate_percentages,
     },
     units::MeasureUnit,
 };
@@ -481,6 +481,22 @@ impl BudgetRevision {
     }
 }
 impl BudgetSchedule {
+    /// Distribui um valor monetário pelos períodos sem perder centavos.
+    /// Pode ser aplicado ao valor de um grupo ou ao total do orçamento.
+    pub fn financial_allocation(&self, amount: Money) -> Result<Allocation, BudgetError> {
+        self.validate()?;
+        let weights = self
+            .periods
+            .iter()
+            .map(|period| AllocationWeight {
+                id: period.id.clone(),
+                position: period.position,
+                weight: period.percentage.value(),
+            })
+            .collect::<Vec<_>>();
+        Ok(allocate_money(amount, &weights)?)
+    }
+
     /// Residual entregue na ordem estável dos períodos, não na ordem da consulta SQL.
     pub fn linear(
         starts_on: CivilDate,
@@ -715,6 +731,44 @@ mod tests {
             vec!["33.34", "33.33", "33.33"]
         );
     }
+    #[test]
+    fn financial_schedule_preserves_each_group_and_stable_residual_cents() {
+        let b = budget();
+        let totals = b.summarize().unwrap();
+        let mut schedule = b.schedule.unwrap();
+        let allocation = schedule.financial_allocation(totals.total).unwrap();
+        assert_eq!(
+            allocation
+                .parts
+                .iter()
+                .map(|part| Money::new(part.value).unwrap().to_string())
+                .collect::<Vec<_>>(),
+            vec!["76.68", "76.66", "76.66"]
+        );
+        for group in totals.groups {
+            let allocated = schedule.financial_allocation(group.amount).unwrap();
+            assert_eq!(
+                allocated
+                    .parts
+                    .iter()
+                    .try_fold(ExactDecimal::ZERO, |sum, part| sum.checked_add(part.value))
+                    .unwrap(),
+                group.amount.value()
+            );
+        }
+        let cent: Money = "0.01".parse().unwrap();
+        let original = schedule.financial_allocation(cent).unwrap();
+        assert_eq!(original.parts[0].value, cent.value());
+        assert_eq!(original.parts[1].value, ExactDecimal::ZERO);
+        schedule.periods.reverse();
+        assert_eq!(schedule.financial_allocation(cent).unwrap(), original);
+        schedule.periods.clear();
+        assert_eq!(
+            schedule.financial_allocation(cent),
+            Err(BudgetError::Schedule)
+        );
+    }
+
     #[test]
     fn every_snapshot_must_match_immutable_catalog_prices() {
         let original = budget();
