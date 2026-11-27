@@ -378,7 +378,7 @@ return form.checkValidity();"#,
             .await?;
         assert_eq!(
             browser
-                .execute("return document.body.innerText.includes('HIST-30') && !document.body.innerText.includes('HIST-31');")
+                .execute("return document.body.innerText.includes('HIST-30') && !document.body.innerText.includes('HIST-31') && document.body.innerText.includes('Base histórica anterior') && document.body.innerText.includes('competência 2021-11');")
                 .await?,
             true
         );
@@ -393,12 +393,13 @@ return form.checkValidity();"#,
             .await?;
         let report = browser
             .execute(
-                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,last:document.body.innerText.includes('HIST-31'),first:document.body.innerText.includes('HIST-01')};",
+                "return {width:innerWidth,scroll:document.documentElement.scrollWidth,last:document.body.innerText.includes('HIST-31'),first:document.body.innerText.includes('HIST-01'),historical:document.body.innerText.includes('Base histórica anterior')};",
             )
             .await?;
         assert_eq!(report["width"], width);
         assert_eq!(report["last"], true);
         assert_eq!(report["first"], false);
+        assert_eq!(report["historical"], true);
         assert!(report["scroll"].as_u64().unwrap_or(u64::MAX) <= u64::from(width));
         browser
             .full_screenshot(&h.evidence.join(format!("catalog-history-{width}.png")))
