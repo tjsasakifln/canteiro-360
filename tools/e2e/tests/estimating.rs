@@ -764,7 +764,7 @@ return form.checkValidity();"#,
     let mut schedule = vec![String::new(); 19];
     schedule[0] = "SCHEDULE".into();
     schedule[1] = "2026-11-01".into();
-    schedule[2] = "90".into();
+    schedule[2] = "89".into();
     schedule[3] = "fixed_30_days".into();
     csv.push_str(&format!("{}\n", schedule.join(";")));
     for (position, percentage) in ["33,34", "33,33", "33,33"].into_iter().enumerate() {
@@ -949,7 +949,7 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
             browser
                 .execute(
                     r#"const d=document.querySelector("details.budget-schedule-preview");
-return d.open && d.innerText.includes("90 dias") && d.innerText.includes("Período 1: 33.34% · R$ 20.67") && d.innerText.includes("Período 3: 33.33% · R$ 20.66");"#,
+return d.open && d.innerText.includes("89 dias") && d.innerText.includes("Período 1: 33.34% · R$ 20.67 · até 2026-12-01 (30 dias)") && d.innerText.includes("Período 3: 33.33% · R$ 20.66 · até 2027-01-29 (29 dias, período residual)");"#,
                 )
                 .await?,
             true
