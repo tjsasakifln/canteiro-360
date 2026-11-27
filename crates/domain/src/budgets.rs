@@ -481,6 +481,26 @@ impl BudgetRevision {
     }
 }
 impl BudgetSchedule {
+    /// Limites cronológicos ancorados no início original e no prazo formal.
+    /// O último período pode ter menos dias que a cadência nominal.
+    pub fn calendar_periods(&self) -> Result<Vec<crate::calendar::CalendarPeriod>, BudgetError> {
+        use crate::calendar::{Cadence, CalendarPolicy, execution_end, schedule};
+
+        self.validate()?;
+        let policy = match self.basis {
+            PeriodBasis::Fixed30Days => CalendarPolicy::FixedDays,
+            PeriodBasis::CivilMonths => CalendarPolicy::Civil,
+        };
+        let end = execution_end(self.starts_on, self.deadline_days)
+            .map_err(|_| BudgetError::Schedule)?;
+        let periods = schedule(self.starts_on, end, policy, Cadence::Monthly)
+            .map_err(|_| BudgetError::Schedule)?;
+        if periods.len() != self.periods.len() {
+            return Err(BudgetError::Schedule);
+        }
+        Ok(periods)
+    }
+
     /// Distribui um valor monetário pelos períodos sem perder centavos.
     /// Pode ser aplicado ao valor de um grupo ou ao total do orçamento.
     pub fn financial_allocation(&self, amount: Money) -> Result<Allocation, BudgetError> {
@@ -731,6 +751,41 @@ mod tests {
             vec!["33.34", "33.33", "33.33"]
         );
     }
+    #[test]
+    fn calendar_periods_preserve_anchor_and_formal_end() {
+        let fixed = BudgetSchedule::linear(
+            "2026-11-01".parse().unwrap(),
+            65,
+            PeriodBasis::Fixed30Days,
+            3,
+        )
+        .unwrap();
+        let periods = fixed.calendar_periods().unwrap();
+        assert_eq!(periods[0].end.to_string(), "2026-12-01");
+        assert_eq!(periods[1].end.to_string(), "2026-12-31");
+        assert_eq!(periods[2].end.to_string(), "2027-01-05");
+        assert_eq!(periods[2].days, 5);
+        assert!(periods[2].residual);
+
+        let mut civil = BudgetSchedule::linear(
+            "2026-01-31".parse().unwrap(),
+            70,
+            PeriodBasis::CivilMonths,
+            3,
+        )
+        .unwrap();
+        civil.periods.reverse();
+        let periods = civil.calendar_periods().unwrap();
+        assert_eq!(periods[0].end.to_string(), "2026-02-28");
+        assert_eq!(periods[1].start.to_string(), "2026-02-28");
+        assert_eq!(periods[1].end.to_string(), "2026-03-31");
+        assert_eq!(periods[2].end.to_string(), "2026-04-11");
+        assert_eq!(periods[2].days, 11);
+        assert!(periods[2].residual);
+        civil.periods.pop();
+        assert_eq!(civil.calendar_periods(), Err(BudgetError::Schedule));
+    }
+
     #[test]
     fn financial_schedule_preserves_each_group_and_stable_residual_cents() {
         let b = budget();
