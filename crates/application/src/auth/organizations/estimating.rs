@@ -167,9 +167,7 @@ impl AuthService {
         let Some(a) = access.filter(|access| &access.context == context) else {
             return Ok(None);
         };
-        if version <= 0
-            || require_budget(&a, scope, AccessAction::View, tx.now().await?).is_err()
-        {
+        if version <= 0 || require_budget(&a, scope, AccessAction::View, tx.now().await?).is_err() {
             return Ok(None);
         }
         let record = tx
