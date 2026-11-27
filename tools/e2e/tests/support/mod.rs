@@ -372,7 +372,19 @@ impl Browser {
                 return Ok(());
             }
         }
-        Err(format!("Element not reachable by Tab: {selector}").into())
+        let diagnostic = self
+            .execute(&format!(
+                r#"const targets=[...document.querySelectorAll({})];
+return {{hasFocus:document.hasFocus(),
+activeTag:document.activeElement?.tagName,
+activeType:document.activeElement?.getAttribute("type"),
+targets:targets.map(e=>({{tag:e.tagName,tabIndex:e.tabIndex,
+disabled:e.matches(":disabled"),visible:!!e.getClientRects().length,
+closedDetails:!!e.closest("details:not([open])"),inert:!!e.closest("[inert]")}}))}};"#,
+                serde_json::to_string(selector)?
+            ))
+            .await?;
+        Err(format!("Element not reachable by Tab: {selector}; DOM: {diagnostic}").into())
     }
 
     pub async fn wait(&self, expression: &str, timeout: Duration) -> TestResult {
