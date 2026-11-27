@@ -410,8 +410,7 @@ impl AuthService {
                 &mail.payload,
             )
             .and_then(|plain| {
-                serde_json::from_slice::<MailPayload>(&plain)
-                    .map_err(|_| AuthError::unavailable())
+                serde_json::from_slice::<MailPayload>(&plain).map_err(|_| AuthError::unavailable())
             });
             let Ok(payload) = payload else {
                 // Preserve a mensagem cifrada e registre a tentativa inconclusiva.
