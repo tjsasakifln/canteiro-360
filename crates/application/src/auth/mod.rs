@@ -402,14 +402,24 @@ impl AuthService {
     }
     pub async fn pending_mail(&self, limit: i64) -> Result<Vec<MailDelivery>, AuthError> {
         let mut result = vec![];
+        let mut unreadable = false;
         for mail in self.store.claim_mail(limit).await? {
-            let plain = crypto::open(
+            let payload = crypto::open(
                 self.key.as_ref(),
                 &format!("mail:{}:v1", mail.id),
                 &mail.payload,
-            )?;
-            let payload: MailPayload =
-                serde_json::from_slice(&plain).map_err(|_| AuthError::unavailable())?;
+            )
+            .and_then(|plain| {
+                serde_json::from_slice::<MailPayload>(&plain)
+                    .map_err(|_| AuthError::unavailable())
+            });
+            let Ok(payload) = payload else {
+                // Preserve a mensagem cifrada e registre a tentativa inconclusiva.
+                // Uma entrada ilegível não deve impedir o envio das demais.
+                unreadable = true;
+                self.store.mail_unconfirmed(mail.id, mail.lease_id).await?;
+                continue;
+            };
             result.push(MailDelivery {
                 id: format!("{}:{}", mail.id, mail.lease_id),
                 email: payload.email,
@@ -417,6 +427,9 @@ impl AuthService {
                 token: payload.token,
                 expires_at: mail.expires_at.to_rfc3339(),
             });
+        }
+        if unreadable && result.is_empty() {
+            return Err(AuthError::unavailable());
         }
         Ok(result)
     }
