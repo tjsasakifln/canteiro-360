@@ -1,7 +1,10 @@
 //! Visão orçamentária nativa, com fontes históricas visíveis e exportação autorizada.
 use crate::projects::shell;
 use canteiro_contracts::estimating::*;
-use canteiro_domain::budgets::BudgetLine;
+use canteiro_domain::{
+    budgets::{BudgetLine, BudgetSchedule, PeriodBasis},
+    decimal::Money,
+};
 use leptos::prelude::*;
 
 fn brazilian_competence() -> String {
@@ -17,6 +20,47 @@ fn competence_flags(competence: &str, previous: Option<&str>, today: &str) -> (b
         competence < today,
         previous.is_some_and(|earlier| competence < earlier),
     )
+}
+
+fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView {
+    let basis = match schedule.basis {
+        PeriodBasis::Fixed30Days => "Períodos fixos de 30 dias",
+        PeriodBasis::CivilMonths => "Meses civis",
+    };
+    let allocation = schedule.financial_allocation(amount).ok();
+    let mut periods = schedule.periods.iter().collect::<Vec<_>>();
+    periods.sort_by_key(|period| period.position);
+    let rows = allocation
+        .as_ref()
+        .into_iter()
+        .flat_map(|value| value.parts.iter())
+        .zip(periods)
+        .take(12)
+        .map(|(part, period)| {
+            let money = Money::new(part.value)
+                .map(|value| value.to_string())
+                .unwrap_or_else(|_| "Inconsistente".into());
+            view! {
+                <li>{format!("Período {}: {}% · R$ {}", part.position + 1, period.percentage, money)}</li>
+            }
+        })
+        .collect_view();
+    let count = schedule.periods.len();
+    view! {
+        <details class="budget-schedule-preview">
+            <summary>"Consultar cronograma orçamentário"</summary>
+            <p>{format!("Início: {} · Prazo: {} dias · {} · {} períodos",
+                schedule.starts_on, schedule.deadline_days, basis, count)}</p>
+            <p>"Rateio financeiro do valor global, sem alterar a revisão."</p>
+            {allocation.is_none().then(|| view! {
+                <p class="record-status">"Não foi possível reconciliar o rateio financeiro."</p>
+            })}
+            <ul>{rows}</ul>
+            {(count > 12).then(|| view! {
+                <p>"Exibidos os primeiros 12 períodos. Todos os percentuais estão disponíveis nas exportações CSV e XLSX."</p>
+            })}
+        </details>
+    }
 }
 
 pub fn page(ctx: EstimatingContext) -> String {
@@ -642,6 +686,10 @@ pub fn page(ctx: EstimatingContext) -> String {
     let schedule_csrf = ctx.csrf.clone();
     let budgets=ctx.budgets.clone().into_iter().map(|entry|{
         let total=entry.snapshot.summarize().ok();
+        let schedule_view = entry.snapshot.schedule.as_ref().and_then(|schedule| {
+            total.as_ref().map(|summary| schedule_preview(schedule, summary.total))
+        });
+        let schedule_missing = entry.snapshot.schedule.is_none();
         let scope=scopes.iter().find(|s|s.id==entry.scope_id);
         let title=scope.map_or("Orçamento".to_owned(),|s|s.name.clone());
         let export=selected.as_ref().map(|s|format!(
@@ -743,6 +791,10 @@ pub fn page(ctx: EstimatingContext) -> String {
                 {export_xlsx.map(|url|view!{<a class="secondary-button" href=url>
                     "Exportar XLSX editável"</a>})}
                 {edit}
+                {schedule_view}
+                {schedule_missing.then(|| view! {
+                    <p class="record-status">"Cronograma ainda não definido."</p>
+                })}
                 {schedule_editor}
             </article>
         }
