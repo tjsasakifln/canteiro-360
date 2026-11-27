@@ -109,7 +109,14 @@ impl Inbox {
             .values()
             .filter(|row| row.identity.tenant == tenant && row.identity.recipient == recipient)
             .collect();
-        rows.sort_by(|a, b| a.due_on.cmp(&b.due_on).then(a.identity.cmp(&b.identity)));
+        rows.sort_by(|a, b| {
+            (a.state == NoticeState::Resolved)
+                .cmp(&(b.state == NoticeState::Resolved))
+                .then(a.due_on.is_none().cmp(&b.due_on.is_none()))
+                .then(a.due_on.cmp(&b.due_on))
+                .then(b.essential.cmp(&a.essential))
+                .then(a.identity.cmp(&b.identity))
+        });
         rows
     }
     pub fn get_mut(&mut self, key: &NoticeIdentity) -> Option<&mut Notice> {
@@ -258,6 +265,36 @@ mod tests {
         n.record_attempt(date(), true).unwrap();
         assert_eq!(n.state, NoticeState::Communicated);
         assert_eq!(n.attempts, 2);
+    }
+    #[test]
+    fn inbox_prioritizes_open_due_dates_and_essential_notices() {
+        let mut inbox = Inbox::default();
+        for (id, due, essential) in [
+            (1, None, true),
+            (2, Some("2026-12-01"), false),
+            (3, Some("2026-12-01"), true),
+            (4, Some("2026-11-22"), true),
+            (5, Some("2026-11-23"), false),
+        ] {
+            let mut row = notice();
+            row.identity.event = event(id);
+            row.due_on = due.map(|value| value.parse().unwrap());
+            row.essential = essential;
+            let key = row.identity.clone();
+            inbox.record(row).unwrap();
+            if id == 4 {
+                inbox.get_mut(&key).unwrap().resolve(date());
+            }
+        }
+        let ordered: Vec<_> = inbox
+            .for_recipient(tenant(1), actor(2))
+            .iter()
+            .map(|row| row.identity.event.clone())
+            .collect();
+        assert_eq!(
+            ordered,
+            vec![event(5), event(3), event(2), event(1), event(4)]
+        );
     }
     #[test]
     fn newly_recorded_notice_cannot_forge_provider_delivery_or_resolution() {
