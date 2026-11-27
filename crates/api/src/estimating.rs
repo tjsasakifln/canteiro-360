@@ -60,6 +60,10 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
             post(composition_edit_description_form),
         )
         .route(
+            "/orcamentos/cronograma/consultar",
+            get(budget_schedule_page),
+        )
+        .route(
             "/orcamentos/cronograma/salvar",
             post(budget_save_schedule_form),
         )
@@ -125,6 +129,55 @@ async fn context(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Respo
         Err(e) => application_failure(e),
     }
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BudgetScheduleQuery {
+    organization_id: String,
+    context_version: i64,
+    scope_id: String,
+    version: i64,
+    page: Option<usize>,
+}
+
+async fn budget_schedule_page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    query: Result<Query<BudgetScheduleQuery>, QueryRejection>,
+) -> Response {
+    let (auth, token) = match authenticated(auth, &headers, false) {
+        Ok(v) => v,
+        Err(e) => return *e,
+    };
+    let Ok(Query(query)) = query else {
+        return bad_input();
+    };
+    let context = ReliabilityScope {
+        organization_id: query.organization_id,
+        context_version: query.context_version,
+    };
+    match auth.service().estimating_context(&token).await {
+        Ok(ctx) if ctx.context.as_ref() == Some(&context) => {
+            let Some(budget) = ctx.budgets.into_iter().find(|budget| {
+                budget.scope_id == query.scope_id
+                    && budget.version == query.version
+                    && budget.snapshot.schedule.is_some()
+            }) else {
+                return bad_input();
+            };
+            html_page(
+                canteiro_web::estimating::budget_schedule_page(
+                    context,
+                    budget,
+                    query.page.unwrap_or(1),
+                ),
+                StatusCode::OK,
+            )
+        }
+        Ok(_) => bad_input(),
+        Err(error) => application_failure(error),
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CatalogQuery {
