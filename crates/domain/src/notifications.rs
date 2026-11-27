@@ -291,7 +291,10 @@ mod tests {
             .iter()
             .map(|row| row.identity.event)
             .collect();
-        assert_eq!(ordered, vec![event(5), event(3), event(2), event(1), event(4)]);
+        assert_eq!(
+            ordered,
+            vec![event(5), event(3), event(2), event(1), event(4)]
+        );
     }
     #[test]
     fn newly_recorded_notice_cannot_forge_provider_delivery_or_resolution() {
