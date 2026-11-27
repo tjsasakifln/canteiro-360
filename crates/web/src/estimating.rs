@@ -980,9 +980,18 @@ pub fn composition_memory(
                         format!("Composição vinculada {code}")
                     }
                 };
+                let conversion = line.conversion.as_ref().map(|rule| {
+                    format!(
+                        "Conversão de {} para {} · fator {} · referência: {}",
+                        rule.from, rule.to, rule.factor, rule.reference
+                    )
+                });
                 view! {
-                    <p>{format!("{} · {} · coeficiente {} {}",
-                        line.id, source, line.coefficient, line.unit)}</p>
+                    <article class="record-summary">
+                        <p>{format!("{} · {} · coeficiente {} {}",
+                            line.id, source, line.coefficient, line.unit)}</p>
+                        {conversion.map(|description|view!{<p>{description}</p>})}
+                    </article>
                 }
             })
             .collect_view()
