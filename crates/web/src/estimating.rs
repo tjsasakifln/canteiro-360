@@ -22,7 +22,7 @@ fn competence_flags(competence: &str, previous: Option<&str>, today: &str) -> (b
     )
 }
 
-fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView {
+fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView + use<> {
     let basis = match schedule.basis {
         PeriodBasis::Fixed30Days => "Períodos fixos de 30 dias",
         PeriodBasis::CivilMonths => "Meses civis",
