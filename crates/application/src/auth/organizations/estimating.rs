@@ -151,6 +151,41 @@ impl AuthService {
         tx.commit().await?;
         Ok(out)
     }
+    /// Consulta pontual do cronograma vigente, sem carregar os demais orçamentos,
+    /// catálogos ou composições da empresa.
+    pub async fn estimating_budget_schedule(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        version: i64,
+    ) -> Result<Option<BudgetRecord>, AuthError> {
+        self.limit("estimating-budget-schedule", token, 60, 60)
+            .await?;
+        let (mut tx, access) = self.record_access(token, None).await?;
+        let scope = id(scope_text)?;
+        let Some(a) = access.filter(|access| &access.context == context) else {
+            return Ok(None);
+        };
+        if version <= 0
+            || require_budget(&a, scope, AccessAction::View, tx.now().await?).is_err()
+        {
+            return Ok(None);
+        }
+        let record = tx
+            .budget_list(a.tenant, &[scope])
+            .await?
+            .into_iter()
+            .next()
+            .map(budget_view)
+            .transpose()?
+            .filter(|record| record.version == version && record.snapshot.schedule.is_some());
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+            .await?;
+        tx.commit().await?;
+        Ok(record)
+    }
+
     pub async fn estimating_budget_history(
         &self,
         token: &str,
