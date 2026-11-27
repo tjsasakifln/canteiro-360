@@ -22,7 +22,22 @@ fn competence_flags(competence: &str, previous: Option<&str>, today: &str) -> (b
     )
 }
 
-fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView + use<> {
+const SCHEDULE_PAGE_SIZE: usize = 12;
+
+fn schedule_page_window(count: usize, requested: usize) -> (usize, usize, usize) {
+    let pages = count.div_ceil(SCHEDULE_PAGE_SIZE).max(1);
+    let page = requested.clamp(1, pages);
+    (page, pages, (page - 1) * SCHEDULE_PAGE_SIZE)
+}
+
+fn schedule_preview(
+    schedule: &BudgetSchedule,
+    amount: Money,
+    requested_page: usize,
+    expanded: bool,
+) -> impl IntoView + use<> {
+    let count = schedule.periods.len();
+    let (page, pages, offset) = schedule_page_window(count, requested_page);
     let basis = match schedule.basis {
         PeriodBasis::Fixed30Days => "Períodos fixos de 30 dias",
         PeriodBasis::CivilMonths => "Meses civis",
@@ -37,7 +52,8 @@ fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView +
         .flat_map(|value| value.parts.iter())
         .zip(periods)
         .zip(calendar.as_ref().into_iter().flatten())
-        .take(12)
+        .skip(offset)
+        .take(SCHEDULE_PAGE_SIZE)
         .map(|((part, period), dates)| {
             let money = Money::new(part.value)
                 .map(|value| value.to_string())
@@ -49,9 +65,8 @@ fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView +
             }
         })
         .collect_view();
-    let count = schedule.periods.len();
     view! {
-        <details class="budget-schedule-preview">
+        <details class="budget-schedule-preview" open=expanded>
             <summary>"Consultar cronograma orçamentário"</summary>
             <p>{format!("Início: {} · Prazo: {} dias · {} · {} períodos",
                 schedule.starts_on, schedule.deadline_days, basis, count)}</p>
@@ -60,11 +75,51 @@ fn schedule_preview(schedule: &BudgetSchedule, amount: Money) -> impl IntoView +
                 <p class="record-status">"Não foi possível reconciliar o calendário e o rateio financeiro."</p>
             })}
             <ul>{rows}</ul>
-            {(count > 12).then(|| view! {
-                <p>"Exibidos os primeiros 12 períodos. Todos os percentuais estão disponíveis nas exportações CSV e XLSX."</p>
-            })}
+            <p>{format!("Página {page} de {pages}")}</p>
         </details>
     }
+}
+
+/// Consulta paginada da revisão vigente, sem efetuar qualquer gravação.
+pub fn budget_schedule_page(
+    context: canteiro_contracts::reliability::ReliabilityScope,
+    budget: BudgetRecord,
+    requested_page: usize,
+) -> String {
+    let schedule = budget.snapshot.schedule.as_ref();
+    let count = schedule.map_or(0, |value| value.periods.len());
+    let (page, pages, _) = schedule_page_window(count, requested_page);
+    let total = budget.snapshot.summarize().ok();
+    let preview = schedule.and_then(|value| {
+        total
+            .as_ref()
+            .map(|summary| schedule_preview(value, summary.total, page, true))
+    });
+    shell(
+        "Cronograma físico-financeiro",
+        view! {
+            <section class="record-heading">
+                <h1>"Cronograma físico-financeiro"</h1>
+                <p>{format!("Revisão {} · {} períodos", budget.version, count)}</p>
+                <p>"Consulta somente para leitura. Nenhuma revisão será gravada."</p>
+                <a href="/orcamentos">"Voltar aos orçamentos"</a>
+            </section>
+            <section class="foundation-card">
+                <form action="/orcamentos/cronograma/consultar" method="get" class="record-form">
+                    <input type="hidden" name="organization_id" value=context.organization_id/>
+                    <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                    <input type="hidden" name="scope_id" value=budget.scope_id/>
+                    <input type="hidden" name="version" value=budget.version.to_string()/>
+                    <label class="record-field">
+                        <span>{format!("Página do cronograma (1 a {pages})")}</span>
+                        <input type="number" name="page" min="1" max=pages.to_string() value=page.to_string() required=true/>
+                    </label>
+                    <button type="submit" class="secondary-button">"Ir para página do cronograma"</button>
+                </form>
+                {preview}
+            </section>
+        },
+    )
 }
 
 pub fn page(ctx: EstimatingContext) -> String {
@@ -691,7 +746,11 @@ pub fn page(ctx: EstimatingContext) -> String {
     let budgets=ctx.budgets.clone().into_iter().map(|entry|{
         let total=entry.snapshot.summarize().ok();
         let schedule_view = entry.snapshot.schedule.as_ref().and_then(|schedule| {
-            total.as_ref().map(|summary| schedule_preview(schedule, summary.total))
+            total.as_ref().map(|summary| schedule_preview(schedule, summary.total, 1, false))
+        });
+        let schedule_link = selected.as_ref().filter(|_| entry.snapshot.schedule.is_some()).map(|context| {
+            format!("/orcamentos/cronograma/consultar?organization_id={}&context_version={}&scope_id={}&version={}&page=1",
+                context.organization_id, context.context_version, entry.scope_id, entry.version)
         });
         let schedule_missing = entry.snapshot.schedule.is_none();
         let scope=scopes.iter().find(|s|s.id==entry.scope_id);
@@ -796,6 +855,9 @@ pub fn page(ctx: EstimatingContext) -> String {
                     "Exportar XLSX editável"</a>})}
                 {edit}
                 {schedule_view}
+                {schedule_link.map(|url| view! {
+                    <a class="secondary-button" href=url>"Consultar todos os períodos do cronograma"</a>
+                })}
                 {schedule_missing.then(|| view! {
                     <p class="record-status">"Cronograma ainda não definido."</p>
                 })}
@@ -2013,6 +2075,17 @@ pub fn budget_csv_published(ctx: EstimatingContext, result: BudgetReply) -> Stri
 
 #[cfg(test)]
 mod competence_tests {
+    #[test]
+    fn schedule_pages_cover_all_periods_without_overflow() {
+        assert_eq!(super::schedule_page_window(0, 0), (1, 1, 0));
+        assert_eq!(super::schedule_page_window(12, 1), (1, 1, 0));
+        assert_eq!(super::schedule_page_window(13, 2), (2, 2, 12));
+        assert_eq!(
+            super::schedule_page_window(10_000, usize::MAX),
+            (834, 834, 9996)
+        );
+    }
+
     #[test]
     fn comparison_pages_cover_all_changes_without_overflow() {
         assert_eq!(super::catalog_page_window(0, 0), (1, 1, 0));
