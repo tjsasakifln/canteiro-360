@@ -1185,6 +1185,21 @@ return true;"#,
             Duration::from_secs(10),
         )
         .await?;
+    let revised = h.auth.estimating_context(&editor.session).await?;
+    let revised_budget = revised
+        .budgets
+        .iter()
+        .find(|record| record.scope_id == budget)
+        .ok_or("Missing revised budget")?;
+    assert_eq!(revised_budget.version, 4);
+    let revised_schedule = revised_budget
+        .snapshot
+        .schedule
+        .as_ref()
+        .ok_or("Rescheduling removed the schedule")?;
+    assert_eq!(revised_schedule.deadline_days, 389);
+    assert_eq!(revised_schedule.periods.len(), 13);
+    assert_eq!(revised_schedule.calendar_periods()?.len(), 13);
     for width in [360, 1280] {
         browser.viewport(width, 900, width == 360).await?;
         browser
@@ -1193,17 +1208,48 @@ return true;"#,
         browser
             .tab_to("details.budget-schedule-preview > summary")
             .await?;
-        browser.key(ENTER).await?;
+        if browser
+            .execute("return document.querySelector('details.budget-schedule-preview').open;")
+            .await?
+            == false
+        {
+            browser.key(ENTER).await?;
+        }
+        let query = browser
+            .execute(
+                r#"const f=document.querySelector("form[action='/orcamentos/cronograma/consultar']");
+return {scope:f.elements.scope_id.value,version:f.elements.version.value,page:f.elements.page.value,open:f.closest("details").open};"#,
+            )
+            .await?;
+        assert_eq!(query["scope"], budget.as_str());
+        assert_eq!(query["version"], "4");
+        assert_eq!(query["page"], "1");
+        assert_eq!(query["open"], true);
         browser
             .tab_to("form[action='/orcamentos/cronograma/consultar'] button[type='submit']")
             .await?;
         browser.key(ENTER).await?;
-        browser
+        if let Err(error) = browser
             .wait(
                 "return location.pathname==='/orcamentos/cronograma/consultar' && document.body.innerText.includes('Página 1 de 2');",
                 Duration::from_secs(10),
             )
-            .await?;
+            .await
+        {
+            let state = browser
+                .execute(
+                    r#"const d=document.querySelector("details.budget-schedule-preview");
+return {path:location.pathname,version:new URLSearchParams(location.search).get("version"),page:new URLSearchParams(location.search).get("page"),heading:document.querySelector("h1")?.textContent,open:d?.open,schedule:d?.textContent?.slice(0,1200),text:document.body.innerText.slice(0,500)};"#,
+                )
+                .await?;
+            browser
+                .full_screenshot(
+                    &h.evidence
+                        .join(format!("budget-long-schedule-failure-{width}.png")),
+                )
+                .await?;
+            return Err(format!("{error}; width {width}; schedule page: {state}").into());
+        }
         assert_eq!(
             browser
                 .execute(
