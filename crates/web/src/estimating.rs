@@ -68,6 +68,18 @@ pub fn page(ctx: EstimatingContext) -> String {
                     </form>
                 })
             });
+            let consult = comparison_context.as_ref().map(|context| {
+                view! {
+                    <form action="/orcamentos/catalogos/consultar" method="get" class="record-form">
+                        <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                        <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                        <input type="hidden" name="scope_id" value=catalog.scope_id.clone()/>
+                        <input type="hidden" name="catalog_id" value=catalog.catalog_id.clone()/>
+                        <input type="hidden" name="edition" value=catalog.edition.to_string()/>
+                        <button type="submit" class="secondary-button">"Consultar preços desta edição"</button>
+                    </form>
+                }
+            });
             let source = catalog.source;
             let (historical, _) =
                 competence_flags(&source.competence, None, &current_competence);
@@ -81,6 +93,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                     {historical.then(||view!{<p class="record-status">
                         "Base histórica. Os valores não representam preços da competência atual."
                     </p>})}
+                    {consult}
                     {compare}
                 </article>
             }
@@ -753,6 +766,12 @@ pub fn page(ctx: EstimatingContext) -> String {
             view! { <option value=scope.id disabled=disabled>{scope.name}</option> }
         })
         .collect_view();
+    let edition_scope_options = ctx
+        .scopes
+        .iter()
+        .map(|scope| view! {<option value=scope.id.clone()>{scope.name.clone()}</option>})
+        .collect_view();
+    let edition_lookup_context = ctx.context.clone();
     let historical_scope_options = ctx
         .scopes
         .iter()
@@ -859,6 +878,23 @@ pub fn page(ctx: EstimatingContext) -> String {
                 <h2>"Fontes de custos"</h2>
                 {ctx.catalogs.is_empty().then(||view!{<p>"Nenhum catálogo publicado."</p>})}
                 {catalogs}
+                {edition_lookup_context.map(|context| view! {
+                    <details>
+                        <summary>"Consultar edição pelo número"</summary>
+                        <p>"Informe a tabela e a edição publicada, mesmo que não apareça na lista recente."</p>
+                        <form action="/orcamentos/catalogos/consultar" method="get" class="record-form">
+                            <input type="hidden" name="organization_id" value=context.organization_id/>
+                            <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                            <label class="record-field"><span>"Orçamento da tabela"</span>
+                                <select name="scope_id" required=true>{edition_scope_options}</select></label>
+                            <label class="record-field"><span>"Identificador da tabela"</span>
+                                <input type="text" name="catalog_id" maxlength="128" required=true/></label>
+                            <label class="record-field"><span>"Número da edição"</span>
+                                <input type="number" name="edition" min="1" max="2147483647" required=true/></label>
+                            <button type="submit" class="secondary-button">"Consultar edição informada"</button>
+                        </form>
+                    </details>
+                })}
                 {comparison_context.map(|context| view! {
                     <details>
                         <summary>"Consultar outras edições históricas"</summary>
@@ -1490,6 +1526,93 @@ fn catalog_page_window(count: usize, requested: usize) -> (usize, usize, usize) 
     let pages = count.div_ceil(CATALOG_CHANGES_PER_PAGE).max(1);
     let page = requested.clamp(1, pages);
     (page, pages, (page - 1) * CATALOG_CHANGES_PER_PAGE)
+}
+
+/// Consulta uma edição publicada, inclusive os itens que não mudaram em relação a outra edição.
+pub fn catalog_edition_page(
+    ctx: EstimatingContext,
+    edition: CatalogEdition,
+    scope_id: String,
+    requested_page: usize,
+) -> String {
+    let count = edition.items.len();
+    let (page, pages, offset) = catalog_page_window(count, requested_page);
+    let navigation = ctx.context.as_ref().map(|context| {
+        view! {
+            <form action="/orcamentos/catalogos/consultar" method="get" class="record-form">
+                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                <input type="hidden" name="scope_id" value=scope_id/>
+                <input type="hidden" name="catalog_id" value=edition.catalog_id.clone()/>
+                <input type="hidden" name="edition" value=edition.edition.to_string()/>
+                <label class="record-field">
+                    <span>"Página dos preços"</span>
+                    <select name="page">
+                        {(1..=pages).map(|number| view! {
+                            <option value=number.to_string() selected=number == page>
+                                {number.to_string()}
+                            </option>
+                        }).collect_view()}
+                    </select>
+                </label>
+                <button type="submit" class="secondary-button">"Ir para página"</button>
+            </form>
+        }
+    });
+    let items = edition
+        .items
+        .into_values()
+        .skip(offset)
+        .take(CATALOG_CHANGES_PER_PAGE)
+        .map(|item| {
+            use canteiro_domain::catalogs::CostCategory;
+            let category = match item.category {
+                CostCategory::Material => "Material",
+                CostCategory::Labor => "Mão de obra",
+                CostCategory::Equipment => "Equipamento",
+                CostCategory::Service => "Serviço",
+                CostCategory::Transport => "Transporte",
+            };
+            view! {
+                <article class="record-summary">
+                    <h3>{format!("{} · {}",item.code,item.description)}</h3>
+                    <p>{format!("{category} · {} · R$ {}",item.unit,item.price)}</p>
+                </article>
+            }
+        })
+        .collect_view();
+    let source = edition.source;
+    let (historical, _) = competence_flags(&source.competence, None, &brazilian_competence());
+    shell(
+        "Consultar edição de custos",
+        view! {
+            <section class="record-heading">
+                <h1>{format!("Tabela {} · edição {}",edition.catalog_id,edition.edition)}</h1>
+                <p>"Consulta somente para leitura. Nenhum contrato ou orçamento será atualizado."</p>
+                <a href="/orcamentos" class="secondary-button">"Voltar aos orçamentos"</a>
+            </section>
+            <section class="foundation-card">
+                <h2>"Fonte dos preços"</h2>
+                <p>{format!("{} / {}",source.organization,source.title)}</p>
+                <p>{format!("Competência: {} · Localidade: {} · Regime: {}",
+                    source.competence,source.locality,source.tax_regime)}</p>
+                <p>{format!("Licença: {} · Publicação: {}",source.license,edition.published_on)}</p>
+                {historical.then(||view! {<p class="record-status">
+                    "Base histórica. Os valores não representam preços da competência atual."
+                </p>})}
+            </section>
+            <section class="foundation-card">
+                <h2>{format!("{count} preços publicados")}</h2>
+                <p>{format!("Página {page} de {pages}")}</p>
+                {navigation}
+                {items}
+            </section>
+            <section class="foundation-card">
+                <h2>"Empresa consultada"</h2>
+                <p>{ctx.organization_name}</p>
+            </section>
+        },
+    )
 }
 
 pub fn catalog_comparison(
