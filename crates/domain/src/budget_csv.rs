@@ -398,6 +398,9 @@ pub fn export_csv(value: &BudgetRevision, locale: NumberLocale) -> Result<String
     // Conferir a segurança de cada célula primeiro preserva o endereço exato
     // do campo ofensivo. A validação estrutural segue obrigatória antes de
     // devolver qualquer arquivo, inclusive quando não há conteúdo executável.
+    if value.status == BudgetState::Approved && value.schedule.is_none() {
+        return Err(err(3, 4, "Orçamento aprovado exige cronograma."));
+    }
     value.validate().map_err(|e| err(1, 1, &e.to_string()))?;
     if out.len() > MAX_BYTES {
         return Err(err(1, 1, "Exportação acima do limite de 8 MiB."));
@@ -729,6 +732,9 @@ pub fn preview_import(input: &str, locale: NumberLocale) -> Result<BudgetRevisio
                 "A soma dos períodos deve ser 100%.",
             ));
         }
+    }
+    if result.status == BudgetState::Approved && result.schedule.is_none() {
+        return Err(err(3, 4, "Orçamento aprovado exige cronograma."));
     }
     result.validate().map_err(|e| err(3, 1, &e.to_string()))?;
     result.summarize().map_err(|e| err(3, 1, &e.to_string()))?;
@@ -1122,6 +1128,21 @@ mod tests {
         let error = preview_import(&oversized, NumberLocale::Canonical).unwrap_err();
         assert_eq!((error.row, error.column), (1, 1));
         assert_eq!(error.cause, "Arquivo acima do limite de 8 MiB.");
+    }
+
+    #[test]
+    fn approved_budget_without_schedule_reports_status_cell() {
+        let mut original = sample(1);
+        let csv = export_csv(&original, NumberLocale::Canonical).unwrap();
+        let approved = csv.replacen(";review;", ";approved;", 1);
+        let error = preview_import(&approved, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (3, 4));
+        assert_eq!(error.cause, "Orçamento aprovado exige cronograma.");
+
+        original.status = BudgetState::Approved;
+        let error = export_csv(&original, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (3, 4));
+        assert_eq!(error.cause, "Orçamento aprovado exige cronograma.");
     }
 
     #[test]
