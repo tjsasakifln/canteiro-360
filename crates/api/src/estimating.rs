@@ -993,6 +993,15 @@ mod composition_form_tests {
 
         fields.insert("bdi".into(), "25%".into());
         assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("bdi".into(), "1000.000001".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("bdi".into(), "25".into());
+        fields.insert("discount".into(), "100.000001".into());
+        assert!(changed_composition_from_form(original.clone(), &fields).is_none());
+        fields.insert("discount".into(), "100".into());
+        let free = changed_composition_from_form(original.clone(), &fields).unwrap();
+        assert_eq!(free.discount.to_string(), "100");
+        assert_eq!(original.discount.to_string(), "10");
         fields.insert("change_kind".into(), "invalid".into());
         assert!(changed_composition_from_form(original, &fields).is_none());
     }
