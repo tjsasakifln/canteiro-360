@@ -748,9 +748,15 @@ pub fn page(ctx: EstimatingContext) -> String {
         let schedule_view = entry.snapshot.schedule.as_ref().and_then(|schedule| {
             total.as_ref().map(|summary| schedule_preview(schedule, summary.total, 1, false))
         });
-        let schedule_link = selected.as_ref().filter(|_| entry.snapshot.schedule.is_some()).map(|context| {
-            format!("/orcamentos/cronograma/consultar?organization_id={}&context_version={}&scope_id={}&version={}&page=1",
-                context.organization_id, context.context_version, entry.scope_id, entry.version)
+        let schedule_query = selected.as_ref().filter(|_| entry.snapshot.schedule.is_some()).map(|context| view! {
+            <form action="/orcamentos/cronograma/consultar" method="get" class="record-form">
+                <input type="hidden" name="organization_id" value=context.organization_id.clone()/>
+                <input type="hidden" name="context_version" value=context.context_version.to_string()/>
+                <input type="hidden" name="scope_id" value=entry.scope_id.clone()/>
+                <input type="hidden" name="version" value=entry.version.to_string()/>
+                <input type="hidden" name="page" value="1"/>
+                <button type="submit" class="secondary-button">"Consultar todos os períodos do cronograma"</button>
+            </form>
         });
         let schedule_missing = entry.snapshot.schedule.is_none();
         let scope=scopes.iter().find(|s|s.id==entry.scope_id);
@@ -855,9 +861,7 @@ pub fn page(ctx: EstimatingContext) -> String {
                     "Exportar XLSX editável"</a>})}
                 {edit}
                 {schedule_view}
-                {schedule_link.map(|url| view! {
-                    <a class="secondary-button" href=url>"Consultar todos os períodos do cronograma"</a>
-                })}
+                {schedule_query}
                 {schedule_missing.then(|| view! {
                     <p class="record-status">"Cronograma ainda não definido."</p>
                 })}

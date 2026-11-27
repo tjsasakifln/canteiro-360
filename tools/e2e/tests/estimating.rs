@@ -966,7 +966,7 @@ return d.open && d.innerText.includes("89 dias") && d.innerText.includes("Perío
             .full_screenshot(&h.evidence.join(format!("budget-schedule-{width}.png")))
             .await?;
         browser
-            .tab_to("a[href*='/orcamentos/cronograma/consultar']")
+            .tab_to("form[action='/orcamentos/cronograma/consultar'] button[type='submit']")
             .await?;
         browser.key(ENTER).await?;
         browser
@@ -1157,7 +1157,7 @@ return true;"#,
             .navigate(&format!("{}/orcamentos", h.app_url))
             .await?;
         browser
-            .tab_to("a[href*='/orcamentos/cronograma/consultar']")
+            .tab_to("form[action='/orcamentos/cronograma/consultar'] button[type='submit']")
             .await?;
         browser.key(ENTER).await?;
         browser
