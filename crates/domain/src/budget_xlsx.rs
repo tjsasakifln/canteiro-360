@@ -790,8 +790,7 @@ fn read_row(
             *rest = next;
         } else if let Some(next) = suffix.strip_prefix(" t=\"s\">") {
             let (raw, next) = cell_value(next).ok_or_else(|| invalid(index + 1))?;
-            let invalid_index =
-                || error(row, index + 1, "Índice de texto compartilhado inválido.");
+            let invalid_index = || error(row, index + 1, "Índice de texto compartilhado inválido.");
             if raw.is_empty() || raw.len() > 8 || !raw.bytes().all(|b| b.is_ascii_digit()) {
                 return Err(invalid_index());
             }
@@ -1565,7 +1564,8 @@ mod tests {
 
     #[test]
     fn xlsx_rejections_distinguish_formula_from_invalid_shared_index() {
-        let mut formula = r#"<row r="10004"><c r="Q10004" t="n"><f t="shared" si="0"/><v>42</v></c></row>"#;
+        let mut formula =
+            r#"<row r="10004"><c r="Q10004" t="n"><f t="shared" si="0"/><v>42</v></c></row>"#;
         let err = read_row(&mut formula, 10_004, NumberLocale::Canonical, &[]).unwrap_err();
         assert_eq!((err.row, err.column), (10_004, 17));
         assert_eq!(err.cause, "Fórmula XLSX não permitida.");
