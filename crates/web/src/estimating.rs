@@ -113,6 +113,14 @@ pub fn budget_schedule_page(
             .as_ref()
             .map(|summary| schedule_preview(value, summary.total, page, true, None))
     });
+    let page_url = |number: usize| {
+        format!(
+            "/orcamentos/cronograma/consultar?organization_id={}&context_version={}&scope_id={}&version={}&page={number}",
+            context.organization_id, context.context_version, budget.scope_id, budget.version
+        )
+    };
+    let previous = (page > 1).then(|| page_url(page - 1));
+    let next = (page < pages).then(|| page_url(page + 1));
     shell(
         "Cronograma físico-financeiro",
         view! {
@@ -135,6 +143,16 @@ pub fn budget_schedule_page(
                     <button type="submit" class="secondary-button">"Ir para página do cronograma"</button>
                 </form>
                 {preview}
+                {(pages > 1).then(|| view! {
+                    <nav aria-label="Navegação do cronograma">
+                        {previous.map(|url| view! {
+                            <a href=url rel="prev" class="secondary-button">"Página anterior do cronograma"</a>
+                        })}
+                        {next.map(|url| view! {
+                            <a href=url rel="next" class="secondary-button">"Próxima página do cronograma"</a>
+                        })}
+                    </nav>
+                })}
             </section>
         },
     )
