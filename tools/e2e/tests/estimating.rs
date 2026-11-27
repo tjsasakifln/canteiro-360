@@ -963,9 +963,6 @@ return d.open && d.innerText.includes("89 dias") && d.innerText.includes("Perío
                 <= u64::from(width)
         );
         browser
-            .full_screenshot(&h.evidence.join(format!("budget-schedule-{width}.png")))
-            .await?;
-        browser
             .tab_to("form[action='/orcamentos/cronograma/consultar'] button[type='submit']")
             .await?;
         browser.key(ENTER).await?;
@@ -985,6 +982,9 @@ return !!f && d.open && d.innerText.includes("Página 1 de 1") && d.innerText.in
                 .await?,
             true
         );
+        browser
+            .full_screenshot(&h.evidence.join(format!("budget-schedule-{width}.png")))
+            .await?;
         assert_eq!(
             browser
                 .execute(
@@ -1156,6 +1156,10 @@ return true;"#,
         browser
             .navigate(&format!("{}/orcamentos", h.app_url))
             .await?;
+        browser
+            .tab_to("details.budget-schedule-preview > summary")
+            .await?;
+        browser.key(ENTER).await?;
         browser
             .tab_to("form[action='/orcamentos/cronograma/consultar'] button[type='submit']")
             .await?;
