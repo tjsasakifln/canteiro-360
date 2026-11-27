@@ -761,6 +761,20 @@ return form.checkValidity();"#,
         line[16] = "2".into();
         csv.push_str(&format!("{}\n", line.join(";")));
     }
+    let mut schedule = vec![String::new(); 19];
+    schedule[0] = "SCHEDULE".into();
+    schedule[1] = "2026-11-01".into();
+    schedule[2] = "90".into();
+    schedule[3] = "fixed_30_days".into();
+    csv.push_str(&format!("{}\n", schedule.join(";")));
+    for (position, percentage) in ["33,34", "33,33", "33,33"].into_iter().enumerate() {
+        let mut period = vec![String::new(); 19];
+        period[0] = "PERIOD".into();
+        period[5] = format!("periodo-{}", position + 1);
+        period[6] = position.to_string();
+        period[15] = percentage.into();
+        csv.push_str(&format!("{}\n", period.join(";")));
+    }
     let mut batch = String::new();
     for width in [360, 1280] {
         browser.viewport(width, 900, width == 360).await?;
@@ -927,6 +941,30 @@ return {batch:f.elements.batch_id.value,hasFile:!!f.elements.csv,scroll:document
         browser
             .navigate(&format!("{}/orcamentos", h.app_url))
             .await?;
+        browser
+            .tab_to("details.budget-schedule-preview > summary")
+            .await?;
+        browser.key(ENTER).await?;
+        assert_eq!(
+            browser
+                .execute(
+                    r#"const d=document.querySelector("details.budget-schedule-preview");
+return d.open && d.innerText.includes("90 dias") && d.innerText.includes("Período 1: 33.34% · R$ 20.67") && d.innerText.includes("Período 3: 33.33% · R$ 20.66");"#,
+                )
+                .await?,
+            true
+        );
+        assert!(
+            browser
+                .execute("return document.documentElement.scrollWidth;")
+                .await?
+                .as_u64()
+                .unwrap_or(u64::MAX)
+                <= u64::from(width)
+        );
+        browser
+            .full_screenshot(&h.evidence.join(format!("budget-schedule-{width}.png")))
+            .await?;
         let script = format!(
             r#"const f=document.querySelector("form[action='/orcamentos/conferir-xlsx']");
 f.elements.scope_id.value={};
@@ -1049,6 +1087,7 @@ return {batch:f.elements.batch_id.value,version:f.elements.expected_version.valu
                 "historical_catalog_explicit_edition_keyboard",
                 "budget_import_page_two_keyboard",
                 "persisted_batch_confirmation_and_replay",
+                "financial_schedule_keyboard_and_exact_amounts_360_1280",
                 "xlsx_download_native_upload_keyboard_preview",
                 "xlsx_keyboard_confirmation_persisted_revision_and_consumed_batch"
             ],
