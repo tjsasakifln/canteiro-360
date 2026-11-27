@@ -968,7 +968,10 @@ text:document.body.innerText.slice(0,400)};"#,
             .await?;
         if page_state["schedule"] != true {
             browser
-                .full_screenshot(&h.evidence.join(format!("budget-schedule-missing-{width}.png")))
+                .full_screenshot(
+                    &h.evidence
+                        .join(format!("budget-schedule-missing-{width}.png")),
+                )
                 .await?;
             return Err(format!("Schedule not rendered at width {width}: {page_state}").into());
         }
