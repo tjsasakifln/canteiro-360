@@ -1309,3 +1309,75 @@ async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration(
     );
     f.close().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn unreadable_invitation_mail_records_attempt_and_preserves_other_deliveries() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("mail-corrupt-owner", true).await;
+    let damaged = f.person("mail-corrupt-recipient", false).await;
+    let healthy = f.person("mail-healthy-recipient", false).await;
+    let (org, _) = f.create(&admin, "Fila com mensagem ilegível").await;
+    f.select(&admin, &org).await;
+    f.invite(&admin, &damaged, OrganizationRole::Member).await;
+    let (damaged_id, ciphertext): (Uuid, Vec<u8>) = sqlx::query_as(
+        "UPDATE canteiro_auth.mail_outbox
+         SET payload=set_byte(payload,0,0)
+         WHERE invitation_id IS NOT NULL RETURNING id,payload",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    let healthy_token = f.invite(&admin, &healthy, OrganizationRole::Member).await;
+
+    let deliveries = f.service.pending_mail(25).await.unwrap();
+    assert_eq!(deliveries.len(), 1);
+    assert_eq!(deliveries[0].email, healthy.email);
+    assert_eq!(deliveries[0].token, healthy_token);
+    assert!(
+        f.service
+            .mark_mail_delivered(&deliveries[0].id, "fixture")
+            .await
+            .unwrap()
+    );
+
+    let row: (i32, i32, Vec<u8>, bool) = sqlx::query_as(
+        "SELECT attempts,unconfirmed_attempt,payload,
+                delivered_at IS NULL AND discarded_at IS NULL
+         FROM canteiro_auth.mail_outbox WHERE id=$1",
+    )
+    .bind(damaged_id)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(row, (1, 1, ciphertext, true));
+    assert!(f.service.pending_mail(25).await.unwrap().is_empty());
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1",
+    )
+    .bind(damaged_id)
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    assert!(f.service.pending_mail(1).await.is_err());
+
+    let history: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT attempt,event FROM canteiro_meta.invitation_mail_history
+         WHERE mail_id=$1 ORDER BY attempt,event",
+    )
+    .bind(damaged_id)
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        history,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "unconfirmed".to_owned()),
+            (2, "claimed".to_owned()),
+            (2, "unconfirmed".to_owned()),
+        ]
+    );
+    f.close().await;
+}
