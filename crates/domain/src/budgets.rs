@@ -491,8 +491,8 @@ impl BudgetSchedule {
             PeriodBasis::Fixed30Days => CalendarPolicy::FixedDays,
             PeriodBasis::CivilMonths => CalendarPolicy::Civil,
         };
-        let end = execution_end(self.starts_on, self.deadline_days)
-            .map_err(|_| BudgetError::Schedule)?;
+        let end =
+            execution_end(self.starts_on, self.deadline_days).map_err(|_| BudgetError::Schedule)?;
         let periods = schedule(self.starts_on, end, policy, Cadence::Monthly)
             .map_err(|_| BudgetError::Schedule)?;
         if periods.len() != self.periods.len() {
