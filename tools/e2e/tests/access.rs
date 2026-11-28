@@ -35,7 +35,13 @@ async fn expand(browser: &Browser, id: &str) -> TestResult {
     if browser.property(id, "open").await? != true {
         browser.click(&format!("{id} > summary")).await?;
     }
-    Ok(())
+    let selector = serde_json::to_string(id)?;
+    browser
+        .wait(
+            &format!("return document.querySelector({selector})?.open === true;"),
+            WAIT,
+        )
+        .await
 }
 async fn confirm(browser: &Browser) -> TestResult {
     browser
@@ -434,6 +440,14 @@ async fn scoped_roles_policies_and_independent_decisions_work_in_the_browser() -
     ready(&browser).await?;
     browser
         .click(&format!("#perm-revise-{}", request.id))
+        .await?;
+    // Revision opens the details and moves focus on the next animation frame.
+    // Require both user-visible effects before typing, without opening it here.
+    browser
+        .wait(
+            "return document.querySelector('#perm-request-panel')?.open && document.activeElement?.id === 'perm-request-title';",
+            WAIT,
+        )
         .await?;
     browser
         .fill("#perm-request-title", "Revisão ainda não enviada")
