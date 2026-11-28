@@ -127,6 +127,17 @@ fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(
                 "Campo pode ser interpretado como fórmula ao abrir a planilha.",
             ));
         }
+        if value
+            .bytes()
+            .enumerate()
+            .any(|(i, b)| b == b'\r' && value.as_bytes().get(i + 1) != Some(&b'\n'))
+        {
+            return Err(err(
+                row_number,
+                col + 1,
+                "Quebra de linha CR isolada não permitida; use LF ou CRLF.",
+            ));
+        }
         row_bytes += value.len();
         if value
             .bytes()
@@ -1559,6 +1570,21 @@ mod tests {
         let error = preview_import(&quoted, NumberLocale::Canonical).unwrap_err();
         assert_eq!((error.row, error.column), (10_004, 14));
         assert!(error.cause.contains("CR isolada"));
+    }
+    #[test]
+    fn export_rejects_bare_cr_but_preserves_crlf() {
+        let mut original = sample(1);
+        original.lines[0].description = "Nota\rmaliciosa".into();
+        let error = export_csv(&original, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((error.row, error.column), (5, 14));
+        assert!(error.cause.contains("CR isolada"));
+
+        original.lines[0].description = "Nota\r\nlegítima".into();
+        let csv = export_csv(&original, NumberLocale::Canonical).unwrap();
+        assert_eq!(
+            preview_import(&csv, NumberLocale::Canonical).unwrap(),
+            original
+        );
     }
     #[test]
     fn quote_and_delimiter_are_not_executable() {
