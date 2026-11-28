@@ -889,8 +889,11 @@ pub fn preview_import_with_locale(
         .ok_or_else(|| error(1, 1, "Dados XML não reconhecidos."))?;
     rest = xml_space(rest);
     let version = read_row(&mut rest, 1, NumberLocale::Canonical, &shared)?;
-    if version[0] != XLSX_VERSION || version[2..].iter().any(|v| !v.is_empty()) {
+    if version[0] != XLSX_VERSION {
         return Err(error(1, 1, "Versão XLSX inválida."));
+    }
+    if let Some(index) = version[2..].iter().position(|value| !value.is_empty()) {
+        return Err(error(1, index + 3, "Campo reservado do cabeçalho XLSX."));
     }
     let locale = match version[1].as_str() {
         "canonical" => NumberLocale::Canonical,
@@ -934,6 +937,9 @@ pub fn preview_import_with_locale(
             1,
             "Tabela de textos XLSX contém conteúdo executável.",
         ));
+    }
+    for value in &shared {
+        validate_budget_cell(value, 1, 1)?;
     }
     crate::budget_csv::preview_import(&csv, locale)
         .map(|snapshot| (snapshot, locale))
@@ -1478,7 +1484,27 @@ mod tests {
         parts[4].1 = sheet.as_bytes();
         let err = preview_import(&stored_zip(&parts)).unwrap_err();
         assert_eq!((err.row, err.column), (1, 1));
+        // Entradas ocultas sem referência também não podem conter controles.
+        let hidden_control = shared
+            .replace("uniqueCount=\"1\"", "uniqueCount=\"2\"")
+            .replace("</sst>", "<si><t>A_x0009_B</t></si></sst>");
+        parts[5].1 = hidden_control.as_bytes();
+        let err = preview_import(&stored_zip(&parts)).unwrap_err();
+        assert_eq!((err.row, err.column), (1, 1));
+        assert!(err.cause.contains("caracteres de controle"));
         parts[5].1 = shared.as_bytes();
+
+        // O campo reservado aponta a própria célula, não a versão em A1.
+        let mut reserved = sheet.clone();
+        let insertion = reserved.find("</row>").unwrap();
+        reserved.insert_str(
+            insertion,
+            r#"<c r="S1" t="inlineStr"><is><t>extra</t></is></c>"#,
+        );
+        parts[4].1 = reserved.as_bytes();
+        let err = preview_import(&stored_zip(&parts)).unwrap_err();
+        assert_eq!((err.row, err.column), (1, 19));
+        parts[4].1 = sheet.as_bytes();
 
         let external = rels.replace(
             r#"Target="sharedStrings.xml""#,
