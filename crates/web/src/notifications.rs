@@ -2,7 +2,22 @@
 use crate::projects::{hidden, shell};
 use canteiro_contracts::notifications::*;
 use leptos::prelude::*;
+pub struct NoticePreferencesDraft {
+    pub mute_optional_email: bool,
+    pub group_by_day: bool,
+    pub reminder_days: String,
+}
+
 pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String {
+    page_with_draft(ctx, message, key, None)
+}
+
+pub fn page_with_draft(
+    ctx: NoticesContext,
+    message: Option<String>,
+    key: String,
+    draft: Option<NoticePreferencesDraft>,
+) -> String {
     let grouped = ctx.preferences.settings.group_by_day;
     let mut previous_day = None;
     let notice_rows=ctx.notices.clone().into_iter().map(|row|{
@@ -41,12 +56,16 @@ pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String
         .version
         .map(|v| v.to_string())
         .unwrap_or_default();
-    let days = prefs
-        .reminder_days
-        .into_iter()
-        .map(|v| v.to_string())
-        .collect::<Vec<_>>()
-        .join(",");
+    let draft = draft.unwrap_or_else(|| NoticePreferencesDraft {
+        mute_optional_email: prefs.mute_optional_email,
+        group_by_day: prefs.group_by_day,
+        reminder_days: prefs
+            .reminder_days
+            .into_iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<_>>()
+            .join(","),
+    });
     shell(
         "Pendências e notificações",
         view! {
@@ -70,16 +89,16 @@ pub fn page(ctx: NoticesContext, message: Option<String>, key: String) -> String
                             {hidden(&scope,&ctx.csrf,&key)}
                             <input type="hidden" name="expected_version" value=version.clone()/>
                             <label class="record-check">
-                                <input type="checkbox" name="mute_optional_email" value="true" checked=prefs.mute_optional_email/>
+                                <input type="checkbox" name="mute_optional_email" value="true" checked=draft.mute_optional_email/>
                                 "Não enviar e-mails opcionais"
                             </label>
                             <label class="record-check">
-                                <input type="checkbox" name="group_by_day" value="true" checked=prefs.group_by_day/>
+                                <input type="checkbox" name="group_by_day" value="true" checked=draft.group_by_day/>
                                 "Agrupar pendências por dia de vencimento"
                             </label>
                             <label class="record-field">
                                 <span>"Avisar com quantos dias de antecedência (separados por vírgula)"</span>
-                                <input name="reminder_days" value=days maxlength="80"/>
+                                <input name="reminder_days" value=draft.reminder_days maxlength="80"/>
                             </label>
                             <p>"Opções: 0, 1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90, 180 e 365."</p>
                             <button type="submit" class="primary-button">"Salvar preferências"</button>
