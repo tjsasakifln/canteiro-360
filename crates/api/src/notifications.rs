@@ -5,7 +5,7 @@ use crate::{
 };
 use axum::{
     Extension, Form, Json, Router,
-    extract::{DefaultBodyLimit, rejection::JsonRejection},
+    extract::{DefaultBodyLimit, Query, rejection::JsonRejection},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Redirect, Response},
     routing::{get, post},
@@ -50,14 +50,35 @@ async fn preferences(
         Err(error) => application_failure(error),
     }
 }
-async fn page(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response {
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NoticePage {
+    page: Option<u32>,
+}
+
+async fn page(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Query<NoticePage>, axum::extract::rejection::QueryRejection>,
+) -> Response {
     let (auth, token) = match authenticated(auth, &headers, false) {
         Ok(value) => value,
         Err(response) => return *response,
     };
-    match auth.service().notices_context(&token).await {
-        Ok(value) => html_page(
-            canteiro_web::notifications::page(value, None, uuid::Uuid::new_v4().to_string()),
+    let Ok(Query(input)) = input else {
+        return bad_input();
+    };
+    let page = input.page.unwrap_or(1);
+    match auth.service().notices_page(&token, page).await {
+        Ok((value, has_more)) => html_page(
+            canteiro_web::notifications::page_with_pagination(
+                value,
+                None,
+                uuid::Uuid::new_v4().to_string(),
+                None,
+                page,
+                has_more,
+            ),
             StatusCode::OK,
         ),
         Err(error) => application_failure(error),
