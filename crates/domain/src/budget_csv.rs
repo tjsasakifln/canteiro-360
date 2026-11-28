@@ -85,7 +85,7 @@ pub fn safe(s: &str) -> bool {
                 c,
                 '\u{00ad}' | '\u{034f}' | '\u{061c}' | '\u{180e}' | '\u{feff}'
                     | '\u{200b}'..='\u{200f}' | '\u{202a}'..='\u{202e}'
-                    | '\u{2060}'..='\u{206f}' | '\0'
+                    | '\u{2060}'..='\u{206f}' | '\u{fffe}' | '\u{ffff}' | '\0'
             )
     }) {
         return false;
@@ -1331,6 +1331,28 @@ mod tests {
             original.lines[0].description = format!("Mobilização{hidden} administrativa");
             assert!(export_csv(&original, NumberLocale::Canonical).is_err());
         }
+    }
+    #[test]
+    fn xml_noncharacters_cannot_enter_a_budget_through_csv_or_domain() {
+        let mut original = sample(1);
+        let clean = export_csv(&original, NumberLocale::Canonical).unwrap();
+        // XML 1.0 cannot represent these scalars, even as numeric references.
+        // A valid budget must be transportable in both official formats.
+        for invalid in ['\u{fffe}', '\u{ffff}'] {
+            let description = format!("Descrição{invalid} técnica");
+            assert!(!safe(&description));
+            original.lines[0].description = description.clone();
+            assert!(original.validate().is_err());
+            let error = export_csv(&original, NumberLocale::Canonical).unwrap_err();
+            assert_eq!((error.row, error.column), (5, 14));
+            let incoming = clean.replacen("Descrição técnica", &description, 1);
+            let error = preview_import(&incoming, NumberLocale::Canonical).unwrap_err();
+            assert_eq!((error.row, error.column), (5, 14));
+        }
+        original.lines[0].description = "Descrição técnica Ω".into();
+        let csv = export_csv(&original, NumberLocale::Canonical).unwrap();
+        let xlsx = crate::budget_xlsx::export_from_csv(&csv, NumberLocale::Canonical).unwrap();
+        assert_eq!(crate::budget_xlsx::preview_import(&xlsx).unwrap(), original);
     }
     #[test]
     fn malformed_last_service_rejects_ten_thousand_line_batch() {
