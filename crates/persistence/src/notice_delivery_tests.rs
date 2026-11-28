@@ -643,3 +643,62 @@ async fn inbox_orders_open_due_notices_before_undated_and_resolved() {
     database.close().await;
     fixture.cleanup().await;
 }
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real local e CANTEIRO_TEST_DATABASE_URL"]
+async fn inbox_pagination_preserves_priority_and_scope_isolation() {
+    let fixture = Fixture::ready().await;
+    let database = fixture.database(TransactionLimits::default()).await;
+    let first = subject(&fixture).await;
+    let second = subject(&fixture).await;
+    sqlx::query(
+        "INSERT INTO canteiro.user_notices
+         (tenant_id,recipient_id,event_id,kind,scope_id,target_id,due_on)
+         SELECT $1,$2,gen_random_uuid(),'technical_obligation',$3,$4,
+                DATE '2027-01-01' + n
+         FROM generate_series(0,200) AS n",
+    )
+    .bind(first.tenant)
+    .bind(first.actor)
+    .bind(first.scope)
+    .bind(first.target)
+    .execute(&fixture.admin)
+    .await
+    .unwrap();
+    let mut foreign = scoped(&database, &second).await;
+    assert!(record(&mut foreign, &second).await);
+    foreign.commit().await.unwrap();
+
+    let mut tx = scoped(&database, &first).await;
+    let (first_page, more) = tx
+        .user_notice_page(first.tenant, first.actor, &[first.scope], 0)
+        .await
+        .unwrap();
+    assert_eq!(first_page.len(), 200);
+    assert!(more);
+    let (last_page, more) = tx
+        .user_notice_page(first.tenant, first.actor, &[first.scope], 200)
+        .await
+        .unwrap();
+    assert_eq!(last_page.len(), 1);
+    assert!(!more);
+    assert!(first_page[199].due_on < last_page[0].due_on);
+    assert!(!first_page.iter().any(|row| row.event_id == last_page[0].event_id));
+    for scopes in [vec![], vec![second.scope]] {
+        let (rows, more) = tx
+            .user_notice_page(first.tenant, first.actor, &scopes, 0)
+            .await
+            .unwrap();
+        assert!(rows.is_empty());
+        assert!(!more);
+    }
+    let (rows, more) = tx
+        .user_notice_page(second.tenant, second.actor, &[second.scope], 0)
+        .await
+        .unwrap();
+    assert!(rows.is_empty());
+    assert!(!more);
+    tx.commit().await.unwrap();
+    database.close().await;
+    fixture.cleanup().await;
+}
