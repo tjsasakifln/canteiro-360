@@ -6,6 +6,9 @@ use hmac::{Hmac, Mac};
 use sha1::Sha1;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+// A caixa de testes é compartilhada pelos cenários do mesmo executável.
+static ACCOUNT_MAIL: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
 pub(crate) struct AccountFixture {
     pub email: String,
     pub session: String,
@@ -28,9 +31,10 @@ pub(crate) async fn account(h: &Harness, label: &str, mfa: bool) -> TestResult<A
     let nonce = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(random);
     let email = format!(
         "permissions-{label}-{}@example.invalid",
-        nonce.to_lowercase()
+        nonce[..32].to_ascii_lowercase()
     );
     let password = format!("Acesso isolado {nonce}");
+    let mail_guard = ACCOUNT_MAIL.lock().await;
     let mut result = h.auth.context(None).await?;
     result = h
         .auth
@@ -47,9 +51,10 @@ pub(crate) async fn account(h: &Harness, label: &str, mfa: bool) -> TestResult<A
     for message in h.auth.pending_mail(25).await? {
         if message.email == email && message.kind == "verify_email" {
             code = Some(message.token.clone());
+            h.auth.mark_mail_delivered(&message.id, "fixture").await?;
         }
-        h.auth.mark_mail_delivered(&message.id).await?;
     }
+    drop(mail_guard);
     result = h
         .auth
         .execute(

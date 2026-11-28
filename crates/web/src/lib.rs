@@ -16,8 +16,12 @@ mod access;
 mod auth;
 mod calculations;
 mod documents;
+#[cfg(feature = "ssr")]
+pub mod estimating;
 pub mod form_components;
 mod http;
+#[cfg(feature = "ssr")]
+pub mod notifications;
 #[cfg(feature = "ssr")]
 pub mod obligations;
 mod organizations;

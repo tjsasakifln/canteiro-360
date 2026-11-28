@@ -29,6 +29,15 @@ mod reliability;
 #[path = "reliability_outbox_tests.rs"]
 mod reliability_outbox;
 
+#[path = "notice_delivery_tests.rs"]
+mod notice_delivery;
+
+#[path = "budget_import_tests.rs"]
+mod budget_import;
+
+#[path = "composition_database_tests.rs"]
+mod composition;
+
 fn tenant() -> TenantId {
     TenantId::from_uuid(Uuid::new_v4()).unwrap()
 }
@@ -268,7 +277,7 @@ async fn blank_database_migrates_reproducibly_and_runtime_has_no_ddl_privileges(
             .fetch_all(&fixture.admin)
             .await
             .unwrap();
-    assert_eq!(versions, (1..=14).collect::<Vec<_>>());
+    assert_eq!(versions, (1..=32).collect::<Vec<_>>());
     let database = fixture.database(limits()).await;
     let mut connection = database.pool.acquire().await.unwrap();
     let (privileged, owns_schema): (bool, bool) = sqlx::query_as(

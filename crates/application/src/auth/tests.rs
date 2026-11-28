@@ -127,7 +127,10 @@ impl Fixture {
             if m.email == email && m.kind == kind {
                 token = Some(m.token.clone());
             }
-            self.service.mark_mail_delivered(&m.id).await.unwrap();
+            self.service
+                .mark_mail_delivered(&m.id, "fixture")
+                .await
+                .unwrap();
         }
         token.expect("mensagem esperada na fila criptografada")
     }

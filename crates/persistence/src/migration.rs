@@ -67,8 +67,13 @@ pub async fn migrate(
         GRANT SELECT, INSERT ON canteiro.projects, canteiro.project_versions, canteiro.project_party_links, canteiro.project_work_links, canteiro.technical_obligations, canteiro.obligation_versions, canteiro.obligation_replacements TO {role}; \
         GRANT UPDATE (current_version) ON canteiro.projects, canteiro.technical_obligations TO {role}; \
         GRANT SELECT ON canteiro.contract_history, canteiro.contract_notifications TO {role}; \
+        GRANT SELECT, INSERT, UPDATE ON canteiro.user_notice_preferences, canteiro.user_notices, canteiro.user_notice_outbox TO {role}; \
+        GRANT SELECT, INSERT ON canteiro.user_notice_delivery_history TO {role}; \
+        GRANT SELECT, INSERT ON canteiro.cost_catalogs, canteiro.cost_composition_versions, canteiro.cost_composition_catalog_bindings, canteiro.budget_versions TO {role}; \
+        GRANT SELECT, INSERT, UPDATE ON canteiro.cost_catalog_editions, canteiro.cost_compositions, canteiro.budget_records, canteiro.budget_import_batches TO {role}; \
+        GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.cost_catalog_items, canteiro.budget_edit_leases TO {role}; \
         GRANT SELECT, INSERT, UPDATE, DELETE ON canteiro.contract_edit_leases TO {role}; \
-        GRANT EXECUTE ON FUNCTION canteiro.rename_contract_reference(UUID,UUID,UUID,UUID,UUID,BIGINT,TEXT,TEXT,TIMESTAMPTZ), canteiro_meta.consume_contract_notification() TO {role}; \
+        GRANT EXECUTE ON FUNCTION canteiro.rename_contract_reference(UUID,UUID,UUID,UUID,UUID,BIGINT,TEXT,TEXT,TIMESTAMPTZ), canteiro_meta.consume_contract_notification(), canteiro_meta.consume_user_notice() TO {role}; \
         GRANT UPDATE (revoked_at, version) ON canteiro.access_grants TO {role}; \
         GRANT UPDATE (min_amount) ON canteiro.access_requirements TO {role}; \
         GRANT UPDATE (threshold, approvals_above_threshold, segregate_proposer, version) ON canteiro.access_policies TO {role}; \

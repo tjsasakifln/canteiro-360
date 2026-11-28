@@ -163,7 +163,10 @@ impl Fixture {
             if message.email == email && message.kind == purpose {
                 selected = Some(message.token.clone());
             }
-            self.service.mark_mail_delivered(&message.id).await.unwrap();
+            self.service
+                .mark_mail_delivered(&message.id, "fixture")
+                .await
+                .unwrap();
         }
         selected.expect("encrypted notification delivered to controlled fixture")
     }

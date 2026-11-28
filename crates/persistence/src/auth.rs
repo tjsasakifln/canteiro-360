@@ -89,14 +89,57 @@ impl AuthStore {
     pub async fn claim_mail(&self, limit: i64) -> Result<Vec<StoredMail>, AuthStoreError> {
         sqlx::query("UPDATE canteiro_auth.mail_outbox m SET payload='\\x'::bytea,discarded_at=clock_timestamp() FROM canteiro_auth.tokens t WHERE m.token_id=t.id AND m.delivered_at IS NULL AND m.discarded_at IS NULL AND (t.used_at IS NOT NULL OR t.expires_at<=clock_timestamp())")
             .execute(&self.database.pool).await?;
+        sqlx::query("UPDATE canteiro_auth.mail_outbox SET payload='\\x'::bytea,discarded_at=clock_timestamp() WHERE invitation_id IS NOT NULL AND delivered_at IS NULL AND discarded_at IS NULL AND invitation_expires_at<=clock_timestamp()")
+            .execute(&self.database.pool).await?;
         let lease = Uuid::new_v4();
-        Ok(sqlx::query_as("WITH selected AS (SELECT m.id,t.expires_at FROM canteiro_auth.mail_outbox m JOIN canteiro_auth.tokens t ON t.id=m.token_id WHERE m.delivered_at IS NULL AND m.discarded_at IS NULL AND t.used_at IS NULL AND t.expires_at>clock_timestamp() AND (m.lease_until IS NULL OR m.lease_until<=clock_timestamp()) ORDER BY m.created_at LIMIT $1 FOR UPDATE OF m SKIP LOCKED) UPDATE canteiro_auth.mail_outbox m SET lease_until=clock_timestamp()+interval '60 seconds',lease_id=$2,attempts=attempts+1 FROM selected WHERE m.id=selected.id RETURNING m.id,m.payload,m.lease_id,selected.expires_at")
+        // Retentativas voltam pela data em que ficaram elegíveis, sem bloquear novos envios.
+        // A reserva nunca ultrapassa a validade do código.
+        Ok(sqlx::query_as("WITH selected AS (SELECT m.id,COALESCE(t.expires_at,m.invitation_expires_at) AS expires_at FROM canteiro_auth.mail_outbox m LEFT JOIN canteiro_auth.tokens t ON t.id=m.token_id WHERE m.delivered_at IS NULL AND m.discarded_at IS NULL AND ((t.id IS NOT NULL AND t.used_at IS NULL AND t.expires_at>clock_timestamp()) OR (m.invitation_id IS NOT NULL AND m.invitation_expires_at>clock_timestamp())) AND (m.lease_until IS NULL OR m.lease_until<=clock_timestamp()) ORDER BY COALESCE(m.lease_until,m.created_at),m.created_at,m.id LIMIT $1 FOR UPDATE OF m SKIP LOCKED) UPDATE canteiro_auth.mail_outbox m SET lease_until=LEAST(clock_timestamp()+interval '60 seconds',selected.expires_at),lease_id=$2,attempts=attempts+1 FROM selected WHERE m.id=selected.id RETURNING m.id,m.payload,m.lease_id,selected.expires_at")
             .bind(limit.clamp(1,25)).bind(lease).fetch_all(&self.database.pool).await?)
     }
-    pub async fn delivered(&self, id: Uuid, lease: Uuid) -> Result<(), AuthStoreError> {
-        sqlx::query("UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp(),payload='\\x'::bytea WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp() AND delivered_at IS NULL AND discarded_at IS NULL")
-            .bind(id).bind(lease).execute(&self.database.pool).await?;
-        Ok(())
+    /// Confere a reserva imediatamente antes de expor o código ao transporte.
+    pub async fn mail_lease_active(&self, id: Uuid, lease: Uuid) -> Result<bool, AuthStoreError> {
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS (
+                SELECT 1 FROM canteiro_auth.mail_outbox m
+                LEFT JOIN canteiro_auth.tokens t ON t.id=m.token_id
+                WHERE m.id=$1 AND m.lease_id=$2 AND m.lease_until>clock_timestamp()
+                  AND m.delivered_at IS NULL AND m.discarded_at IS NULL
+                  AND m.unconfirmed_attempt<m.attempts
+                  AND ((t.id IS NOT NULL AND t.used_at IS NULL
+                        AND t.expires_at>clock_timestamp())
+                       OR (m.invitation_id IS NOT NULL
+                           AND m.invitation_expires_at>clock_timestamp()))
+            )",
+        )
+        .bind(id)
+        .bind(lease)
+        .fetch_one(&self.database.pool)
+        .await?)
+    }
+    /// Registra a falta de confirmação sem perder a mensagem ou encurtar a reserva.
+    pub async fn mail_unconfirmed(&self, id: Uuid, lease: Uuid) -> Result<bool, AuthStoreError> {
+        let updated = sqlx::query(
+            "UPDATE canteiro_auth.mail_outbox SET unconfirmed_attempt=attempts
+             WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp()
+               AND delivered_at IS NULL AND discarded_at IS NULL
+               AND unconfirmed_attempt<attempts",
+        )
+        .bind(id)
+        .bind(lease)
+        .execute(&self.database.pool)
+        .await?;
+        Ok(updated.rows_affected() == 1)
+    }
+    pub async fn delivered(
+        &self,
+        id: Uuid,
+        lease: Uuid,
+        provider_receipt_id: &str,
+    ) -> Result<bool, AuthStoreError> {
+        let updated = sqlx::query("UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp(),provider_receipt_id=$3,payload='\\x'::bytea WHERE id=$1 AND lease_id=$2 AND lease_until>clock_timestamp() AND (invitation_expires_at IS NULL OR invitation_expires_at>clock_timestamp()) AND delivered_at IS NULL AND discarded_at IS NULL AND unconfirmed_attempt<attempts")
+            .bind(id).bind(lease).bind(provider_receipt_id).execute(&self.database.pool).await?;
+        Ok(updated.rows_affected() == 1)
     }
 }
 
@@ -275,6 +318,19 @@ impl AuthTransaction {
     ) -> Result<bool, AuthStoreError> {
         Ok(sqlx::query("UPDATE canteiro_auth.recovery_codes SET used_at=clock_timestamp() WHERE user_id=$1 AND code_hash=$2 AND used_at IS NULL")
             .bind(user).bind(hash).execute(&mut *self.tx).await?.rows_affected()==1)
+    }
+    pub async fn enqueue_invitation_mail(
+        &mut self,
+        tenant: Uuid,
+        invitation: Uuid,
+        payload: &[u8],
+    ) -> Result<(), AuthStoreError> {
+        let inserted = sqlx::query("INSERT INTO canteiro_auth.mail_outbox(id,invitation_tenant_id,invitation_id,invitation_expires_at,payload) SELECT id,tenant_id,id,LEAST(expires_at,COALESCE(membership_valid_until,expires_at)),$3 FROM canteiro.organization_invites WHERE tenant_id=$1 AND id=$2 AND revoked_at IS NULL AND accepted_at IS NULL")
+            .bind(tenant).bind(invitation).bind(payload).execute(&mut *self.tx).await?.rows_affected();
+        if inserted != 1 {
+            return Err(AuthStoreError);
+        }
+        Ok(())
     }
     pub async fn enqueue_mail(
         &mut self,

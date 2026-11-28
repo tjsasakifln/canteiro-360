@@ -920,3 +920,469 @@ async fn stale_selection_blocks_cross_tab_writes_and_foreign_locks_reveal_nothin
 mod project_records_tests;
 #[path = "registry_tests.rs"]
 mod registry_tests;
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("mail-admin", true).await;
+    let recipient = f.person("mail-recipient", false).await;
+    let (org, _) = f.create(&admin, "Convites por email").await;
+    f.select(&admin, &org).await;
+    let old = f.invite(&admin, &recipient, OrganizationRole::Member).await;
+    let protected: bool = sqlx::query_scalar(
+        "SELECT octet_length(payload)>0 AND position(convert_to($1,'UTF8') in payload)=0 AND position(convert_to($2,'UTF8') in payload)=0 FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL",
+    )
+    .bind(&old)
+    .bind(&recipient.email)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(protected);
+    // Nem um recibo sintaticamente válido permite confirmar sem reserva.
+    let unclaimed = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET delivered_at=clock_timestamp(),provider_receipt_id='fixture',payload=decode('', 'hex')
+         WHERE invitation_id IS NOT NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(unclaimed.is_err());
+    let mut first = f.service.pending_mail(1).await.unwrap();
+    assert_eq!(first.len(), 1);
+    let first = first.remove(0);
+    assert_eq!(first.kind, "organization_invitation");
+    assert_eq!(first.email, recipient.email);
+    assert_eq!(first.token, old);
+    let next = f.invite(&admin, &recipient, OrganizationRole::Member).await;
+    let mut second = f.service.pending_mail(1).await.unwrap();
+    assert_eq!(second.len(), 1);
+    let second = second.remove(0);
+    assert_eq!(second.token, next);
+    let row: (i64, i64) = sqlx::query_as(
+        "SELECT count(*) FILTER (WHERE discarded_at IS NOT NULL AND octet_length(payload)=0), count(*) FILTER (WHERE delivered_at IS NOT NULL) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(row, (1, 0));
+    // O resultado inconclusivo é durável antes mesmo da próxima reserva.
+    assert!(!f.service.mail_ready_to_send(&first.id).await.unwrap());
+    assert!(f.service.mail_ready_to_send(&second.id).await.unwrap());
+    assert!(!f.service.mark_mail_unconfirmed(&first.id).await.unwrap());
+    assert!(f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    assert!(!f.service.mail_ready_to_send(&second.id).await.unwrap());
+    assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    let closed_attempt = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET delivered_at=clock_timestamp(),provider_receipt_id='fixture',payload=decode('', 'hex')
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(closed_attempt.is_err());
+    assert!(
+        !f.service
+            .mark_mail_delivered(&second.id, "fixture")
+            .await
+            .unwrap()
+    );
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    let unconfirmed: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro_meta.invitation_mail_history h
+         JOIN canteiro_auth.mail_outbox m ON m.id=h.mail_id
+         WHERE h.attempt=1 AND h.event='unconfirmed'
+           AND m.delivered_at IS NULL AND m.discarded_at IS NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(unconfirmed, 1);
+    sqlx::query("UPDATE canteiro_auth.mail_outbox SET lease_until=clock_timestamp()-interval '1 second' WHERE discarded_at IS NULL AND invitation_id IS NOT NULL")
+        .execute(&f.admin).await.unwrap();
+    let retry = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(retry.token, next);
+    assert_ne!(retry.id, second.id);
+    assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    // Recibos atrasados não podem confirmar um convite substituído ou uma reserva vencida.
+    assert!(
+        !f.service
+            .mark_mail_delivered(&first.id, "fixture")
+            .await
+            .unwrap()
+    );
+    assert!(
+        !f.service
+            .mark_mail_delivered(&second.id, "fixture")
+            .await
+            .unwrap()
+    );
+    let premature: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(premature, 0);
+    // A migração também protege a transição sem recibo em uma gravação direta.
+    let missing = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox SET delivered_at=clock_timestamp()
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(missing.is_err());
+    for invalid in ["", "bad receipt", "bad\nreceipt"] {
+        assert!(
+            f.service
+                .mark_mail_delivered(&retry.id, invalid)
+                .await
+                .is_err()
+        );
+    }
+    assert!(
+        f.service
+            .mark_mail_delivered(&retry.id, "fixture")
+            .await
+            .unwrap()
+    );
+    assert!(
+        !f.service
+            .mark_mail_delivered(&retry.id, "different-receipt")
+            .await
+            .unwrap()
+    );
+    let provider_receipt: String = sqlx::query_scalar(
+        "SELECT provider_receipt_id FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(provider_receipt, "fixture");
+    let rewritten = sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox SET provider_receipt_id='rewritten'
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL",
+    )
+    .execute(&f.admin)
+    .await;
+    assert!(rewritten.is_err());
+    let delivered: i64 = sqlx::query_scalar("SELECT count(*) FROM canteiro_auth.mail_outbox WHERE invitation_id IS NOT NULL AND delivered_at IS NOT NULL AND attempts=2 AND octet_length(payload)=0")
+        .fetch_one(&f.admin).await.unwrap();
+    assert_eq!(delivered, 1);
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+
+    // Cada reserva e desfecho permanece disponível para auditoria sem o código ou e-mail.
+    let history: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT h.attempt,h.event FROM canteiro_meta.invitation_mail_history h
+         JOIN canteiro_auth.mail_outbox m ON m.id=h.mail_id
+         WHERE m.delivered_at IS NOT NULL
+         ORDER BY h.attempt,h.event",
+    )
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        history,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "unconfirmed".to_owned()),
+            (2, "accepted_by_provider".to_owned()),
+            (2, "claimed".to_owned()),
+        ]
+    );
+    let cancelled: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT h.attempt,h.event FROM canteiro_meta.invitation_mail_history h
+         JOIN canteiro_auth.mail_outbox m ON m.id=h.mail_id
+         WHERE m.discarded_at IS NOT NULL
+         ORDER BY h.attempt,h.event",
+    )
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        cancelled,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "discarded".to_owned()),
+            (1, "unconfirmed".to_owned()),
+        ]
+    );
+    let accessible: bool = sqlx::query_scalar(
+        "SELECT has_table_privilege($1::text,
+         'canteiro_meta.invitation_mail_history',
+         'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')",
+    )
+    .bind(&f.runtime)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(!accessible);
+    f.close().await;
+}
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("mail-owner", true).await;
+    let accepted = f.person("mail-accepted", false).await;
+    let expired = f.person("mail-expired", false).await;
+    let (org, _) = f.create(&admin, "Convites com cancelamento").await;
+    f.select(&admin, &org).await;
+
+    let token = f.invite(&admin, &accepted, OrganizationRole::Member).await;
+    f.execute(&accepted, OrganizationCommand::AcceptInvitation { token })
+        .await
+        .unwrap();
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+
+    f.invite(&admin, &expired, OrganizationRole::Member).await;
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET invitation_expires_at=clock_timestamp()-interval '1 second'
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+
+    let discarded: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND discarded_at IS NOT NULL
+           AND delivered_at IS NULL AND attempts=0 AND octet_length(payload)=0",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(discarded, 2);
+
+    let revoked = f.person("mail-revoked", false).await;
+    let token = f.invite(&admin, &revoked, OrganizationRole::Member).await;
+    let reserved = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(reserved.token, token);
+    assert!(f.service.mail_ready_to_send(&reserved.id).await.unwrap());
+    let ctx = f.context(&admin).await;
+    let invite = ctx
+        .state
+        .active
+        .as_ref()
+        .unwrap()
+        .invitations
+        .iter()
+        .find(|i| i.email == revoked.email && i.status == "pending")
+        .unwrap();
+    f.execute(
+        &admin,
+        OrganizationCommand::RevokeInvite {
+            scope: scope(&ctx),
+            invitation_id: invite.id.clone(),
+            invitation_version: invite.version,
+        },
+    )
+    .await
+    .unwrap();
+    assert!(!f.service.mail_ready_to_send(&reserved.id).await.unwrap());
+    assert!(
+        !f.service
+            .mark_mail_delivered(&reserved.id, "fixture")
+            .await
+            .unwrap()
+    );
+    let discarded: bool = sqlx::query_scalar(
+        "SELECT discarded_at IS NOT NULL AND delivered_at IS NULL
+            AND attempts=1 AND octet_length(payload)=0
+         FROM canteiro_auth.mail_outbox WHERE invitation_id=$1",
+    )
+    .bind(id(&invite.id).unwrap())
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(discarded);
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    f.close().await;
+}
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn invitation_retry_does_not_preempt_waiting_mail_and_respects_expiration() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("queue-owner", true).await;
+    let first = f.person("queue-first", false).await;
+    let waiting = f.person("queue-waiting", false).await;
+    let (org, _) = f.create(&admin, "Fila de convites").await;
+    f.select(&admin, &org).await;
+    let first_token = f.invite(&admin, &first, OrganizationRole::Member).await;
+    let first_delivery = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(first_delivery.token, first_token);
+    let waiting_token = f.invite(&admin, &waiting, OrganizationRole::Member).await;
+
+    // Torna a retentativa elegível depois do envio que ainda aguarda a primeira tentativa.
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET lease_until=clock_timestamp()-interval '1 second',
+             created_at=clock_timestamp()-interval '20 seconds'
+         WHERE invitation_id IS NOT NULL AND attempts=1",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET created_at=clock_timestamp()-interval '10 seconds'
+         WHERE invitation_id IS NOT NULL AND attempts=0",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    let next = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(next.token, waiting_token);
+    assert!(
+        f.service
+            .mark_mail_delivered(&next.id, "fixture")
+            .await
+            .unwrap()
+    );
+
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET invitation_expires_at=clock_timestamp()+interval '30 seconds'
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    let retry = f.service.pending_mail(1).await.unwrap().remove(0);
+    assert_eq!(retry.token, first_token);
+    let (bounded, attempts): (bool, i32) = sqlx::query_as(
+        "SELECT lease_until<=invitation_expires_at, attempts
+         FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(bounded);
+    assert_eq!(attempts, 2);
+
+    // Mesmo com reserva válida, a confirmação não reabre um convite expirado.
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET invitation_expires_at=clock_timestamp()-interval '1 second'
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    assert!(
+        !f.service
+            .mark_mail_delivered(&retry.id, "fixture")
+            .await
+            .unwrap()
+    );
+    assert!(f.service.pending_mail(1).await.unwrap().is_empty());
+    let discarded: bool = sqlx::query_scalar(
+        "SELECT discarded_at IS NOT NULL AND octet_length(payload)=0
+         FROM canteiro_auth.mail_outbox
+         WHERE invitation_id IS NOT NULL AND delivered_at IS NULL",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert!(discarded);
+    let history: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT attempt,event FROM canteiro_meta.invitation_mail_history
+         WHERE mail_id IN (
+             SELECT id FROM canteiro_auth.mail_outbox
+             WHERE invitation_id IS NOT NULL AND delivered_at IS NULL
+         )
+         ORDER BY attempt,event",
+    )
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        history,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "unconfirmed".to_owned()),
+            (2, "claimed".to_owned()),
+            (2, "discarded".to_owned()),
+            (2, "unconfirmed".to_owned()),
+        ]
+    );
+    f.close().await;
+}
+
+#[tokio::test]
+#[ignore = "requer PostgreSQL real isolado"]
+async fn unreadable_invitation_mail_records_attempt_and_preserves_other_deliveries() {
+    let f = Fixture::new(2).await;
+    let admin = f.person("mail-corrupt-owner", true).await;
+    let damaged = f.person("mail-corrupt-recipient", false).await;
+    let healthy = f.person("mail-healthy-recipient", false).await;
+    let (org, _) = f.create(&admin, "Fila com mensagem ilegível").await;
+    f.select(&admin, &org).await;
+    f.invite(&admin, &damaged, OrganizationRole::Member).await;
+    let (damaged_id, ciphertext): (Uuid, Vec<u8>) = sqlx::query_as(
+        "UPDATE canteiro_auth.mail_outbox
+         SET payload=set_byte(payload,0,0)
+         WHERE invitation_id IS NOT NULL RETURNING id,payload",
+    )
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    let healthy_token = f.invite(&admin, &healthy, OrganizationRole::Member).await;
+
+    let deliveries = f.service.pending_mail(25).await.unwrap();
+    assert_eq!(deliveries.len(), 1);
+    assert_eq!(deliveries[0].email, healthy.email);
+    assert_eq!(deliveries[0].token, healthy_token);
+    assert!(
+        f.service
+            .mark_mail_delivered(&deliveries[0].id, "fixture")
+            .await
+            .unwrap()
+    );
+
+    let row: (i32, i32, Vec<u8>, bool) = sqlx::query_as(
+        "SELECT attempts,unconfirmed_attempt,payload,
+                delivered_at IS NULL AND discarded_at IS NULL
+         FROM canteiro_auth.mail_outbox WHERE id=$1",
+    )
+    .bind(damaged_id)
+    .fetch_one(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(row, (1, 1, ciphertext, true));
+    assert!(f.service.pending_mail(25).await.unwrap().is_empty());
+    sqlx::query(
+        "UPDATE canteiro_auth.mail_outbox
+         SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1",
+    )
+    .bind(damaged_id)
+    .execute(&f.admin)
+    .await
+    .unwrap();
+    assert!(f.service.pending_mail(1).await.is_err());
+
+    let history: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT attempt,event FROM canteiro_meta.invitation_mail_history
+         WHERE mail_id=$1 ORDER BY attempt,event",
+    )
+    .bind(damaged_id)
+    .fetch_all(&f.admin)
+    .await
+    .unwrap();
+    assert_eq!(
+        history,
+        vec![
+            (1, "claimed".to_owned()),
+            (1, "unconfirmed".to_owned()),
+            (2, "claimed".to_owned()),
+            (2, "unconfirmed".to_owned()),
+        ]
+    );
+    f.close().await;
+}

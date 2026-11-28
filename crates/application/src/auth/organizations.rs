@@ -11,6 +11,8 @@ use chrono::{DateTime, Duration, Utc};
 use uuid::Uuid;
 mod access;
 pub mod documents;
+mod estimating;
+mod notifications;
 mod obligations;
 mod parties;
 mod portfolio;
@@ -24,7 +26,7 @@ struct Actor {
     mfa: bool,
 }
 
-fn invalid(message: &'static str) -> AuthError {
+fn invalid(message: impl Into<String>) -> AuthError {
     AuthError::new(AuthErrorKind::InvalidInput, "invalid_input", message)
 }
 fn denied() -> AuthError {
@@ -393,6 +395,21 @@ impl AuthService {
                     actor.id,
                 )
                 .await?;
+                let payload = super::Zeroizing::new(
+                    serde_json::to_vec(&super::MailPayload {
+                        email,
+                        kind: "organization_invitation".into(),
+                        token: invite.clone(),
+                    })
+                    .map_err(|_| AuthError::unavailable())?,
+                );
+                let ciphertext = crypto::seal(
+                    self.key.as_ref(),
+                    &format!("mail:{invitation_id}:v1"),
+                    &payload,
+                )?;
+                tx.enqueue_invitation_mail(org.tenant_id, invitation_id, &ciphertext)
+                    .await?;
                 finish(
                     &mut tx,
                     &actor,
@@ -403,7 +420,7 @@ impl AuthService {
                 )
                 .await?;
                 invitation_code = Some(invite);
-                "Convite criado. Copie o código e envie-o ao e-mail informado. A pessoa precisa entrar com esse mesmo e-mail e aceitar o acesso. Nenhuma mensagem foi enviada automaticamente."
+                "Convite criado e registrado na fila de e-mail, ainda sem confirmação de entrega. Você também pode compartilhar o código diretamente. A pessoa precisa entrar com o mesmo e-mail e aceitar o acesso."
             }
             OrganizationCommand::RevokeInvite {
                 scope,

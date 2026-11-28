@@ -86,7 +86,7 @@ async fn delivered_code(h: &Harness, email: &str, kind: &str) -> TestResult<Stri
             );
             result = Some(message.token.clone());
         }
-        h.auth.mark_mail_delivered(&message.id).await?;
+        h.auth.mark_mail_delivered(&message.id, "fixture").await?;
     }
     result.ok_or_else(|| "Expected encrypted mail delivery was not available".into())
 }

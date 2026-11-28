@@ -290,13 +290,34 @@ impl Browser {
 
     /// W3C attributes reflect markup; live field state must be read as a property.
     pub async fn property(&self, selector: &str, property: &str) -> TestResult<Value> {
-        let id = self.element(selector).await?;
-        self.request(
-            Method::GET,
-            &format!("element/{id}/property/{property}"),
-            None,
-        )
-        .await
+        // SSR hydration can replace a form field between finding it and reading
+        // its live value. The first stale reference is retried against a fresh
+        // element; missing fields and all other WebDriver errors still fail.
+        for attempt in 0..2 {
+            let id = self.element(selector).await?;
+            match self
+                .request(
+                    Method::GET,
+                    &format!("element/{id}/property/{property}"),
+                    None,
+                )
+                .await
+            {
+                Ok(value) => return Ok(value),
+                Err(error)
+                    if attempt == 0 && error.to_string().contains("stale element reference") =>
+                {
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                }
+                Err(error) => {
+                    return Err(format!(
+                        "WebDriver property {property} failed for {selector}: {error}"
+                    )
+                    .into());
+                }
+            }
+        }
+        Err(format!("Element was replaced twice while reading {selector}.{property}").into())
     }
 
     pub async fn enabled(&self, selector: &str) -> TestResult<bool> {
@@ -308,9 +329,25 @@ impl Browser {
     }
 
     pub async fn click(&self, selector: &str) -> TestResult {
-        let id = self.element(selector).await?;
-        self.post(&format!("element/{id}/click"), json!({})).await?;
-        Ok(())
+        // Hydration may replace a control between locating it and clicking it.
+        // A W3C stale-element error means that particular element is detached:
+        // resolve the selector again once rather than using the old element ID.
+        // Other failures remain fatal, and a second stale error is reported.
+        for attempt in 0..2 {
+            let id = self.element(selector).await?;
+            match self.post(&format!("element/{id}/click"), json!({})).await {
+                Ok(_) => return Ok(()),
+                Err(error)
+                    if attempt == 0 && error.to_string().contains("stale element reference") =>
+                {
+                    tokio::time::sleep(Duration::from_millis(50)).await;
+                }
+                Err(error) => {
+                    return Err(format!("WebDriver click failed for {selector}: {error}").into());
+                }
+            }
+        }
+        Err(format!("Element was replaced while clicking: {selector}").into())
     }
 
     pub async fn key(&self, key: &str) -> TestResult {
@@ -335,7 +372,19 @@ impl Browser {
                 return Ok(());
             }
         }
-        Err(format!("Element not reachable by Tab: {selector}").into())
+        let diagnostic = self
+            .execute(&format!(
+                r#"const targets=[...document.querySelectorAll({})];
+return {{hasFocus:document.hasFocus(),
+activeTag:document.activeElement?.tagName,
+activeType:document.activeElement?.getAttribute("type"),
+targets:targets.map(e=>({{tag:e.tagName,tabIndex:e.tabIndex,
+disabled:e.matches(":disabled"),visible:!!e.getClientRects().length,
+closedDetails:!!e.closest("details:not([open])"),inert:!!e.closest("[inert]")}}))}};"#,
+                serde_json::to_string(selector)?
+            ))
+            .await?;
+        Err(format!("Element not reachable by Tab: {selector}; DOM: {diagnostic}").into())
     }
 
     pub async fn wait(&self, expression: &str, timeout: Duration) -> TestResult {

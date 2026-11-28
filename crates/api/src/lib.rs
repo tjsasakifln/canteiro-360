@@ -5,7 +5,9 @@ mod calculations;
 pub mod config;
 mod documents;
 pub mod error;
+mod estimating;
 mod forms;
+mod notifications;
 mod obligations;
 mod organizations;
 mod parties;
@@ -44,6 +46,8 @@ pub fn router(config: &Config) -> Router {
         .merge(portfolio::routes())
         .merge(projects::routes())
         .merge(obligations::routes())
+        .merge(notifications::routes())
+        .merge(estimating::routes())
         .route(
             "/api/prototipo/calculos/rateio",
             axum::routing::post(calculations::allocation)

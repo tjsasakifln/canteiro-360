@@ -1,0 +1,1001 @@
+use super::*;
+use canteiro_domain::budget_csv::{ImportDifference, NumberLocale, compare_details};
+
+use canteiro_persistence::budget_imports::NewBudgetImport;
+use sha2::{Digest, Sha256};
+use std::{collections::BTreeMap, time::Duration};
+use tokio::sync::{Semaphore, SemaphorePermit};
+
+// Limite por processo, compartilhado entre sessões e empresas. Dois arquivos
+// podem ser processados e outros dois aguardam sem ocupar conexão PostgreSQL.
+static IMPORT_ADMISSION: Semaphore = Semaphore::const_new(4);
+static IMPORT_PROCESSING: Semaphore = Semaphore::const_new(2);
+
+type ImportPermits<'a> = (SemaphorePermit<'a>, SemaphorePermit<'a>);
+
+fn import_busy() -> AuthError {
+    AuthError::new(
+        AuthErrorKind::RateLimited,
+        "rate_limited",
+        "A fila de importação está ocupada. Tente novamente em instantes.",
+    )
+}
+
+async fn reserve_import_slot<'a>(
+    admission: &'a Semaphore,
+    processing: &'a Semaphore,
+    wait: Duration,
+) -> Result<ImportPermits<'a>, AuthError> {
+    let admitted = admission.try_acquire().map_err(|_| import_busy())?;
+    let active = tokio::time::timeout(wait, processing.acquire())
+        .await
+        .map_err(|_| import_busy())?
+        .map_err(|_| AuthError::unavailable())?;
+    Ok((admitted, active))
+}
+
+async fn process_import<T: Send + 'static>(
+    permits: ImportPermits<'static>,
+    parse: impl FnOnce() -> Result<T, AuthError> + Send + 'static,
+) -> Result<(T, ImportPermits<'static>), AuthError> {
+    // A tarefa bloqueante mantém as vagas mesmo se a requisição for cancelada.
+    // Em caso de sucesso, devolve as vagas junto com o resultado para que a
+    // criação durável da prévia também respeite o limite de processamento.
+    tokio::task::spawn_blocking(move || parse().map(|parsed| (parsed, permits)))
+        .await
+        .map_err(|_| AuthError::unavailable())?
+}
+
+fn preview_budget_csv(csv: &str, locale: NumberLocale) -> Result<BudgetRevision, AuthError> {
+    preview_import(csv, locale).map_err(|error| invalid(error.to_string()))
+}
+
+enum BudgetImportSource {
+    Csv(String, NumberLocale),
+    Xlsx(Vec<u8>),
+}
+
+impl BudgetImportSource {
+    fn parse(self) -> Result<(BudgetRevision, NumberLocale, &'static str, [u8; 32]), AuthError> {
+        match self {
+            Self::Csv(csv, locale) => Ok((
+                preview_budget_csv(&csv, locale)?,
+                locale,
+                FORMAT_VERSION,
+                Sha256::digest(csv.as_bytes()).into(),
+            )),
+            Self::Xlsx(bytes) => {
+                let (snapshot, locale) =
+                    canteiro_domain::budget_xlsx::preview_import_with_locale(&bytes)
+                        .map_err(|error| invalid(error.to_string()))?;
+                Ok((
+                    snapshot,
+                    locale,
+                    canteiro_domain::budget_xlsx::XLSX_VERSION,
+                    Sha256::digest(bytes).into(),
+                ))
+            }
+        }
+    }
+}
+
+/// Sempre confronta a referência informada com a edição publicada no mesmo escopo.
+/// Impede substituir o preço ou o código por payload direto ou importação CSV.
+async fn require_catalog_snapshot(
+    tx: &mut AuthTransaction,
+    tenant: Uuid,
+    scope: Uuid,
+    snapshot: &BudgetRevision,
+) -> Result<(), AuthError> {
+    let catalogs = snapshot
+        .lines
+        .iter()
+        .filter_map(|item| {
+            item.catalog_id
+                .as_ref()
+                .zip(item.catalog_edition)
+                .map(|(catalog, edition)| (catalog.clone(), edition))
+        })
+        .collect::<BTreeSet<_>>();
+    let mut official = BTreeMap::new();
+    for (catalog, edition) in catalogs {
+        if !tx
+            .composition_catalog_published(tenant, scope, &catalog, edition)
+            .await?
+        {
+            return Err(invalid(
+                "A tabela histórica escolhida não está publicada neste orçamento.",
+            ));
+        }
+        let rows = tx
+            .catalog_lines(
+                tenant,
+                scope,
+                &catalog,
+                i32::try_from(edition).map_err(|_| invalid("Edição inválida."))?,
+            )
+            .await?;
+        for row in rows {
+            let unit: canteiro_domain::units::MeasureUnit =
+                row.unit.parse().map_err(|_| AuthError::unavailable())?;
+            let price: canteiro_domain::decimal::UnitPrice =
+                row.price.parse().map_err(|_| AuthError::unavailable())?;
+            official.insert((catalog.clone(), edition, row.code), (unit, price));
+        }
+    }
+    snapshot
+        .validate_catalog_references(&official)
+        .map_err(|_| {
+            invalid("O código, a unidade ou o preço não coincide com a edição histórica publicada.")
+        })
+}
+
+impl AuthService {
+    pub async fn estimating_budget_lease(
+        &self,
+        token: &str,
+        input: BudgetLeaseCommand,
+    ) -> Result<BudgetLeaseReply, AuthError> {
+        self.estimating_budget_lease_inner(token, input, None).await
+    }
+
+    /// Reserve only after checking that the staged import belongs to this session
+    /// and still corresponds to the reviewed revision.
+    pub async fn estimating_budget_import_lease(
+        &self,
+        token: &str,
+        input: BudgetLeaseCommand,
+        batch_id: &str,
+        expected_version: Option<i64>,
+    ) -> Result<BudgetLeaseReply, AuthError> {
+        let batch = operation_id(batch_id)?;
+        self.estimating_budget_lease_inner(token, input, Some((batch, expected_version)))
+            .await
+    }
+
+    async fn estimating_budget_lease_inner(
+        &self,
+        token: &str,
+        input: BudgetLeaseCommand,
+        import: Option<(Uuid, Option<i64>)>,
+    ) -> Result<BudgetLeaseReply, AuthError> {
+        self.limit("estimating-budget-lease", token, 30, 60).await?;
+        let key = operation_id(&input.lease_key)?;
+        let (mut tx, access) = self.record_access(token, Some(&input.context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(&input.scope_id)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().is_some_and(|v| v.state == "approved") {
+            return Err(invalid(
+                "Este orçamento já foi aprovado. Abra uma alteração formal para uma nova revisão.",
+            ));
+        }
+        if let Some((batch, expected_version)) = import {
+            if current.as_ref().map(|row| row.version) != expected_version {
+                return Err(record_conflict());
+            }
+            let (base, _) = tx
+                .budget_import_ready_snapshot(a.tenant, scope, a.actor.id, a.actor.session, batch)
+                .await?
+                .ok_or_else(record_denied)?;
+            if base != expected_version {
+                return Err(record_conflict());
+            }
+        }
+        let next = current.as_ref().map_or(1, |r| r.version.saturating_add(1));
+        let revision = u32::try_from(next)
+            .map_err(|_| invalid("O limite de revisões deste orçamento foi alcançado."))?;
+        let expires=tx.budget_acquire_lease(
+            a.tenant,scope,a.actor.id,a.actor.session,key,next
+        ).await?.ok_or_else(||AuthError::new(
+            AuthErrorKind::Conflict,"edit_busy",
+            "Outra sessão está editando este orçamento. Confira a reserva antes de continuar.",
+        ))?;
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        Ok(BudgetLeaseReply {
+            scope_id: scope.to_string(),
+            revision,
+            lease_key: key.to_string(),
+            valid_until: expires.to_rfc3339(),
+        })
+    }
+    pub async fn estimating_budget_execute(
+        &self,
+        token: &str,
+        input: BudgetCommand,
+    ) -> Result<BudgetReply, AuthError> {
+        self.limit("estimating-budget-write", token, 60, 60).await?;
+        let key = operation_id(&input.operation_key)?;
+        let reason = reason(&input.reason)?;
+        let approving = matches!(&input.change, BudgetChange::Approve);
+        let importing = matches!(&input.change, BudgetChange::ApplyImport {});
+        let action = if approving {
+            AccessAction::ApproveBudget
+        } else {
+            AccessAction::EditBudget
+        };
+        let fingerprint = crypto::hash(
+            "budget-command",
+            &serde_json::to_string(&input).map_err(|_| AuthError::unavailable())?,
+        );
+        let scope = id(&input.scope_id)?;
+        let (mut tx, access) = self.record_access(token, Some(&input.context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        require_budget(&a, scope, action, tx.now().await?)?;
+        if importing
+            && !tx
+                .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
+                .await?
+        {
+            return Err(record_denied());
+        }
+        if let Some(saved) = tx.budget_operation(a.tenant, key).await? {
+            if saved.actor_id != a.actor.id
+                || saved.scope_id != scope
+                || saved.fingerprint != fingerprint
+            {
+                return Err(repeated_conflict());
+            }
+            self.record_revalidate(&mut tx, token, &a, scope, action)
+                .await?;
+            let budget = budget_view(saved)?;
+            let total = budget
+                .snapshot
+                .summarize()
+                .map_err(|_| AuthError::unavailable())?;
+            tx.commit().await?;
+            return Ok(BudgetReply {
+                budget,
+                total,
+                repeated: true,
+            });
+        }
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().map(|r| r.version) != input.expected_version {
+            return Err(record_conflict());
+        }
+        let next_version = input
+            .expected_version
+            .unwrap_or(0)
+            .checked_add(1)
+            .ok_or_else(record_conflict)?;
+        let snapshot = match &input.change {
+            BudgetChange::Save { .. } | BudgetChange::ApplyImport {} => {
+                let snapshot = match &input.change {
+                    BudgetChange::Save { snapshot } => snapshot.clone(),
+                    BudgetChange::ApplyImport {} => {
+                        let (base, payload) = tx
+                            .budget_import_ready_snapshot(
+                                a.tenant,
+                                scope,
+                                a.actor.id,
+                                a.actor.session,
+                                key,
+                            )
+                            .await?
+                            .ok_or_else(record_conflict)?;
+                        if base != input.expected_version {
+                            return Err(record_conflict());
+                        }
+                        let staged: BudgetRevision =
+                            serde_json::from_str(&payload).map_err(|_| AuthError::unavailable())?;
+                        if staged.status != BudgetState::Draft {
+                            return Err(AuthError::unavailable());
+                        }
+                        staged
+                    }
+                    _ => return Err(AuthError::unavailable()),
+                };
+                if current.as_ref().is_some_and(|r| r.state == "approved")
+                    || snapshot.status == BudgetState::Approved
+                {
+                    return Err(invalid(
+                        "Não edite diretamente uma revisão definitiva ou aprovada.",
+                    ));
+                }
+                let lease = input
+                    .lease_key
+                    .as_deref()
+                    .ok_or_else(|| invalid("Reserve o orçamento nesta sessão antes de salvar."))?;
+                let lease = operation_id(lease)?;
+                if !tx
+                    .budget_lease_usable(
+                        a.tenant,
+                        scope,
+                        a.actor.id,
+                        a.actor.session,
+                        lease,
+                        next_version,
+                    )
+                    .await?
+                {
+                    return Err(AuthError::new(
+                        AuthErrorKind::Conflict,
+                        "edit_expired",
+                        "Sua reserva de edição expirou ou pertence a outra sessão. O rascunho deve ser preservado.",
+                    ));
+                }
+                if let Some(previous) = &current {
+                    let old = budget_view(previous.clone())?.snapshot;
+                    snapshot.validate_catalog_lineage(&old).map_err(|_| {
+                        invalid("A referência histórica do serviço não pode ser alterada.")
+                    })?;
+                    snapshot.validate_no_implicit_removals(&old).map_err(|_| {
+                        invalid(
+                            "Exclusões exigem comando específico e conferência das referências.",
+                        )
+                    })?;
+                    snapshot.validate_no_implicit_moves(&old).map_err(|_| {
+                        invalid("Use o comando de mover serviço para alterar sua variação.")
+                    })?;
+                    snapshot.validate_no_implicit_reschedule(&old).map_err(|_| {
+                        invalid("Use a revisão explícita do cronograma para alterar datas ou rateios.")
+                    })?;
+                }
+                snapshot
+            }
+            BudgetChange::RemoveLine { line_id } => {
+                let previous = current.as_ref().ok_or_else(record_denied)?;
+                if previous.state == "approved" {
+                    return Err(invalid("Uma revisão aprovada não pode ser excluída."));
+                }
+                let lease = input
+                    .lease_key
+                    .as_deref()
+                    .ok_or_else(|| invalid("Reserve o orçamento nesta sessão antes de excluir."))?;
+                let lease = operation_id(lease)?;
+                if !tx
+                    .budget_lease_usable(
+                        a.tenant,
+                        scope,
+                        a.actor.id,
+                        a.actor.session,
+                        lease,
+                        next_version,
+                    )
+                    .await?
+                {
+                    return Err(AuthError::new(
+                        AuthErrorKind::Conflict,
+                        "edit_expired",
+                        "A reserva venceu ou outra sessão alterou o orçamento.",
+                    ));
+                }
+                let mut next = budget_view(previous.clone())?.snapshot;
+                next.remove_unlinked_line(line_id).map_err(|_| {
+                    invalid("A exclusão está restrita a serviço manual sem fonte vinculada.")
+                })?;
+                next.revision = u32::try_from(next_version)
+                    .map_err(|_| invalid("Limite de revisões alcançado."))?;
+                next.status = BudgetState::Draft;
+                next
+            }
+            BudgetChange::EditLineValues { .. }
+            | BudgetChange::CopyLine { .. }
+            | BudgetChange::MoveLine { .. }
+            | BudgetChange::RescheduleLinear { .. } => {
+                let previous = current.as_ref().ok_or_else(record_denied)?;
+                if previous.state == "approved" {
+                    return Err(invalid(
+                        "Uma revisão aprovada não admite alterações de serviços ou cronograma.",
+                    ));
+                }
+                let lease = input.lease_key.as_deref().ok_or_else(|| {
+                    invalid("Reserve o orçamento antes de alterar serviços ou cronograma.")
+                })?;
+                let lease = operation_id(lease)?;
+                if !tx
+                    .budget_lease_usable(
+                        a.tenant,
+                        scope,
+                        a.actor.id,
+                        a.actor.session,
+                        lease,
+                        next_version,
+                    )
+                    .await?
+                {
+                    return Err(AuthError::new(
+                        AuthErrorKind::Conflict,
+                        "edit_expired",
+                        "A reserva venceu ou outra sessão alterou o orçamento.",
+                    ));
+                }
+                let mut next = budget_view(previous.clone())?.snapshot;
+                let changed = match &input.change {
+                    BudgetChange::EditLineValues {
+                        line_id,
+                        quantity,
+                        price,
+                    } => next.edit_line_values(line_id, *quantity, *price),
+                    BudgetChange::CopyLine {
+                        source_id,
+                        new_id,
+                        target_variation_id,
+                    } => next.copy_line(source_id, new_id, target_variation_id),
+                    BudgetChange::MoveLine {
+                        line_id,
+                        target_variation_id,
+                    } => next.move_line(line_id, target_variation_id),
+                    BudgetChange::RescheduleLinear {
+                        starts_on,
+                        deadline_days,
+                        basis,
+                        periods,
+                    } => next.reschedule_linear(*starts_on, *deadline_days, *basis, *periods),
+                    _ => return Err(AuthError::unavailable()),
+                };
+                changed.map_err(|_| {
+                    invalid("Confira os dados da alteração do orçamento ou cronograma.")
+                })?;
+                next.revision = u32::try_from(next_version)
+                    .map_err(|_| invalid("Limite de revisões alcançado."))?;
+                next.status = BudgetState::Draft;
+                next
+            }
+            BudgetChange::Approve => {
+                let previous = current.as_ref().ok_or_else(record_denied)?;
+                if previous.state != "review" || previous.actor_id == a.actor.id {
+                    return Err(AuthError::new(
+                        AuthErrorKind::Forbidden,
+                        "self_approval",
+                        "A aprovação exige conferência anterior e pessoa diferente de quem preparou a revisão.",
+                    ));
+                }
+                let mut prior = budget_view(previous.clone())?.snapshot;
+                if prior.schedule.is_none() {
+                    return Err(invalid(
+                        "Defina o cronograma orçamentário antes de aprovar a revisão.",
+                    ));
+                }
+                prior.revision = u32::try_from(next_version)
+                    .map_err(|_| invalid("Limite de revisões alcançado."))?;
+                prior.status = BudgetState::Approved;
+                prior
+            }
+        };
+        if snapshot.budget_id != scope.to_string() || i64::from(snapshot.revision) != next_version {
+            return Err(invalid(
+                "O identificador e a revisão devem corresponder ao orçamento selecionado.",
+            ));
+        }
+        snapshot
+            .validate()
+            .map_err(|_| invalid("Confira as variações, grupos, serviços e cronograma."))?;
+        let summary = snapshot.summarize().map_err(|_| {
+            invalid("Não foi possível reconciliar o orçamento com os valores informados.")
+        })?;
+        if !approving {
+            for variation in &snapshot.variations {
+                let work = variation.work_id.as_uuid();
+                a.require(work, AccessAction::View, tx.now().await?)?;
+                if !tx.project_work_exists(a.tenant, work).await? {
+                    return Err(invalid(
+                        "Uma variação está vinculada a obra inexistente nesta empresa.",
+                    ));
+                }
+            }
+            require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
+        }
+        let state = match snapshot.status {
+            BudgetState::Draft => "draft",
+            BudgetState::Review => "review",
+            BudgetState::Approved => "approved",
+        };
+        let payload = serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
+        let saved = tx
+            .budget_write(&BudgetWrite {
+                tenant: a.tenant,
+                scope,
+                expected: input.expected_version,
+                actor: a.actor.id,
+                operation_key: key,
+                fingerprint: &fingerprint,
+                reason,
+                payload: &payload,
+                state,
+            })
+            .await?
+            .ok_or_else(record_conflict)?;
+        // O recibo de importação só se confirma junto com a revisão efetiva.
+        // Caso a transação falhe depois, ambos permanecem não aplicados.
+        let confirms_batch = importing
+            || (matches!(&input.change, BudgetChange::Save { .. })
+                && tx
+                    .budget_import_exists(a.tenant, scope, a.actor.id, a.actor.session, key)
+                    .await?);
+        if confirms_batch
+            && !tx
+                .budget_import_mark_applied(a.tenant, scope, a.actor.id, a.actor.session, key, key)
+                .await?
+        {
+            return Err(record_conflict());
+        }
+        if !approving && let Some(lease) = input.lease_key.as_deref() {
+            let lease = operation_id(lease)?;
+            tx.budget_release_lease(a.tenant, scope, a.actor.id, a.actor.session, lease)
+                .await?;
+        }
+        tx.org_audit(
+            a.tenant,
+            a.actor.id,
+            if approving {
+                "budget_approved"
+            } else {
+                "budget_revision"
+            },
+            Some(scope),
+            &format!("version:{};state:{}", next_version, state),
+        )
+        .await?;
+        self.record_revalidate(&mut tx, token, &a, scope, action)
+            .await?;
+        let budget = budget_view(saved)?;
+        tx.commit().await?;
+        Ok(BudgetReply {
+            budget,
+            total: summary,
+            repeated: false,
+        })
+    }
+    pub async fn estimating_budget_import_preview(
+        &self,
+        token: &str,
+        input: BudgetImportPreviewCommand,
+    ) -> Result<BudgetImportPreviewReply, AuthError> {
+        self.stage_budget_import(
+            token,
+            &input.context,
+            &input.scope_id,
+            BudgetImportSource::Csv(input.csv, input.locale),
+        )
+        .await
+    }
+
+    pub async fn estimating_budget_xlsx_import_preview(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_id: &str,
+        bytes: Vec<u8>,
+    ) -> Result<BudgetImportPreviewReply, AuthError> {
+        self.stage_budget_import(token, context, scope_id, BudgetImportSource::Xlsx(bytes))
+            .await
+    }
+
+    async fn stage_budget_import(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_id: &str,
+        source: BudgetImportSource,
+    ) -> Result<BudgetImportPreviewReply, AuthError> {
+        self.limit("estimating-budget-import", token, 10, 60)
+            .await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_id)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().is_some_and(|r| r.state == "approved") {
+            return Err(invalid(
+                "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
+            ));
+        }
+        let original_base_version = current.as_ref().map(|r| r.version);
+        // O arquivo pode exigir descompressão e validação de milhares de linhas.
+        // Não manter uma conexão ou bloqueios de sessão durante esse trabalho.
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        let permits = reserve_import_slot(
+            &IMPORT_ADMISSION,
+            &IMPORT_PROCESSING,
+            Duration::from_secs(15),
+        )
+        .await?;
+        let ((mut snapshot, locale, format, sha256), _permits) =
+            process_import(permits, move || source.parse()).await?;
+        // A autorização e a revisão-base precisam ser atuais quando a prévia
+        // durável for criada, não apenas quando o arquivo chegou.
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().is_some_and(|r| r.state == "approved") {
+            return Err(invalid(
+                "O orçamento definitivo exige uma alteração formal; não é editável por importação.",
+            ));
+        }
+        if snapshot.budget_id != scope.to_string() {
+            return Err(invalid("O arquivo não pertence ao orçamento selecionado."));
+        }
+        let base_version = current.as_ref().map(|r| r.version);
+        if base_version != original_base_version {
+            return Err(record_conflict());
+        }
+        snapshot.revision = u32::try_from(base_version.unwrap_or(0).saturating_add(1))
+            .map_err(|_| invalid("Limite de revisões alcançado."))?;
+        snapshot.status = BudgetState::Draft;
+        let total = snapshot
+            .summarize()
+            .map_err(|_| invalid("Valores ou grupos inválidos no arquivo."))?;
+        require_catalog_snapshot(&mut tx, a.tenant, scope, &snapshot).await?;
+        let (difference, change_details) = if let Some(old) = current {
+            let before = budget_view(old)?;
+            snapshot
+                .validate_catalog_lineage(&before.snapshot)
+                .map_err(|_| invalid("A referência histórica do serviço não pode ser alterada."))?;
+            snapshot.validate_no_implicit_removals(&before.snapshot).map_err(|_| {
+                invalid(
+                    "O arquivo não pode excluir serviços silenciosamente. Use a exclusão individual validada.",
+                )
+            })?;
+            snapshot.validate_no_implicit_moves(&before.snapshot).map_err(|_| {
+                invalid(
+                    "O arquivo não pode mover um serviço silenciosamente. Use o comando individual de movimentação.",
+                )
+            })?;
+            snapshot
+                .validate_no_implicit_reschedule(&before.snapshot)
+                .map_err(|_| {
+                    invalid(
+                        "O arquivo não pode substituir o cronograma existente. Use a revisão explícita do cronograma.",
+                    )
+                })?;
+            (
+                compare(&before.snapshot, &snapshot),
+                compare_details(Some(&before.snapshot), &snapshot),
+            )
+        } else {
+            (
+                ImportDifference {
+                    included: snapshot.lines.len(),
+                    changed: 0,
+                    removed: 0,
+                },
+                compare_details(None, &snapshot),
+            )
+        };
+        // Tanto a primeira importação quanto uma reimportação possuem identidade
+        // durável vinculada ao conteúdo integral, à sessão e à revisão-base.
+        let payload = serde_json::to_string(&snapshot).map_err(|_| AuthError::unavailable())?;
+        let count = |n: usize| {
+            i32::try_from(n).map_err(|_| invalid("A quantidade de serviços excede o limite."))
+        };
+        let batch = NewBudgetImport {
+            tenant: a.tenant,
+            id: Uuid::new_v4(),
+            scope,
+            actor: a.actor.id,
+            session: a.actor.session,
+            base_version,
+            format,
+            locale: match locale {
+                NumberLocale::Canonical => "canonical",
+                NumberLocale::PtBr => "pt-BR",
+            },
+            sha256: &sha256,
+            preview: &payload,
+            included: count(difference.included)?,
+            changed: count(difference.changed)?,
+            removed: count(difference.removed)?,
+        };
+        let batch_id = Some(
+            tx.budget_import_stage(&batch)
+                .await?
+                .ok_or_else(record_conflict)?
+                .to_string(),
+        );
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        Ok(BudgetImportPreviewReply {
+            snapshot,
+            difference,
+            change_details,
+            total,
+            base_version,
+            batch_id,
+            format,
+        })
+    }
+    /// Inspeção paginada de lote existente: não cria lote, revisão ou reserva.
+    pub async fn estimating_budget_import_details(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        batch_text: &str,
+        page: usize,
+    ) -> Result<canteiro_domain::budget_csv::ImportLineChanges, AuthError> {
+        self.limit("estimating-budget-import-details", token, 60, 60)
+            .await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_text)?;
+        let batch = id(batch_text)?;
+        require_budget(&a, scope, AccessAction::EditBudget, tx.now().await?)?;
+        let (base, payload) = tx
+            .budget_import_ready_snapshot(a.tenant, scope, a.actor.id, a.actor.session, batch)
+            .await?
+            .ok_or_else(record_denied)?;
+        let current = tx.budget_current(a.tenant, scope).await?;
+        if current.as_ref().map(|row| row.version) != base {
+            return Err(record_conflict());
+        }
+        let before = current.map(budget_view).transpose()?;
+        let snapshot: BudgetRevision =
+            serde_json::from_str(&payload).map_err(|_| AuthError::unavailable())?;
+        if snapshot.budget_id != scope.to_string()
+            || snapshot.status != BudgetState::Draft
+            || Some(i64::from(snapshot.revision)) != base.unwrap_or(0).checked_add(1)
+        {
+            return Err(AuthError::unavailable());
+        }
+        let details = canteiro_domain::budget_csv::compare_details_page(
+            before.as_ref().map(|record| &record.snapshot),
+            &snapshot,
+            page,
+        );
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::EditBudget)
+            .await?;
+        tx.commit().await?;
+        Ok(details)
+    }
+    pub async fn estimating_budget_export_csv(
+        &self,
+        token: &str,
+        context: &ReliabilityScope,
+        scope_text: &str,
+        locale: NumberLocale,
+    ) -> Result<String, AuthError> {
+        self.limit("estimating-budget-export", token, 30, 60)
+            .await?;
+        let (mut tx, access) = self.record_access(token, Some(context)).await?;
+        let a = access.ok_or_else(record_denied)?;
+        let scope = id(scope_text)?;
+        require_budget(&a, scope, AccessAction::View, tx.now().await?)?;
+        let row = tx
+            .budget_current(a.tenant, scope)
+            .await?
+            .ok_or_else(record_denied)?;
+        let snapshot = budget_view(row)?.snapshot;
+        let csv = export_csv(&snapshot, locale)
+            .map_err(|_| invalid("O tamanho deste orçamento excede o limite de exportação CSV."))?;
+        self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
+            .await?;
+        tx.commit().await?;
+        Ok(csv)
+    }
+}
+
+#[cfg(test)]
+mod budget_import_diagnostics_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn import_queue_bounds_processing_and_releases_admission_after_timeout() {
+        let admission = Semaphore::new(4);
+        let processing = Semaphore::new(2);
+        let first = reserve_import_slot(&admission, &processing, Duration::from_secs(1))
+            .await
+            .unwrap();
+        let second = reserve_import_slot(&admission, &processing, Duration::from_secs(1))
+            .await
+            .unwrap();
+        assert_eq!(processing.available_permits(), 0);
+        let timed_out = reserve_import_slot(&admission, &processing, Duration::ZERO).await;
+        assert!(matches!(timed_out, Err(error) if error.kind() == AuthErrorKind::RateLimited));
+        assert_eq!(admission.available_permits(), 2);
+        let waiting = admission.try_acquire_many(2).unwrap();
+        let rejected = reserve_import_slot(&admission, &processing, Duration::from_secs(1)).await;
+        assert!(matches!(rejected, Err(error) if error.kind() == AuthErrorKind::RateLimited));
+        drop(waiting);
+        drop(first);
+        let next = reserve_import_slot(&admission, &processing, Duration::from_secs(1))
+            .await
+            .unwrap();
+        drop(next);
+        drop(second);
+        assert_eq!(admission.available_permits(), 4);
+        assert_eq!(processing.available_permits(), 2);
+    }
+
+    #[tokio::test]
+    async fn cancelling_import_request_does_not_release_running_worker_slot() {
+        static ADMISSION: Semaphore = Semaphore::const_new(1);
+        static PROCESSING: Semaphore = Semaphore::const_new(1);
+        let (started, running) = tokio::sync::oneshot::channel();
+        let (release, wait_for_release) = std::sync::mpsc::channel();
+        let (finished, done) = tokio::sync::oneshot::channel();
+        let request = tokio::spawn(async move {
+            let permits = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::from_secs(1))
+                .await
+                .unwrap();
+            tokio::task::spawn_blocking(move || {
+                started.send(()).unwrap();
+                wait_for_release.recv().unwrap();
+                drop(permits);
+                finished.send(()).unwrap();
+            })
+            .await
+            .unwrap();
+        });
+        running.await.unwrap();
+        request.abort();
+        assert!(request.await.unwrap_err().is_cancelled());
+        assert_eq!(ADMISSION.available_permits(), 0);
+        assert_eq!(PROCESSING.available_permits(), 0);
+        release.send(()).unwrap();
+        done.await.unwrap();
+        assert_eq!(ADMISSION.available_permits(), 1);
+        assert_eq!(PROCESSING.available_permits(), 1);
+    }
+
+    #[tokio::test]
+    async fn parsed_import_keeps_slot_until_durable_preview_finishes() {
+        static ADMISSION: Semaphore = Semaphore::const_new(1);
+        static PROCESSING: Semaphore = Semaphore::const_new(1);
+        let permits = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::from_secs(1))
+            .await
+            .unwrap();
+        let (parsed, permits) = process_import(permits, || Ok(10_000)).await.unwrap();
+        assert_eq!(parsed, 10_000);
+        assert_eq!(ADMISSION.available_permits(), 0);
+        assert_eq!(PROCESSING.available_permits(), 0);
+        let rejected = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::ZERO).await;
+        assert!(matches!(rejected, Err(error) if error.kind() == AuthErrorKind::RateLimited));
+        drop(permits);
+        let permits = reserve_import_slot(&ADMISSION, &PROCESSING, Duration::from_secs(1))
+            .await
+            .unwrap();
+        let failed = process_import::<()>(permits, || Err(import_busy())).await;
+        assert!(failed.is_err());
+        assert_eq!(ADMISSION.available_permits(), 1);
+        assert_eq!(PROCESSING.available_permits(), 1);
+    }
+
+    #[test]
+    fn malformed_budget_csv_retains_physical_error_coordinates() {
+        let input = "CANTEIRO-ORCAMENTO-CSV-1\ncoluna_invalida";
+        let error = match preview_budget_csv(input, NumberLocale::PtBr) {
+            Ok(_) => panic!("O CSV incompleto deve ser rejeitado."),
+            Err(error) => error,
+        };
+        assert!(error.message().contains("Linha 2, coluna 1"));
+    }
+}
+
+#[cfg(test)]
+mod budget_transfer_contract_tests {
+    use super::*;
+
+    #[test]
+    fn import_confirmation_cannot_supply_a_snapshot_or_replace_the_batch() {
+        let action = serde_json::json!({"action": "apply_import"});
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(action.clone()).unwrap(),
+            BudgetChange::ApplyImport {}
+        ));
+        for extra in ["snapshot", "lines", "price", "batch_id", "csv", "xlsx"] {
+            let mut forged = action.clone();
+            forged[extra] = serde_json::json!("forged");
+            assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+        }
+    }
+
+    #[test]
+    fn schedule_command_accepts_only_its_fields_and_cannot_inject_budget_lines() {
+        let schedule = serde_json::json!({
+            "action": "reschedule_linear",
+            "starts_on": "2026-12-01",
+            "deadline_days": 120,
+            "basis": "civil_months",
+            "periods": 4
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(schedule.clone()).unwrap(),
+            BudgetChange::RescheduleLinear {
+                starts_on,
+                deadline_days: 120,
+                basis: canteiro_domain::budgets::PeriodBasis::CivilMonths,
+                periods: 4,
+            } if starts_on.to_string() == "2026-12-01"
+        ));
+        for extra in ["snapshot", "lines", "price", "catalog_id"] {
+            let mut forged = schedule.clone();
+            forged[extra] = serde_json::json!({"lines": [], "price": "0.01"});
+            assert!(
+                serde_json::from_value::<BudgetChange>(forged).is_err(),
+                "Unexpected budget mutation field accepted: {extra}"
+            );
+        }
+        let mut missing = schedule;
+        missing.as_object_mut().unwrap().remove("periods");
+        assert!(serde_json::from_value::<BudgetChange>(missing).is_err());
+    }
+
+    #[test]
+    fn edit_values_command_cannot_replace_snapshot_or_catalog_provenance() {
+        let edit = serde_json::json!({
+            "action": "edit_line_values",
+            "line_id": "existing",
+            "quantity": "2.5",
+            "price": "10.00"
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(edit.clone()).unwrap(),
+            BudgetChange::EditLineValues {
+                line_id,
+                quantity,
+                price,
+            } if line_id == "existing"
+                && quantity == "2.5".parse::<canteiro_domain::decimal::Quantity>().unwrap()
+                && price == "10.00".parse::<canteiro_domain::decimal::UnitPrice>().unwrap()
+        ));
+        for extra in [
+            "snapshot",
+            "variation_id",
+            "catalog_id",
+            "catalog_edition",
+            "unit",
+        ] {
+            let mut forged = edit.clone();
+            forged[extra] = serde_json::json!("forged");
+            assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+        }
+        let mut missing = edit;
+        missing.as_object_mut().unwrap().remove("quantity");
+        assert!(serde_json::from_value::<BudgetChange>(missing).is_err());
+    }
+
+    #[test]
+    fn copy_move_requests_cannot_inject_prices_or_entire_snapshots() {
+        let copy = serde_json::json!({
+            "action": "copy_line",
+            "source_id": "existing",
+            "new_id": "duplicate",
+            "target_variation_id": "v2"
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(copy.clone()).unwrap(),
+            BudgetChange::CopyLine {
+                source_id,
+                new_id,
+                target_variation_id,
+            } if source_id == "existing" && new_id == "duplicate" && target_variation_id == "v2"
+        ));
+        let mut forged = copy;
+        forged["price"] = serde_json::json!("0.01");
+        assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+
+        let moved = serde_json::json!({
+            "action": "move_line",
+            "line_id": "existing",
+            "target_variation_id": "v2"
+        });
+        assert!(matches!(
+            serde_json::from_value::<BudgetChange>(moved.clone()).unwrap(),
+            BudgetChange::MoveLine {
+                line_id,
+                target_variation_id,
+            } if line_id == "existing" && target_variation_id == "v2"
+        ));
+        let mut forged = moved;
+        forged["snapshot"] = serde_json::json!({"lines": []});
+        assert!(serde_json::from_value::<BudgetChange>(forged).is_err());
+
+        assert!(
+            serde_json::from_value::<BudgetChange>(serde_json::json!({
+                "action": "copy_line",
+                "source_id": "existing",
+                "target_variation_id": "v2"
+            }))
+            .is_err()
+        );
+    }
+}

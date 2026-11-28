@@ -50,7 +50,7 @@ async fn account(h: &Harness, label: &str, mfa: bool) -> TestResult<AccountFixtu
         if message.email == email && message.kind == "verify_email" {
             code = Some(message.token.clone());
         }
-        h.auth.mark_mail_delivered(&message.id).await?;
+        h.auth.mark_mail_delivered(&message.id, "fixture").await?;
     }
     result = h
         .auth

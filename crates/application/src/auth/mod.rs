@@ -28,14 +28,14 @@ pub enum AuthErrorKind {
 pub struct AuthError {
     kind: AuthErrorKind,
     code: &'static str,
-    message: &'static str,
+    message: String,
 }
 impl AuthError {
-    fn new(kind: AuthErrorKind, code: &'static str, message: &'static str) -> Self {
+    fn new(kind: AuthErrorKind, code: &'static str, message: impl Into<String>) -> Self {
         Self {
             kind,
             code,
-            message,
+            message: message.into(),
         }
     }
     fn unavailable() -> Self {
@@ -79,8 +79,8 @@ impl AuthError {
     pub fn code(&self) -> &'static str {
         self.code
     }
-    pub fn message(&self) -> &'static str {
-        self.message
+    pub fn message(&self) -> &str {
+        &self.message
     }
 }
 impl From<AuthStoreError> for AuthError {
@@ -402,14 +402,23 @@ impl AuthService {
     }
     pub async fn pending_mail(&self, limit: i64) -> Result<Vec<MailDelivery>, AuthError> {
         let mut result = vec![];
+        let mut unreadable = false;
         for mail in self.store.claim_mail(limit).await? {
-            let plain = crypto::open(
+            let payload = crypto::open(
                 self.key.as_ref(),
                 &format!("mail:{}:v1", mail.id),
                 &mail.payload,
-            )?;
-            let payload: MailPayload =
-                serde_json::from_slice(&plain).map_err(|_| AuthError::unavailable())?;
+            )
+            .and_then(|plain| {
+                serde_json::from_slice::<MailPayload>(&plain).map_err(|_| AuthError::unavailable())
+            });
+            let Ok(payload) = payload else {
+                // Preserve a mensagem cifrada e registre a tentativa inconclusiva.
+                // Uma entrada ilegível não deve impedir o envio das demais.
+                unreadable = true;
+                self.store.mail_unconfirmed(mail.id, mail.lease_id).await?;
+                continue;
+            };
             result.push(MailDelivery {
                 id: format!("{}:{}", mail.id, mail.lease_id),
                 email: payload.email,
@@ -418,17 +427,54 @@ impl AuthService {
                 expires_at: mail.expires_at.to_rfc3339(),
             });
         }
+        if unreadable && result.is_empty() {
+            return Err(AuthError::unavailable());
+        }
         Ok(result)
     }
-    pub async fn mark_mail_delivered(&self, id: &str) -> Result<(), AuthError> {
+    /// Não encaminha ao provedor uma mensagem cuja reserva perdeu a validade.
+    pub async fn mail_ready_to_send(&self, id: &str) -> Result<bool, AuthError> {
         let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
-        self.store
-            .delivered(
+        Ok(self
+            .store
+            .mail_lease_active(
                 Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
                 Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
             )
-            .await?;
-        Ok(())
+            .await?)
+    }
+    pub async fn mark_mail_unconfirmed(&self, id: &str) -> Result<bool, AuthError> {
+        let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
+        Ok(self
+            .store
+            .mail_unconfirmed(
+                Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
+                Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
+            )
+            .await?)
+    }
+    pub async fn mark_mail_delivered(
+        &self,
+        id: &str,
+        provider_receipt_id: &str,
+    ) -> Result<bool, AuthError> {
+        if provider_receipt_id.is_empty()
+            || provider_receipt_id.len() > 256
+            || !provider_receipt_id
+                .bytes()
+                .all(|byte| byte.is_ascii_graphic())
+        {
+            return Err(AuthError::unavailable());
+        }
+        let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
+        Ok(self
+            .store
+            .delivered(
+                Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
+                Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
+                provider_receipt_id,
+            )
+            .await?)
     }
     pub async fn execute(
         &self,

@@ -87,11 +87,30 @@ impl AuthHttp {
                     continue;
                 };
                 for message in messages {
-                    if delivery.send(&message).await {
-                        if service.mark_mail_delivered(&message.id).await.is_err() {
-                            tracing::warn!("Entrega de acesso aguarda confirmação na fila.");
+                    match service.mail_ready_to_send(&message.id).await {
+                        Ok(true) => {}
+                        Ok(false) => continue,
+                        Err(_) => {
+                            tracing::warn!("Não foi possível revalidar a reserva de e-mail.");
+                            continue;
+                        }
+                    }
+                    if let Some(receipt) = delivery.send(&message).await {
+                        match service.mark_mail_delivered(&message.id, &receipt).await {
+                            Ok(true) => {}
+                            Ok(false) => tracing::warn!(
+                                "Recibo de acesso não aplicado: reserva encerrada ou mensagem finalizada."
+                            ),
+                            Err(_) => {
+                                tracing::warn!("Entrega de acesso aguarda confirmação na fila.")
+                            }
                         }
                     } else {
+                        if service.mark_mail_unconfirmed(&message.id).await.is_err() {
+                            tracing::warn!(
+                                "Não foi possível registrar a tentativa de e-mail sem confirmação."
+                            );
+                        }
                         tracing::warn!(
                             "Provedor de e-mail indisponível; a entrega será tentada novamente."
                         );
@@ -400,7 +419,13 @@ impl MailTransport {
         }))
     }
 
-    async fn send(&self, message: &canteiro_application::auth::MailDelivery) -> bool {
+    async fn send(&self, message: &canteiro_application::auth::MailDelivery) -> Option<String> {
+        if !matches!(
+            message.kind.as_str(),
+            "verify_email" | "reset_password" | "organization_invitation"
+        ) {
+            return None;
+        }
         let delivery_id = message
             .id
             .split_once(':')
@@ -413,24 +438,41 @@ impl MailTransport {
             .json(&self.payload(message))
             .send()
             .await;
-        let Ok(response) = result else {
-            return false;
-        };
-        if !response.status().is_success() {
-            return false;
+        let mut response = result.ok()?;
+        const MAX_RECEIPT_BYTES: usize = 8192;
+        if !response.status().is_success()
+            || response
+                .content_length()
+                .is_some_and(|length| length > MAX_RECEIPT_BYTES as u64)
+        {
+            return None;
         }
-        match response.json::<serde_json::Value>().await {
-            Ok(body) => body
-                .get("id")
-                .and_then(serde_json::Value::as_str)
-                .is_some_and(|id| !id.is_empty() && id.len() <= 256),
-            Err(_) => false,
+        let mut receipt = Vec::new();
+        loop {
+            match response.chunk().await {
+                Ok(Some(chunk)) => {
+                    if chunk.len() > MAX_RECEIPT_BYTES - receipt.len() {
+                        return None;
+                    }
+                    receipt.extend_from_slice(&chunk);
+                }
+                Ok(None) => break,
+                Err(_) => return None,
+            }
         }
+        parse_mail_receipt(&receipt)
     }
 
     // Contrato oficial POST /emails da Resend. O corpo é determinístico em
     // todas as tentativas da mesma mensagem para preservar a idempotência.
     fn payload(&self, message: &canteiro_application::auth::MailDelivery) -> serde_json::Value {
+        if message.kind == "organization_invitation" {
+            let body = format!(
+                "Você recebeu um convite para participar de uma organização no Canteiro 360.\n\nCódigo: {}\n\nAbra {}, entre com o e-mail que recebeu este convite e selecione a opção de aceitar convite em Organizações. Cole o código completo; não o coloque no endereço da página.\n\nExpiração: {}. Confira a organização e o papel antes de aceitar. O convite não concede acesso automaticamente. Se não reconhecer a solicitação, ignore a mensagem.\n\nCanteiro 360",
+                message.token, self.access_url, message.expires_at,
+            );
+            return serde_json::json!({ "from": self.sender, "to": [message.email], "subject": "Convite para o Canteiro 360", "text": body });
+        }
         let (subject, purpose) = if message.kind == "verify_email" {
             (
                 "Confirme seu e-mail no Canteiro 360",
@@ -450,9 +492,46 @@ impl MailTransport {
     }
 }
 
+/// Um recibo ambíguo não comprova aceitação pelo provedor.
+fn parse_mail_receipt(receipt: &[u8]) -> Option<String> {
+    #[derive(serde::Deserialize)]
+    struct Receipt {
+        id: String,
+    }
+
+    if receipt.iter().find(|byte| !byte.is_ascii_whitespace()) != Some(&b'{') {
+        return None;
+    }
+    let Receipt { id } = serde_json::from_slice(receipt).ok()?;
+    (!id.is_empty() && id.len() <= 256 && id.bytes().all(|byte| byte.is_ascii_graphic()))
+        .then_some(id)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mail_receipt_requires_exactly_one_unambiguous_identifier() {
+        for body in [
+            r#"{"id":"first","id":"second"}"#,
+            r#"{"id":"same","id":"same"}"#,
+            r#"{"id":null}"#,
+            r#"{"id":123}"#,
+            r#"["valid-receipt"]"#,
+            r#"{"id":""}"#,
+            r#"{"id":"a b"}"#,
+            r#"{"id":"a\u0000b"}"#,
+            r#"{"id":"a\u007fb"}"#,
+            r#"{"id":"a"} {}"#,
+        ] {
+            assert!(parse_mail_receipt(body.as_bytes()).is_none(), "{body}");
+        }
+        assert_eq!(
+            parse_mail_receipt(br#"{"id":"valid-receipt","metadata":{"id":"other"}}"#).as_deref(),
+            Some("valid-receipt")
+        );
+    }
 
     #[tokio::test]
     async fn resend_protocol_retries_keep_same_payload_and_id_without_following_redirects() {
@@ -468,17 +547,48 @@ mod tests {
                     async move {
                         let mut seen = seen.lock().await;
                         seen.push((headers, body));
-                        if seen.len() == 1 {
+                        if seen.len() == 12 {
+                            return (
+                                StatusCode::OK,
+                                [(header::CONTENT_TYPE, "application/json")],
+                                r#"{"id":"first","id":"second"}"#,
+                            )
+                                .into_response();
+                        }
+                        if seen.len() == 11 {
+                            return (
+                                StatusCode::TEMPORARY_REDIRECT,
+                                [(header::LOCATION, "/emails")],
+                            )
+                                .into_response();
+                        }
+                        (if seen.len() == 1 || seen.len() == 3 {
                             (
                                 StatusCode::SERVICE_UNAVAILABLE,
                                 Json(serde_json::json!({"error":"temporary"})),
+                            )
+                        } else if seen.len() == 5 {
+                            (StatusCode::OK, Json(serde_json::json!({})))
+                        } else if seen.len() == 6 {
+                            (StatusCode::OK, Json(serde_json::json!({"id":""})))
+                        } else if seen.len() == 7 {
+                            (StatusCode::OK, Json(serde_json::json!({"id":123})))
+                        } else if seen.len() == 9 {
+                            (StatusCode::OK, Json(serde_json::json!({"id":"  "})))
+                        } else if seen.len() == 10 {
+                            (
+                                StatusCode::OK,
+                                Json(serde_json::json!({
+                                    "id":"delivery-fixture", "padding":"x".repeat(8192)
+                                })),
                             )
                         } else {
                             (
                                 StatusCode::OK,
                                 Json(serde_json::json!({"id":"delivery-fixture"})),
                             )
-                        }
+                        })
+                        .into_response()
                     }
                 },
             ),
@@ -504,9 +614,12 @@ mod tests {
             token: "fixture-only-code".into(),
             expires_at: "2026-11-13T16:15:00Z".into(),
         };
-        assert!(!transport.send(&message).await);
+        assert!(transport.send(&message).await.is_none());
         message.id = "mail-uuid:second-lease".into();
-        assert!(transport.send(&message).await);
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
         let seen = observed.lock().await;
         assert_eq!(seen.len(), 2);
         assert_eq!(seen[0].1, seen[1].1);
@@ -524,6 +637,70 @@ mod tests {
             assert!(text.contains("https://canteiro.example.test/acesso"));
             assert!(!text.contains("?token="));
             assert!(body.get("password").is_none());
+        }
+        drop(seen);
+
+        message.id = "invitation-uuid:first-lease".into();
+        message.kind = "organization_invitation".into();
+        assert!(transport.send(&message).await.is_none());
+        message.id = "invitation-uuid:second-lease".into();
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
+        let seen = observed.lock().await;
+        assert_eq!(seen.len(), 4);
+        assert_eq!(seen[2].1, seen[3].1);
+        for (headers, body) in &seen[2..] {
+            assert_eq!(headers["idempotency-key"], "invitation-uuid");
+            assert_eq!(body["subject"], "Convite para o Canteiro 360");
+            assert_eq!(body["to"], serde_json::json!(["owner@example.test"]));
+            let text = body["text"].as_str().unwrap();
+            assert!(text.contains(&message.token));
+            assert!(text.contains(&message.expires_at));
+            assert!(text.contains("Organizações"));
+            assert!(text.contains("não concede acesso automaticamente"));
+            assert!(!text.contains("?token="));
+            assert!(!text.contains("definir uma nova senha"));
+        }
+        drop(seen);
+
+        // Um HTTP 2xx sem identificador válido não confirma uma entrega.
+        for lease in ["third", "fourth", "fifth"] {
+            message.id = format!("invitation-uuid:{lease}-lease");
+            assert!(transport.send(&message).await.is_none());
+        }
+        message.id = "invitation-uuid:sixth-lease".into();
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
+        let seen = observed.lock().await;
+        assert_eq!(seen.len(), 8);
+        for (headers, body) in &seen[4..] {
+            assert_eq!(headers["idempotency-key"], "invitation-uuid");
+            assert_eq!(body, &seen[2].1);
+        }
+        drop(seen);
+
+        // Recibos excessivos, identificadores em branco e redirecionamentos
+        // não podem confirmar a entrega, mesmo que a próxima tentativa seja válida.
+        for lease in ["seventh", "eighth", "ninth", "tenth"] {
+            message.id = format!("invitation-uuid:{lease}-lease");
+            assert!(transport.send(&message).await.is_none());
+        }
+        message.id = "invitation-uuid:eleventh-lease".into();
+        assert_eq!(
+            transport.send(&message).await.as_deref(),
+            Some("delivery-fixture")
+        );
+        message.kind = "unknown".into();
+        assert!(transport.send(&message).await.is_none());
+        let seen = observed.lock().await;
+        assert_eq!(seen.len(), 13);
+        for (headers, body) in &seen[8..] {
+            assert_eq!(headers["idempotency-key"], "invitation-uuid");
+            assert_eq!(body, &seen[2].1);
         }
         server.abort();
     }
