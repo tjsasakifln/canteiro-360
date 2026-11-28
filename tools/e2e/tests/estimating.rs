@@ -1465,6 +1465,40 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
     assert_eq!(notices.notices.len(), 1);
     assert_eq!(notices.notices[0].destination, destination);
 
+    let http = reqwest::Client::new();
+    let url = format!("{}/api/notices/context", h.app_url);
+    let cookie = format!("__Host-canteiro-session={}", editor.session);
+    let first = http
+        .get(&url)
+        .header(reqwest::header::COOKIE, &cookie)
+        .send()
+        .await?
+        .error_for_status()?;
+    assert!(!first.headers().contains_key(reqwest::header::LINK));
+    let first: canteiro_contracts::notifications::NoticesContext = first.json().await?;
+    assert_eq!(first.notices, notices.notices);
+    let second = http
+        .get(format!("{url}?page=2"))
+        .header(reqwest::header::COOKIE, &cookie)
+        .send()
+        .await?
+        .error_for_status()?;
+    assert_eq!(
+        second.headers()[reqwest::header::LINK],
+        "</api/notices/context?page=1>; rel=\"prev\""
+    );
+    let second: canteiro_contracts::notifications::NoticesContext = second.json().await?;
+    assert!(second.notices.is_empty());
+    assert_eq!(second.context, first.context);
+    assert_eq!(
+        http.get(format!("{url}?page=0"))
+            .header(reqwest::header::COOKIE, &cookie)
+            .send()
+            .await?
+            .status(),
+        reqwest::StatusCode::BAD_REQUEST
+    );
+
     let browser = Browser::start(&h).await?;
     browser.navigate(&h.app_url).await?;
     browser
@@ -1616,6 +1650,14 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
             .notices
             .is_empty()
     );
+    let revoked = http
+        .get(&url)
+        .header(reqwest::header::COOKIE, &cookie)
+        .send()
+        .await?
+        .error_for_status()?;
+    let revoked: canteiro_contracts::notifications::NoticesContext = revoked.json().await?;
+    assert!(revoked.notices.is_empty());
     browser
         .navigate(&format!("{}{}", h.app_url, destination))
         .await?;
@@ -1636,6 +1678,7 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
                 "exact_destination_keyboard_360_1280",
                 "persisted_grouping_toggle_keyboard_360_1280",
                 "empty_inbox_page_and_return_keyboard_360_1280",
+                "authorized_api_pagination_and_revocation",
                 "get_does_not_confirm",
                 "revoked_scope_hides_notice_and_target"
             ]
