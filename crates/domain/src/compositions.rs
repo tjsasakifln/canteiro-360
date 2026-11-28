@@ -248,7 +248,7 @@ impl CompositionBook {
                         source.unit,
                         line.unit,
                         line.conversion.as_ref(),
-                        UnitPrice::new(ExactDecimal::ZERO)?,
+                        source.price,
                     )?;
                 }
             }
@@ -815,6 +815,80 @@ mod tests {
         };
         assert_eq!(item.validate(), Err(CompositionError::Invalid));
     }
+    #[test]
+    fn informed_dependencies_validate_conversion_against_the_historical_price() {
+        use crate::catalogs::{CatalogEdition, CatalogItem, CostSource};
+
+        let edition = CatalogEdition::assemble(
+            "ref".into(),
+            1,
+            "2026-11-01".parse().unwrap(),
+            CostSource {
+                title: "Tabela exemplo".into(),
+                organization: "Origem".into(),
+                license: "Uso autorizado".into(),
+                locality: "SC".into(),
+                tax_regime: "Direto".into(),
+                competence: "2026-11".into(),
+            },
+            vec![CatalogItem {
+                code: "X".into(),
+                description: "Material exemplo".into(),
+                category: CostCategory::Material,
+                unit: MeasureUnit::Unit,
+                price: "99999999999999".parse().unwrap(),
+            }],
+        )
+        .unwrap();
+        let mut catalogs = CatalogLibrary::default();
+        catalogs.publish(edition).unwrap();
+
+        let mut root = c("ROOT");
+        root.lines.push(ComponentLine {
+            id: "sub".into(),
+            source: ComponentSource::Composition { code: "SUB".into() },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::SquareMetre,
+            conversion: None,
+        });
+        let mut child = c("SUB");
+        child.lines.push(ComponentLine {
+            id: "material".into(),
+            source: ComponentSource::Catalog {
+                catalog_id: "ref".into(),
+                edition: 1,
+                code: "X".into(),
+            },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::Kilogram,
+            conversion: Some(UnitConversion {
+                from: MeasureUnit::Unit,
+                to: MeasureUnit::Kilogram,
+                factor: "2".parse().unwrap(),
+                reference: "Fator declarado".into(),
+            }),
+        });
+        let mut invalid = CompositionBook::default();
+        invalid.insert(root.clone()).unwrap();
+        invalid.insert(child.clone()).unwrap();
+        assert!(matches!(
+            invalid.calculate("ROOT", &catalogs),
+            Err(CompositionError::Catalog(CatalogError::Decimal(_)))
+        ));
+        assert!(matches!(
+            invalid.calculate("SUB", &catalogs),
+            Err(CompositionError::Catalog(CatalogError::Decimal(_)))
+        ));
+
+        child.lines[0].conversion.as_mut().unwrap().factor = "0.5".parse().unwrap();
+        let mut valid = CompositionBook::default();
+        valid.insert(root).unwrap();
+        valid.insert(child).unwrap();
+        let result = valid.calculate("ROOT", &catalogs).unwrap();
+        assert!(result.informed);
+        assert_eq!(result.direct_cost.to_string(), "100.000000");
+    }
+
     #[test]
     fn mutually_recursive_compositions_report_complete_cycle() {
         let mut a = c("A");
