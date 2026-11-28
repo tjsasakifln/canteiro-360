@@ -50,6 +50,19 @@ fn xml_text(out: &mut String, value: &str, row: usize, col: usize) -> Result<(),
     Ok(())
 }
 
+// Os campos do orçamento são de linha única, mesmo quando o XML admite
+// quebras de linha e tabulações. Não transportar valores que o domínio recusa.
+fn validate_budget_cell(value: &str, row: usize, col: usize) -> Result<(), CellError> {
+    if value.chars().any(char::is_control) {
+        return Err(error(
+            row,
+            col,
+            "Campo do orçamento não admite caracteres de controle.",
+        ));
+    }
+    Ok(())
+}
+
 fn worksheet_cell(out: &mut String, row: usize, col: usize, value: &str) -> Result<(), CellError> {
     if value.is_empty() {
         return Ok(());
@@ -82,7 +95,7 @@ pub fn export_from_csv(csv: &str, locale: NumberLocale) -> Result<Vec<u8>, CellE
         .strip_prefix(FORMAT_VERSION)
         .and_then(|s| s.strip_prefix("\r\n"))
         .ok_or_else(|| error(1, 1, "Versão CSV inválida para exportação XLSX."))?;
-    let (rows, _) = parse_csv(rest, SHEET_COLUMNS, MAX_RECORDS).map_err(|mut error| {
+    let (rows, starts) = parse_csv(rest, SHEET_COLUMNS, MAX_RECORDS).map_err(|mut error| {
         // A linha da versão também ocupa a primeira linha do transporte.
         error.row += 1;
         error
@@ -107,8 +120,9 @@ pub fn export_from_csv(csv: &str, locale: NumberLocale) -> Result<Vec<u8>, CellE
     for (index, cells) in rows.iter().enumerate() {
         let row = index + 2;
         write!(sheet, "<row r=\"{row}\">").expect("escrita em String");
-        for (index, value) in cells.iter().enumerate() {
-            worksheet_cell(&mut sheet, row, index + 1, value)?;
+        for (column, value) in cells.iter().enumerate() {
+            validate_budget_cell(value, starts[index] + 1, column + 1)?;
+            worksheet_cell(&mut sheet, row, column + 1, value)?;
         }
         sheet.push_str("</row>");
         if sheet.len() > MAX_XML - "</sheetData></worksheet>".len() {
@@ -825,6 +839,7 @@ fn read_row(
         } else {
             return Err(invalid(index + 1));
         }
+        validate_budget_cell(cell, row, index + 1)?;
         if index == 0 {
             record_type.clone_from(cell);
         }
@@ -1578,6 +1593,34 @@ mod tests {
         let err = decode_text("_x003D_1+1", 10_004, 14).unwrap_err();
         assert_eq!((err.row, err.column), (10_004, 14));
         assert!(err.cause.contains("fórmula"));
+    }
+
+    #[test]
+    fn xlsx_rejects_budget_cell_controls_in_both_directions() {
+        for encoded in ["A_x000D_B", "A&#10;B", "A_x0009_B"] {
+            let row = format!(
+                r#"<row r="10004"><c r="N10004" t="inlineStr"><is><t>{encoded}</t></is></c></row>"#
+            );
+            let err = read_row(&mut row.as_str(), 10_004, NumberLocale::Canonical, &[])
+                .unwrap_err();
+            assert_eq!((err.row, err.column), (10_004, 14));
+            assert!(err.cause.contains("caracteres de controle"));
+        }
+        for value in ["A\rB", "A\nB", "A\tB"] {
+            let mut row = r#"<row r="10004"><c r="N10004" t="s"><v>0</v></c></row>"#;
+            let err = read_row(&mut row, 10_004, NumberLocale::Canonical, &[value.into()])
+                .unwrap_err();
+            assert_eq!((err.row, err.column), (10_004, 14));
+            assert!(err.cause.contains("caracteres de controle"));
+        }
+
+        let csv = format!(
+            "{FORMAT_VERSION}\r\n{}\r\nITEM;;;;;;;;;;;;00001;\"A\r\nB\";m;1;2;;\r\n",
+            crate::budget_csv::HEADER.join(";")
+        );
+        let err = export_from_csv(&csv, NumberLocale::Canonical).unwrap_err();
+        assert_eq!((err.row, err.column), (3, 14));
+        assert!(err.cause.contains("caracteres de controle"));
     }
 
     #[test]
