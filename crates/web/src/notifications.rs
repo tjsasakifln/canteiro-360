@@ -18,7 +18,20 @@ pub fn page_with_draft(
     key: String,
     draft: Option<NoticePreferencesDraft>,
 ) -> String {
+    page_with_pagination(ctx, message, key, draft, 1, false)
+}
+
+pub fn page_with_pagination(
+    ctx: NoticesContext,
+    message: Option<String>,
+    key: String,
+    draft: Option<NoticePreferencesDraft>,
+    page: u32,
+    has_more: bool,
+) -> String {
     let grouped = ctx.preferences.settings.group_by_day;
+    let previous = page.checked_sub(1).filter(|value| *value > 0);
+    let next = page.checked_add(1).filter(|_| has_more);
     let mut previous_day = None;
     let notice_rows=ctx.notices.clone().into_iter().map(|row|{
         let heading = if grouped {
@@ -78,8 +91,29 @@ pub fn page_with_draft(
             <div class="record-layout">
                 <section class="foundation-card">
                     <h2>"Caixa de entrada"</h2>
-                    {ctx.notices.is_empty().then(||view!{<p>"Nenhuma pendência disponível para seus acessos nesta empresa."</p>})}
+                    {ctx.notices.is_empty().then(||view!{<p>{
+                        if page == 1 {
+                            "Nenhuma pendência disponível para seus acessos nesta empresa."
+                        } else {
+                            "Nenhuma pendência nesta página. Volte para consultar os registros atuais."
+                        }
+                    }</p>})}
                     {notice_rows}
+                    {(previous.is_some() || next.is_some()).then(|| view!{
+                        <nav aria-label="Navegação das pendências" class="record-form">
+                            <p>{format!("Página {page}")}</p>
+                            {previous.map(|number| view!{
+                                <a href=format!("/pendencias?page={number}") rel="prev" class="secondary-button">
+                                    "Página anterior de pendências"
+                                </a>
+                            })}
+                            {next.map(|number| view!{
+                                <a href=format!("/pendencias?page={number}") rel="next" class="secondary-button">
+                                    "Próxima página de pendências"
+                                </a>
+                            })}
+                        </nav>
+                    })}
                 </section>
                 <section class="foundation-card">
                     <h2>"Preferências de comunicação"</h2>
