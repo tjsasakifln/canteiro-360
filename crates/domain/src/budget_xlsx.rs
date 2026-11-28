@@ -1601,15 +1601,15 @@ mod tests {
             let row = format!(
                 r#"<row r="10004"><c r="N10004" t="inlineStr"><is><t>{encoded}</t></is></c></row>"#
             );
-            let err = read_row(&mut row.as_str(), 10_004, NumberLocale::Canonical, &[])
-                .unwrap_err();
+            let err =
+                read_row(&mut row.as_str(), 10_004, NumberLocale::Canonical, &[]).unwrap_err();
             assert_eq!((err.row, err.column), (10_004, 14));
             assert!(err.cause.contains("caracteres de controle"));
         }
         for value in ["A\rB", "A\nB", "A\tB"] {
             let mut row = r#"<row r="10004"><c r="N10004" t="s"><v>0</v></c></row>"#;
-            let err = read_row(&mut row, 10_004, NumberLocale::Canonical, &[value.into()])
-                .unwrap_err();
+            let err =
+                read_row(&mut row, 10_004, NumberLocale::Canonical, &[value.into()]).unwrap_err();
             assert_eq!((err.row, err.column), (10_004, 14));
             assert!(err.cause.contains("caracteres de controle"));
         }
