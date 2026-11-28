@@ -1,18 +1,6 @@
 use super::*;
 use canteiro_domain::compositions::{CompositionError, CostMemory};
 
-fn dependencies(composition: &Composition, keys: &mut BTreeSet<(String, u32)>) {
-    for line in &composition.lines {
-        if let ComponentSource::Catalog {
-            catalog_id,
-            edition,
-            ..
-        } = &line.source
-        {
-            keys.insert((catalog_id.clone(), *edition));
-        }
-    }
-}
 async fn calculating_book(
     tx: &mut AuthTransaction,
     tenant: Uuid,
@@ -20,20 +8,23 @@ async fn calculating_book(
     candidate: &Composition,
 ) -> Result<(CompositionBook, CatalogLibrary, Vec<(String, u32)>), AuthError> {
     let mut book = CompositionBook::default();
-    let mut sources = BTreeSet::new();
     let rows = tx.composition_graph(tenant, scope).await?;
     for old in rows {
         if old.code != candidate.code {
             let composition: Composition =
                 serde_json::from_str(&old.payload).map_err(|_| AuthError::unavailable())?;
-            dependencies(&composition, &mut sources);
             book.insert(composition)
                 .map_err(|_| AuthError::unavailable())?;
         }
     }
-    dependencies(candidate, &mut sources);
     book.insert(candidate.clone())
         .map_err(|_| invalid("Confira as linhas e incidências da composição."))?;
+    let sources = book
+        .catalog_dependencies(&candidate.code)
+        .map_err(|error| match error {
+            CompositionError::Cycle(path) => invalid(format!("Composição circular: {path}.")),
+            _ => invalid("Composição vinculada inexistente ou incompatível."),
+        })?;
     let mut catalogs = CatalogLibrary::default();
     for (catalog, edition) in &sources {
         let loaded = super::catalogs::load_catalog(tx, tenant, scope, catalog, *edition).await?;
@@ -66,13 +57,6 @@ async fn calculating_book(
             .map_err(|_| invalid("Confira a unidade da linha e a conversão documentada."))?;
         }
     }
-    // Custo informado não pode mascarar fonte inexistente, unidade incompatível
-    // ou ciclo. O cálculo monetário isolado não percorre tais dependências.
-    book.validate_composition_links(&candidate.code)
-        .map_err(|error| match error {
-            CompositionError::Cycle(path) => invalid(format!("Composição circular: {path}.")),
-            _ => invalid("Composição vinculada inexistente ou incompatível."),
-        })?;
     // Uma mudança de unidade na composição revisada não pode romper
     // referências que outros serviços já possuem para esta composição.
     book.validate_dependents_of(&candidate.code).map_err(|_| {
