@@ -87,6 +87,14 @@ impl AuthHttp {
                     continue;
                 };
                 for message in messages {
+                    match service.mail_ready_to_send(&message.id).await {
+                        Ok(true) => {}
+                        Ok(false) => continue,
+                        Err(_) => {
+                            tracing::warn!("Não foi possível revalidar a reserva de e-mail.");
+                            continue;
+                        }
+                    }
                     if let Some(receipt) = delivery.send(&message).await {
                         match service.mark_mail_delivered(&message.id, &receipt).await {
                             Ok(true) => {}
