@@ -23,15 +23,46 @@ pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/pendencias/preferencias", post(form))
         .layer(DefaultBodyLimit::max(8_192))
 }
-async fn context(auth: Option<Extension<AuthHttp>>, headers: HeaderMap) -> Response {
+async fn context(
+    auth: Option<Extension<AuthHttp>>,
+    headers: HeaderMap,
+    input: Result<Query<NoticePage>, axum::extract::rejection::QueryRejection>,
+) -> Response {
     let (auth, token) = match authenticated(auth, &headers, false) {
         Ok(value) => value,
         Err(response) => return *response,
     };
-    match auth.service().notices_context(&token).await {
-        Ok(value) => private_json(value),
+    let Ok(Query(input)) = input else {
+        return bad_input();
+    };
+    let page = input.page.unwrap_or(1);
+    match auth.service().notices_page(&token, page).await {
+        Ok((value, has_more)) => {
+            let mut response = private_json(value);
+            if let Some(link) = notice_page_links(page, has_more) {
+                response.headers_mut().insert(axum::http::header::LINK, link);
+            }
+            response
+        }
         Err(error) => application_failure(error),
     }
+}
+
+/// Mantém o corpo JSON existente e publica a navegação no cabeçalho Link.
+fn notice_page_links(page: u32, has_more: bool) -> Option<axum::http::HeaderValue> {
+    let mut links = Vec::new();
+    if let Some(previous) = page.checked_sub(1).filter(|value| *value > 0) {
+        links.push(format!(
+            "</api/notices/context?page={previous}>; rel=\"prev\""
+        ));
+    }
+    if let Some(next) = page.checked_add(1).filter(|_| has_more) {
+        links.push(format!("</api/notices/context?page={next}>; rel=\"next\""));
+    }
+    if links.is_empty() {
+        return None;
+    }
+    axum::http::HeaderValue::from_str(&links.join(", ")).ok()
 }
 async fn preferences(
     auth: Option<Extension<AuthHttp>>,
@@ -196,4 +227,33 @@ async fn invalid_preferences(
         ),
         StatusCode::BAD_REQUEST,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn notice_api_links_preserve_the_existing_json_and_expose_all_pages() {
+        assert!(notice_page_links(1, false).is_none());
+        assert_eq!(
+            notice_page_links(1, true).unwrap(),
+            "</api/notices/context?page=2>; rel=\"next\""
+        );
+        assert_eq!(
+            notice_page_links(2, true).unwrap(),
+            "</api/notices/context?page=1>; rel=\"prev\", </api/notices/context?page=3>; rel=\"next\""
+        );
+        assert_eq!(
+            notice_page_links(3, false).unwrap(),
+            "</api/notices/context?page=2>; rel=\"prev\""
+        );
+        assert!(
+            notice_page_links(u32::MAX, true)
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .ends_with("rel=\"prev\"")
+        );
+    }
 }
