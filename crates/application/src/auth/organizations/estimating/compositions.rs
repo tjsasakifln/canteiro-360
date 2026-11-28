@@ -156,6 +156,8 @@ impl AuthService {
         let memory = book.calculate(&candidate.code, &catalogs).map_err(|_| {
             invalid("Composição circular, fonte ausente, unidade incompatível ou cálculo inválido.")
         })?;
+        book.validate_dependent_conversions(&candidate.code, memory.direct_cost)
+            .map_err(|_| invalid("O custo direto excede o limite de uma conversão já vinculada."))?;
         self.record_revalidate(&mut tx, token, &a, scope, AccessAction::View)
             .await?;
         tx.commit().await?;
@@ -214,10 +216,13 @@ impl AuthService {
                     return Err(error);
                 }
             };
-        book.calculate(&input.composition.code, &catalogs)
+        let memory = book
+            .calculate(&input.composition.code, &catalogs)
             .map_err(|_| {
                 invalid("Revise o ciclo da composição, as unidades e a base de cada incidência.")
             })?;
+        book.validate_dependent_conversions(&input.composition.code, memory.direct_cost)
+            .map_err(|_| invalid("O custo direto excede o limite de uma conversão já vinculada."))?;
         let payload =
             serde_json::to_string(&input.composition).map_err(|_| AuthError::unavailable())?;
         let saved = tx
