@@ -40,7 +40,9 @@ async fn context(
         Ok((value, has_more)) => {
             let mut response = private_json(value);
             if let Some(link) = notice_page_links(page, has_more) {
-                response.headers_mut().insert(axum::http::header::LINK, link);
+                response
+                    .headers_mut()
+                    .insert(axum::http::header::LINK, link);
             }
             response
         }
