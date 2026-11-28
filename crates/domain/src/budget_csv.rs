@@ -113,7 +113,13 @@ pub(crate) fn csv_row(cells: &[String], out: &mut String) {
     out.push_str("\r\n");
 }
 fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(), CellError> {
+    // Contar o transporte real antes de aumentar o buffer, inclusive aspas
+    // duplicadas, separadores, CRLF e bytes UTF-8.
+    let mut row_bytes = cells.len().saturating_sub(1) + 2;
     for (col, value) in cells.iter().enumerate() {
+        if value.len() > 10_000 {
+            return Err(err(row_number, col + 1, "Célula excede o limite."));
+        }
         if !safe(value) {
             return Err(err(
                 row_number,
@@ -121,6 +127,13 @@ fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(
                 "Campo pode ser interpretado como fórmula ao abrir a planilha.",
             ));
         }
+        row_bytes += value.len();
+        if value.bytes().any(|b| matches!(b, b';' | b'"' | b'\n' | b'\r')) {
+            row_bytes += 2 + value.bytes().filter(|&b| b == b'"').count();
+        }
+    }
+    if out.len().saturating_add(row_bytes) > MAX_BYTES {
+        return Err(err(row_number, 1, "Exportação acima do limite de 8 MiB."));
     }
     csv_row(cells, out);
     Ok(())
@@ -1122,6 +1135,39 @@ mod tests {
             compare_details(None, &incoming)
         );
     }
+    #[test]
+    fn export_row_enforces_exact_encoded_byte_limit_before_append() {
+        let cells = vec!["a;\"é".to_owned(), "fim".to_owned()];
+        let mut encoded = String::new();
+        csv_row(&cells, &mut encoded);
+        let mut out = "x".repeat(MAX_BYTES - encoded.len());
+        export_row(&cells, &mut out, 5).unwrap();
+        assert_eq!(out.len(), MAX_BYTES);
+        assert!(out.ends_with(&encoded));
+
+        let error = export_row(&cells, &mut out, 6).unwrap_err();
+        assert_eq!((error.row, error.column), (6, 1));
+        assert_eq!(out.len(), MAX_BYTES);
+        assert!(out.ends_with(&encoded));
+
+        let mut empty = String::new();
+        let error = export_row(&["x".repeat(10_001)], &mut empty, 7).unwrap_err();
+        assert_eq!((error.row, error.column), (7, 1));
+        assert!(empty.is_empty());
+    }
+
+    #[test]
+    fn export_rejects_oversized_ten_thousand_service_budget() {
+        let mut original = sample(10_000);
+        for line in &mut original.lines {
+            line.description = "a".repeat(800);
+        }
+        let error = export_csv(&original, NumberLocale::Canonical).unwrap_err();
+        assert!(error.row > 5 && error.row <= 10_004);
+        assert_eq!(error.column, 1);
+        assert_eq!(error.cause, "Exportação acima do limite de 8 MiB.");
+    }
+
     #[test]
     fn version_header_counts_toward_total_input_size() {
         let oversized = format!("{FORMAT_VERSION}\n{}", "x".repeat(MAX_BYTES));
