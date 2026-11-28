@@ -683,7 +683,11 @@ async fn inbox_pagination_preserves_priority_and_scope_isolation() {
     assert_eq!(last_page.len(), 1);
     assert!(!more);
     assert!(first_page[199].due_on < last_page[0].due_on);
-    assert!(!first_page.iter().any(|row| row.event_id == last_page[0].event_id));
+    assert!(
+        !first_page
+            .iter()
+            .any(|row| row.event_id == last_page[0].event_id)
+    );
     for scopes in [vec![], vec![second.scope]] {
         let (rows, more) = tx
             .user_notice_page(first.tenant, first.actor, &scopes, 0)
