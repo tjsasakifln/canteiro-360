@@ -10,7 +10,9 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
     routing::{get, post},
 };
+use canteiro_application::auth::AuthErrorKind;
 use canteiro_contracts::notifications::*;
+use canteiro_web::notifications::NoticePreferencesDraft;
 use std::collections::BTreeMap;
 
 pub fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
@@ -79,15 +81,7 @@ async fn form(
     };
     let parsed = (|| -> Result<NoticePreferencesCommand, String> {
         let context = form_context(&data)?;
-        let expected_version = if field(&data, "expected_version").is_empty() {
-            None
-        } else {
-            Some(
-                field(&data, "expected_version")
-                    .parse()
-                    .map_err(|_| "Confira a versão atual das preferências.".to_owned())?,
-            )
-        };
+        let expected_version = preference_version(&data)?;
         let text = field(&data, "reminder_days").trim();
         let reminder_days = if text.is_empty() {
             vec![]
@@ -113,17 +107,7 @@ async fn form(
     let command = match parsed {
         Ok(v) => v,
         Err(message) => {
-            return match auth.service().notices_context(&token).await {
-                Ok(ctx) => html_page(
-                    canteiro_web::notifications::page(
-                        ctx,
-                        Some(message),
-                        uuid::Uuid::new_v4().to_string(),
-                    ),
-                    StatusCode::BAD_REQUEST,
-                ),
-                Err(e) => application_failure(e),
-            };
+            return invalid_preferences(&auth, &token, &data, message).await;
         }
     };
     match auth
@@ -132,6 +116,61 @@ async fn form(
         .await
     {
         Ok(_) => Redirect::to("/pendencias").into_response(),
+        Err(error) if error.kind() == AuthErrorKind::InvalidInput => {
+            invalid_preferences(&auth, &token, &data, error.message().to_owned()).await
+        }
         Err(error) => application_failure(error),
     }
+}
+
+fn preference_version(data: &BTreeMap<String, String>) -> Result<Option<i64>, String> {
+    let raw = field(data, "expected_version");
+    if raw.is_empty() {
+        Ok(None)
+    } else {
+        raw.parse()
+            .map(Some)
+            .map_err(|_| "Confira a versão atual das preferências.".to_owned())
+    }
+}
+
+async fn invalid_preferences(
+    auth: &AuthHttp,
+    token: &str,
+    data: &BTreeMap<String, String>,
+    message: String,
+) -> Response {
+    let ctx = match auth.service().notices_context(token).await {
+        Ok(ctx) => ctx,
+        Err(error) => return application_failure(error),
+    };
+    let (draft, message) = if form_context(data).ok().as_ref() == ctx.context.as_ref()
+        && ctx.context.is_some()
+        && preference_version(data) == Ok(ctx.preferences.version)
+    {
+        (
+            Some(NoticePreferencesDraft {
+                mute_optional_email: field(data, "mute_optional_email") == "true",
+                group_by_day: field(data, "group_by_day") == "true",
+                reminder_days: field(data, "reminder_days").to_owned(),
+            }),
+            message,
+        )
+    } else {
+        (
+            None,
+            format!(
+                "{message} A empresa ativa ou a versão mudou. Confira as preferências atuais antes de editar."
+            ),
+        )
+    };
+    html_page(
+        canteiro_web::notifications::page_with_draft(
+            ctx,
+            Some(message),
+            uuid::Uuid::new_v4().to_string(),
+            draft,
+        ),
+        StatusCode::BAD_REQUEST,
+    )
 }
