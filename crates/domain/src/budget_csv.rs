@@ -128,7 +128,10 @@ fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(
             ));
         }
         row_bytes += value.len();
-        if value.bytes().any(|b| matches!(b, b';' | b'"' | b'\n' | b'\r')) {
+        if value
+            .bytes()
+            .any(|b| matches!(b, b';' | b'"' | b'\n' | b'\r'))
+        {
             row_bytes += 2 + value.bytes().filter(|&b| b == b'"').count();
         }
     }
