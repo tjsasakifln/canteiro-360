@@ -313,6 +313,20 @@ impl CompositionBook {
             .compositions
             .get(code)
             .ok_or_else(|| CompositionError::Missing(code.into()))?;
+        self.validate_dependent_conversions(code, source.known_link_price()?)
+    }
+
+    /// Confere conversões de referências existentes com o custo direto
+    /// calculado, inclusive quando a fonte utiliza fórmula.
+    pub fn validate_dependent_conversions(
+        &self,
+        code: &str,
+        direct_cost: UnitPrice,
+    ) -> Result<(), CompositionError> {
+        let source = self
+            .compositions
+            .get(code)
+            .ok_or_else(|| CompositionError::Missing(code.into()))?;
         for composition in self.compositions.values() {
             for line in &composition.lines {
                 if let ComponentSource::Composition { code: dependency } = &line.source
@@ -322,7 +336,7 @@ impl CompositionBook {
                         source.unit,
                         line.unit,
                         line.conversion.as_ref(),
-                        source.known_link_price()?,
+                        direct_cost,
                     )?;
                 }
             }
@@ -890,6 +904,41 @@ mod tests {
         ));
 
         child.lines[0].conversion.as_mut().unwrap().factor = "0.5".parse().unwrap();
+
+        // A formula source can have a valid direct cost that overflows only
+        // when converted by an existing dependent, even an informed one.
+        let mut formula_child = child.clone();
+        formula_child.cost_mode = CostMode::Formula;
+        formula_child.bdi = "0".parse().unwrap();
+        formula_child.discount = "0".parse().unwrap();
+        let mut dependent = root.clone();
+        dependent.lines[0].unit = MeasureUnit::Kilogram;
+        dependent.lines[0].conversion = Some(UnitConversion {
+            from: MeasureUnit::SquareMetre,
+            to: MeasureUnit::Kilogram,
+            factor: "3".parse().unwrap(),
+            reference: "Fator declarado".into(),
+        });
+        let mut revised = CompositionBook::default();
+        revised.insert(dependent.clone()).unwrap();
+        revised.insert(formula_child.clone()).unwrap();
+        let memory = revised.calculate("SUB", &catalogs).unwrap();
+        assert!(revised.validate_dependents_of("SUB").is_ok());
+        assert!(matches!(
+            revised.validate_dependent_conversions("SUB", memory.direct_cost),
+            Err(CompositionError::Catalog(CatalogError::Decimal(_)))
+        ));
+
+        dependent.lines[0].conversion.as_mut().unwrap().factor = "1".parse().unwrap();
+        let mut compatible = CompositionBook::default();
+        compatible.insert(dependent).unwrap();
+        compatible.insert(formula_child).unwrap();
+        assert!(
+            compatible
+                .validate_dependent_conversions("SUB", memory.direct_cost)
+                .is_ok()
+        );
+
         let mut valid = CompositionBook::default();
         valid.insert(root).unwrap();
         valid.insert(child).unwrap();
