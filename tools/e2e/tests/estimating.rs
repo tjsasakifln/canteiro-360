@@ -1523,6 +1523,40 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
                 Duration::from_secs(5),
             )
             .await?;
+        let saved_preferences = h.auth.notices_context(&editor.session).await?.preferences;
+        browser.tab_to("input[name='reminder_days']").await?;
+        browser.key("\u{e010}").await?;
+        browser.key("x").await?;
+        browser
+            .tab_to("form[action='/pendencias/preferencias'] button[type='submit']")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return !!document.querySelector('[role=alert]') && document.querySelector('input[name=reminder_days]')?.value.endsWith('x');",
+                Duration::from_secs(5),
+            )
+            .await?;
+        assert_eq!(
+            h.auth.notices_context(&editor.session).await?.preferences,
+            saved_preferences
+        );
+        browser
+            .full_screenshot(&h.evidence.join(format!("notice-preferences-error-{width}.png")))
+            .await?;
+        browser.tab_to("input[name='reminder_days']").await?;
+        browser.key("\u{e010}").await?;
+        browser.key("\u{e003}").await?;
+        browser
+            .tab_to("form[action='/pendencias/preferencias'] button[type='submit']")
+            .await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.pathname === '/pendencias' && !document.querySelector('[role=alert]');",
+                Duration::from_secs(5),
+            )
+            .await?;
         browser.tab_to(&format!("a[href='{destination}']")).await?;
         browser.key(ENTER).await?;
         browser
