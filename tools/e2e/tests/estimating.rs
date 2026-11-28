@@ -1499,6 +1499,26 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
                 .await?,
             1
         );
+        browser
+            .navigate(&format!("{}/pendencias?page=2", h.app_url))
+            .await?;
+        assert_eq!(
+            browser
+                .execute("return document.body.innerText.includes('Nenhuma pendência nesta página') && !document.querySelector('a[rel=next]');")
+                .await?,
+            true
+        );
+        browser
+            .full_screenshot(&h.evidence.join(format!("notice-page-empty-{width}.png")))
+            .await?;
+        browser.tab_to("a[rel='prev']").await?;
+        browser.key(ENTER).await?;
+        browser
+            .wait(
+                "return location.search === '?page=1' && !!document.querySelector('[data-notice-day]');",
+                Duration::from_secs(5),
+            )
+            .await?;
         browser.tab_to("input[name='group_by_day']").await?;
         browser.key("\u{e00d}").await?;
         browser
@@ -1615,6 +1635,7 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
                 "idempotent_obligation_event",
                 "exact_destination_keyboard_360_1280",
                 "persisted_grouping_toggle_keyboard_360_1280",
+                "empty_inbox_page_and_return_keyboard_360_1280",
                 "get_does_not_confirm",
                 "revoked_scope_hides_notice_and_target"
             ]
