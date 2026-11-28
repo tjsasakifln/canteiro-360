@@ -261,6 +261,41 @@ impl CompositionBook {
         }
         Ok(())
     }
+    /// Fontes históricas da composição e de suas dependências transitivas.
+    /// Inclui vínculos declarados no custo informado, mas não fontes de
+    /// composições independentes do mesmo orçamento.
+    pub fn catalog_dependencies(
+        &self,
+        code: &str,
+    ) -> Result<BTreeSet<(String, u32)>, CompositionError> {
+        self.validate_composition_links(code)?;
+        let mut visited = BTreeSet::new();
+        let mut sources = BTreeSet::new();
+        let mut pending = vec![code];
+        while let Some(current) = pending.pop() {
+            if !visited.insert(current) {
+                continue;
+            }
+            let item = self
+                .compositions
+                .get(current)
+                .ok_or_else(|| CompositionError::Missing(current.into()))?;
+            for line in &item.lines {
+                match &line.source {
+                    ComponentSource::Catalog {
+                        catalog_id,
+                        edition,
+                        ..
+                    } => {
+                        sources.insert((catalog_id.clone(), *edition));
+                    }
+                    ComponentSource::Composition { code } => pending.push(code.as_str()),
+                }
+            }
+        }
+        Ok(sources)
+    }
+
     /// Mudanças em uma composição também precisam preservar as unidades dos
     /// vínculos que outras composições mantêm com ela, inclusive de custo informado.
     /// Uma revisão do insumo não deve invalidar serviços já cadastrados.
@@ -487,6 +522,49 @@ mod tests {
             bdi: "20".parse().unwrap(),
             discount: "10".parse().unwrap(),
         }
+    }
+    #[test]
+    fn catalog_dependencies_exclude_unrelated_compositions_and_keep_informed_links() {
+        let catalog = |id: &str, edition: u32| ComponentLine {
+            id: id.into(),
+            source: ComponentSource::Catalog {
+                catalog_id: id.into(),
+                edition,
+                code: "X".into(),
+            },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::SquareMetre,
+            conversion: None,
+        };
+        let link = |id: &str, code: &str| ComponentLine {
+            id: id.into(),
+            source: ComponentSource::Composition { code: code.into() },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::SquareMetre,
+            conversion: None,
+        };
+        let mut root = c("ROOT");
+        root.lines = vec![catalog("base", 1), link("sub", "SUB"), link("same", "SUB")];
+        let mut sub = c("SUB");
+        sub.lines = vec![catalog("base", 1), catalog("base2", 3)];
+        let mut unrelated = c("OTHER");
+        unrelated.lines = vec![catalog("unrelated", 9)];
+        let mut book = CompositionBook::default();
+        book.insert(root).unwrap();
+        book.insert(sub).unwrap();
+        book.insert(unrelated).unwrap();
+        assert_eq!(
+            book.catalog_dependencies("ROOT").unwrap(),
+            BTreeSet::from([("base".into(), 1), ("base2".into(), 3)])
+        );
+        assert_eq!(
+            book.catalog_dependencies("OTHER").unwrap(),
+            BTreeSet::from([("unrelated".into(), 9)])
+        );
+        assert_eq!(
+            book.catalog_dependencies("MISSING"),
+            Err(CompositionError::Missing("MISSING".into()))
+        );
     }
     #[test]
     fn informed_compositions_still_require_existing_acyclic_compatible_dependencies() {
