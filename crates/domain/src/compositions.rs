@@ -918,6 +918,8 @@ mod tests {
             cost: "99999999999999".parse().unwrap(),
             reason: "Custo informado pelo orçamentista".into(),
         };
+        child.bdi = "0".parse().unwrap();
+        child.discount = "0".parse().unwrap();
         let mut invalid = CompositionBook::default();
         invalid.insert(root.clone()).unwrap();
         invalid.insert(child.clone()).unwrap();
