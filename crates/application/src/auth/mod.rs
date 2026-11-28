@@ -432,6 +432,17 @@ impl AuthService {
         }
         Ok(result)
     }
+    /// Não encaminha ao provedor uma mensagem cuja reserva perdeu a validade.
+    pub async fn mail_ready_to_send(&self, id: &str) -> Result<bool, AuthError> {
+        let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
+        Ok(self
+            .store
+            .mail_lease_active(
+                Uuid::parse_str(id).map_err(|_| AuthError::unavailable())?,
+                Uuid::parse_str(lease).map_err(|_| AuthError::unavailable())?,
+            )
+            .await?)
+    }
     pub async fn mark_mail_unconfirmed(&self, id: &str) -> Result<bool, AuthError> {
         let (id, lease) = id.split_once(':').ok_or_else(AuthError::unavailable)?;
         Ok(self
