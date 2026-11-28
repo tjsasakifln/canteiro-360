@@ -499,6 +499,9 @@ fn parse_mail_receipt(receipt: &[u8]) -> Option<String> {
         id: String,
     }
 
+    if receipt.iter().find(|byte| !byte.is_ascii_whitespace()) != Some(&b'{') {
+        return None;
+    }
     let Receipt { id } = serde_json::from_slice(receipt).ok()?;
     (!id.is_empty() && id.len() <= 256 && id.bytes().all(|byte| byte.is_ascii_graphic()))
         .then_some(id)
@@ -514,6 +517,9 @@ mod tests {
             r#"{"id":"first","id":"second"}"#,
             r#"{"id":"same","id":"same"}"#,
             r#"{"id":null}"#,
+            r#"{"id":123}"#,
+            r#"["valid-receipt"]"#,
+            r#"{"id":""}"#,
             r#"{"id":"a b"}"#,
             r#"{"id":"a\u0000b"}"#,
             r#"{"id":"a\u007fb"}"#,
