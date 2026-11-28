@@ -129,6 +129,15 @@ fn unit_price(value: ExactDecimal) -> Result<UnitPrice, CompositionError> {
     Ok(UnitPrice::new(value.round_away(6)?)?)
 }
 impl Composition {
+    // An informed direct cost is known even when the reference is inactive.
+    // Formula prices are resolved during calculation, not graph validation.
+    fn known_link_price(&self) -> Result<UnitPrice, CompositionError> {
+        match &self.cost_mode {
+            CostMode::Informed { cost, .. } => Ok(*cost),
+            CostMode::Formula => Ok(UnitPrice::new(ExactDecimal::ZERO)?),
+        }
+    }
+
     pub fn validate(&self) -> Result<(), CompositionError> {
         if !text(&self.code, 80)
             || !text(&self.description, 800)
@@ -230,7 +239,7 @@ impl CompositionBook {
                         source.unit,
                         line.unit,
                         line.conversion.as_ref(),
-                        UnitPrice::new(ExactDecimal::ZERO)?,
+                        source.known_link_price()?,
                     )?;
                     children.push(dependency.clone());
                 } else if let ComponentSource::Catalog {
@@ -313,7 +322,7 @@ impl CompositionBook {
                         source.unit,
                         line.unit,
                         line.conversion.as_ref(),
-                        UnitPrice::new(ExactDecimal::ZERO)?,
+                        source.known_link_price()?,
                     )?;
                 }
             }
@@ -887,6 +896,72 @@ mod tests {
         let result = valid.calculate("ROOT", &catalogs).unwrap();
         assert!(result.informed);
         assert_eq!(result.direct_cost.to_string(), "100.000000");
+    }
+
+    #[test]
+    fn informed_subcomposition_price_is_used_in_forward_and_reverse_links() {
+        let mut root = c("ROOT");
+        root.lines.push(ComponentLine {
+            id: "sub".into(),
+            source: ComponentSource::Composition { code: "SUB".into() },
+            coefficient: "1".parse().unwrap(),
+            unit: MeasureUnit::Kilogram,
+            conversion: Some(UnitConversion {
+                from: MeasureUnit::SquareMetre,
+                to: MeasureUnit::Kilogram,
+                factor: "2".parse().unwrap(),
+                reference: "Fator declarado".into(),
+            }),
+        });
+        let mut child = c("SUB");
+        child.cost_mode = CostMode::Informed {
+            cost: "99999999999999".parse().unwrap(),
+            reason: "Custo informado pelo orçamentista".into(),
+        };
+        let mut invalid = CompositionBook::default();
+        invalid.insert(root.clone()).unwrap();
+        invalid.insert(child.clone()).unwrap();
+        assert!(matches!(
+            invalid.validate_composition_links("ROOT"),
+            Err(CompositionError::Catalog(CatalogError::Decimal(_)))
+        ));
+        assert!(matches!(
+            invalid.calculate("ROOT", &CatalogLibrary::default()),
+            Err(CompositionError::Catalog(CatalogError::Decimal(_)))
+        ));
+        assert!(matches!(
+            invalid.validate_dependents_of("SUB"),
+            Err(CompositionError::Catalog(CatalogError::Decimal(_)))
+        ));
+
+        root.lines[0].conversion.as_mut().unwrap().factor = "0.5".parse().unwrap();
+        let mut valid = CompositionBook::default();
+        valid.insert(root.clone()).unwrap();
+        valid.insert(child.clone()).unwrap();
+        assert!(valid.validate_dependents_of("SUB").is_ok());
+        assert_eq!(
+            valid
+                .calculate("ROOT", &CatalogLibrary::default())
+                .unwrap()
+                .direct_cost
+                .to_string(),
+            "100.000000"
+        );
+
+        root.cost_mode = CostMode::Formula;
+        root.bdi = "0".parse().unwrap();
+        root.discount = "0".parse().unwrap();
+        let mut formula = CompositionBook::default();
+        formula.insert(root).unwrap();
+        formula.insert(child).unwrap();
+        assert_eq!(
+            formula
+                .calculate("ROOT", &CatalogLibrary::default())
+                .unwrap()
+                .direct_cost
+                .to_string(),
+            "49999999999999.500000"
+        );
     }
 
     #[test]
