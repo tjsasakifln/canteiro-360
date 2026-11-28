@@ -161,8 +161,8 @@ async fn invalid_preferences(
     data: &BTreeMap<String, String>,
     message: String,
 ) -> Response {
-    let ctx = match auth.service().notices_context(token).await {
-        Ok(ctx) => ctx,
+    let (ctx, has_more) = match auth.service().notices_page(token, 1).await {
+        Ok(result) => result,
         Err(error) => return application_failure(error),
     };
     let (draft, message) = if form_context(data).ok().as_ref() == ctx.context.as_ref()
@@ -186,11 +186,13 @@ async fn invalid_preferences(
         )
     };
     html_page(
-        canteiro_web::notifications::page_with_draft(
+        canteiro_web::notifications::page_with_pagination(
             ctx,
             Some(message),
             uuid::Uuid::new_v4().to_string(),
             draft,
+            1,
+            has_more,
         ),
         StatusCode::BAD_REQUEST,
     )
