@@ -75,6 +75,19 @@ fn permitted_scopes(a: &RecordAccess, now: DateTime<Utc>) -> Vec<Uuid> {
 }
 impl AuthService {
     pub async fn notices_context(&self, token: &str) -> Result<NoticesContext, AuthError> {
+        let (context, _) = self.notices_page(token, 1).await?;
+        Ok(context)
+    }
+
+    pub async fn notices_page(
+        &self,
+        token: &str,
+        page: u32,
+    ) -> Result<(NoticesContext, bool), AuthError> {
+        let offset = page
+            .checked_sub(1)
+            .and_then(|index| index.checked_mul(200))
+            .ok_or_else(|| invalid("Informe uma página válida de pendências."))?;
         self.limit("notices-context", token, 120, 60).await?;
         let (mut tx, a) = self.record_access(token, None).await?;
         let mut result = NoticesContext {
@@ -84,9 +97,13 @@ impl AuthService {
             preferences: preference_view(None)?,
             notices: vec![],
         };
+        let mut has_more = false;
         if let Some(a) = a {
             let scopes = permitted_scopes(&a, tx.now().await?);
-            let notices = tx.user_notice_list(a.tenant, a.actor.id, &scopes).await?;
+            let (notices, more) = tx
+                .user_notice_page(a.tenant, a.actor.id, &scopes, offset)
+                .await?;
+            has_more = more;
             result.notices = notices
                 .into_iter()
                 .map(notice_view)
@@ -106,7 +123,7 @@ impl AuthService {
             result.organization_name = a.organization_name;
         }
         tx.commit().await?;
-        Ok(result)
+        Ok((result, has_more))
     }
     pub async fn notices_set_preferences(
         &self,
