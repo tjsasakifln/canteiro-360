@@ -1476,7 +1476,11 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
         .error_for_status()?;
     assert!(!first.headers().contains_key(reqwest::header::LINK));
     let first: canteiro_contracts::notifications::NoticesContext = first.json().await?;
-    assert_eq!(first.notices, notices.notices);
+    // O consumidor pode comunicar a pendência entre as duas consultas.
+    // A identidade e o destino, porém, são imutáveis.
+    assert_eq!(first.notices.len(), 1);
+    assert_eq!(first.notices[0].event_id, notices.notices[0].event_id);
+    assert_eq!(first.notices[0].destination, destination);
     let second = http
         .get(format!("{url}?page=2"))
         .header(reqwest::header::COOKIE, &cookie)
