@@ -138,6 +138,15 @@ fn export_row(cells: &[String], out: &mut String, row_number: usize) -> Result<(
                 "Quebra de linha CR isolada não permitida; use LF ou CRLF.",
             ));
         }
+        // Campos do orçamento são de linha única no domínio. O transporte
+        // CSV admite CRLF entre registros, mas não dentro desses campos.
+        if value.chars().any(char::is_control) {
+            return Err(err(
+                row_number,
+                col + 1,
+                "Campo do orçamento não admite caracteres de controle.",
+            ));
+        }
         row_bytes += value.len();
         if value
             .bytes()
@@ -1572,18 +1581,29 @@ mod tests {
         assert!(error.cause.contains("CR isolada"));
     }
     #[test]
-    fn export_rejects_bare_cr_but_preserves_crlf() {
+    fn export_rejects_controls_in_single_line_budget_fields() {
         let mut original = sample(1);
         original.lines[0].description = "Nota\rmaliciosa".into();
         let error = export_csv(&original, NumberLocale::Canonical).unwrap_err();
         assert_eq!((error.row, error.column), (5, 14));
         assert!(error.cause.contains("CR isolada"));
 
-        original.lines[0].description = "Nota\r\nlegítima".into();
-        let csv = export_csv(&original, NumberLocale::Canonical).unwrap();
+        let valid = sample(1);
+        let csv = export_csv(&valid, NumberLocale::Canonical).unwrap();
+        for description in ["Nota\r\nlegítima", "Nota\nlegítima", "Nota\tlegítima"] {
+            original.lines[0].description = description.into();
+            assert!(original.validate().is_err());
+            let error = export_csv(&original, NumberLocale::Canonical).unwrap_err();
+            assert_eq!((error.row, error.column), (5, 14));
+            assert!(error.cause.contains("caracteres de controle"));
+
+            let invalid = csv.replacen("Descrição técnica", &format!("\"{description}\""), 1);
+            let error = preview_import(&invalid, NumberLocale::Canonical).unwrap_err();
+            assert_eq!((error.row, error.column), (5, 14));
+        }
         assert_eq!(
             preview_import(&csv, NumberLocale::Canonical).unwrap(),
-            original
+            valid
         );
     }
     #[test]
