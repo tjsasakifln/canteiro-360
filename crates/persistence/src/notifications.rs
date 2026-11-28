@@ -46,19 +46,35 @@ impl AuthTransaction {
         recipient: Uuid,
         scopes: &[Uuid],
     ) -> Result<Vec<StoredNotice>, AuthStoreError> {
-        Ok(sqlx::query_as(
+        let (rows, _) = self.user_notice_page(tenant, recipient, scopes, 0).await?;
+        Ok(rows)
+    }
+
+    /// Página de 200 registros, sem expor contagem ou conteúdo de escopos revogados.
+    pub async fn user_notice_page(
+        &mut self,
+        tenant: Uuid,
+        recipient: Uuid,
+        scopes: &[Uuid],
+        offset: u32,
+    ) -> Result<(Vec<StoredNotice>, bool), AuthStoreError> {
+        let mut rows: Vec<StoredNotice> = sqlx::query_as(
             "SELECT event_id,kind,scope_id,target_id,due_on,essential,state,attempts,created_at
            FROM canteiro.user_notices
            WHERE tenant_id=$1 AND recipient_id=$2 AND scope_id=ANY($3)
            ORDER BY (state='resolved') ASC,due_on ASC NULLS LAST,
                     essential DESC,created_at DESC,event_id ASC,kind ASC
-           LIMIT 200",
+           LIMIT 201 OFFSET $4",
         )
         .bind(tenant)
         .bind(recipient)
         .bind(scopes)
+        .bind(i64::from(offset))
         .fetch_all(&mut *self.tx)
-        .await?)
+        .await?;
+        let has_more = rows.len() > 200;
+        rows.truncate(200);
+        Ok((rows, has_more))
     }
     pub async fn user_notice_record(
         &mut self,
