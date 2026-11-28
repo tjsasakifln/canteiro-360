@@ -967,8 +967,11 @@ async fn invitation_mail_is_encrypted_retried_and_cancelled_on_replacement() {
     .unwrap();
     assert_eq!(row, (1, 0));
     // O resultado inconclusivo é durável antes mesmo da próxima reserva.
+    assert!(!f.service.mail_ready_to_send(&first.id).await.unwrap());
+    assert!(f.service.mail_ready_to_send(&second.id).await.unwrap());
     assert!(!f.service.mark_mail_unconfirmed(&first.id).await.unwrap());
     assert!(f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
+    assert!(!f.service.mail_ready_to_send(&second.id).await.unwrap());
     assert!(!f.service.mark_mail_unconfirmed(&second.id).await.unwrap());
     let closed_attempt = sqlx::query(
         "UPDATE canteiro_auth.mail_outbox
@@ -1159,6 +1162,7 @@ async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
     let token = f.invite(&admin, &revoked, OrganizationRole::Member).await;
     let reserved = f.service.pending_mail(1).await.unwrap().remove(0);
     assert_eq!(reserved.token, token);
+    assert!(f.service.mail_ready_to_send(&reserved.id).await.unwrap());
     let ctx = f.context(&admin).await;
     let invite = ctx
         .state
@@ -1179,6 +1183,7 @@ async fn accepted_and_expired_invitation_mail_is_discarded_before_delivery() {
     )
     .await
     .unwrap();
+    assert!(!f.service.mail_ready_to_send(&reserved.id).await.unwrap());
     assert!(
         !f.service
             .mark_mail_delivered(&reserved.id, "fixture")
