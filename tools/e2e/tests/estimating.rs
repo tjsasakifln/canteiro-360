@@ -1542,7 +1542,10 @@ async fn technical_notice_opens_exact_record_and_revoked_link_reveals_nothing() 
             saved_preferences
         );
         browser
-            .full_screenshot(&h.evidence.join(format!("notice-preferences-error-{width}.png")))
+            .full_screenshot(
+                &h.evidence
+                    .join(format!("notice-preferences-error-{width}.png")),
+            )
             .await?;
         browser.tab_to("input[name='reminder_days']").await?;
         browser.key("\u{e010}").await?;
