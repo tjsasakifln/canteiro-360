@@ -460,10 +460,7 @@ impl MailTransport {
                 Err(_) => return None,
             }
         }
-        let body: serde_json::Value = serde_json::from_slice(&receipt).ok()?;
-        let id = body.get("id")?.as_str()?;
-        (!id.is_empty() && id.len() <= 256 && id.bytes().all(|byte| byte.is_ascii_graphic()))
-            .then(|| id.to_owned())
+        parse_mail_receipt(&receipt)
     }
 
     // Contrato oficial POST /emails da Resend. O corpo é determinístico em
@@ -495,9 +492,40 @@ impl MailTransport {
     }
 }
 
+/// Um recibo ambíguo não comprova aceitação pelo provedor.
+fn parse_mail_receipt(receipt: &[u8]) -> Option<String> {
+    #[derive(serde::Deserialize)]
+    struct Receipt {
+        id: String,
+    }
+
+    let Receipt { id } = serde_json::from_slice(receipt).ok()?;
+    (!id.is_empty() && id.len() <= 256 && id.bytes().all(|byte| byte.is_ascii_graphic()))
+        .then_some(id)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mail_receipt_requires_exactly_one_unambiguous_identifier() {
+        for body in [
+            r#"{"id":"first","id":"second"}"#,
+            r#"{"id":"same","id":"same"}"#,
+            r#"{"id":null}"#,
+            r#"{"id":"a b"}"#,
+            r#"{"id":"a\u0000b"}"#,
+            r#"{"id":"a\u007fb"}"#,
+            r#"{"id":"a"} {}"#,
+        ] {
+            assert!(parse_mail_receipt(body.as_bytes()).is_none(), "{body}");
+        }
+        assert_eq!(
+            parse_mail_receipt(br#"{"id":"valid-receipt","metadata":{"id":"other"}}"#).as_deref(),
+            Some("valid-receipt")
+        );
+    }
 
     #[tokio::test]
     async fn resend_protocol_retries_keep_same_payload_and_id_without_following_redirects() {
@@ -513,6 +541,14 @@ mod tests {
                     async move {
                         let mut seen = seen.lock().await;
                         seen.push((headers, body));
+                        if seen.len() == 12 {
+                            return (
+                                StatusCode::OK,
+                                [(header::CONTENT_TYPE, "application/json")],
+                                r#"{"id":"first","id":"second"}"#,
+                            )
+                                .into_response();
+                        }
                         if seen.len() == 11 {
                             return (
                                 StatusCode::TEMPORARY_REDIRECT,
@@ -643,11 +679,11 @@ mod tests {
 
         // Recibos excessivos, identificadores em branco e redirecionamentos
         // não podem confirmar a entrega, mesmo que a próxima tentativa seja válida.
-        for lease in ["seventh", "eighth", "ninth"] {
+        for lease in ["seventh", "eighth", "ninth", "tenth"] {
             message.id = format!("invitation-uuid:{lease}-lease");
             assert!(transport.send(&message).await.is_none());
         }
-        message.id = "invitation-uuid:tenth-lease".into();
+        message.id = "invitation-uuid:eleventh-lease".into();
         assert_eq!(
             transport.send(&message).await.as_deref(),
             Some("delivery-fixture")
@@ -655,7 +691,7 @@ mod tests {
         message.kind = "unknown".into();
         assert!(transport.send(&message).await.is_none());
         let seen = observed.lock().await;
-        assert_eq!(seen.len(), 12);
+        assert_eq!(seen.len(), 13);
         for (headers, body) in &seen[8..] {
             assert_eq!(headers["idempotency-key"], "invitation-uuid");
             assert_eq!(body, &seen[2].1);
